@@ -136,7 +136,7 @@ class private(ba.Plugin):
         try:
             gg=_ba.get_game_roster()
             for clt in gg:
-                if clt['account_id'] in whitelist and clt['account_id']!='':
+                if clt['account_id'] in whitelist and clt['account_id']!='' or clt['client_id']==-1:
                     pass
                 else:
                     f=open("loggs.txt","a+")
