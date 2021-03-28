@@ -83,19 +83,19 @@ def commands(acc_id,msg):
                 f=open("loggs.txt",'a+')
                 f.write(acc_id+" added "+clt['account_id']+"\n")
                 f.close()
-                ba.screenmessage(clt['display_string']+" whitelisted")
+                _ba.chatmessage(clt['display_string']+" whitelisted")
     if cmnd=='/whitelist':
         whitelist_on=whitelist_on==False
         if whitelist_on:
-            ba.screenmessage("WhiteList turned on")
+            _ba.chatmessage("WhiteList turned on")
         else:
-            ba.screenmessage("whitelist turned off")
+            _ba.chatmessage("whitelist turned off")
     if cmnd=='/spectators':
         spectators=spectators==False
         if spectators:
-            ba.screenmessage("Spectators can watch now")
+            _ba.chatmessage("Spectators can watch now")
         else:
-            ba.screenmessage("Spectators will be kicked")
+            _ba.chatmessage("Spectators will be kicked")
             
 
 
@@ -132,18 +132,18 @@ class private(ba.Plugin):
         global whitelist_on
         global whitelist
         global spectators
-        
-        try:
-            gg=_ba.get_game_roster()
-            for clt in gg:
-                if clt['account_id'] in whitelist and clt['account_id']!='' or clt['client_id']==-1:
-                    pass
-                else:
-                    f=open("loggs.txt","a+")
-                    f.write("Kicked from lobby"+clt['account_id']+" "+clt['spec_string']+"\n")
-                    _ba.disconnect_client(clt['client_id'])
-        except:
-            pass
+        if whitelist_on and not spectators:
+            try:
+                gg=_ba.get_game_roster()
+                for clt in gg:
+                    if clt['account_id'] in whitelist and clt['account_id']!='' or clt['client_id']==-1:
+                        pass
+                    else:
+                        f=open("loggs.txt","a+")
+                        f.write("Kicked from lobby"+clt['account_id']+" "+clt['spec_string']+"\n")
+                        _ba.disconnect_client(clt['client_id'])
+            except:
+                pass
                
             
 
