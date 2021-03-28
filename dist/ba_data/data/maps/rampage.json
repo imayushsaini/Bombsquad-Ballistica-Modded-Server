@@ -1,0 +1,45 @@
+{
+  "format": ["stdmap", 1],
+  "locations": {
+    "area_of_interest_bounds": [
+      {"center": [0.35, 5.62, -4.07], "size": [19.9, 10.34, 8.16]}
+    ],
+    "edge_box": [
+      {"center": [0.35, 5.44, -4.1], "size": [12.58, 4.65, 3.61]}
+    ],
+    "ffa_spawn": [
+      {"center": [0.5, 5.05, -5.79], "size": [6.63, 1.0, 0.34]},
+      {"center": [0.5, 5.05, -2.44], "size": [6.63, 1.0, 0.34]}
+    ],
+    "flag": [
+      {"center": [-5.89, 5.11, -4.25]},
+      {"center": [6.7, 5.1, -4.26]}
+    ],
+    "flag_default": [
+      {"center": [0.32, 5.11, -4.29]}
+    ],
+    "map_bounds": [
+      {"center": [0.45, 4.9, -3.54], "size": [23.55, 14.2, 12.08]}
+    ],
+    "powerup_spawn": [
+      {"center": [-2.65, 6.43, -4.23]},
+      {"center": [3.54, 6.55, -4.2]}
+    ],
+    "shadow_lower_bottom": [
+      {"center": [5.58, 3.14, 5.34]}
+    ],
+    "shadow_lower_top": [
+      {"center": [5.58, 4.32, 5.34]}
+    ],
+    "shadow_upper_bottom": [
+      {"center": [5.27, 8.43, 5.34]}
+    ],
+    "shadow_upper_top": [
+      {"center": [5.27, 11.93, 5.34]}
+    ],
+    "spawn": [
+      {"center": [-4.75, 5.05, -4.25], "size": [0.92, 1.0, 0.52]},
+      {"center": [5.84, 5.05, -4.26], "size": [0.92, 1.0, 0.52]}
+    ]
+  }
+}

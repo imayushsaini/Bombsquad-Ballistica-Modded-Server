@@ -1,0 +1,95 @@
+{
+  "format": ["stdmap", 1],
+  "globals": {
+    "ambient_color": [1.1, 1.2, 1.3],
+    "tint": [1.1, 1.2, 1.3],
+    "vignette_inner": [0.9, 0.9, 0.93],
+    "vignette_outer": [0.65, 0.6, 0.55]
+  },
+  "locations": {
+    "area_of_interest_bounds": [
+      {"center": [-0.25, 3.83, -1.53], "size": [19.15, 7.31, 8.44]}
+    ],
+    "ffa_spawn": [
+      {"center": [-5.87, 3.72, -1.62], "size": [0.94, 1.0, 1.82]},
+      {"center": [5.16, 3.76, -1.44], "size": [0.77, 1.0, 1.82]},
+      {"center": [-0.43, 3.76, -1.56], "size": [4.03, 1.0, 0.27]}
+    ],
+    "flag": [
+      {"center": [-7.35, 3.77, -1.62]},
+      {"center": [6.89, 3.77, -1.44]}
+    ],
+    "flag_default": [
+      {"center": [-0.22, 3.8, -1.56]}
+    ],
+    "map_bounds": [
+      {"center": [-0.19, 7.48, -1.31], "size": [27.42, 18.47, 19.52]}
+    ],
+    "powerup_spawn": [
+      {"center": [6.83, 4.66, 0.19]},
+      {"center": [-7.25, 4.73, 0.25]},
+      {"center": [6.83, 4.66, -3.46]},
+      {"center": [-7.25, 4.73, -3.4]}
+    ],
+    "shadow_lower_bottom": [
+      {"center": [-0.22, 2.83, 2.68]}
+    ],
+    "shadow_lower_top": [
+      {"center": [-0.22, 3.5, 2.68]}
+    ],
+    "shadow_upper_bottom": [
+      {"center": [-0.22, 6.31, 2.68]}
+    ],
+    "shadow_upper_top": [
+      {"center": [-0.22, 9.47, 2.68]}
+    ],
+    "spawn": [
+      {"center": [-5.87, 3.72, -1.62], "size": [0.94, 1.0, 1.82]},
+      {"center": [5.16, 3.76, -1.44], "size": [0.77, 1.0, 1.82]}
+    ]
+  },
+  "name": "Bridgit",
+  "play_types": ["melee", "team_flag", "keep_away"],
+  "preview_texture": "bridgitPreview",
+  "terrain_nodes": [
+    {
+      "collide_model": "bridgitLevelBottom",
+      "color_texture": "bridgitLevelColor",
+      "comment": "Top portion of bridge.",
+      "materials": ["footing"],
+      "model": "bridgitLevelTop"
+    },
+    {
+      "color_texture": "bridgitLevelColor",
+      "comment": "Bottom portion of bridge with no lighting effects.",
+      "lighting": false,
+      "model": "bridgitLevelBottom"
+    },
+    {
+      "background": true,
+      "color_texture": "natureBackgroundColor",
+      "comment": "Visible background.",
+      "lighting": false,
+      "model": "natureBackground"
+    },
+    {
+      "background": true,
+      "color_texture": "model_bg_tex",
+      "comment": "360 degree bg for vr.",
+      "lighting": false,
+      "model": "bg_vr_fill_model",
+      "vr_only": true
+    },
+    {
+      "bumper": true,
+      "collide_model": "railing_collide_model",
+      "comment": "Invisible railing to help prevent falls.",
+      "materials": ["railing"]
+    },
+    {
+      "collide_model": "collide_bg",
+      "comment": "Collision shape for bg",
+      "materials": ["footing", "friction@10", "death"]
+    }
+  ]
+}

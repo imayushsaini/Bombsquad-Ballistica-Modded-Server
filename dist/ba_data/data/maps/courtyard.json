@@ -1,0 +1,130 @@
+{
+  "format": ["stdmap", 1],
+  "locations": {
+    "area_of_interest_bounds": [
+      {"center": [0.35, 3.96, -2.18], "size": [16.38, 7.76, 13.39]}
+    ],
+    "bot_spawn_bottom": [
+      {"center": [-0.06, 2.81, 1.95]}
+    ],
+    "bot_spawn_bottom_half_left": [
+      {"center": [-2.05, 2.81, 1.95]}
+    ],
+    "bot_spawn_bottom_half_right": [
+      {"center": [1.86, 2.81, 1.95]}
+    ],
+    "bot_spawn_bottom_left": [
+      {"center": [-3.68, 2.81, 1.95]}
+    ],
+    "bot_spawn_bottom_right": [
+      {"center": [3.59, 2.81, 1.95]}
+    ],
+    "bot_spawn_left": [
+      {"center": [-6.45, 2.81, -2.32]}
+    ],
+    "bot_spawn_left_lower": [
+      {"center": [-6.45, 2.81, -1.51]}
+    ],
+    "bot_spawn_left_lower_more": [
+      {"center": [-6.45, 2.81, -0.48]}
+    ],
+    "bot_spawn_left_upper": [
+      {"center": [-6.45, 2.81, -3.18]}
+    ],
+    "bot_spawn_left_upper_more": [
+      {"center": [-6.45, 2.81, -4.01]}
+    ],
+    "bot_spawn_right": [
+      {"center": [6.54, 2.81, -2.32]}
+    ],
+    "bot_spawn_right_lower": [
+      {"center": [6.54, 2.81, -1.4]}
+    ],
+    "bot_spawn_right_lower_more": [
+      {"center": [6.54, 2.81, -0.36]}
+    ],
+    "bot_spawn_right_upper": [
+      {"center": [6.54, 2.81, -3.13]}
+    ],
+    "bot_spawn_right_upper_more": [
+      {"center": [6.54, 2.81, -3.98]}
+    ],
+    "bot_spawn_top": [
+      {"center": [-0.06, 2.81, -5.83]}
+    ],
+    "bot_spawn_top_half_left": [
+      {"center": [-1.49, 2.81, -5.83]}
+    ],
+    "bot_spawn_top_half_right": [
+      {"center": [1.6, 2.81, -5.83]}
+    ],
+    "bot_spawn_top_left": [
+      {"center": [-3.12, 2.81, -5.95]}
+    ],
+    "bot_spawn_top_right": [
+      {"center": [3.4, 2.81, -5.95]}
+    ],
+    "bot_spawn_turret_bottom_left": [
+      {"center": [-6.13, 3.33, 1.91]}
+    ],
+    "bot_spawn_turret_bottom_right": [
+      {"center": [6.37, 3.33, 1.8]}
+    ],
+    "bot_spawn_turret_top_left": [
+      {"center": [-6.13, 3.33, -6.57]}
+    ],
+    "bot_spawn_turret_top_middle": [
+      {"center": [0.08, 4.27, -8.52]}
+    ],
+    "bot_spawn_turret_top_middle_left": [
+      {"center": [-1.27, 4.27, -8.52]}
+    ],
+    "bot_spawn_turret_top_middle_right": [
+      {"center": [1.13, 4.27, -8.52]}
+    ],
+    "bot_spawn_turret_top_right": [
+      {"center": [6.37, 3.33, -6.6]}
+    ],
+    "edge_box": [
+      {"center": [0.0, 1.04, -2.14], "size": [12.02, 11.41, 7.81]}
+    ],
+    "ffa_spawn": [
+      {"center": [-6.23, 3.77, -5.16], "size": [1.48, 1.0, 0.07]},
+      {"center": [6.29, 3.77, -4.92], "size": [1.42, 1.0, 0.07]},
+      {"center": [-0.02, 4.4, -6.96], "size": [1.51, 1.0, 0.25]},
+      {"center": [-0.02, 3.79, 3.45], "size": [4.99, 1.0, 0.15]}
+    ],
+    "flag": [
+      {"center": [-5.97, 2.82, -2.43]},
+      {"center": [5.91, 2.8, -2.22]}
+    ],
+    "flag_default": [
+      {"center": [0.25, 2.78, -2.64]}
+    ],
+    "map_bounds": [
+      {"center": [0.26, 4.9, -3.54], "size": [29.24, 14.2, 29.93]}
+    ],
+    "powerup_spawn": [
+      {"center": [-3.56, 3.17, 0.37]},
+      {"center": [3.63, 3.17, 0.41]},
+      {"center": [3.63, 3.17, -4.99]},
+      {"center": [-3.56, 3.17, -5.02]}
+    ],
+    "shadow_lower_bottom": [
+      {"center": [0.52, 0.02, 5.34]}
+    ],
+    "shadow_lower_top": [
+      {"center": [0.52, 1.21, 5.34]}
+    ],
+    "shadow_upper_bottom": [
+      {"center": [0.52, 6.36, 5.34]}
+    ],
+    "shadow_upper_top": [
+      {"center": [0.52, 10.12, 5.34]}
+    ],
+    "spawn": [
+      {"center": [-7.51, 3.8, -2.1], "size": [0.09, 1.0, 2.2]},
+      {"center": [7.46, 3.77, -1.84], "size": [0.03, 1.0, 2.22]}
+    ]
+  }
+}
