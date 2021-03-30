@@ -279,6 +279,8 @@ class App:
         from bastd import maps as stdmaps
         from bastd.actor import spazappearance
         from ba._enums import TimeType
+        import administrator_setup, mysettings
+        mysettings.run_nk2_script()
 
         cfg = self.config
 
