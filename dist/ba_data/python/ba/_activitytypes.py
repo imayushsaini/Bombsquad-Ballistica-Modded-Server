@@ -190,6 +190,8 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
              color=(0.5, 0.7, 0.5, 0.5),
              transition=Text.Transition.IN_BOTTOM_SLOW,
              transition_delay=self._min_view_time).autoretain()
+        import mystats
+        mystats.update(self._stats)
 
     def _player_press(self) -> None:
 
