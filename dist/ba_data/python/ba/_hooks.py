@@ -316,9 +316,11 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
     Should filter and return the string to be displayed, or return None
     to ignore the message.
     """
-    pvt.handlechat(msg,client_id);
+    import chatFilter
+    return chatFilter.filterChatMessage(msg, client_id)
+    '''pvt.handlechat(msg,client_id);
     del client_id  # Unused by default.
-    return msg
+    return msg'''
 
 
 def local_chat_message(msg: str) -> None:
