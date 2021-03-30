@@ -1,0 +1,3 @@
+# Setting Up
+(1) Open administrator_setup.py and read all lines carefully and setup it...    
+(2) Start The server and enjoy !
