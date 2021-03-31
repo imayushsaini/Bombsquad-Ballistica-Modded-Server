@@ -1,0 +1,27 @@
+{
+	"owner":{
+		"tag":"OWNER",
+		"tagcolor":(1,1,1),
+		"commands":["add","kick","remove"],
+		"ids":["pb-ihugg7g9==","pb-7gt78"]
+
+	},
+	"admin":{
+		"tag":"ADMIN",
+		"tagcolor":(1,1,1),
+		"commands":["kick","end"],
+		"ids":["pb-ugg","pb-767fyfd"]
+	},
+	"vip":{
+		"tag":"VIP",
+		"tagcolor":(1,1,1),
+		"commands":[],
+		"ids":[]
+	},
+	"donor":{
+		"tag":"DONOR",
+		"tagcolor":(2,2,2),
+		"commands":[],
+		"ids":[]
+	}
+}
