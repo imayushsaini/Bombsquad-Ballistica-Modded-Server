@@ -168,6 +168,8 @@ class ScoreScreenActivity(Activity[EmptyPlayer, EmptyTeam]):
         from bastd.actor.text import Text
         from ba import _language
         super().on_begin()
+        import custom_hooks as chook
+        chook.score_screen_on_begin(self._stats)
 
         # Pop up a 'press any button to continue' statement after our
         # min-view-time show a 'press any button to continue..'

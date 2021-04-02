@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 roles={}
 data={}
-
+custom={}
 
 def roles():
 	global roles
@@ -86,4 +86,53 @@ def commit():
 	f=open("roles.json",'w')
 	json.dump(roles,f,indent=4)
 	f.close()
+#=======================  CUSTOM EFFECTS/TAGS ===============
 
+
+def custom():
+	global custom
+	if custom=={}:
+		f=open("custom.json","r")
+		dat=json.loads(f.read())
+		custom=dat
+		f.close()
+	return custom
+
+
+
+def set_effect(effect,id):
+	global custom
+	_custom=custom()
+	_custom['customeffects'][id]=effect
+	custom=_custom
+	commit_c()
+
+
+def set_tag(tag,id):
+	global custom
+	_custom=custom()
+	_custom['customtag'][id]=tag
+	custom=_custom
+	commit_c()
+
+def remove_effect(id):
+	global custom
+	_custom=custom()
+	_custom['customeffects'].pop(id)
+	custom=_custom
+	commit_c()
+
+
+def remove_tag(id):
+	global custom
+	_custom=custom()
+	_custom['customtag'].pop(id)
+	custom=_custom
+	commit_c()
+
+
+def commit_c():
+	global custom
+	f=open("custom.json",'w')
+	json.dump(custom,f,indent=4)
+	f.close()

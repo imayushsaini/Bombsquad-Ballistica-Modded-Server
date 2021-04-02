@@ -308,6 +308,7 @@ def party_invite_revoke(invite_id: str) -> None:
                                 transition='out_right')
 
 import privateserver as pvt
+import custom_hooks as chooks
 def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
     """Intercept/filter chat messages.
 
@@ -316,9 +317,10 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
     Should filter and return the string to be displayed, or return None
     to ignore the message.
     """
-    pvt.handlechat(msg,client_id);
-    del client_id  # Unused by default.
-    return msg
+    pvt.handlechat(msg,client_id)
+    return chooks.filter_chat_message(msg,client_id)
+    
+    
 
 
 def local_chat_message(msg: str) -> None:

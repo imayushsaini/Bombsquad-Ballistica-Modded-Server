@@ -279,6 +279,8 @@ class App:
         from bastd import maps as stdmaps
         from bastd.actor import spazappearance
         from ba._enums import TimeType
+        import custom_hooks
+        custom_hooks.on_app_launch()
 
         cfg = self.config
 

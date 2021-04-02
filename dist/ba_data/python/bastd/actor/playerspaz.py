@@ -70,6 +70,8 @@ class PlayerSpaz(Spaz):
         self.last_player_held_by: Optional[ba.Player] = None
         self._player = player
         self._drive_player_position()
+        import custom_hooks
+        custom_hooks.playerspaz_init(self._player)
 
     # Overloads to tell the type system our return type based on doraise val.
 
