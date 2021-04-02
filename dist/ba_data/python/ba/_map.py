@@ -210,6 +210,8 @@ class Map(Actor):
         # Set various globals.
         gnode = _ba.getactivity().globalsnode
         import ba
+        from tools import textonmap
+        textonmap.textonmap()
 
 
 
