@@ -1,19 +1,33 @@
 # Released under the MIT License. See LICENSE for details.
-
-
-settings={}
+import ba,_ba,json,os
+from stats import mystats
+statsFile = mystats.statsfile
 
 def get_setting():
-	global settings
-	if settings=={}:
-		f=open("setting.json","r")
-		dat=json.loads(f.read())
-		settings=dat
-		f.close()
-	return settings
+	s = {}
+	f=open("setting.json","r")
+    d = json.loads(f.read())
+    f.close()
+    return d
 
-def commit():
-	global settings
+def commit(updated_settings: dict):
+    if updated_settings == {}: return
 	f=open("setting.json",'w')
-	json.dump(setting,f,indent=4)
+	json.dump(updated_settings,f,indent=4)
 	f.close()
+
+def sendError(msg: str, ID: int = None):
+    if ID is not None:
+        ba.screenmessage(msg, color=(1,0,0), clients=[ID], transient=True)
+    else:
+        ba.screenmessage(msg, color=(1,0,0), transient=True)
+
+def getStats():
+    try:
+        f = open(statsFile, 'r')
+        a = json.loads(f.read())
+        f.close()
+        return a
+    except:
+        print("Stats not found")
+        return {}
