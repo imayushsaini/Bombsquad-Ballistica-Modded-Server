@@ -22,12 +22,3 @@ def sendError(msg: str, ID: int = None):
     else:
         ba.screenmessage(msg, color=(1,0,0), transient=True)
 
-def getStats():
-    try:
-        f = open(statsFile, 'r')
-        a = json.loads(f.read())
-        f.close()
-        return a
-    except:
-        print("Stats not found")
-        return {}

@@ -81,11 +81,22 @@ def change_role_tag(role,tag):
 	return "role not exists"
 
 
-def commit():
+def commit(_roles):
 	global roles
+	if _roles=={}:
+		return
 	f=open("roles.json",'w')
-	json.dump(roles,f,indent=4)
+	json.dump(_roles,f,indent=4)
 	f.close()
+	roles=_roles
+
+def get_role(acc_id):
+	global roles
+	_roles =roles()
+	for role in _roles:
+		if acc_id in role["ids"]:
+			return role
+
 #=======================  CUSTOM EFFECTS/TAGS ===============
 
 

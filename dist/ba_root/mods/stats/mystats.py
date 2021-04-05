@@ -4,7 +4,7 @@ damage_data = {}
 mystats module for BombSquad version 1.5.29
 Provides functionality for dumping player stats to disk between rounds.
 """
-
+ranks=[]
 import threading,json,os,urllib.request,ba,_ba,setting
 from ba._activity import Activity
 from ba._music import setmusic, MusicType
@@ -56,6 +56,7 @@ def refreshStats():
     toppers = {}
     pStats = stats
     toppersIDs=[]
+    _ranks=[]
     for entry in entries:
         if True:
             rank += 1
@@ -85,6 +86,9 @@ def refreshStats():
                 dmg = damage_data[aid]
                 dmg = str(str(dmg).split('.')[0] + '.' + str(dmg).split('.')[1][:3])
             else: dmg = 0
+
+            _ranks.append(aid)
+
             pStats[str(aid)]["rank"] = int(rank)
             pStats[str(aid)]["scores"] = int(scores)
             pStats[str(aid)]["total_damage"] += float(dmg) #not working properly
@@ -110,7 +114,8 @@ def refreshStats():
     </body>
 </html>''')
     f.close()
-
+    global ranks
+    ranks=_ranks
     f2 = open(statsfile, "w")
     f2.write(json.dumps(pStats, indent=4))
     f2.close()
@@ -202,3 +207,10 @@ class UpdateThread(threading.Thread):
         update_time = now.strftime("%S:%M:%H - %d %b %y")
         print(f"Added {str(len(self._account_kills))} account's stats entries. || {str(update_time)}")
         refreshStats()
+
+def getRank(acc_id):
+    global ranks
+    if ranks==[]:
+        refreshStats()
+    if acc_id in ranks:
+        return ranks.index(acc_id)
