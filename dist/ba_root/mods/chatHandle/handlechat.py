@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 from playersData import pdata
-from chatCMDS import chatcmd 
+from chatHandle.chatCMDS import chatcmd 
 from chatFilter import chatfilter
 import ba,_ba
 

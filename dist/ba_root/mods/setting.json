@@ -5,5 +5,7 @@
 				"bottom left watermark":"join discord for fun",
 				"center highlights":["message 1","message 2","message 3"]
 			},
-	"enabletags":true
+	"enabletags":true,
+	"enablerank":true,
+	"enableeffects":false
 }

@@ -31,7 +31,7 @@ html_start = f'''<!DOCTYPE html>
         <style>table{table_style} th{heading_style}</style>
     </head>
     <body>
-        <h3 style="text-align:center">Top 200 Players of {our_settings['server_name']}</h3>
+        <h3 style="text-align:center">Top 200 Players </h3>
         <table border=1>
             <tr>
                 <th><b>Rank</b></th>
@@ -46,7 +46,9 @@ html_start = f'''<!DOCTYPE html>
 def refreshStats():
     # lastly, write a pretty html version.
     # our stats url could point at something like this...
-    stats = setting.getStats()
+    f=open(statsfile)
+    stats = json.loads(f.read())
+    
     f=open(htmlfile, 'w')       
     f.write(html_start)
     entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name_html'], a['aid']) for a in stats.values()]
@@ -116,12 +118,13 @@ def refreshStats():
     f.close()
     global ranks
     ranks=_ranks
+
     f2 = open(statsfile, "w")
     f2.write(json.dumps(pStats, indent=4))
     f2.close()
     
     from playersData import pdata
-    pdata.update_toppers(toppersIDS)
+    pdata.update_toppers(toppersIDs)
 
 def update(score_set):
     """
@@ -149,7 +152,10 @@ def update(score_set):
     # from disk, do display-string lookups for accounts that need them,
     # and write everything back to disk (along with a pretty html version)
     # We use a background thread so our server doesn't hitch while doing this.
-    if account_scores: UpdateThread(account_kills, account_deaths, account_scores).start()
+    print(account_kills)
+    print(account_scores)
+    if account_scores:
+        UpdateThread(account_kills, account_deaths, account_scores).start()
 
 class UpdateThread(threading.Thread):
     def __init__(self, account_kills, account_deaths, account_scores):
@@ -157,14 +163,16 @@ class UpdateThread(threading.Thread):
         self._account_kills = account_kills
         self.account_deaths = account_deaths
         self.account_scores = account_scores
+        print("init thread")
     def run(self):
         # pull our existing stats from disk
+        print("run thead")
         try:
             if os.path.exists(statsfile):
                 with open(statsfile) as f:
                     stats = json.loads(f.read())
         except:
-            return
+            stats={}
 
         # now add this batch of kills to our persistant stats
         for account_id, kill_count in self._account_kills.items():
@@ -213,4 +221,4 @@ def getRank(acc_id):
     if ranks==[]:
         refreshStats()
     if acc_id in ranks:
-        return ranks.index(acc_id)
+        return ranks.index(acc_id)+1

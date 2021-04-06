@@ -1,20 +1,19 @@
 # Released under the MIT License. See LICENSE for details.
 import ba,_ba,json,os
-from stats import mystats
-statsFile = mystats.statsfile
+settingjson = os.path.join(_ba.env()['python_directory_user'],"setting.json")
 
 def get_setting():
-	s = {}
-	f=open("setting.json","r")
+    s = {}
+    f=open(settingjson,"r")
     d = json.loads(f.read())
     f.close()
     return d
 
 def commit(updated_settings: dict):
     if updated_settings == {}: return
-	f=open("setting.json",'w')
-	json.dump(updated_settings,f,indent=4)
-	f.close()
+    f=open(settingjson,'w')
+    json.dump(updated_settings,f,indent=4)
+    f.close()
 
 def sendError(msg: str, ID: int = None):
     if ID is not None:

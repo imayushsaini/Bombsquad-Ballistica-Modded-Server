@@ -1,12 +1,14 @@
 # Released under the MIT License. See LICENSE for details.
+import os,_ba,json
 roles={}
 data={}
 custom={}
+data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.sep)
 
-def roles():
+def get_roles():
 	global roles
 	if roles=={}:
-		f=open("roles.json","r")
+		f=open(data_path+"roles.json","r")
 		dat=json.loads(f.read())
 		roles=dat
 		f.close()
@@ -14,7 +16,7 @@ def roles():
 
 def create_role(role):
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role not in _roles:
 		_roles[role]={
 			"tag":role,
@@ -31,7 +33,7 @@ def create_role(role):
 
 def add_player_role(role,id):
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role in _roles:
 		_roles[role].ids.append(id)
 		roles=_roles
@@ -41,7 +43,7 @@ def add_player_role(role,id):
 
 def add_command_role(role,command):
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role in _roles:
 		_roles[role].commands.append(command)
 		roles=_roles
@@ -52,7 +54,7 @@ def add_command_role(role,command):
 
 def remove_player_role(role,id):
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role in _roles:
 		_roles[role].ids.remove(id)
 		roles=_roles
@@ -62,7 +64,7 @@ def remove_player_role(role,id):
 
 def remove_command_role():
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role in _roles:
 		_roles[role].commands.remove(command)
 		roles=_roles
@@ -72,7 +74,7 @@ def remove_command_role():
 
 def change_role_tag(role,tag):
 	global roles
-	_roles=roles()
+	_roles=get_roles()
 	if role in _roles:
 		_roles[role].tag=tag
 		roles=_roles
@@ -85,14 +87,14 @@ def commit(_roles):
 	global roles
 	if _roles=={}:
 		return
-	f=open("roles.json",'w')
+	f=open(data_path+"roles.json",'w')
 	json.dump(_roles,f,indent=4)
 	f.close()
 	roles=_roles
 
 def get_role(acc_id):
 	global roles
-	_roles =roles()
+	_roles =get_roles()
 	for role in _roles:
 		if acc_id in role["ids"]:
 			return role
@@ -100,10 +102,10 @@ def get_role(acc_id):
 #=======================  CUSTOM EFFECTS/TAGS ===============
 
 
-def custom():
+def get_custom():
 	global custom
 	if custom=={}:
-		f=open("custom.json","r")
+		f=open(data_path+"custom.json","r")
 		dat=json.loads(f.read())
 		custom=dat
 		f.close()
@@ -113,7 +115,7 @@ def custom():
 
 def set_effect(effect,id):
 	global custom
-	_custom=custom()
+	_custom=get_custom()
 	_custom['customeffects'][id]=effect
 	custom=_custom
 	commit_c()
@@ -121,14 +123,14 @@ def set_effect(effect,id):
 
 def set_tag(tag,id):
 	global custom
-	_custom=custom()
+	_custom=get_custom()
 	_custom['customtag'][id]=tag
 	custom=_custom
 	commit_c()
 
 def remove_effect(id):
 	global custom
-	_custom=custom()
+	_custom=get_custom()
 	_custom['customeffects'].pop(id)
 	custom=_custom
 	commit_c()
@@ -136,7 +138,7 @@ def remove_effect(id):
 
 def remove_tag(id):
 	global custom
-	_custom=custom()
+	_custom=get_custom()
 	_custom['customtag'].pop(id)
 	custom=_custom
 	commit_c()
@@ -144,6 +146,6 @@ def remove_tag(id):
 
 def commit_c():
 	global custom
-	f=open("custom.json",'w')
+	f=open(data_path+"custom.json",'w')
 	json.dump(custom,f,indent=4)
 	f.close()

@@ -2,7 +2,7 @@
 
 #TODO need to set coordinates of text node , move timer values to settings.json 
 from ba._enums import TimeType
-import ba
+import ba,_ba
 import setting
 class textonmap:
 	def __init__(self):
@@ -12,7 +12,7 @@ class textonmap:
 		left=_textonmap['bottom left watermark']
 		top=_textonmap['top watermark']
 
-		self.timerr=ba.Timer(8,self.highlights,repeat=True)
+		self.timerr=ba.Timer(8,ba.Call(self.highlights),repeat=True)
 
 		self.left_watermark(left)
 		self.top_message(top)
