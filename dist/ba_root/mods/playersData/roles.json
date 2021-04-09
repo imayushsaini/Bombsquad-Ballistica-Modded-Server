@@ -1,0 +1,121 @@
+{
+    "owner": {
+        "tag": "pranav",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "commands": [
+            "createrole",
+            "addrole",
+            "removerole",
+            "addcommand",
+            "addcmd",
+            "removecommand",
+            "removecmd",
+            "remove",
+            "kick",
+            "rm",
+            "next",
+            "quit",
+            "restart",
+            "mute",
+            "mutechat",
+            "unmute",
+            "unmutechat",
+            "sm",
+            "slow",
+            "slowmo",
+            "nv",
+            "night",
+            "dv",
+            "day",
+            "pause",
+            "pausegame",
+            "cameraMode",
+            "camera_mode",
+            "rotate_camera",
+            "kill",
+            "die",
+            "heal",
+            "heath",
+            "curse",
+            "cur",
+            "sleep",
+            "sp",
+            "superpunch",
+            "gloves",
+            "punch",
+            "shield",
+            "protect",
+            "freeze",
+            "ice",
+            "unfreeze",
+            "thaw",
+            "gm",
+            "godmode",
+            "fly",
+            "inv",
+            "invisible",
+            "hl",
+            "headless",
+            "creepy",
+            "creep",
+            "celebrate",
+            "celeb",
+            "spaz",
+            "me",
+            "stats",
+            "score",
+            "list",
+            "l",
+            "uniqeid",
+            "id",
+            "pb-id",
+            "pb",
+            "accountid",
+            "end",
+            "changetag"
+        ],
+        "ids": [
+            "pb-IF48VgWkBFQ"
+        ]
+    },
+    "test69": {
+        "tag": "test69",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "commands": [
+            "mute"
+        ],
+        "ids": [
+            "pb-IF4VAk4a"
+        ]
+    },
+    "test70": {
+        "tag": "test70",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "commands": [],
+        "ids": [
+            "pb-IF4VAk4a"
+        ]
+    },
+    "test71": {
+        "tag": "test71",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "commands": [],
+        "ids": []
+    }
+}
