@@ -37,9 +37,9 @@ port: 43210
 # multiple controllers. Also, this number currently includes the server so
 # generally make it 1 bigger than you need. Max-players is not currently
 # exposed but I'll try to add that soon.
-max_party_size: 8
+max_party_size: 12
 
-# Options here are 'ffa' (free-for-all) and 'teams'
+# Options here are 'teams India' (teams vs teams) and 'ffa'
 # This value is only used if you do not supply a playlist_code (see below).
 # In that case the default teams or free-for-all playlist gets used.
 #session_type: ffa
