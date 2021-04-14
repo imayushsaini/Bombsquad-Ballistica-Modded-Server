@@ -14,6 +14,19 @@ def get_bank_data():
 
 
 
+def get_player_data(accountid : str):
+	users = get_bank_data()
+	
+	cash = users[str(accountid)]["cash"]
+	bank_space = users[str(accountid)]["bank_space"]
+	bank_cash = users[str(accountid)]["bank_cash"]
+	
+	PlayerData = cash, bank_cash, bank_space
+	
+	return PlayerData
+
+
+
 def commit(data):
 	with open(bank_path, "w") as f:
 		json.dump(data, f, indent=2)
@@ -35,17 +48,45 @@ def open_account(accountid : str):
 
 
 
+def update_bank(userid, ammount : int=0, type="cash", type_only=False):
+	users = get_bank_data()
+	
+	if type == "cash":
+		users[str(userid)]["cash"] += ammount 
+		if type_only:
+			commit(users)
+			return
+		users[str(userid)]["bank_cash"] -= ammount 
+		
+		commit(users)
+		
+	if type == "bank":
+		users[str(userid)]["cash"] -= ammount 
+		if type_only:
+			commit(users)
+			return
+		users[str(userid)]["bank_cash"] += ammount 
+		
+		commit(users)
+
+
 
 def cheack_cash_and_space(userid, ammount : int, clientid : int):
 	users = get_bank_data()
 	
 	cash_amt = users[str(userid)]["cash"]
+	bank_cash = users[str(userid)]["bank_cash"]
 	bank_space = users[str(userid)]["bank_space"]
 	
 	
 	if bank_space < ammount:
 		send(Errorstr("English", "short_space"), clientid)
 		return True
+	
+	if bank_space < bank_cash + ammount:
+		send(Errorstr("English", "bank_space_error"), clientid)
+		return True
+	
 	if cash_amt < ammount:
 		send(Errorstr("English", "short_ammount"), clientid)
 		return True

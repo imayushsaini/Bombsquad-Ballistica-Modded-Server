@@ -17,12 +17,11 @@ def balance_call(userid : str, clientid : int):
 	users = get_bank_data()
 	name = client_to_name(clientid)
 	
-	cash_amt = users[str(userid)]["cash"]
-	bank_cash_amt = users[str(userid)]["bank_cash"]
-	bank_space = users[str(userid)]["bank_space"]
+	PlayerData = get_player_data(userid)
 	
-	balance = CLstr("English", "balance").format(str(name), str(cash_amt), str(bank_cash_amt),  str(bank_space))
+	balance = CLstr("English", "balance").format(str(name), str(PlayerData[0]), str(PlayerData[1]),  str(PlayerData[2]))
 	send(balance, clientid)
+
 
 
 
@@ -30,43 +29,36 @@ def beg_call(userid : str, clientid : int):
 	open_account(userid)
 	earned = get_random_cash()
 	
-	users = get_bank_data()
-	
-	users[str(userid)]["cash"] += earned
-	cash = users[str(userid)]["cash"]
+	update_bank(userid, earned, "cash", type_only=True)
+	cash = get_player_data(userid)[0]
 	donator = get_random_donator()
 	
 	send(CLstr("English", "beg").format(donator, earned, cash), clientid)
-	commit(users)
+
 
 
 
 def withdraw_call(userid : str, args : int, clientid : int):
 	open_account(userid)
-	
-	users = get_bank_data()
 	withd = int(args[0])
 	
 	if cheack_withd(userid, withd, clientid):
 		return
 	
-	users[str(userid)]["cash"] += withd
-	users[str(userid)]["bank_cash"] -= withd
-	commit(users)
+	update_bank(userid, withd)
+	
 	send(CLstr("English", "withdraw").format(withd), clientid)
+
 
 
 
 def deposit_call(userid : str, args : int, clientid : int):
 	open_account(userid)
-	
-	users = get_bank_data()
 	dep = int(args[0])
 	
 	if cheack_cash_and_space(userid, dep, clientid):
 		return
 	
-	users[str(userid)]["cash"] -= dep
-	users[str(userid)]["bank_cash"] += dep
-	commit(users)
+	update_bank(userid, dep, "bank")
+	
 	send(CLstr("English", "deposit").format(dep), clientid)
