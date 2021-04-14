@@ -1,16 +1,17 @@
 """ store functions executed when chat command are called """
 import ba, _ba, json, random
-from _ba import chatmessage as send
-from _ba import screenmessage as screenmsg
+
 from Currency.Handlers.bank_handler import *
 from Currency.Handlers.ba_get_player_data import *
-from Currency.Handlers.cooldown_manager import *
+#from Currency.Handlers.cooldown_manager import *
+from Currency.Handlers.CLstr import CLstr, Errorstr
 from .fun import get_random_donator, get_random_cash
 
 
 
 
-def balance_call(userid, clientid):
+
+def balance_call(userid : str, clientid : int):
 	open_account(userid)
 	
 	users = get_bank_data()
@@ -20,23 +21,52 @@ def balance_call(userid, clientid):
 	bank_cash_amt = users[str(userid)]["bank_cash"]
 	bank_space = users[str(userid)]["bank_space"]
 	
-	balance = '|| {} | Cash - {} | Bank- {}/{} ||'.format(str(name), str(cash_amt), str(bank_cash_amt),  str(bank_space))
-	send(balance)
+	balance = CLstr("English", "balance").format(str(name), str(cash_amt), str(bank_cash_amt),  str(bank_space))
+	send(balance, clientid)
 
 
 
-def beg_call(userid):
+def beg_call(userid : str, clientid : int):
 	open_account(userid)
 	earned = get_random_cash()
 	
 	users = get_bank_data()
-	user = users[str(userid)]
 	
-	user["cash"] += earned
-	cash_amt = user["cash"]
+	users[str(userid)]["cash"] += earned
+	cash = users[str(userid)]["cash"]
 	donator = get_random_donator()
-	send(f'{donator} gave you {earned} now you have {cash_amt} coins')
 	
+	send(CLstr("English", "beg").format(donator, earned, cash), clientid)
 	commit(users)
 
 
+
+def withdraw_call(userid : str, args : int, clientid : int):
+	open_account(userid)
+	
+	users = get_bank_data()
+	withd = int(args[0])
+	
+	if cheack_withd(userid, withd, clientid):
+		return
+	
+	users[str(userid)]["cash"] += withd
+	users[str(userid)]["bank_cash"] -= withd
+	commit(users)
+	send(CLstr("English", "withdraw").format(withd), clientid)
+
+
+
+def deposit_call(userid : str, args : int, clientid : int):
+	open_account(userid)
+	
+	users = get_bank_data()
+	dep = int(args[0])
+	
+	if cheack_cash_and_space(userid, dep, clientid):
+		return
+	
+	users[str(userid)]["cash"] -= dep
+	users[str(userid)]["bank_cash"] += dep
+	commit(users)
+	send(CLstr("English", "deposit").format(dep), clientid)
