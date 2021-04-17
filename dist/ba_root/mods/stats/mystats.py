@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional
 from ba._lobby import JoinInfo
 from ba import _activitytypes as ba_actypes
 from ba._activitytypes import *
-our_settings = setting.get_setting()
+our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
 base_path = os.path.join(_ba.env()['python_directory_user'],"stats" + os.sep)
 statsfile = base_path + 'stats.json'

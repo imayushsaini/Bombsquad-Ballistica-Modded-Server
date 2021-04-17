@@ -1,11 +1,19 @@
 {
-	"textonmap":
-			{	
-				"top watermark":"Welcome to server \n ip 192.168.0.1",
-				"bottom left watermark":"join discord for fun",
-				"center highlights":["message 1","message 2","message 3"]
-			},
-	"enabletags":true,
-	"enablerank":true,
-	"enableeffects":false
+    "white_list": {
+        "whitelist_on": true,
+        "spectators": false,
+        "lobbychecktime": 3
+    },
+    "textonmap": {
+        "top watermark": "Welcome to server \n ip 192.168.0.1",
+        "bottom left watermark": "join discord for fun",
+        "center highlights": [
+            "message 1",
+            "message 2",
+            "message 3"
+        ]
+    },
+    "enabletags": true,
+    "enablerank": true,
+    "enableeffects": false
 }
