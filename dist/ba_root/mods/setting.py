@@ -1,23 +1,27 @@
 # Released under the MIT License. See LICENSE for details.
-import ba,_ba,json,os
-settingjson = os.path.join(_ba.env()['python_directory_user'],"setting.json")
+import _ba, json
 
-def get_setting():
-    s = {}
-    f=open(settingjson,"r")
-    d = json.loads(f.read())
-    f.close()
-    return d
+settings_path = _ba.env()["python_directory_user"]+"/setting.json"
 
-def commit(updated_settings: dict):
-    if updated_settings == {}: return
-    f=open(settingjson,'w')
-    json.dump(updated_settings,f,indent=4)
-    f.close()
 
-def sendError(msg: str, ID: int = None):
-    if ID is not None:
-        ba.screenmessage(msg, color=(1,0,0), clients=[ID], transient=True)
-    else:
-        ba.screenmessage(msg, color=(1,0,0), transient=True)
+
+
+def get_settings_data():
+	with open(settings_path, "r") as f:
+		data = json.load(f)
+	return data
+
+
+
+def commit(data):
+	with open(settings_path, "w") as f:
+		json.dump(data, f, indent=4)
+
+
+
+def sendError(msg : str, client_id : int = None):
+	if client_id == None:
+		_ba.screenmessage(msg, color=(1,0,0))
+	else:
+		_ba.screenmessage(msg, color=(1,0,0), transient=True, clients=[client_id])
 

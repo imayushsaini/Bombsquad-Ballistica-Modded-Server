@@ -10,4 +10,11 @@ def on_command(cmd, args, accountid, clientid):
 		balance_call(accountid, clientid)
 		
 	elif cmd == 'beg':
-		beg_call(accountid)
+		beg_call(accountid, clientid)
+		
+	elif cmd in ['with', 'withdraw']:
+		withdraw_call(accountid, args, clientid)
+	
+	elif cmd in ['dep', 'deposite']:
+		deposit_call(accountid, args, clientid)
+

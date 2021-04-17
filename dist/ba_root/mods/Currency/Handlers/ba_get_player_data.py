@@ -22,3 +22,17 @@ def client_to_display_string(client_id):
 		if i['client_id'] == client_id:
 			return i['display_string']
 	return None
+
+
+def send(msg, clientid):
+	_ba.chatmessage(str(msg), clients=[clientid])
+	_ba.screenmessage(str(msg), transient=True, clients=[clientid])
+
+
+
+def senderror(msg, clientid):
+	_ba.chatmessage(str(msg), clients=[clientid], sender_override = "Use[server]")
+	_ba.screenmessage("Use[server] " + str(msg), transient=True, clients=[clientid])
+	
+
+

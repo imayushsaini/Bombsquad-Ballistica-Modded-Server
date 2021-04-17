@@ -8,6 +8,10 @@
         ],
         "commands": [
             "createrole",
+            "add",
+            "spectators",
+            "lobbytime",
+            "whitelist",
             "addrole",
             "removerole",
             "addcommand",
@@ -79,7 +83,8 @@
             "changetag"
         ],
         "ids": [
-            "pb-IF48VgWkBFQ"
+            "pb-IF48VWkBFQ",
+            "None"
         ]
     },
     "test69": {

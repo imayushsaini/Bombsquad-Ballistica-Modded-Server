@@ -1,8 +1,7 @@
-
+from ChatHandle import HandleChat
 
 def filter_chat_message(msg,client_id):
-	from chatHandle import handlechat	
-	return handlechat.filter_chat_message(msg,client_id)
+	return HandleChat.filter_chat_message(msg,client_id)
 
 
 def on_app_launch():
