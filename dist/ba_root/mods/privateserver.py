@@ -1,27 +1,42 @@
-"""Define a simple example plugin."""
+""" 
+Private Server whitelist by Mr.Smoothy
+
+* don't dare to remove credits or I will bite you
+
+GitHub : https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server
+"""
 
 # ba_meta require api 6
-
-# Private Server whitelist by Mr.Smoothy
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
+from ba._enums import TimeType
 
-import ba,json,_ba,time
+import ba, json, _ba, time, datetime
 
 if TYPE_CHECKING:
     pass
-import datetime
-from ba._enums import TimeType
 
 
-whitelist_on=True   # change it by chat commands  for by editing here 
-spectators=False   #    ,,           ,,                  ,,        ,,   False means spectating not allowed
-whitelist={}   # dont change 
-lobbychecktime=3   # time in seconds, to check lobby players ...  increase time ,for more time unwanted players can watch match  
-                 #   decrease time , kick them fast ,    but can also give some lagg to the server , adjust yourself acrd. to cpu power
+whitelist_on = True   
+""" Change It By Chat Commands  For By Editing Here """
 
-admins=['pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE']     # dirty admin system , for now , until we get good working chat commands
+
+spectators = False   
+""" False Means Spectating Not Allowed """
+
+
+whitelist = {}   
+""" Dont change """
+
+
+lobbychecktime = 3   
+""" 
+Time in seconds, to check lobby players ...  increase time ,for more time unwanted players can watch match  
+Decrease time , kick them fast , but can also give some lagg to the server , adjust yourself acrd. to cpu power """
+
+
+admins = ['pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE']
+"""Dirty admin system , for now , until we get good working chat commands """
 
 
 def inWhiteList(id):

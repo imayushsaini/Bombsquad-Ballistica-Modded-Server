@@ -4,6 +4,15 @@
         "spectators": false,
         "lobbychecktime": 3
     },
+    
+    
+    
+    "ChatCommands": {
+  	  "BrodcastCommand": true
+    },
+    
+    
+    
     "textonmap": {
         "top watermark": "Welcome to server \n ip 192.168.0.1",
         "bottom left watermark": "join discord for fun",
@@ -13,6 +22,9 @@
             "message 3"
         ]
     },
+    
+    
+    
     "enabletags": true,
     "enablerank": true,
     "enableeffects": false
