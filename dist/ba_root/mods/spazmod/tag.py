@@ -1,5 +1,5 @@
 
-from playersData import pdata
+from PlayersData import pdata
 import ba
 def addtag(node,player):
 	session_player=player.sessionplayer

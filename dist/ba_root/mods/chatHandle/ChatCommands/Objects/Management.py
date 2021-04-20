@@ -1,6 +1,6 @@
 from .Handlers import handlemsg, handlemsg_all
 from PlayersData import pdata
-from tools.whitelist import add_to_white_list, add_commit_to_logs
+from Tools.whitelist import add_to_white_list, add_commit_to_logs
 
 import ba, _ba, time, setting
 

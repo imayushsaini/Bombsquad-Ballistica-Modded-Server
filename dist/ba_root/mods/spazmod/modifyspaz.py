@@ -1,5 +1,5 @@
-from spazmod import tag
-from spazmod import effects
+from SpazMod import tag
+from SpazMod import effects
 import setting
 
 # all activites related to modify spaz by any how will be here

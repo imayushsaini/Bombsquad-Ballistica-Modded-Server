@@ -1,0 +1,7 @@
+Renamed Folder names by Constant Style
+
+__Date__ = 19 Apr
+
+// Fixed coordinates of textonmap
+// Added ChatLogs ServerData 
+// some basic bug fixed
