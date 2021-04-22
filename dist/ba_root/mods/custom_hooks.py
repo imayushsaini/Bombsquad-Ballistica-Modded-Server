@@ -1,4 +1,4 @@
-from ChatHandle import HandleChat
+from chatHandle import handlechat
 
 def filter_chat_message(msg, client_id):
 	return HandleChat.filter_chat_message(msg, client_id)

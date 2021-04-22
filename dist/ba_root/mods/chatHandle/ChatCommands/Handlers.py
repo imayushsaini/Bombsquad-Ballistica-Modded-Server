@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 
-from PlayersData import pdata
+from playersData import pdata
 import ba, _ba
 
 
@@ -26,7 +26,7 @@ def clientid_to_accountid(clientid):
 
 
 
-def cheak_permissions(accountid, command):
+def check_permissions(accountid, command):
 	"""
 	Checks The Permission To Player To Executive Command
 	

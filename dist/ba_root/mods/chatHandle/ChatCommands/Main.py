@@ -1,13 +1,13 @@
 # Released under the MIT License. See LICENSE for details.
 
 
-from .Objects import NormalCommands
-from .Objects import Management
-from .Objects import Fun
-from .Objects import Cheats
+from .commands import NormalCommands
+from .commands import Management
+from .commands import Fun
+from .commands import Cheats
 
 from .Handlers import clientid_to_accountid
-from .Handlers import cheak_permissions
+from .Handlers import check_permissions
 
 import ba, _ba
 import setting
@@ -65,17 +65,17 @@ def Command(msg, clientid):
 	
 	
 	elif command_type(command) == "Manage":
-		if cheak_permissions(accountid, command):
+		if check_permissions(accountid, command):
 			Management.ExcelCommand(command, arguments, clientid, accountid)
 	
 	
 	elif command_type(command) == "Fun":
-		if cheak_permissions(accountid, command):
+		if check_permissions(accountid, command):
 			Fun.ExcelCommand(command, arguments, clientid, accountid)
 	
 	
 	elif command_type(command) == "Cheats":
-		if cheak_permissions(accountid, command):
+		if check_permissions(accountid, command):
 			Cheats.ExcelCommand(command, arguments, clientid, accountid)
 	
 	

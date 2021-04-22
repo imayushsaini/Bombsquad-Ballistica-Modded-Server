@@ -18,7 +18,7 @@ class textonmap:
 		self.highlights = data['center highlights']
 		self.left_watermark(left)
 		self.top_message(top)
-		self.timer = ba.timer(8, ba.Call(self.highlights), repeat=True)
+		self.timer = ba.timer(8, ba.Call(self.highlights_), repeat=True)
 
 	def highlights_(self):
 		node = _ba.newnode('text',
@@ -43,7 +43,7 @@ class textonmap:
 								'h_align': 'left',
 								'v_attach':'bottom',
 								'scale':1,
-								'position':(0,138),
+								'position':(-450,30),
 								'color':(1,1,1)
 							})
 							

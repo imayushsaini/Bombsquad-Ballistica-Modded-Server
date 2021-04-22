@@ -106,8 +106,9 @@ def change_role_tag(role, tag):
 def get_role(acc_id):
 	global roles
 	_roles = get_roles()
+	
 	for role in _roles:
-		if acc_id in role["ids"]:
+		if acc_id in _roles[role]["ids"]:
 			return role
 
 
@@ -124,6 +125,7 @@ def get_custom():
 		with open(data_path+"custom.json","r") as f:
 			custom = json.loads(f.read())
 		return custom
+	return custom
 
 
 def set_effect(effect, id):
@@ -162,3 +164,6 @@ def commit_c():
 	global custom
 	with open(data_path+"custom.json",'w') as f:
 		json.dump(custom,f,indent=4)
+
+def update_toppers(toperlist):
+	pass

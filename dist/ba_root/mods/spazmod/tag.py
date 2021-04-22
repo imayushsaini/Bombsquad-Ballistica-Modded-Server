@@ -1,5 +1,5 @@
 
-from PlayersData import pdata
+from playersData import pdata
 import ba
 def addtag(node,player):
 	session_player=player.sessionplayer
@@ -13,8 +13,9 @@ def addtag(node,player):
 		tag=customtag[account_id]
 	elif role:
 		tag=roles[role]['tag']
-
-	Tag(node,tag)
+	if tag:
+		Tag(node,tag)
+		
 from stats import mystats
 def addrank(node,player):
 	session_player=player.sessionplayer

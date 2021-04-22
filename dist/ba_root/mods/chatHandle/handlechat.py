@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 
-from PlayersData import pdata
-from ChatHandle.ChatCommands import Main
+from playersData import pdata
+from chatHandle.ChatCommands import Main
 
 import ba, _ba
 
