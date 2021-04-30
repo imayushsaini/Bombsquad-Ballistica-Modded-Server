@@ -19,15 +19,16 @@ if TYPE_CHECKING:
     pass
 
 
+whitelist={}
 
 
 
-white_logs_path = _ba.env()["python_directory_user"]+"/tools/whitelist.json"
-logs_paths = _ba.env()["python_directory_user"]+"/tools/logs.txt"
+whitelistFile = _ba.env()["python_directory_user"]+"/tools/whitelist.json"
+logs_path = _ba.env()["python_directory_user"]+"/serverData/wl_logs.txt"
 
 
 def commit(data):
-	with open(white_logs_path, "w") as f:
+	with open(whitelistFile, "w") as f:
 		json.dump(data, f, indent=4)
 
 
@@ -37,9 +38,20 @@ def add_commit_to_logs(commit : str):
 
 
 def get_whitelist_data():
-	with open(white_logs_path, "r") as f:
-		data = json.load(f)
-	return data
+	global whitelist
+	if whitelist != {}:
+		return whitelist
+	try:
+		with open(whitelistFile, "r") as f:
+			data = json.load(f)
+			whitelist=data
+	except:
+		print("No Whitelist Detected , Creating One")
+		whitelist={}
+		whitelist['pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE']=['smoothyki-id','mr.smoothy']
+		commit(whitelist)
+	
+	return whitelist
 
 
 def in_white_list(accountid : str):
@@ -83,47 +95,48 @@ def display_string_in_white_list(display_string : str):
 	return any(display_string in i for i in data.values())
 
 
-class _whitelist_:
+class Whitelist:
 	def __init__(self):
+		global whitelist
 		
 		settings = setting.get_settings_data()["white_list"]
 		whitelist_on = settings["whitelist_on"]
 		spectators = settings["spectators"]
 		lobbychecktime = settings["lobbychecktime"]
-		_ba.chatmessage(f"{settings} {whitelist_on} {spectators} {lobbychecktime}")
+		# _ba.chatmessage(f"{settings} {whitelist_on} {spectators} {lobbychecktime}")
 		
-		try:
-			data = get_whitelist_data()
-			
-		except:
-			print("No Whitelist Detected , Creating One")
-			self.whitelst = {}
-			self.whitelst['pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE']=['smoothyki-id','mr.smoothy']
-			commit(whitelst)
+		
+		get_whitelist_data()
+		
 		
 		if whitelist_on and not spectators:
-			self.timer = ba.timer(lobbychecktime, self.checklobby, repeat=True, timetype=TimeType.REAL)
+			self.timer = ba.Timer(lobbychecktime, self.checklobby, repeat=True, timetype=TimeType.REAL)
 	
 	def checklobby(self):
-		
+		global whitelist
 		settings = setting.get_settings_data()["white_list"]
 		whitelist_on = settings["whitelist_on"]
 		spectators = settings["spectators"]
 		lobbychecktime = settings["lobbychecktime"]
 		
 		if whitelist_on and not spectators:
-			try:
+			if True:
 				
 				rost = _ba.get_game_roster()
 				for i in rost:
 					if i['account_id'] in whitelist and i['account_id'] != '' or i['client_id'] == -1:
-						return 
+						pass 
 						
 					else:
-						add_commit_to_logs("Kicked from lobby "+i['account_id']+" "+i['spec_string'])
+						try:
+							add_commit_to_logs("Kicked from lobby "+i['account_id'])
+						except:
+							pass
 						_ba.disconnect_client(i['client_id'])
 			
-			except:
-				return
+			# except:
+			# 	return
+		else:
+			self.timer =None
 	
 

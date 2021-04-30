@@ -31,7 +31,7 @@ class Tag(object):
 		mnode = ba.newnode('math',
                                owner=self.node,
                                attrs={
-                                   'input1': (0, 1.4, 0),
+                                   'input1': (0, 1.5, 0),
                                    'operation': 'add'
                                })
 		self.node.connectattr('torso_position', mnode, 'input2')
@@ -42,7 +42,7 @@ class Tag(object):
                                               'in_world': True,
                                               'shadow': 1.0,
                                               'flatness': 1.0,
-                                              'color': (1,1,1),
+                                              'color': (1,0.6,0.7),
                                               'scale': 0.01,
                                               'h_align': 'center'
                                           })
@@ -61,7 +61,7 @@ class Rank(object):
 		self.rank_text = ba.newnode('text',
                                           owner=self.node,
                                           attrs={
-                                              'text': str(rank),
+                                              'text': "#"+str(rank),
                                               'in_world': True,
                                               'shadow': 1.0,
                                               'flatness': 1.0,

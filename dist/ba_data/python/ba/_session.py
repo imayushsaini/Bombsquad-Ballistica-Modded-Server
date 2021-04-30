@@ -206,8 +206,8 @@ class Session:
 
         This should return True or False to accept/reject.
         """
-        import privateserver as pvt
-        pvt.handlerequest(player)
+        from tools import whitelist
+        whitelist.handle_player_request(player)
         # Limit player counts *unless* we're in a stress test.
         if _ba.app.stress_test_reset_timer is None:
 
