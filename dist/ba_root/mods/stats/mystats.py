@@ -16,6 +16,8 @@ from typing import Any, Dict, Optional
 from ba._lobby import JoinInfo
 from ba import _activitytypes as ba_actypes
 from ba._activitytypes import *
+
+#variables
 our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
 base_path = os.path.join(_ba.env()['python_directory_user'],"stats" + os.sep)
@@ -43,20 +45,40 @@ html_start = f'''<!DOCTYPE html>
             </tr>
 '''
 #                <th><b>Total Damage</b></th>  #removed this line as it isn't crt data
+
+#useful functions
+def get_all_stats():
+    if os.path.exists(statsfile):
+        with open(statsfile, 'r') as f:
+            return json.loads(f.read())
+    else: print('Stats file not found!')
+
+def dump_stats(s: dict):
+    if os.path.exists(statsfile):
+        with open(statsfile, 'w') as f:
+            f.write(json.dumps(s, indent=4))
+            f.close()
+    else: print('Stats file not found!')
+
+def get_stats_by_id(ID: str):
+    a = get_all_stats()
+    if ID in a:
+        return a[ID]
+    else:
+        print(f"'{ID}' not found in stats, returning None")
+        return None
+
 def refreshStats():
     # lastly, write a pretty html version.
     # our stats url could point at something like this...
-    f=open(statsfile)
-    stats = json.loads(f.read())
-    
+    pStats = get_all_stats()
     f=open(htmlfile, 'w')       
     f.write(html_start)
-    entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name_html'], a['aid']) for a in stats.values()]
+    entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name_html'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
     entries.sort(reverse=True)
     rank = 0
     toppers = {}
-    pStats = stats
     toppersIDs=[]
     _ranks=[]
     for entry in entries:
@@ -119,9 +141,7 @@ def refreshStats():
     global ranks
     ranks=_ranks
 
-    f2 = open(statsfile, "w")
-    f2.write(json.dumps(pStats, indent=4))
-    f2.close()
+    dump_stats(pStats)
     
     from playersData import pdata
     pdata.update_toppers(toppersIDs)
@@ -208,8 +228,7 @@ class UpdateThread(threading.Thread):
         # dump our stats back to disk
         tempppp = None
         from datetime import datetime
-        with open(statsfile, 'w') as f:
-            f.write(json.dumps(stats))
+        dump_stats(stats)
         # aaand that's it!  There IS no step 27!
         now = datetime.now()
         update_time = now.strftime("%S:%M:%H - %d %b %y")

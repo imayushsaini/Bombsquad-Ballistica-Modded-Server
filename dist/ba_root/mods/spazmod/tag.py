@@ -1,6 +1,6 @@
 
 from playersData import pdata
-import ba
+import ba, setting
 def addtag(node,player):
 	session_player=player.sessionplayer
 	account_id=session_player.get_account_id()
@@ -24,6 +24,13 @@ def addrank(node,player):
 
 	if rank:
 		Rank(node,rank)
+
+def addhp(node):
+    hp = node.hitpoints
+    _set = setting.get_settings_data()
+    def showHP():
+        HitPoint(owner=node,prefix=str(int(hp)),position=(0,0.75,0),shad = 1.4)
+    if hp: t = ba.Timer(100,ba.Call(showHP),repeat = True, timetype=ba.TimeType.SIM, timeformat=ba.TimeFormat.MILLISECONDS)
 
 class Tag(object):
 	def __init__(self,owner=None,tag="somthing"):
@@ -71,8 +78,28 @@ class Rank(object):
                                           })
 		mnode.connectattr('output', self.rank_text, 'position')
 
-
-
-
-	
-
+class HitPoint(object):
+    def __init__(self,position = (0,1.5,0),owner = None,prefix = 'ADMIN',shad = 1.2):
+        _set = setting.get_settings_data()
+        if not _set['enablehptag']: return
+        self.position = position
+        self.owner = owner
+        m = ba.newnode('math', owner=self.owner, attrs={'input1': self.position, 'operation': 'add'})
+        self.owner.connectattr('position', m, 'input2')
+        prefix = int(prefix) / 10
+        preFix = u"\ue047" + str(prefix) + u"\ue047"
+        self._Text = ba.newnode('text',
+                                          owner=self.owner,
+                                          attrs={
+                                              'text':preFix,
+                                              'in_world':True,
+                                              'shadow':shad,
+                                              'flatness':1.0,
+                                              'color':(1,1,1) if int(prefix) >= 20 else (1.0,0.2,0.2),
+                                              'scale':0.01,
+                                              'h_align':'center'})
+        m.connectattr('output', self._Text, 'position')
+        def a():
+            self._Text.delete()
+            m.delete()
+        self.timer = ba.Timer(100, ba.Call(a), timetype=ba.TimeType.SIM, timeformat=ba.TimeFormat.MILLISECONDS)

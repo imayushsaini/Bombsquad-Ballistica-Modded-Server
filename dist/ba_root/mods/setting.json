@@ -26,6 +26,9 @@
     
     
     "enabletags": true,
+    "enablehptag": true,
     "enablerank": true,
-    "enableeffects": false
+    "enablestats": true,
+    "enableeffects": false,
+    "enableTop5effects": false
 }

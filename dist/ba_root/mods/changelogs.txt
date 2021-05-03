@@ -1,3 +1,7 @@
+#01-05-2021 - FireFighter
+       - Added HitPoints Visualisation using Tag
+       - Added Effects to players
+
 Renamed Folder names by Constant Style
 
 __Date__ = 19 Apr
