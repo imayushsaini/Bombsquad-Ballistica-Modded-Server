@@ -24,16 +24,6 @@ TeamType = TypeVar('TeamType', bound=ba.Team)
 tt = ba.TimeType.SIM
 tf = ba.TimeFormat.MILLISECONDS
 
-#some stuff for character_changer powerup...
-cList = ['neoSpaz','mel','ninja','kronk','jack','frosty','santa','bones','bear','penguin','ali','cyborg','agent','wizard','pixie','bunny']
-nList = {'neoSpaz':'Spaz','zoe':'Zoe','ninja':'Snake Shadow','kronk':'Kronk','mel':'Mel','jack':'Jack Morgan','santa':'Santa Claus','frosty':'Frosty','bones':'Bones','bear':'Bernard','penguin':'Pascal','ali':'Taobao Mascot','cyborg':'B-9000','agent':'Agent Johnson','wizard':'Grumbledorf','pixie':'Pixel','bunny':'Easter Bunny'}
-mymedia = {}
-def add_mychar_media():
-    global mymedia
-    for k,v in nList.items():
-        v_media = SpazFactory.get().get_media(v)
-        mymedia[v] = v_media
-
 class SurroundBallFactory(object):
     def __init__(self):
         self.bonesTex = ba.gettexture("powerupCurse")
