@@ -38,9 +38,12 @@ def check_permissions(accountid, command):
 		Boolean
 	"""
 	roles = pdata.get_roles()
-	
+
 	for role in roles:
-		if accountid in roles[role]["ids"] and command in roles[role]["commands"]:
+		if accountid in roles[role]["ids"]  and "ALL" in roles[role]["commands"]:
+			return True
+
+		elif accountid in roles[role]["ids"] and command in roles[role]["commands"]:
 			return True
 	return False
 

@@ -172,8 +172,7 @@ def update(score_set):
     # from disk, do display-string lookups for accounts that need them,
     # and write everything back to disk (along with a pretty html version)
     # We use a background thread so our server doesn't hitch while doing this.
-    print(account_kills)
-    print(account_scores)
+    
     if account_scores:
         UpdateThread(account_kills, account_deaths, account_scores).start()
 
@@ -183,10 +182,10 @@ class UpdateThread(threading.Thread):
         self._account_kills = account_kills
         self.account_deaths = account_deaths
         self.account_scores = account_scores
-        print("init thread")
+        
     def run(self):
         # pull our existing stats from disk
-        print("run thead")
+        
         try:
             if os.path.exists(statsfile):
                 with open(statsfile) as f:

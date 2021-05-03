@@ -57,7 +57,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		rotate_camera()
 		
 	elif command == 'createrole':
-		create_role_call(arguments)
+		create_role(arguments)
 		
 	elif command == 'addrole':
 		add_role_to_player(arguments)
@@ -72,7 +72,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		remove_command_to_role(arguments)
 		
 	elif command == 'changetag':
-		change_role_tag_call(arguments)
+		change_role_tag(arguments)
 	
 	elif command in ['add', 'whitelist']:
 		whitelst_it(accountid, arguments)
@@ -280,15 +280,20 @@ def whitelst_it(accountid : str, arguments):
 	settings = setting.get_settings_data()
 	
 	if arguments[0] == 'on':
-		settings["white_list"]["whitelist_on"] = True
-		setting.commit(settings)
-		cmsg("whitelist on")
+		if settings["white_list"]["whitelist_on"]:
+			_ba.chatmessage("Already on")
+		else:
+			settings["white_list"]["whitelist_on"] = True
+			setting.commit(settings)
+			_ba.chatmessage("whitelist on")
+			from tools import whitelist
+			whitelist.Whitelist() 
 		return
 		
 	elif arguments[0] == 'off':
 		settings["white_list"]["whitelist_on"] = False
 		setting.commit(settings)
-		cmsg("whitelist off")
+		_ba.chatmessage("whitelist off")
 		return
 	
 	else:
@@ -297,7 +302,7 @@ def whitelst_it(accountid : str, arguments):
 		for i in rost:
 			if i['client_id'] == int(arguments[0]):
 				add_to_white_list(i['account_id'], i['display_string'])
-				cmsg(str(i['display_string'])+" whitelisted")
+				_ba.chatmessage(str(i['display_string'])+" whitelisted")
 				add_commit_to_logs(accountid+" added "+i['account_id'])
 
 
@@ -311,12 +316,12 @@ def spectators(arguments):
 		if arguments[0] == 'on':
 			settings["white_list"]["spectators"] = True
 			setting.commit(settings)
-			cmsg("spectators on")
+			_ba.chatmessage("spectators on")
 		
 		elif arguments[0] == 'off':
 			settings["white_list"]["spectators"] = False
 			setting.commit(settings)
-			cmsg("spectators off")
+			_ba.chatmessage("spectators off")
 
 
 
@@ -325,8 +330,8 @@ def change_lobby_check_time(arguments):
 	try:
 		argument = int(arguments[0])
 	except:
-		cmsg("must type numbe to change lobby check time")
+		_ba.chatmessage("must type numbe to change lobby check time")
 	settings = setting.get_settings_data()
 	settings["white_list"]["lobbychecktime"] = argument
 	setting.commit(settings)
-	cmsg(f"lobby check time is {arg} now")
+	_ba.chatmessage(f"lobby check time is {arg} now")

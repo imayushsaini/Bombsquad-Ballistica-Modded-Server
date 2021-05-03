@@ -2,7 +2,7 @@
     "white_list": {
         "whitelist_on": true,
         "spectators": false,
-        "lobbychecktime": 3
+        "lobbychecktime": 1
     },
     
     

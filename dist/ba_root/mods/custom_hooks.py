@@ -1,11 +1,13 @@
 from chatHandle import handlechat
 
 def filter_chat_message(msg, client_id):
-	return HandleChat.filter_chat_message(msg, client_id)
+	return handlechat.filter_chat_message(msg, client_id)
 
 
 def on_app_launch():
-    pass
+	from tools import whitelist
+	whitelist.Whitelist()
+
 	#something
 
 def score_screen_on_begin(_stats):

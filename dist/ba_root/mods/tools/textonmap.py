@@ -43,7 +43,7 @@ class textonmap:
 								'h_align': 'left',
 								'v_attach':'bottom',
 								'scale':1,
-								'position':(-450,30),
+								'position':(-480,20),
 								'color':(1,1,1)
 							})
 							
