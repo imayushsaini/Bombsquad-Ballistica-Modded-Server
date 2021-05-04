@@ -58,7 +58,6 @@ class SurroundBallFactory(object):
 
 class SurroundBall(ba.Actor):
     def __init__(self, spaz, shape="bones"):
-        if spaz is None or not spaz.is_alive(): return
         ba.Actor.__init__(self)
         self.spazRef = weakref.ref(spaz)
         factory = self.getFactory()
@@ -196,19 +195,24 @@ class Effect(ba.Actor):
 
         if _settings['enablestats']:
             pats = mystats.get_all_stats()
-            if aid in pats:
-                rank = pats[aid]["rank"]
-                if int(rank) < 6:
-                    if rank == '1':
-                        if flag == 0 and _settings['enableTop5effects']: self.add_multicolor_effect() #self.neroLightTimer = ba.Timer(500, ba.WeakCall(self.neonLightSwitch,("shine" in self.Decorations),("extra_Highlight" in self.Decorations),("extra_NameColor" in self.Decorations)),repeat = True, timetype=tt, timeformat=tf)
-                    elif rank == '2':
-                        if flag == 0 and _settings['enableTop5effects']: self.smokeTimer = ba.Timer(40, ba.WeakCall(self.emitSmoke), repeat=True, timetype=tt, timeformat=tf)
-                    elif rank == '3':
-                        if flag == 0 and _settings['enableTop5effects']: self.addLightColor((1, 0.6, 0.4));self.scorchTimer = ba.Timer(500, ba.WeakCall(self.update_Scorch), repeat=True, timetype=tt, timeformat=tf)
-                    elif rank == '4':
-                        if flag == 0 and _settings['enableTop5effects']: self.metalTimer = ba.Timer(500, ba.WeakCall(self.emitMetal), repeat=True, timetype=tt, timeformat=tf)
+            if cl_str in pats:
+                rank = pats[cl_str]["rank"]
+                if rank < 6:
+                    if rank == 1:
+                        if flag == 0 and _settings['enableTop5effects']:
+                            self.surround = SurroundBall(spaz, shape="bones") #self.neroLightTimer = ba.Timer(500, ba.WeakCall(self.neonLightSwitch,("shine" in self.Decorations),("extra_Highlight" in self.Decorations),("extra_NameColor" in self.Decorations)),repeat = True, timetype=tt, timeformat=tf)
+                    elif rank == 2:
+                        if flag == 0 and _settings['enableTop5effects']:
+                            self.smokeTimer = ba.Timer(40, ba.WeakCall(self.emitSmoke), repeat=True, timetype=tt, timeformat=tf)
+                    elif rank == 3:
+                        if flag == 0 and _settings['enableTop5effects']:
+                            self.addLightColor((1, 0.6, 0.4));self.scorchTimer = ba.Timer(500, ba.WeakCall(self.update_Scorch), repeat=True, timetype=tt, timeformat=tf)
+                    elif rank == 4:
+                        if flag == 0 and _settings['enableTop5effects']:
+                            self.metalTimer = ba.Timer(500, ba.WeakCall(self.emitMetal), repeat=True, timetype=tt, timeformat=tf)
                     else:
-                        if flag == 0 and _settings['enableTop5effects']: self.addLightColor((1, 0.6, 0.4));self.checkDeadTimer = ba.Timer(150, ba.WeakCall(self.checkPlayerifDead), repeat=True, timetype=tt, timeformat=tf)
+                        if flag == 0 and _settings['enableTop5effects']:
+                            self.addLightColor((1, 0.6, 0.4));self.checkDeadTimer = ba.Timer(150, ba.WeakCall(self.checkPlayerifDead), repeat=True, timetype=tt, timeformat=tf)
 
         if "smoke" and "spark" and "snowDrops" and "slimeDrops" and "metalDrops" and "Distortion" and "neroLight" and "scorch" and "HealTimer" and "KamikazeCheck" not in self.Decorations:
             #self.checkDeadTimer = ba.Timer(150, ba.WeakCall(self.checkPlayerifDead), repeat=True, timetype=tt, timeformat=tf)
