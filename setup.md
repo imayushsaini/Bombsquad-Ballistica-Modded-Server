@@ -29,7 +29,7 @@ Follow the below steps after creating an EC2 Linux v20 AWS instance:
         - chmod 777 ballisticacore_headless
         - cd ..
         - tmux new -s 43210 #(we used 43210 as name of that tmux, so we can connect back again using that name)
-        - ./bombsquad_server
+        - ./ballisticacore_server
  
      #(6) Now Server should run :P
 ***
