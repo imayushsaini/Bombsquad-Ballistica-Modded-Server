@@ -5,7 +5,7 @@ A working BombSquad/Ballistica 1.6 server build for Linux Ubuntu v20
 Follow the below steps after creating an EC2 Linux v20 AWS instance:
 ***
     #(1) After Creating an Ec2 instance in AWS, it should be Online, now execute the following command in SSH terminal:
-        - sudo apt update && sudo apt dist-upgrade && sudo apt install python3-pip libopenal-dev libsdl2-dev libvorbis-dev cmake clang-format
+        - sudo apt update && sudo apt dist-upgrade && sudo apt install python3-pip libopenal-dev libsdl2-dev libvorbis-dev cmake clang-format git
  
     #(2) Now clone the 1.6 server build from github using, 
         - git clone https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server.git
