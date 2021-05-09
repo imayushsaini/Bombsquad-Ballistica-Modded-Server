@@ -74,7 +74,7 @@ def refreshStats():
     pStats = get_all_stats()
     f=open(htmlfile, 'w')       
     f.write(html_start)
-    entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name_html'], a['aid']) for a in pStats.values()]
+    entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
     entries.sort(reverse=True)
     rank = 0
@@ -208,7 +208,7 @@ class UpdateThread(threading.Thread):
                 print(response)
                 name_html = response['name_html']'''
                 stats[account_id] = {'rank': 0,
-                                     'name_html': str(account_id),
+                                     'name': "default",
                                      'scores': 0,
                                      'total_damage': 0,
                                      'kills': 0,
@@ -217,6 +217,12 @@ class UpdateThread(threading.Thread):
                                      'kd': 0,
                                      'avg_score': 0,
                                      'aid': str(account_id)}
+
+            #Temporary codes to change 'name_html' to 'name'
+            if 'name_html' in stats[account_id]:
+                stats[account_id].pop('name_html')
+                stats[account_id]['name'] = 'default'
+
             # now increment their kills whether they were already there or not
             stats[account_id]['kills'] += kill_count
             stats[account_id]['deaths'] += self.account_deaths[account_id]
