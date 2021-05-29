@@ -219,9 +219,9 @@ class AddrFetchThread(threading.Thread):
             sock.close()
             ba.pushcall(ba.Call(self._call, val), from_other_thread=True)
         except Exception as exc:
+            from efro.net import is_udp_network_error
             # Ignore expected network errors; log others.
-            import errno
-            if isinstance(exc, OSError) and exc.errno == errno.ENETUNREACH:
+            if is_udp_network_error(exc):
                 pass
             else:
                 ba.print_exception()
@@ -238,8 +238,6 @@ class PingThread(threading.Thread):
         self._call = call
 
     def run(self) -> None:
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         ba.app.ping_thread_count += 1
         sock: Optional[socket.socket] = None
         try:
@@ -272,39 +270,12 @@ class PingThread(threading.Thread):
             ba.pushcall(ba.Call(self._call, self._address, self._port,
                                 ping if accessible else None),
                         from_other_thread=True)
-        except ConnectionRefusedError:
-            # Fine, server; sorry we pinged you. Hmph.
-            pass
-        except OSError as exc:
-            import errno
-
-            # Ignore harmless errors.
-            if exc.errno in {
-                    errno.EHOSTUNREACH, errno.ENETUNREACH, errno.EINVAL,
-                    errno.EPERM, errno.EACCES
-            }:
+        except Exception as exc:
+            from efro.net import is_udp_network_error
+            if is_udp_network_error(exc):
                 pass
-            elif exc.errno == 10022:
-                # Windows 'invalid argument' error.
-                pass
-            elif exc.errno == 10051:
-                # Windows 'a socket operation was attempted
-                # to an unreachable network' error.
-                pass
-            elif exc.errno == errno.EADDRNOTAVAIL:
-                if self._port == 0:
-                    # This has happened. Ignore.
-                    pass
-                elif ba.do_once():
-                    print(f'Got EADDRNOTAVAIL on gather ping'
-                          f' for addr {self._address}'
-                          f' port {self._port}.')
             else:
-                ba.print_exception(
-                    f'Error on gather ping '
-                    f'(errno={exc.errno})', once=True)
-        except Exception:
-            ba.print_exception('Error on gather ping', once=True)
+                ba.print_exception('Error on gather ping', once=True)
         finally:
             try:
                 if sock is not None:
@@ -1261,10 +1232,7 @@ class PublicGatherTab(GatherTab):
         self._have_user_selected_row = True
 
     def _on_max_public_party_size_minus_press(self) -> None:
-        val = _ba.get_public_party_max_size()
-        val -= 1
-        if val < 1:
-            val = 1
+        val = max(1, _ba.get_public_party_max_size() - 1)
         _ba.set_public_party_max_size(val)
         ba.textwidget(edit=self._host_max_party_size_value, text=str(val))
 

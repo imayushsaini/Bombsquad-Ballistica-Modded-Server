@@ -65,7 +65,7 @@
     "Dual Wielding": {
       "descriptionFull": "Conecta 2 controles (de hardware o de aplicación)",
       "descriptionFullComplete": "2 controles conectados (de hardware o de aplicación)",
-      "name": "Doble empuñadura"
+      "name": "Juego Doble"
     },
     "Flawless Victory": {
       "description": "Gana sin ser golpeado",
@@ -96,7 +96,7 @@
     "In Control": {
       "descriptionFull": "Conecta un control (de hardware o de aplicación)",
       "descriptionFullComplete": "Conectado un control (de hardware o de aplicación)",
-      "name": "Bajo Control"
+      "name": "En Control"
     },
     "Last Stand God": {
       "description": "Anota 1000 puntos",
@@ -380,7 +380,7 @@
     "configureTouchText": "Configurar Pantalla Táctil",
     "ps3Text": "Controles de PS3",
     "titleText": "Controles",
-    "wiimotesText": "Controles de Wii",
+    "wiimotesText": "Wii Remotes",
     "xbox360Text": "Controles de Xbox 360"
   },
   "configGamepadSelectWindow": {
@@ -1508,16 +1508,16 @@
       "Uber Runaround": "Evasiva Ultra"
     },
     "gameDescriptions": {
-      "Be the chosen one for a length of time to win.\nKill the chosen one to become it.": "Sé el elegido por el tiempo designado para ganar.\nElimina al Elegido para convertirte en El Elegido.",
+      "Be the chosen one for a length of time to win.\nKill the chosen one to become it.": "Sé el elegido durante el tiempo designado para ganar.\nElimina al Elegido para convertirte en El Elegido.",
       "Bomb as many targets as you can.": "Lanza bombas a tantos blancos como puedas.",
       "Carry the flag for ${ARG1} seconds.": "Carga la bandera por ${ARG1} segundos.",
-      "Carry the flag for a set length of time.": "Carga la bandera por determinado tiempo.",
+      "Carry the flag for a set length of time.": "Carga la bandera por un determinado tiempo.",
       "Crush ${ARG1} of your enemies.": "Elimina ${ARG1} de tus enemigos.",
       "Defeat all enemies.": "Elimina todos los enemigos.",
       "Dodge the falling bombs.": "Esquiva las bombas.",
       "Final glorious epic slow motion battle to the death.": "Gloriosa batalla final en cámara lenta épica.",
       "Gather eggs!": "¡Recolecta huevos!",
-      "Get the flag to the enemy end zone.": "Lleva la bandera a la zona enemiga.",
+      "Get the flag to the enemy end zone.": "Lleva la bandera enemiga a tu zona.",
       "How fast can you defeat the ninjas?": "¿Cuán rápido puedes derrotar a los ninjas?",
       "Kill a set number of enemies to win.": "Elimina a un número determinado \nde enemigos para ganar.",
       "Last one standing wins.": "El último de pie gana.",
@@ -1693,6 +1693,7 @@
       "Max number of profiles reached.": "Número máximo de perfiles alcanzado.",
       "Maximum friend code rewards reached.": "Máximo de premios por códigos de amigos alcanzado.",
       "Message is too long.": "El Mensaje es muy largo.",
+      "No servers are available. Please try again soon.": "Sin servidores disponibles. Por favor intenta después.",
       "Profile \"${NAME}\" upgraded successfully.": "El perfil \"${NAME}\" se ha mejorado satisfactoriamente.",
       "Profile could not be upgraded.": "El perfil no pudo ser mejorado.",
       "Purchase successful!": "¡Compra exitosa!",
@@ -1702,6 +1703,7 @@
       "Sorry, this code has already been used.": "Perdón, este código ya ha sido usado.",
       "Sorry, this code has expired.": "Perdón, este código ha expirado.",
       "Sorry, this code only works for new accounts.": "Este código solo sirve para cuentas nuevas.",
+      "Still searching for nearby servers; please try again soon.": "Todavía buscando por servidores cercanos; intente de nuevo más tarde.",
       "Temporarily unavailable; please try again later.": "Temporalmente desactivado; por favor, inténtalo luego.",
       "The tournament ended before you finished.": "El torneo terminó antes de que terminaras.",
       "This account cannot be unlinked for ${NUM} days.": "Esta cuenta no puede ser desenlazada por ${NUM} días.",
@@ -1795,7 +1797,7 @@
       "If someone picks you up, punch them and they'll let go.\nThis works in real life too.": "Si alguien te levanta, golpéalos y ve como te sueltan.\nTambién funciona en la vida real.",
       "If you are short on controllers, install the '${REMOTE_APP_NAME}' app\non your mobile devices to use them as controllers.": "Si no tienes suficientes controles, instala la aplicación '${REMOTE_APP_NAME}'\nen tu teléfono celulares para utilizarlos como controles.",
       "If you are short on controllers, install the 'BombSquad Remote' app\non your iOS or Android devices to use them as controllers.": "Te faltan controles? Instala la aplicación 'BombSquad Remote'\nen tu dispositivo iOS o Android para usarlo como control.",
-      "If you get a sticky-bomb stuck to you, jump around and spin in circles. You might\nshake the bomb off, or if nothing else your last moments will be entertaining.": "Si te adhieres a una bomba pegajosa, salta y da muchas vueltas. Es posible que sacudas\nla bomba pagada, o sin nada más, tus últimos momentos serán entretenidos.",
+      "If you get a sticky-bomb stuck to you, jump around and spin in circles. You might\nshake the bomb off, or if nothing else your last moments will be entertaining.": "Si te adhieres a una bomba pegajosa, salta y da muchas vueltas. Es posible que sacudas\nla bomba pegada, o sin nada más, tus últimos momentos serán entretenidos.",
       "If you kill an enemy in one hit you get double points for it.": "Si eliminas a un enemigo de un golpe ganas doble puntos.",
       "If you pick up a curse, your only hope for survival is to\nfind a health powerup in the next few seconds.": "Si levantas una maldición, tu única esperanza es\nencontrar una caja de salud en tus últimos segundos.",
       "If you stay in one place, you're toast. Run and dodge to survive..": "Si te quedas quieto, estás perdido. Corre y esquiva para sobrevivir...",

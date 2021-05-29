@@ -3,6 +3,7 @@
 """Functionality related to the high level state of the app."""
 from __future__ import annotations
 
+from enum import Enum
 import random
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,7 @@ from ba._plugin import PluginSubsystem
 from ba._account import AccountSubsystem
 from ba._meta import MetadataSubsystem
 from ba._ads import AdsSubsystem
+from ba._net import NetworkSubsystem
 
 if TYPE_CHECKING:
     import ba
@@ -32,7 +34,15 @@ class App:
     Note that properties not documented here should be considered internal
     and subject to change without warning.
     """
+
     # pylint: disable=too-many-public-methods
+
+    class State(Enum):
+        """High level state the app can be in."""
+        LAUNCHING = 0
+        RUNNING = 1
+        PAUSED = 2
+        SHUTTING_DOWN = 3
 
     @property
     def build_number(self) -> int:
@@ -172,6 +182,8 @@ class App:
         """
         # pylint: disable=too-many-statements
 
+        self.state = self.State.LAUNCHING
+
         # Config.
         self.config_file_healthy = False
 
@@ -199,7 +211,6 @@ class App:
         self.tips: List[str] = []
         self.stress_test_reset_timer: Optional[ba.Timer] = None
         self.did_weak_call_warning = False
-        self.ran_on_app_launch = False
 
         self.log_have_new = False
         self.log_upload_timer_started = False
@@ -227,6 +238,7 @@ class App:
         self.ach = AchievementSubsystem()
         self.ui = UISubsystem()
         self.ads = AdsSubsystem()
+        self.net = NetworkSubsystem()
 
         # Lobby.
         self.lobby_random_profile_index: int = 1
@@ -281,7 +293,6 @@ class App:
         from ba._enums import TimeType
         import custom_hooks
         custom_hooks.on_app_launch()
-
         cfg = self.config
 
         self.delegate = appdelegate.AppDelegate()
@@ -376,15 +387,35 @@ class App:
         self.accounts.on_app_launch()
         self.plugins.on_app_launch()
 
-        self.ran_on_app_launch = True
+        self.state = self.State.RUNNING
 
         # from ba._dependency import test_depset
         # test_depset()
 
+    def on_app_pause(self) -> None:
+        """Called when the app goes to a suspended state."""
+        self.state = self.State.PAUSED
+        self.plugins.on_app_pause()
+
+    def on_app_resume(self) -> None:
+        """Run when the app resumes from a suspended state."""
+
+        self.state = self.State.RUNNING
+        self.fg_state += 1
+        self.accounts.on_app_resume()
+        self.music.on_app_resume()
+        self.plugins.on_app_resume()
+
+    def on_app_shutdown(self) -> None:
+        """(internal)"""
+        self.state = self.State.SHUTTING_DOWN
+        self.music.on_app_shutdown()
+        self.plugins.on_app_shutdown()
+
     def read_config(self) -> None:
         """(internal)"""
-        from ba import _appconfig
-        self._config, self.config_file_healthy = _appconfig.read_config()
+        from ba._appconfig import read_config
+        self._config, self.config_file_healthy = read_config()
 
     def pause(self) -> None:
         """Pause the game due to a user request or menu popping up.
@@ -484,16 +515,6 @@ class App:
         else:
             self.main_menu_resume_callbacks.append(call)
 
-    def on_app_pause(self) -> None:
-        """Called when the app goes to a suspended state."""
-
-    def on_app_resume(self) -> None:
-        """Run when the app resumes from a suspended state."""
-
-        self.fg_state += 1
-        self.accounts.on_app_resume()
-        self.music.on_app_resume()
-
     def launch_coop_game(self,
                          game: str,
                          force: bool = False,
@@ -541,10 +562,6 @@ class App:
 
         _ba.fade_screen(False, endcall=_fade_end)
         return True
-
-    def on_app_shutdown(self) -> None:
-        """(internal)"""
-        self.music.on_app_shutdown()
 
     def handle_deep_link(self, url: str) -> None:
         """Handle a deep link URL."""

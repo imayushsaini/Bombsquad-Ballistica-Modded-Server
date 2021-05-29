@@ -1,9 +1,9 @@
 {
   "accountSettingsWindow": {
-    "accountNameRules": "لا يمكن لأسماء الحِسابَات ان تحتوي إيموجي أو حروف خاصة",
+    "accountNameRules": "لا يمكن لأسماء الحِسابَات ان تحتوي على إيموجي أو حروف خاصة",
     "accountProfileText": "معلومات اللاعبين",
     "accountsText": "حسابات",
-    "achievementProgressText": "${TOTAL} من اصل ${COUNT} انجازاتك:انجزت",
+    "achievementProgressText": "${TOTAL} من أصل ${COUNT} إنجازاتك: أنجزت",
     "campaignProgressText": "تقدم الحملة [HARD]:${PROGRESS}",
     "changeOncePerSeason": "يمكنك تغييره مرة واحدة في الموسم",
     "changeOncePerSeasonError": "يجب عليك الانتظار حتى الموسم القادم لتغيير هذا مجددا (${NUM} أيام )",
@@ -16,7 +16,7 @@
     "linkAccountsText": "ربط حساب",
     "linkedAccountsText": ": حساباتي المرتبطة",
     "nameChangeConfirm": "?${NAME} هل تريد تغير اسم حسابك الى",
-    "resetProgressConfirmNoAchievementsText": "سوف يحذف هذا الخيار تقدمك في الحملات التعاونية ولم يحذف تذاكرك\nلا يمكن إلغاء هذا الخيار\nهل أنت متأكد ؟",
+    "resetProgressConfirmNoAchievementsText": "سوف يحذف هذا الخيار تقدمك في الحملات التعاونية ولن يحذف تذاكرك\nلا يمكن إلغاء هذا الخيار\nهل أنت متأكد ؟",
     "resetProgressConfirmText": ":عند موافقتك على هذا الاخيار سوف يتم\n(حذف انجازاتك وتقدمك الحالي(لكن لن تخسر تَذَاكِرك\nاذا وافقت على هذا القرار لا يمكنك تراجع عنه\nهل أنت متأكد؟",
     "resetProgressText": "إمسح تقدمك",
     "setAccountName": "حدد إسم للحساب",
@@ -35,7 +35,7 @@
     "testAccountWarningOculusText": "تحذير: انت تقوم بتسجيل الدخول باستخدام حساب تجريبي.\nسيستبدل بحساب حقيقي خلال هذا العام الذي من خلاله\nسوف تقدر على شراء البطاقات ومزايا أخرى.\n\nإلى الان يمكنك الحصول على جميع البطافات في اللعبة.\n(على الرغم من ذلك، قم بالحصول على حساب متقدم مجانا)",
     "ticketsText": "بطاقاتك الحالية:${COUNT}",
     "titleText": "الحساب",
-    "unlinkAccountsInstructionsText": "حدد حسابا لإلغاء ربطة",
+    "unlinkAccountsInstructionsText": "حدد حسابا لإلغاء ربطه",
     "unlinkAccountsText": "إلغاء ربط الحسابات",
     "viaAccount": "(${NAME} عبر الحساب)",
     "youAreSignedInAsText": ": قمت بتسجيل الدخول كـ"
@@ -70,7 +70,7 @@
       "name": "الفوز المستحق"
     },
     "Free Loader": {
-      "descriptionFull": "إبدأ بلعب وضع الحر للجميع مع لاعبين أو أكثر",
+      "descriptionFull": "إبدأ بلعب الوضع الحر للجميع مع لاعبين أو أكثر",
       "descriptionFullComplete": "تم بدء لعبة بوضع الحرية للجميع مع لاعِبَيْنْ أو أكثر",
       "name": "الفريق المجاني"
     },
@@ -215,55 +215,55 @@
     "Rookie Onslaught Victory": {
       "description": "هزيمة كل الجولات",
       "descriptionComplete": "هزم كل الجولات",
-      "descriptionFull": "${LEVEL} هزيمة كل الجولات في",
+      "descriptionFull": "${LEVEL}  اكسب كل الجولات في",
       "descriptionFullComplete": "${LEVEL} هزم كل الجولات في",
-      "name": "${LEVEL} النصر"
+      "name": "${LEVEL} لقد انتصرت"
     },
     "Runaround God": {
       "description": "أحرز 2000 نقطة",
-      "descriptionComplete": "أحرز 2000 نقطة",
+      "descriptionComplete": "أحرزت 2000 نقطة",
       "descriptionFull": "${LEVEL} أحرز 2000 نقطة في",
-      "descriptionFullComplete": "${LEVEL} أحرز 2000 نقطة في",
-      "name": "${LEVEL} خارق"
+      "descriptionFullComplete": "${LEVEL} أحرزت 2000 نقطة في",
+      "name": "${LEVEL} ملك"
     },
     "Runaround Master": {
       "description": "أحرز 500 نقطة",
-      "descriptionComplete": "أحرز 500 نقطة",
+      "descriptionComplete": "أحرزت 500 نقطة",
       "descriptionFull": "${LEVEL} أحرز 500 نقطة في",
-      "descriptionFullComplete": "${LEVEL} أحرز 500 نقطة في",
-      "name": "${LEVEL} سيد"
+      "descriptionFullComplete": "${LEVEL} أحرزت 500 نقطة في",
+      "name": "${LEVEL} استاذ"
     },
     "Runaround Wizard": {
       "description": "أحرز 1000 نقطة",
-      "descriptionComplete": "أحرز 1000 نقطة",
+      "descriptionComplete": "أحرزت 1000 نقطة",
       "descriptionFull": "${LEVEL} أحرز 1000 نقطة في",
-      "descriptionFullComplete": "${LEVEL} أحرز 1000 نقطة في",
+      "descriptionFullComplete": "${LEVEL} أحرزت 1000 نقطة في",
       "name": "${LEVEL} ساحر"
     },
     "Sharing is Caring": {
       "descriptionFull": "شارك اللعبة مع صديق بنجاح",
       "descriptionFullComplete": "شارك اللعبة مع صديق بنجاح",
-      "name": "المشاركة تعني الاهتمام"
+      "name": "المشاركة اهتمام"
     },
     "Stayin' Alive": {
       "description": "فز بدون أن تموت",
       "descriptionComplete": "فاز بدون أن يموت",
       "descriptionFull": "بدون أن تموت ${LEVEL} فز",
       "descriptionFullComplete": "بدون أن يموت ${LEVEL} فاز",
-      "name": "إبقى  حيا"
+      "name": "البقاء  حيا"
     },
     "Super Mega Punch": {
       "description": "إلحاق الضرر 100٪ بلكمة واحدة",
-      "descriptionComplete": "إلحاق الضرر 100٪ بلكمة واحدة",
+      "descriptionComplete": "ألحق الضرر 100٪ بلكمة واحدة",
       "descriptionFull": "${LEVEL} إلحاق الضرر 100٪ بلكمة واحدة في",
-      "descriptionFullComplete": "${LEVEL} إلحاق الضرر 100٪ بلكمة واحدة في",
+      "descriptionFullComplete": "${LEVEL} ألحق الضرر 100٪ بلكمة واحدة في",
       "name": "لكمة خارقة جبارة"
     },
     "Super Punch": {
       "description": "إلحاق الضرر 50٪ بلكمة واحدة",
-      "descriptionComplete": "إلحاق الضرر 50٪ بلكمة واحدة",
+      "descriptionComplete": "ألحق الضرر 50٪ بلكمة واحدة",
       "descriptionFull": "${LEVEL} إلحاق الضرر 50٪ بلكمة واحدة",
-      "descriptionFullComplete": "${LEVEL} إلحاق الضرر 50٪ بلكمة واحدة",
+      "descriptionFullComplete": "${LEVEL} ألحق الضرر 50٪ بلكمة واحدة",
       "name": "لكمة خارقة"
     },
     "TNT Terror": {
@@ -279,7 +279,7 @@
       "name": "لاعب فريق"
     },
     "The Great Wall": {
-      "description": "أوقف كل شخص سيء",
+      "description": "أوقف كل الأشخاص السيئين",
       "descriptionComplete": "أوقف كل شخص سيء",
       "descriptionFull": "${LEVEL} أوقف كل شخص سيء في",
       "descriptionFullComplete": "${LEVEL} أوقف كل شخص سيء في",
@@ -307,17 +307,17 @@
       "name": "${LEVEL} إنتصار"
     },
     "Uber Onslaught Victory": {
-      "description": "هزيمة كل الجولات",
-      "descriptionComplete": "هزيمة كل الجولات",
-      "descriptionFull": "${LEVEL} هزيمة كل الجولات في",
-      "descriptionFullComplete": "${LEVEL} هزيمة كل الجولات في",
+      "description": "انتصر في  كل الجولات",
+      "descriptionComplete": "هَزَم كل الجولات",
+      "descriptionFull": "${LEVEL} اهزم كل الجولات في",
+      "descriptionFullComplete": "${LEVEL} هزم كل الجولات في",
       "name": "${LEVEL} إنتصار"
     },
     "Uber Runaround Victory": {
       "description": "أكمل كل الجولات",
-      "descriptionComplete": "أكمل كل الجولات",
+      "descriptionComplete": "أكملت كل الجولات",
       "descriptionFull": "اكمل كل الجولات في ${LEVEL}",
-      "descriptionFullComplete": "أكمل كل الجولات في ${LEVEL}",
+      "descriptionFullComplete": "أكملت كل الجولات في ${LEVEL}",
       "name": "${LEVEL} النصر"
     }
   },
@@ -333,7 +333,7 @@
   "apiVersionErrorText": "خطأ في تحميل الجزء ${NAME}; انه مخصص للإصدار رقم ${VERSION_USED}; يجب استخدام الإصدار ${VERSION_REQUIRED}.",
   "audioSettingsWindow": {
     "headRelativeVRAudioInfoText": "(\"ذاتي\" فعله فقط عندما تكون سماعات الأذن موصولة",
-    "headRelativeVRAudioText": "صوت VR معوافق مع حركة الرأس",
+    "headRelativeVRAudioText": "صوت VR موافق مع حركة الرأس",
     "musicVolumeText": "مستوى الموسيقى",
     "soundVolumeText": "مستوى الموسيقى",
     "soundtrackButtonText": "المقاطع الصوتية",
@@ -343,8 +343,8 @@
   "autoText": "ذاتي الاختيار",
   "backText": "للخلف",
   "banThisPlayerText": "حظر هاذا الاعب",
-  "bestOfFinalText": "الافضل في {COUNT} النهائية",
-  "bestOfSeriesText": "${COUNT}افضل سلسلة ل",
+  "bestOfFinalText": "الافضل في ${COUNT}",
+  "bestOfSeriesText": "من السلسلة ${COUNT}الأفضل في",
   "bestOfUseFirstToInstead": 0,
   "bestRankText": "افضل ما أحرزت #${RANK}",
   "bestRatingText": "أفضل معدّل قد أحرزته ${RATING}",
@@ -709,7 +709,7 @@
     "googlePlayVersionOnlyText": "(الروبوت / جوجل اللعب الإصدار)",
     "hostPublicPartyDescriptionText": "صنع حفلة عامة",
     "hostingUnavailableText": "صنع السيرفر غير متوفر",
-    "inDevelopmentWarningText": "ملحوظة:\n\nلعب الشبكة هو ميزة جديدة والتي لا تزال تتطور.\nفي الوقت الراهن، ينصح بشدة أن جميع\nاللاعبين على نفس شبكة واي فاي.",
+    "inDevelopmentWarningText": "ملحوظة:\n\nاللعب عبر الإنترنت هي ميزة لا تزال تحت التطوير.\nحاليًا، يفضل أن يكون جميع اللاعبين\nمتصلين على نفس شبكة WI-FI.",
     "internetText": "انترنت",
     "inviteAFriendText": "الأصدقاء ليس لديهم اللعبة؟ يمكنك دعوتهم إلى\nجربها وسيحصلون على ${COUNT} من التذاكر المجانية.",
     "inviteFriendsText": "دعوة الاصدقاء",
@@ -1588,15 +1588,17 @@
       "Max number of profiles reached.": "تم الوصول إلى أقصى عدد من الملفات الشخصية.",
       "Maximum friend code rewards reached.": "تم الوصول إلى الحد الأقصى لمكافآت الرمز الصديق.",
       "Message is too long.": "الرسالة طويلة جدا",
+      "No servers are available. Please try again soon.": "لا توجد خوادم متاحة. من فضلك حاول لاحقا",
       "Profile \"${NAME}\" upgraded successfully.": "تمت ترقية الملف الشخصي \"${NAME}\" بنجاح.",
       "Profile could not be upgraded.": "تعذر ترقية الملف الشخصي.",
-      "Purchase successful!": "شراء ناجحة!",
+      "Purchase successful!": "تم الشراء بنجاح!",
       "Received ${COUNT} tickets for signing in.\nCome back tomorrow to receive ${TOMORROW_COUNT}.": "تم استلام ${COUNT} من التذاكر لتسجيل الدخول.\nارجع غدا لاستلام ${TOMORROW_COUNT}.",
       "Server functionality is no longer supported in this version of the game;\nPlease update to a newer version.": "لم تعد معتمدة وظيفة الخادم في هذا الإصدار من اللعبة.\nالرجاء التحديث إلى إصدار أحدث.",
       "Sorry, there are no uses remaining on this code.": "عذرا، لا توجد أية استخدامات متبقية في هذه الشفرة.",
       "Sorry, this code has already been used.": "عذرا، تم استخدام هذه الشفرة من قبل.",
       "Sorry, this code has expired.": "عذرا، انتهت صلاحية هذا الرمز.",
       "Sorry, this code only works for new accounts.": "عذرا، لا تعمل هذه الشفرة إلا لحسابات جديدة.",
+      "Still searching for nearby servers; please try again soon.": "يزال البحث عن سيرفرات قريبة; من فضلك كرر المحاولة لاحقا",
       "Temporarily unavailable; please try again later.": "غير متاح مؤقتا؛ الرجاء معاودة المحاولة في وقت لاحق.",
       "The tournament ended before you finished.": "انتهت البطولة قبل الانتهاء.",
       "This account cannot be unlinked for ${NUM} days.": "لا يمكن إلغاء ربط هذا الحساب بمبلغ ${NUM} من الأيام.",
@@ -1700,7 +1702,7 @@
       "In hockey, you'll maintain more speed if you turn gradually.": "في الهوكي، عليك الحفاظ على مزيد من السرعة إذا قمت بتشغيل تدريجيا.",
       "It's easier to win with a friend or two helping.": "فإنه من الأسهل للفوز مع صديق أو اثنين مساعدة.",
       "Jump just as you're throwing to get bombs up to the highest levels.": "القفز تماما كما كنت رمي ​​للحصول على القنابل تصل إلى أعلى المستويات.",
-      "Land-mines are a good way to stop speedy enemies.": "إن الألغام البرية وسيلة جيدة لوقف الأعداء العاجلين.",
+      "Land-mines are a good way to stop speedy enemies.": "إن الألغام وسيلة جيدة لوقف الأعداء السريعين.",
       "Many things can be picked up and thrown, including other players.  Tossing\nyour enemies off cliffs can be an effective and emotionally fulfilling strategy.": "العديد من الأشياء يمكن التقاطها وألقيت، بما في ذلك لاعبين آخرين. القذف\nأعدائك قبالة المنحدرات يمكن أن تكون استراتيجية فعالة وعاطفيا الوفاء.",
       "No, you can't get up on the ledge. You have to throw bombs.": "لا، لا يمكنك الحصول على ما يصل على الحافة. لديك لرمي القنابل.",
       "Players can join and leave in the middle of most games,\nand you can also plug and unplug controllers on the fly.": "يمكن للاعبين الانضمام وترك في منتصف معظم المباريات،\nويمكنك أيضا سد وفصل وحدات التحكم على الطاير.",
@@ -1717,7 +1719,7 @@
       "Use the pick-up button to grab the flag < ${PICKUP} >": "استخدم زر البيك اب للاستيلاء على العلم <${PICKUP}",
       "Whip back and forth to get more distance on your throws..": "سوط ذهابا وإيابا للحصول على مزيد من المسافة على رميات الخاص بك",
       "You can 'aim' your punches by spinning left or right.\nThis is useful for knocking bad guys off edges or scoring in hockey.": "يمكنك 'تهدف' اللكمات الخاصة بك عن طريق الغزل اليسار أو اليمين.\nوهذا مفيد لضرب الأشرار من حواف أو التهديف في الهوكي.",
-      "You can judge when a bomb is going to explode based on the\ncolor of sparks from its fuse:  yellow..orange..red..BOOM.": "يمكنك الحكم عندما قنبلة سوف تنفجر على أساس\nلون الشرر من فتيله: أصفر .. أورانج..ريد .. بوم.",
+      "You can judge when a bomb is going to explode based on the\ncolor of sparks from its fuse:  yellow..orange..red..BOOM.": "يمكنك تحديد وقت إنفجار القنبلة بناءً على لون الشرارة المنبعثة من فتيلها:\nأصفر..برتقالي..أحمر ثم بووم.",
       "You can throw bombs higher if you jump just before throwing.": "يمكنك رمي القنابل أعلى إذا كنت القفز قبل رمي.",
       "You take damage when you whack your head on things,\nso try to not whack your head on things.": "كنت تأخذ الضرر عندما كنت اجتز رأسك على الأشياء،\nوذلك في محاولة لا اجتز رأسك على الأشياء.",
       "Your punches do much more damage if you are running or spinning.": "لكماتك تؤثر بضرر اكبر اذا كنت تجري او تدور"
@@ -1772,7 +1774,7 @@
   "unconfiguredControllerDetectedText": ":تم الكشف على يد تحكم غير مهيئة",
   "unlockThisInTheStoreText": "هذا يجب ان يفتح في المتجر",
   "unlockThisProfilesText": "لإنشاء أكثر من ${NUM} من الملفات الشخصية، تحتاج إلى:",
-  "unlockThisText": ":لفتح هذا, تحتاج ل",
+  "unlockThisText": ":لفتح هذا, تحتاج إلى",
   "unsupportedHardwareText": "عفوا, هذه المعدات غير مدعومة في هذه النسخة من اللعبة",
   "upFirstText": ":يصل اولا",
   "upNextText": ":${COUNT}التالي في اللعبة",

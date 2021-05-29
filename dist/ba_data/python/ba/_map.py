@@ -215,11 +215,10 @@ class Map(Actor):
 
 
 
-        # I DONT THINK YOU REALLY WANT TO REMOVE MY NAME ,  DO YOU ?
         self.hg=ba.NodeActor(
                 _ba.newnode('text',
                             attrs={
-                                'text': "Smoothy Build\n v1.0",
+                                'text': "Smoothy Build\n v1.2",
                                 
                                 'flatness': 1.0,
                                 'h_align': 'center',
@@ -229,8 +228,6 @@ class Map(Actor):
                                 'position':(-60,23),
                                 'color':(0.3,0.3,0.3)
                             }))
-
-        
         # Set area-of-interest bounds.
         aoi_bounds = self.get_def_bound_box('area_of_interest_bounds')
         if aoi_bounds is None:
@@ -297,7 +294,10 @@ class Map(Actor):
         self.is_flying = False
 
         # FIXME: this should be part of game; not map.
-        self._next_ffa_start_index = 0
+        # Let's select random index for first spawn point,
+        # so that no one is offended by the constant spawn on the edge.
+        self._next_ffa_start_index = random.randrange(
+            len(self.ffa_spawn_points))
 
     def is_point_near_edge(self,
                            point: ba.Vec3,
