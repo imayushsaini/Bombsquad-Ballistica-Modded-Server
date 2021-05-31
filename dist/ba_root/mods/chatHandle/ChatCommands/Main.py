@@ -67,16 +67,25 @@ def Command(msg, clientid):
 	elif command_type(command) == "Manage":
 		if check_permissions(accountid, command):
 			Management.ExcelCommand(command, arguments, clientid, accountid)
+			_ba.screenmessage("Executed", transient=True, clients=[clientid])
+		else:
+			_ba.screenmessage("access denied", transient=True, clients=[clientid])
 	
 	
 	elif command_type(command) == "Fun":
 		if check_permissions(accountid, command):
 			Fun.ExcelCommand(command, arguments, clientid, accountid)
+			_ba.screenmessage("Executed", transient=True, clients=[clientid])
+		else:
+			_ba.screenmessage("access denied", transient=True, clients=[clientid])
 	
 	
 	elif command_type(command) == "Cheats":
 		if check_permissions(accountid, command):
 			Cheats.ExcelCommand(command, arguments, clientid, accountid)
+			_ba.screenmessage("Executed", transient=True, clients=[clientid])
+		else:
+			_ba.screenmessage("access denied", transient=True, clients=[clientid])
 	
 	
 	settings = setting.get_settings_data()

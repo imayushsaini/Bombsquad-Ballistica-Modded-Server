@@ -2,20 +2,24 @@
 from playersData import pdata
 import ba, setting
 def addtag(node,player):
-	session_player=player.sessionplayer
-	account_id=session_player.get_account_id()
-	customtag_=pdata.get_custom()
-	customtag=customtag_['customtag']
-	roles=pdata.get_roles()
-	role=pdata.get_role(account_id)
-	tag=None
-	if account_id in customtag:
-		tag=customtag[account_id]
-	elif role:
-		tag=roles[role]['tag']
-	if tag:
-		Tag(node,tag)
-		
+    session_player=player.sessionplayer
+    account_id=session_player.get_account_id()
+    customtag_=pdata.get_custom()
+    customtag=customtag_['customtag']
+    roles=pdata.get_roles()
+    p_roles=pdata.get_player_roles(account_id)
+    tag=None
+    if account_id in customtag:
+        tag=customtag[account_id]
+    elif p_roles !=[]:
+        for role in roles:
+
+            if role in p_roles:
+                tag=roles[role]['tag']
+                break;
+    if tag:
+        Tag(node,tag)
+
 from stats import mystats
 def addrank(node,player):
 	session_player=player.sessionplayer
@@ -42,6 +46,25 @@ class Tag(object):
                                    'operation': 'add'
                                })
 		self.node.connectattr('torso_position', mnode, 'input2')
+		if '\\' in tag:
+
+			tag = tag.replace('\\d', ('\ue048'))
+			tag = tag.replace('\\c', ('\ue043'))
+			tag = tag.replace('\\h', ('\ue049'))
+			tag = tag.replace('\\s', ('\ue046'))
+			tag = tag.replace('\\n', ('\ue04b'))
+			tag = tag.replace('\\f', ('\ue04f'))
+			tag = tag.replace('\\g', ('\ue027'))
+			tag = tag.replace('\\i', ('\ue03a'))
+			tag = tag.replace('\\m', ('\ue04d'))
+			tag = tag.replace('\\t', ('\ue01f'))
+			tag = tag.replace('\\bs', ('\ue01e'))
+			tag = tag.replace('\\j', ('\ue010'))
+			tag = tag.replace('\\e', ('\ue045'))
+			tag = tag.replace('\\l', ('\ue047'))
+			tag = tag.replace('\\a', ('\ue020'))
+			tag = tag.replace('\\b', ('\ue00c'))
+
 		self.tag_text = ba.newnode('text',
                                           owner=self.node,
                                           attrs={

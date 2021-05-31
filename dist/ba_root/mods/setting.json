@@ -1,6 +1,6 @@
 {
     "white_list": {
-        "whitelist_on": true,
+        "whitelist_on": false,
         "spectators": false,
         "lobbychecktime": 1
     },

@@ -129,14 +129,22 @@
  "Campaigns": {},
  "Default Player Profiles": {
   "Client Input Device #1": "__account__",
+  "Client Input Device #10": "__account__",
   "Client Input Device #2": "__account__",
-  "Client Input Device #3": "__account__"
+  "Client Input Device #3": "__account__",
+  "Client Input Device #5": "__account__",
+  "Client Input Device #6": "__account__",
+  "Client Input Device #7": "__account__",
+  "Client Input Device #8": "AARAV SINGH",
+  "Client Input Device #9": "__account__"
  },
+ "Free-for-All Max Players": 20,
  "Free-for-All Playlist Randomize": true,
  "Free-for-All Playlist Selection": "__default__",
  "Free-for-All Playlists": {},
  "Idle Exit Minutes": null,
- "Local Account Name": "Server137026",
+ "Local Account Name": "Server751316",
+ "PSTR": 0,
  "Player Profiles": {
   "__account__": {
    "character": "Spaz",
@@ -153,15 +161,37 @@
   }
  },
  "Plugins": {
-  "privateserver.private": {
+  "characters_duplicate.unlock_characters": {
    "enabled": true
   }
  },
  "Port": 43210,
+ "Region Pings": {
+  "af-south-1": 332.0533000000001,
+  "ap-northeast-1": 153.0722999999998,
+  "ap-northeast-2": 177.3448999999996,
+  "ap-south-1": 44.40215280000021,
+  "ap-southeast-1": 154.81258440000002,
+  "ap-southeast-2": 177.44980000000066,
+  "ca-central-1": 237.2696999999997,
+  "eu-central-1": 161.99570000000028,
+  "eu-north-1": 173.3184000000003,
+  "eu-south-1": 150.99719999999994,
+  "eu-west-1": 174.4621000000004,
+  "eu-west-2": 172.11209999999966,
+  "eu-west-3": 160.90859999999995,
+  "me-south-1": 74.56136400000022,
+  "sa-east-1": 360.89020000000005,
+  "us-east-1": 235.8709999999995,
+  "us-east-2": 249.04710000000028,
+  "us-west-1": 270.4567000000004,
+  "us-west-2": 291.1767000000012
+ },
  "Show Tutorial": false,
  "Signed In Last Session": false,
+ "Team Game Max Players": 20,
  "Team Tournament Playlists": {},
- "launchCount": 24,
+ "launchCount": 82,
  "lc14173": 1,
  "lc14292": 1
 }

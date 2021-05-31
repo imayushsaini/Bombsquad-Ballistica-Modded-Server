@@ -1,12 +1,12 @@
-from .Handlers import handlemsg, handlemsg_all
+from .Handlers import handlemsg, handlemsg_all,send
 from playersData import pdata
 from tools.whitelist import add_to_white_list, add_commit_to_logs
 
 import ba, _ba, time, setting
 
 
-Commands = ['kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'removecmd', 'changetag', 'add', 'spectators', 'lobbytime']
-CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist']
+Commands = ['kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist','effect']
 
 
 
@@ -64,6 +64,9 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		
 	elif command == 'removerole':
 		remove_role_from_player(arguments)
+
+	elif command=='getroles':
+		get_roles_of_player(arguments,clientid)
 		
 	elif command in ['addcommand', 'addcmd']:
 		add_command_to_role(arguments)
@@ -74,6 +77,12 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	elif command == 'changetag':
 		change_role_tag(arguments)
 	
+	elif command=='customtag':
+		set_custom_tag(arguments)
+
+	elif command in ['customeffect','effect']:
+		set_custom_effect(arguments)
+
 	elif command in ['add', 'whitelist']:
 		whitelst_it(accountid, arguments)
 	
@@ -88,9 +97,8 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 
 
-
-
 def kick(arguments):
+	_ba.disconnect_client(int(arguments[0]))
 	return
 
 
@@ -134,7 +142,9 @@ def remove(arguments):
 	else:
 		try:
 			session = _ba.get_foreground_host_session()
-			session.sessionplayers[int(arguments[0])].remove_from_game()
+			for i in session.sessionplayers:
+				if i.inputdevice.client_id== int(arguments[0]):
+					i.remove_from_game()
 		except:
 			return
 
@@ -226,10 +236,9 @@ def add_role_to_player(arguments):
 	try:
 		
 		session = _ba.get_foreground_host_session()
-		
-		id = session.sessionplayers[int(arguments[1])].get_account_id()
-
-		pdata.add_player_role(arguments[0], id)
+		for i in session.sessionplayers:
+			if i.inputdevice.client_id== int(arguments[1]):
+				roles=pdata.add_player_role(arguments[0],i.get_account_id())
 	except:
 		return
 
@@ -238,19 +247,48 @@ def add_role_to_player(arguments):
 def remove_role_from_player(arguments):
 	try:
 		session = _ba.get_foreground_host_session()
-		
-		id = session.sessionplayers[int(arguments[1])].get_account_id()
-		
-		pdata.remove_player_role(arguments[0], id)
+		for i in session.sessionplayers:
+			if i.inputdevice.client_id== int(arguments[1]):
+				roles=pdata.remove_player_role(arguments[0],i.get_account_id())
+
 	except:
 		return
-
-
+def get_roles_of_player(arguments,clientid):
+	try:
+		session = _ba.get_foreground_host_session()
+		roles=[]
+		reply=""
+		for i in session.sessionplayers:
+			if i.inputdevice.client_id== int(arguments[0]):
+				roles=pdata.get_player_roles(i.get_account_id())
+				print(roles)
+		for role in roles:
+			reply=reply+role+","
+		send(reply,clientid)
+	except:
+	    return
 def change_role_tag(arguments):
 	try:
 		pdata.change_role_tag(arguments[0], arguments[1])
 	except:
 		return
+
+def set_custom_tag(arguments):
+	try:
+		session = _ba.get_foreground_host_session()
+		for i in session.sessionplayers:
+			if i.inputdevice.client_id== int(arguments[1]):
+				roles=pdata.set_tag(arguments[0],i.get_account_id())
+	except:
+	    return
+def set_custom_effect(arguments):
+	try:
+		session = _ba.get_foreground_host_session()
+		for i in session.sessionplayers:
+			if i.inputdevice.client_id== int(arguments[1]):
+				roles=pdata.set_effect(arguments[0],i.get_account_id())
+	except:
+	    return
 
 
 

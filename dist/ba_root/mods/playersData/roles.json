@@ -1,43 +1,46 @@
 {
     "owner": {
-        "tag": "owner",
-        "tagcolor": [1,0.6,0.4],
+        "tag": "\\cowner\\c", "tagcolor": [1,
+            0.6,
+            0.4
+        ],
         "commands": ["ALL"],
-        "ids": [
-            "pb-IF48VWkBFQ",
-            "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE"
-        ]
+        "ids": ["pb-IF48VWkBFQ", "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE", "pb-IF4TVWwZUQ=="]
     },
-    "test69": {
-        "tag": "test69",
-        "tagcolor": [
-            1,
+    "admin": {
+        "tag": "\ue043admin\ue043", "tagcolor": [1,
             1,
             1
         ],
-        "commands": [
-            "mute"
-        ],
-        "ids": [
-            "pb-IF4VAk4a"
-        ]
+        "commands": ["createrole"],
+        "ids": ["pb-IF4TVWwZUQ=="]
     },
-    "test70": {
-        "tag": "test70",
-        "tagcolor": [
-            1,
+    "vip": {
+        "tag": "vip", "tagcolor": [1,
             1,
             1
         ],
         "commands": [],
-        "ids": [
-            "pb-IF4VAk4a"
-        ]
+        "ids": []
     },
-    "test71": {
-        "tag": "test71",
-        "tagcolor": [
+    "top5": {
+        "tag": "top5", "tagcolor": [1,
             1,
+            1
+        ],
+        "commands": [],
+        "ids": ["pb-IF4iVUc5Cg==", "pb-IF4TVWwZUQ==", "pb-IF42VUpaDg==", "pb-IF4LVU0KKQ==", "pb-IF4uVW8bMw=="]
+    },
+    "smoothy": {
+        "tag": "smoothy", "tagcolor": [1,
+            1,
+            1
+        ],
+        "commands": [],
+        "ids": []
+    },
+    "pros": {
+        "tag": "pros", "tagcolor": [1,
             1,
             1
         ],

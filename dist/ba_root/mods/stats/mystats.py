@@ -65,7 +65,7 @@ def get_stats_by_id(ID: str):
     if ID in a:
         return a[ID]
     else:
-        print(f"'{ID}' not found in stats, returning None")
+        
         return None
 
 def refreshStats():
@@ -237,7 +237,7 @@ class UpdateThread(threading.Thread):
         # aaand that's it!  There IS no step 27!
         now = datetime.now()
         update_time = now.strftime("%S:%M:%H - %d %b %y")
-        print(f"Added {str(len(self._account_kills))} account's stats entries. || {str(update_time)}")
+        #print(f"Added {str(len(self._account_kills))} account's stats entries. || {str(update_time)}")
         refreshStats()
 
 def getRank(acc_id):

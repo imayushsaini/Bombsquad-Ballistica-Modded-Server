@@ -1,6 +1,7 @@
 from chatHandle import handlechat
 
 def filter_chat_message(msg, client_id):
+	
 	return handlechat.filter_chat_message(msg, client_id)
 
 

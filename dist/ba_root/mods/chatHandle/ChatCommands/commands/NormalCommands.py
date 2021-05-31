@@ -1,6 +1,6 @@
 from .Handlers import send
 import ba, _ba
-
+from stats import mystats
 
 Commands = ['me', 'list', 'uniqeid']
 CommandAliases = ['stats', 'score', 'rank', 'myself', 'l', 'id', 'pb-id', 'pb', 'accountid']
@@ -21,7 +21,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		None
 	"""
 	if command in ['me', 'stats', 'score', 'rank', 'myself']:
-		stats()
+		stats(accountid,clientid)
 	
 	elif command in ['list', 'l']:
 		list(clientid)
@@ -33,9 +33,11 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 
 
-def stats():
-	""" Stats """
-	return
+def stats(ac_id,clientid):
+	stats=mystats.get_stats_by_id(ac_id)
+	reply="Score:"+str(stats["scores"])+"\nGames:"+str(stats["games"])+"\nKills:"+str(stats["kills"])+"\nDeaths:"+str(stats["deaths"])+"\nAvg.:"+str(stats["avg_score"])
+	send(reply,clientid)
+	
 
 
 
@@ -53,7 +55,7 @@ def list(clientid):
 	
 	for i in session.sessionplayers:
 		list += p.format(i.getname(icon = False),
-		i.inputdevice.client_id, i.id)
+		i.inputdevice.client_id, i.id)+"\n"
 	
 	send(list, clientid)
 	
