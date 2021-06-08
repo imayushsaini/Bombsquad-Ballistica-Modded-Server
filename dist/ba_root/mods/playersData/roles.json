@@ -1,47 +1,17 @@
 {
     "owner": {
         "tag": "owner",
-        "tagcolor": [1,0.6,0.4],
-        "commands": ["ALL"],
+        "tagcolor": [
+            1,
+            0.6,
+            0.4
+        ],
+        "commands": [
+            "ALL"
+        ],
         "ids": [
             "pb-IF48VWkBFQ",
             "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE"
         ]
-    },
-    "test69": {
-        "tag": "test69",
-        "tagcolor": [
-            1,
-            1,
-            1
-        ],
-        "commands": [
-            "mute"
-        ],
-        "ids": [
-            "pb-IF4VAk4a"
-        ]
-    },
-    "test70": {
-        "tag": "test70",
-        "tagcolor": [
-            1,
-            1,
-            1
-        ],
-        "commands": [],
-        "ids": [
-            "pb-IF4VAk4a"
-        ]
-    },
-    "test71": {
-        "tag": "test71",
-        "tagcolor": [
-            1,
-            1,
-            1
-        ],
-        "commands": [],
-        "ids": []
     }
 }
