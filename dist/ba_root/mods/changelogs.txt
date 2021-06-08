@@ -1,11 +1,5 @@
+#08-06-2021 - snow171
+       - chatcmd bug fix
 #01-05-2021 - FireFighter
        - Added HitPoints Visualisation using Tag
        - Added Effects to players
-
-Renamed Folder names by Constant Style
-
-__Date__ = 19 Apr
-
-// Fixed coordinates of textonmap
-// Added ChatLogs ServerData 
-// some basic bug fixed

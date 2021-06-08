@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 
 from playersData import pdata
-from chatHandle.ChatCommands import Main
+from chatHandle.ChatCommands import _main
 
 import ba, _ba
 
@@ -9,7 +9,7 @@ import ba, _ba
 
 def filter_chat_message(msg, client_id):
 	if msg.startswith("/"):
-		return Main.Command(msg, client_id)
+		return _main.Command(msg, client_id)
 	return msg
 
 """

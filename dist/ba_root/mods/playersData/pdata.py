@@ -43,6 +43,17 @@ def create_role(role):
 	return
 
 
+def delete_role(role):
+	global roles
+	_roles = get_roles()
+	if role in _roles:
+		del _roles[role]
+		roles = _roles
+		commit(_roles)
+		return
+	return
+
+
 def add_player_role(role, id):
 	global roles
 	_roles = get_roles()
