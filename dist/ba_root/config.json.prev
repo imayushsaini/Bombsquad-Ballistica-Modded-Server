@@ -1,1 +1,201 @@
-{"Achievements": {"Boom Goes the Dynamite": {"Complete": false}, "Boxer": {"Complete": false}, "Dual Wielding": {"Complete": false}, "Flawless Victory": {"Complete": false}, "Free Loader": {"Complete": true}, "Gold Miner": {"Complete": false}, "Got the Moves": {"Complete": false}, "In Control": {"Complete": false}, "Last Stand God": {"Complete": false}, "Last Stand Master": {"Complete": false}, "Last Stand Wizard": {"Complete": false}, "Mine Games": {"Complete": false}, "Off You Go Then": {"Complete": false}, "Onslaught God": {"Complete": false}, "Onslaught Master": {"Complete": false}, "Onslaught Training Victory": {"Complete": false}, "Onslaught Wizard": {"Complete": false}, "Precision Bombing": {"Complete": false}, "Pro Boxer": {"Complete": false}, "Pro Football Shutout": {"Complete": false}, "Pro Football Victory": {"Complete": false}, "Pro Onslaught Victory": {"Complete": false}, "Pro Runaround Victory": {"Complete": false}, "Rookie Football Shutout": {"Complete": false}, "Rookie Football Victory": {"Complete": false}, "Rookie Onslaught Victory": {"Complete": false}, "Runaround God": {"Complete": false}, "Runaround Master": {"Complete": false}, "Runaround Wizard": {"Complete": false}, "Sharing is Caring": {"Complete": false}, "Stayin' Alive": {"Complete": false}, "Super Mega Punch": {"Complete": false}, "Super Punch": {"Complete": false}, "TNT Terror": {"Complete": false}, "Team Player": {"Complete": false}, "The Great Wall": {"Complete": false}, "The Wall": {"Complete": false}, "Uber Football Shutout": {"Complete": false}, "Uber Football Victory": {"Complete": false}, "Uber Onslaught Victory": {"Complete": false}, "Uber Runaround Victory": {"Complete": false}}, "Auto Account State": "Server", "Auto Balance Teams": true, "Campaigns": {}, "Default Player Profiles": {"Client Input Device #1": "__account__", "Client Input Device #10": "__account__", "Client Input Device #2": "__account__", "Client Input Device #3": "__account__", "Client Input Device #4": "__account__", "Client Input Device #5": "__account__", "Client Input Device #6": "__account__", "Client Input Device #7": "__account__", "Client Input Device #8": "AARAV SINGH", "Client Input Device #9": "__account__"}, "Free-for-All Max Players": 20, "Free-for-All Playlist Randomize": true, "Free-for-All Playlist Selection": "__default__", "Free-for-All Playlists": {}, "Idle Exit Minutes": null, "Local Account Name": "Server751316", "PSTR": 0, "Player Profiles": {"__account__": {"character": "Spaz", "color": [0.5, 0.25, 1.0], "highlight": [0.5, 0.25, 1.0]}}, "Plugins": {"characters_duplicate.unlock_characters": {"enabled": true}, "importcustomcharacters.HeySmoothy": {"enabled": true}}, "Port": 43210, "Region Pings": {"af-south-1": 307.74070000000006, "ap-northeast-1": 154.2659999999998, "ap-northeast-2": 158.4915999999996, "ap-south-1": 40.25631320000015, "ap-southeast-1": 86.4678368, "ap-southeast-2": 174.49279999999945, "ca-central-1": 236.5851000000001, "eu-central-1": 152.09510000000037, "eu-north-1": 212.78989999999976, "eu-south-1": 144.31680000000034, "eu-west-1": 178.33469999999974, "eu-west-2": 161.02659999999958, "eu-west-3": 170.33000000000075, "me-south-1": 74.62674959999978, "sa-east-1": 335.5498000000008, "us-east-1": 247.49200000000116, "us-east-2": 252.68529999999956, "us-west-1": 265.23389999999927, "us-west-2": 287.52839999999935}, "Show Tutorial": false, "Signed In Last Session": false, "Team Game Max Players": 20, "Team Tournament Playlists": {}, "launchCount": 92, "lc14173": 1, "lc14292": 1}
+{
+ "Achievements": {
+  "Boom Goes the Dynamite": {
+   "Complete": false
+  },
+  "Boxer": {
+   "Complete": false
+  },
+  "Dual Wielding": {
+   "Complete": false
+  },
+  "Flawless Victory": {
+   "Complete": false
+  },
+  "Free Loader": {
+   "Complete": true
+  },
+  "Gold Miner": {
+   "Complete": false
+  },
+  "Got the Moves": {
+   "Complete": false
+  },
+  "In Control": {
+   "Complete": false
+  },
+  "Last Stand God": {
+   "Complete": false
+  },
+  "Last Stand Master": {
+   "Complete": false
+  },
+  "Last Stand Wizard": {
+   "Complete": false
+  },
+  "Mine Games": {
+   "Complete": false
+  },
+  "Off You Go Then": {
+   "Complete": false
+  },
+  "Onslaught God": {
+   "Complete": false
+  },
+  "Onslaught Master": {
+   "Complete": false
+  },
+  "Onslaught Training Victory": {
+   "Complete": false
+  },
+  "Onslaught Wizard": {
+   "Complete": false
+  },
+  "Precision Bombing": {
+   "Complete": false
+  },
+  "Pro Boxer": {
+   "Complete": false
+  },
+  "Pro Football Shutout": {
+   "Complete": false
+  },
+  "Pro Football Victory": {
+   "Complete": false
+  },
+  "Pro Onslaught Victory": {
+   "Complete": false
+  },
+  "Pro Runaround Victory": {
+   "Complete": false
+  },
+  "Rookie Football Shutout": {
+   "Complete": false
+  },
+  "Rookie Football Victory": {
+   "Complete": false
+  },
+  "Rookie Onslaught Victory": {
+   "Complete": false
+  },
+  "Runaround God": {
+   "Complete": false
+  },
+  "Runaround Master": {
+   "Complete": false
+  },
+  "Runaround Wizard": {
+   "Complete": false
+  },
+  "Sharing is Caring": {
+   "Complete": false
+  },
+  "Stayin' Alive": {
+   "Complete": false
+  },
+  "Super Mega Punch": {
+   "Complete": false
+  },
+  "Super Punch": {
+   "Complete": false
+  },
+  "TNT Terror": {
+   "Complete": false
+  },
+  "Team Player": {
+   "Complete": false
+  },
+  "The Great Wall": {
+   "Complete": false
+  },
+  "The Wall": {
+   "Complete": false
+  },
+  "Uber Football Shutout": {
+   "Complete": false
+  },
+  "Uber Football Victory": {
+   "Complete": false
+  },
+  "Uber Onslaught Victory": {
+   "Complete": false
+  },
+  "Uber Runaround Victory": {
+   "Complete": false
+  }
+ },
+ "Auto Account State": "Server",
+ "Auto Balance Teams": true,
+ "Campaigns": {},
+ "Default Player Profiles": {
+  "Client Input Device #1": "__account__",
+  "Client Input Device #10": "__account__",
+  "Client Input Device #2": "__account__",
+  "Client Input Device #3": "__account__",
+  "Client Input Device #4": "__account__",
+  "Client Input Device #5": "__account__",
+  "Client Input Device #6": "__account__",
+  "Client Input Device #7": "__account__",
+  "Client Input Device #8": "AARAV SINGH",
+  "Client Input Device #9": "__account__"
+ },
+ "Free-for-All Max Players": 20,
+ "Free-for-All Playlist Randomize": true,
+ "Free-for-All Playlist Selection": "__default__",
+ "Free-for-All Playlists": {},
+ "Idle Exit Minutes": null,
+ "Local Account Name": "Server751316",
+ "PSTR": 0,
+ "Player Profiles": {
+  "__account__": {
+   "character": "Spaz",
+   "color": [
+    0.5,
+    0.25,
+    1.0
+   ],
+   "highlight": [
+    0.5,
+    0.25,
+    1.0
+   ]
+  }
+ },
+ "Plugins": {
+  "characters_duplicate.unlock_characters": {
+   "enabled": true
+  },
+  "importcustomcharacters.HeySmoothy": {
+   "enabled": true
+  }
+ },
+ "Port": 43210,
+ "Region Pings": {
+  "af-south-1": 307.5986999999998,
+  "ap-northeast-1": 150.9280999999998,
+  "ap-northeast-2": 161.70740000000006,
+  "ap-south-1": 40.56100719999999,
+  "ap-southeast-1": 94.25813800000009,
+  "ap-southeast-2": 173.9644,
+  "ca-central-1": 230.90169999999955,
+  "eu-central-1": 157.7155999999995,
+  "eu-north-1": 230.69570000000004,
+  "eu-south-1": 158.1695000000005,
+  "eu-west-1": 177.26940000000013,
+  "eu-west-2": 168.53659999999948,
+  "eu-west-3": 158.8932999999999,
+  "me-south-1": 78.06156159999996,
+  "sa-east-1": 336.63750000000016,
+  "us-east-1": 242.1279000000016,
+  "us-east-2": 256.9507,
+  "us-west-1": 267.4833000000003,
+  "us-west-2": 281.160400000001
+ },
+ "Show Tutorial": false,
+ "Signed In Last Session": false,
+ "Team Game Max Players": 20,
+ "Team Tournament Playlists": {},
+ "launchCount": 97,
+ "lc14173": 1,
+ "lc14292": 1
+}

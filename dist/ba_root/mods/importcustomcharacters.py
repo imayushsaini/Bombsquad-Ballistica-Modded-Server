@@ -48,6 +48,7 @@ def registercharacter(name,char):
 class HeySmoothy(ba.Plugin):
     
     def __init__(self):
+        print("custom character importer")
         
         path=os.path.join(_ba.env()["python_directory_user"],"CustomCharacters" + os.sep)
         if not os.path.isdir(path):
