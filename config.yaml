@@ -30,7 +30,7 @@ party_is_public: true
 # servers on one machine.
 # 43210 is the default and the only port that will show up in the LAN
 # browser tab.
-#port: 43210
+port: 43210
 
 # Max devices in the party. Note that this does *NOT* mean max players.
 # Any device in the party can have more than one player on it if they have

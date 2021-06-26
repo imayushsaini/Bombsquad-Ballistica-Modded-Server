@@ -9,11 +9,24 @@ custom = {}
 data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.sep)
 
 
+# ============== player data =======================
 def get_info(id):
 	with open(data_path+'profiles.json', 'r') as f:
 
 		profile = json.load(f)
 		return profile[id]
+	return None
+
+def get_profiles():
+	with open(data_path+'profiles.json', 'r') as f:
+
+		profiles = json.load(f)
+		return profiles
+def commit_profiles(profiles):
+	with open(data_path+'profiles.json', 'r') as f:
+
+		json.dump(profiles,f,indent=4)
+		
 
 def add_profile(id,display_string,allprofiles,currentname):
 	f=open(data_path+"profiles.json","r")
@@ -23,6 +36,10 @@ def add_profile(id,display_string,allprofiles,currentname):
 	profiles[id]['display_string']=[display_string]
 	profiles[id]['profiles']=allprofiles
 	profiles[id]['name']=currentname
+	profiles[id]['isBan']=False,
+	profiles[id]['isMuted']=False,
+	profiles[id]['totaltimeplayer']=0,
+	profiles[id]['lastseen']=0,
 
 	f=open(data_path+"profiles.json","w")
 	json.dump(profiles,f,indent=4)
@@ -48,9 +65,34 @@ def update_profile(id,display_string=None,allprofiles=[],name=None):
 	f=open(data_path+"profiles.json","w")
 	json.dump(profiles,f,indent=4)
 	f.close()
-	
+
+def ban_player(id):
+	f=open(data_path+"profiles.json","r")
+	profiles=json.load(f.read())
+	f.close()
+	if id in profiles:
+		profiles[id]['isBan']=True
+		commit_profiles(profiles)
+
+def mute(id):
+	profiles=get_profiles()
+	if id in profiles:
+
+		profiles[id]["isMuted"]=True
+		commit_profiles(profiles)
+
+def unmute(id):
+	profiles=get_profiles()
+	if id in profiles:
+		profiles[id]["isMuted"]=False
+		commit_profiles(profiles)
 
 
+
+
+
+
+#================    ROLES  ==========================
 
 def commit_roles(data):
 	global roles

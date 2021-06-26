@@ -1,6 +1,6 @@
 {
     "pb-IF4VAk4a": {
-        "rank": 15,
+        "rank": 30,
         "name": "pb-IF4VAk4a",
         "scores": 0,
         "total_damage": 0.0,
@@ -12,19 +12,19 @@
         "aid": "pb-IF4VAk4a"
     },
     "pb-IF4TVWwZUQ==": {
-        "rank": 2,
+        "rank": 3,
         "name": "\ue030PC295588",
-        "scores": 470,
+        "scores": 546,
         "total_damage": 0.0,
         "kills": 1,
-        "deaths": 70,
-        "games": 42,
-        "kd": 0.014,
-        "avg_score": 11.19,
+        "deaths": 73,
+        "games": 47,
+        "kd": 0.013,
+        "avg_score": 11.617,
         "aid": "pb-IF4TVWwZUQ=="
     },
     "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE": {
-        "rank": 7,
+        "rank": 8,
         "name": "\ue020HeySmoothy",
         "scores": 208,
         "total_damage": 0.0,
@@ -36,7 +36,7 @@
         "aid": "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE"
     },
     "pb-IF4uVW8bMw==": {
-        "rank": 5,
+        "rank": 6,
         "name": "\ue020BurnedMedusa35646",
         "scores": 396,
         "total_damage": 0.0,
@@ -48,7 +48,7 @@
         "aid": "pb-IF4uVW8bMw=="
     },
     "pb-IF4eVUooAw==": {
-        "rank": 10,
+        "rank": 14,
         "name": "\ue030Android51971883",
         "scores": 159,
         "total_damage": 0.0,
@@ -72,7 +72,7 @@
         "aid": "pb-IF4iVUc5Cg=="
     },
     "pb-IF4rV0MoFA==": {
-        "rank": 8,
+        "rank": 10,
         "name": "\ue030Android31875021",
         "scores": 188,
         "total_damage": 0.0,
@@ -84,7 +84,7 @@
         "aid": "pb-IF4rV0MoFA=="
     },
     "pb-IF43VU0aVQ==": {
-        "rank": 6,
+        "rank": 7,
         "name": "\ue020HARSHALgaming8992",
         "scores": 253,
         "total_damage": 0.0,
@@ -96,7 +96,7 @@
         "aid": "pb-IF43VU0aVQ=="
     },
     "pb-IF4LVU0KKQ==": {
-        "rank": 4,
+        "rank": 5,
         "name": "\ue020SHAMANT1111",
         "scores": 434,
         "total_damage": 0.0,
@@ -108,7 +108,7 @@
         "aid": "pb-IF4LVU0KKQ=="
     },
     "pb-IF4VVUgJVw==": {
-        "rank": 9,
+        "rank": 12,
         "name": "\ue020WobblyLining33",
         "scores": 182,
         "total_damage": 0.0,
@@ -120,7 +120,7 @@
         "aid": "pb-IF4VVUgJVw=="
     },
     "pb-IF4gVU0BCg==": {
-        "rank": 14,
+        "rank": 26,
         "name": "\ue020Dewanggaming",
         "scores": 43,
         "total_damage": 0.0,
@@ -132,7 +132,7 @@
         "aid": "pb-IF4gVU0BCg=="
     },
     "pb-IF4FVXkZDQ==": {
-        "rank": 11,
+        "rank": 15,
         "name": "\ue020lllBOLTlll",
         "scores": 151,
         "total_damage": 0.0,
@@ -144,7 +144,7 @@
         "aid": "pb-IF4FVXkZDQ=="
     },
     "pb-IF42VUpaDg==": {
-        "rank": 3,
+        "rank": 4,
         "name": "\ue020EasterlyArtillery29",
         "scores": 468,
         "total_damage": 0.0,
@@ -156,7 +156,7 @@
         "aid": "pb-IF42VUpaDg=="
     },
     "pb-IF4iVUNSIw==": {
-        "rank": 13,
+        "rank": 23,
         "name": "default",
         "scores": 56,
         "total_damage": 0.0,
@@ -168,7 +168,7 @@
         "aid": "pb-IF4iVUNSIw=="
     },
     "pb-IF4PVGcSJw==": {
-        "rank": 12,
+        "rank": 21,
         "name": "\ue030Android29104233",
         "scores": 84,
         "total_damage": 0.0,
@@ -178,5 +178,221 @@
         "kd": 0.777,
         "avg_score": 42.0,
         "aid": "pb-IF4PVGcSJw=="
+    },
+    "pb-IF4eVVMkMw==": {
+        "rank": 16,
+        "name": "\ue030Android52887552",
+        "scores": 101,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 18,
+        "games": 6,
+        "kd": 0.0,
+        "avg_score": 16.833,
+        "aid": "pb-IF4eVVMkMw=="
+    },
+    "pb-IF4vNnMJ": {
+        "rank": 2,
+        "name": "\ue020XXRGEXX2",
+        "scores": 674,
+        "total_damage": 0.0,
+        "kills": 25,
+        "deaths": 15,
+        "games": 10,
+        "kd": 1.666,
+        "avg_score": 67.4,
+        "aid": "pb-IF4vNnMJ"
+    },
+    "pb-IF4qV3c8Hw==": {
+        "rank": 29,
+        "name": "\ue020kankeisan1284578554",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 1,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-IF4qV3c8Hw=="
+    },
+    "pb-IF4mVHFcLQ==": {
+        "rank": 13,
+        "name": "\ue030Android39744744",
+        "scores": 174,
+        "total_damage": 0.0,
+        "kills": 9,
+        "deaths": 14,
+        "games": 5,
+        "kd": 0.642,
+        "avg_score": 34.8,
+        "aid": "pb-IF4mVHFcLQ=="
+    },
+    "pb-IF4PVVIeHw==": {
+        "rank": 33,
+        "name": "\ue020VoraceMan",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-IF4PVVIeHw=="
+    },
+    "pb-IF4AVXAmPA==": {
+        "rank": 25,
+        "name": "\ue020ESZ\u4e5bOptimusOp\u4e44",
+        "scores": 56,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 28.0,
+        "aid": "pb-IF4AVXAmPA=="
+    },
+    "pb-IF4AVVEPNw==": {
+        "rank": 17,
+        "name": "\ue020StealthyFelicity14",
+        "scores": 96,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 2,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 96.0,
+        "aid": "pb-IF4AVVEPNw=="
+    },
+    "pb-IF4SVU4MFw==": {
+        "rank": 31,
+        "name": "\ue020K\u211da\u03c4o\u0eae",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-IF4SVU4MFw=="
+    },
+    "pb-IF4DVEkPEg==": {
+        "rank": 9,
+        "name": "\ue020StormyCliff19",
+        "scores": 192,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 7,
+        "games": 3,
+        "kd": 0.0,
+        "avg_score": 64.0,
+        "aid": "pb-IF4DVEkPEg=="
+    },
+    "pb-IF4TVVNeMg==": {
+        "rank": 22,
+        "name": "\ue030Android52880740",
+        "scores": 61,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 1,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 30.5,
+        "aid": "pb-IF4TVVNeMg=="
+    },
+    "pb-IF4yVUcgBg==": {
+        "rank": 18,
+        "name": "\ue020RagedRibik28",
+        "scores": 93,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 1,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 93.0,
+        "aid": "pb-IF4yVUcgBg=="
+    },
+    "pb-IF4IVUUJMg==": {
+        "rank": 19,
+        "name": "\ue030Android51464300",
+        "scores": 90,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 45.0,
+        "aid": "pb-IF4IVUUJMg=="
+    },
+    "pb-IF4tVUwGVA==": {
+        "rank": 11,
+        "name": "\ue030Android52246284",
+        "scores": 183,
+        "total_damage": 0.0,
+        "kills": 9,
+        "deaths": 13,
+        "games": 3,
+        "kd": 0.692,
+        "avg_score": 61.0,
+        "aid": "pb-IF4tVUwGVA=="
+    },
+    "pb-IF48NmQO": {
+        "rank": 27,
+        "name": "default",
+        "scores": 6,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 1,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 6.0,
+        "aid": "pb-IF48NmQO"
+    },
+    "pb-IF4UVUQaAw==": {
+        "rank": 20,
+        "name": "\ue020LikelyTour25",
+        "scores": 85,
+        "total_damage": 0.0,
+        "kills": 11,
+        "deaths": 8,
+        "games": 2,
+        "kd": 1.375,
+        "avg_score": 42.5,
+        "aid": "pb-IF4UVUQaAw=="
+    },
+    "pb-IF4wVRECLg==": {
+        "rank": 28,
+        "name": "\ue020gogugu",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 1,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-IF4wVRECLg=="
+    },
+    "pb-JiNJARBcV0FDXV1DGU5ZXV1FEUFWRVJC": {
+        "rank": 32,
+        "name": "\ue020appyfizz510",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 1,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-JiNJARBcV0FDXV1DGU5ZXV1FEUFWRVJC"
+    },
+    "pb-IF4OVVMsDQ==": {
+        "rank": 24,
+        "name": "\ue030Android52893090",
+        "scores": 56,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 2,
+        "kd": 0.0,
+        "avg_score": 28.0,
+        "aid": "pb-IF4OVVMsDQ=="
     }
 }

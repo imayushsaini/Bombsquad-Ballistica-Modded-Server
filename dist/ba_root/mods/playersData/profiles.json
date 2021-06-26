@@ -2,6 +2,10 @@
 	"pb-difsdf":{
 		"display_string":[],
 		"profiles":[],
-		"name":"something"
+		"name":"something",
+		"isBan":false,
+		"isMuted":false,
+		"lastseen":14677,
+		"totaltimeplayed":0,
 	}
 }

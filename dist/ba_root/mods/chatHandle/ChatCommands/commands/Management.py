@@ -106,9 +106,10 @@ def kick(arguments):
 def end(arguments):
 	
 	if arguments == [] or arguments == ['']:
-		
-		activity = _ba.get_foreground_host_activity()
-		activity.end_game()
+		try:
+			_ba.get_foreground_host_activity().end_game()
+		except:
+			pass
 
 
 
