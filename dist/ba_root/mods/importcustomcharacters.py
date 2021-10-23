@@ -58,4 +58,3 @@ class HeySmoothy(ba.Plugin):
             with open(path+file, 'r') as f:
                 character = json.load(f)
                 registercharacter(file,character)
-    
