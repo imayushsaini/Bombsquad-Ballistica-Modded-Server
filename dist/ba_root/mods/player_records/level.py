@@ -7,27 +7,6 @@ from player_records.file_handle import read, write
 import ba
 
 
-LevelupCallback = Callable[[ba.Player], None]
-levelup_callbacks: Dict[int, LevelupCallback] = {}
-
-
-def on_levelup(level: int) -> Callable[[LevelupCallback], LevelupCallback]:
-    """A decorator to listen levelp events.
-    The function will automatically get player parameter.
-
-    Parameters
-    ----------
-    level : int
-        A level to add listener
-    """
-
-    def wrapper(function: LevelupCallback) -> LevelupCallback:
-        levelup_callbacks[level] = function
-        return function
-
-    return wrapper
-
-
 class PlayerLevel:
     """player records to get player records store"""
 
@@ -48,11 +27,19 @@ class PlayerLevel:
         if self.players_data is None:
             return
 
-        self.players_data.setdefault("exp", 0)
-        self.players_data.setdefault("level", 1)
+        self.players_data.setdefault(self.account_id, {})
+        self.players_data[self.account_id].setdefault("exp", 0)
+        self.players_data[self.account_id].setdefault("level", 1)
+        self.players_data[self.account_id].setdefault("inventory", {})
 
         self.players_data[self.account_id]["exp"] += 1
         self.check_levelup()
+
+    def add_item(self, item: str, default_value=False) -> None:
+        """Adds item in player inventory."""
+        if self.players_data is None:
+            return
+        self.players_data[self.account_id]["inventory"][item] = default_value
 
     def check_levelup(self) -> None:
         """Check if account is leveled up."""
@@ -76,4 +63,31 @@ class PlayerLevel:
         callback = levelup_callbacks.get(level)
 
         if callback is not None:
-            callback(self.player)
+            callback(self)
+
+        ba.screenmessage(
+            f"you leveluped to {level}",
+            transient=True,
+            clients=[self.player.inputdevice.client_id],
+        )
+
+
+LevelupCallback = Callable[[PlayerLevel], None]
+levelup_callbacks: Dict[int, LevelupCallback] = {}
+
+
+def on_levelup(level: int) -> Callable[[LevelupCallback], LevelupCallback]:
+    """A decorator to listen levelp events.
+    The function will automatically get player parameter.
+
+    Parameters
+    ----------
+    level : int
+        A level to add listener
+    """
+
+    def wrapper(function: LevelupCallback) -> LevelupCallback:
+        levelup_callbacks[level] = function
+        return function
+
+    return wrapper

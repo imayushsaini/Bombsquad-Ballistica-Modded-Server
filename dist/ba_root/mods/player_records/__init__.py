@@ -9,6 +9,7 @@ from ba._activitytypes import ScoreScreenActivity
 from ba._session import Session
 
 # pakage imports
+import player_records.levelups
 from player_records.auto_update import AutoUpdate
 from player_records.stats import PlayerStats
 from player_records.level import PlayerLevel
@@ -32,5 +33,5 @@ class PlayerRecord(Plugin):
             PlayerLevel(player)
             return on_player_request(self, player)
 
-        ScoreScreenActivity.on_begin = modified_on_begin
-        Session.on_player_request = modified_on_player_request
+        ScoreScreenActivity.on_begin = modified_on_begin  # type: ignore
+        Session.on_player_request = modified_on_player_request  # type: ignore
