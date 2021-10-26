@@ -218,7 +218,7 @@ class Map(Actor):
         self.hg=ba.NodeActor(
                 _ba.newnode('text',
                             attrs={
-                                'text': "Smoothy Build\n v1.2",
+                                'text': "BCS Build\n v1.3",
                                 
                                 'flatness': 1.0,
                                 'h_align': 'center',

@@ -1,8 +1,8 @@
 {
   "accountSettingsWindow": {
-    "accountNameRules": "نام نمی‌تواند اموجی (شکلک) یا نویسه‌های ویژه داشته باشد",
+    "accountNameRules": "نام می‌تواند اموجی (شکلک) یا نویسه‌های ویژه داشته باشد",
     "accountProfileText": "(مشخصات حساب)",
-    "accountsText": "حساب‌ها",
+    "accountsText": "پروفایل ها",
     "achievementProgressText": "${TOTAL} از‎ ${COUNT} :دستاوردها",
     "campaignProgressText": "${PROGRESS} :[سخت]‎ پیشروی در بازی اصلی",
     "changeOncePerSeason": ".فقط یک‌بار در هر فصل می‌توانید این مورد را تغییر دهید",
@@ -11,10 +11,10 @@
     "linkAccountsEnterCodeText": "کد را وارد کنید",
     "linkAccountsGenerateCodeText": "ایجاد کد",
     "linkAccountsInfoText": "(به اشتراک گذاری پیشروی بین دستگاه‌های مختلف)",
-    "linkAccountsInstructionsNewText": "برای اتصال دو حساب کاربری، ابتدا یک کد در حساب اول بسازید\nسپس آن را در حساب دوم وارد کنید. پس از این کار \n.اطلاعات حساب دوم بین دو حساب به اشتراک گذاشته می‌شود\n(اطلاعات حساب اول از بین خواهد رفت)\n\n.حساب را به هم متصل کنید‎ ${COUNT} شما می‌توانید تا\n\nتوجه: تنها حساب‌هایی که متعلق به خودتان است را\nبه هم متصل کنید! اگر به حساب دوستتان متصل\n.شوید، نمی‌توانید همزمان آنلاین بازی کنید",
+    "linkAccountsInstructionsNewText": "برای اتصال دو پروفایل، ابتدا یک کد در پروفایل اول بسازید\nسپس آن را در پروفایل دوم وارد کنید. پس از این کار \n.اطلاعات پروفایل دوم بین دو پروفایل به اشتراک گذاشته می‌شود\n(اطلاعات پروفایل اول از بین خواهد رفت)\n\n.پروفایل را به هم متصل کنید‎ ${COUNT} شما می‌توانید تا\nتوجه: تنها پروفایل‌هایی که مال خودتان است را\nبه هم متصل کنید! اگر به پروفایل دوستانتان وصل\n.شوید، نمی‌توانید همزمان آنلاین بازی کنید",
     "linkAccountsInstructionsText": "برای اتصال دو حساب، در یکی از\nآن ها کدی ایجاد کرده \nو آن را در دیگری وارد کنید.\nپیشرفت ها و موجودی ترکیب خواهد شد.\nحساب را وصل کنید ${COUNT} شما می توانید.\n!توجه : فقط حساب هایی را وصل کنید که برای\n شماست\nاگر شما حساب دیگری را وصل کنید، شما توانایی این را ندارید که در یک زمان بازی کنید!\nاین عمل برگشت پذیر نیست، پس \nدقت کنید!",
-    "linkAccountsText": "متصل کردن حساب‌ها",
-    "linkedAccountsText": "حساب‌های متصل‌شده:‎",
+    "linkAccountsText": "متصل کردن پروفایل‌ها",
+    "linkedAccountsText": "پروفایل‌های متصل‌شده:‎",
     "nameChangeConfirm": "تغییر کند؟‎ ${NAME} آیا نام شما به",
     "resetProgressConfirmNoAchievementsText": "همهٔ پیشروی‌های شما در بخش همکاری و بالاترین امتیازات\nشما پاک خواهد شد. (به استثنای بلیت‌های شما)\nاین کار برگشت‌پذیر نیست. آیا مطمئنید؟",
     "resetProgressConfirmText": "همهٔ پیشروی‌ها در بخش همکاری، دستاوردها\n.و امتیازات بالای شما پاک خواهد شد\n(به استثنای بلیت‌های شما)\nاین کار برگشت‌پذیر نیست. آیا مطمئنید؟",
@@ -121,7 +121,7 @@
       "name": "بازی با مین"
     },
     "Off You Go Then": {
-      "description": "سه حریف رو از نقشه بنداز پایین",
+      "description": "سه حریف رو از زمین بنداز بیرون",
       "descriptionComplete": "سه حریف رو از نقشه انداختی پایین",
       "descriptionFull": "از نقشه بنداز پایین${LEVEL}سه حریف رو در مرحله ی",
       "descriptionFullComplete": "از نقشه انداختی پایین ${LEVEL} سه حریف رو در مرحله ی",
@@ -132,7 +132,7 @@
       "descriptionComplete": "پنج هزار امتیاز گرفتی",
       "descriptionFull": "بگیر${LEVEL}پنج هزار امتیاز در مرحله ی",
       "descriptionFullComplete": "گرفتی${LEVEL}پنج هزار امتیاز در مرحله ی",
-      "name": "${LEVEL} سَرور"
+      "name": "${LEVEL} خدا"
     },
     "Onslaught Master": {
       "description": "پونصد امتیاز بگیر",
@@ -223,7 +223,7 @@
       "descriptionComplete": "دو هزار امتیاز گرفتی",
       "descriptionFull": "دو هزار امتیاز بگیر ${LEVEL} در مرحله",
       "descriptionFullComplete": "دو هزار امتیاز گرفتی ${LEVEL} در مرحله",
-      "name": "${LEVEL} سَرور"
+      "name": "${LEVEL} خدا"
     },
     "Runaround Master": {
       "description": "پانصد امتیاز بگیر",
@@ -818,6 +818,7 @@
     "bombInfoText": "- بمب -\nقوی تر از مشته امامیتونه\n.برای خودتون هم خطرناک باشه\nدر بهترین زمان ممکن قبل از اینکه\n.در دست خودتون بترکه، پرتش بدید",
     "canHelpText": "میتونه به شما کمک کنه${APP_NAME}",
     "controllersInfoText": "بازی کنید و یا${APP_NAME}میتوانید توسط شبکه با دوستانتان\n.روی یک دستگاه بازی کنید اگر به اندازه ی کافی دسته دارید\nاز این تنوع پشتیبانی میکند؛ شما حتی میتوانید${APP_NAME}\nاز گوشی های هوشمند به عنوان دسته استفاده کنید از طریق برنامه\n.برای اطلاعات بیشتر به تنظیمات>کنترلرها بروید.${REMOTE_APP_NAME}",
+    "controllersInfoTextRemoteOnly": "شما میتونید ${APP_NAME} رو همراه دوستانتان به صورت اینترنتی  ، یا\nبا استفاده از نرم‌افزار '${REMOTE_APP_NAME}' گوشیتون رو\nبه دسته بازی تبدیل کنید تا همه با هم در یک گوشی بازی کنید.",
     "controllersText": "کنترلرها",
     "controlsSubtitleText": ":شما چندتا حرکت اساسی داره ${APP_NAME} بازیکن",
     "controlsText": "کنترل‌ها",
@@ -1518,6 +1519,7 @@
       "Slovak": "اسلوواکی",
       "Spanish": "اسپانیایی",
       "Swedish": "سوئدی",
+      "Thai": "تایلندی",
       "Turkish": "ترکی",
       "Ukrainian": "اوکراینی",
       "Venetian": "ونیزی",
@@ -1566,6 +1568,7 @@
       "Account linking successful!": "ارتباط موفق با حساب کاربری",
       "Account unlinking successful!": "قطع شدن حساب با موفقیت انجام شد",
       "Accounts are already linked.": "حساب‌ها قبلا مرتبط شده‌اند",
+      "Ad view could not be verified.\nPlease be sure you are running an official and up-to-date version of the game.": "نمای آگهی تأیید نمی شود\nلطفا مطمئن باشید که نسخه رسمی و به روز بازی را اجرا می کنید",
       "An error has occurred; (${ERROR})": "متاسفانه یک مشکل رخ داده ؛ (${ERROR})",
       "An error has occurred; please contact support. (${ERROR})": "یک مشکل رخ داده! لطفا با پشتیبانی تماس بگیرید؛ (${ERROR})",
       "An error has occurred; please contact support@froemling.net.": ".تماس بگیرید support@froemling.net خطایی رخ داده است. لطفاً با",
@@ -1591,6 +1594,7 @@
       "Max number of profiles reached.": ".تعداد نمایه‌ها به حداکثر رسیده است",
       "Maximum friend code rewards reached.": ".حداکثر جایزه کد ارسالی برای دوستان دریافت شد",
       "Message is too long.": "پیام خیلی طولانی است",
+      "No servers are available. Please try again soon.": "هیچ سروری در دسترس نیست.  لطفا به زودی دوباره امتحان کنید",
       "Profile \"${NAME}\" upgraded successfully.": ".با موفقیت ارتقا یافت «${NAME}» نمایهٔ",
       "Profile could not be upgraded.": ".نمایه نمی‌تواند ارتقا یابد",
       "Purchase successful!": "خرید با موفقیت انجام شد",
@@ -1600,6 +1604,7 @@
       "Sorry, this code has already been used.": "با عرض پوزش، این کد قبلا استفاده شده است.",
       "Sorry, this code has expired.": "متاسفانه این کد منقضی شده",
       "Sorry, this code only works for new accounts.": "با عرض وزش پوزش, این کد فقط برا حساب کاربری جدید کاربرد داره",
+      "Still searching for nearby servers; please try again soon.": "هنوز سرورهای اطراف را جستجو می کنید.  لطفا به زودی دوباره امتحان کنید",
       "Temporarily unavailable; please try again later.": "در حال حاضر این گذینه موجود نمی باشد؛لطفا بعدا امتحان کنید",
       "The tournament ended before you finished.": "مسابقات به پایان رسید قبل از اینکه شما به پایان برسید.",
       "This account cannot be unlinked for ${NUM} days.": "این حساب برای مدت ${NUM} روز قابل جداسازی نیست!",

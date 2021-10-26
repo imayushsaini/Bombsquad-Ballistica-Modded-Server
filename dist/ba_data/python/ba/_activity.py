@@ -112,6 +112,11 @@ class Activity(DependencyComponent, Generic[PlayerType, TeamType]):
     # transitions).
     inherits_tint = False
 
+    # Whether players should be allowed to join in the middle of this
+    # activity. Note that Sessions may not allow mid-activity-joins even
+    # if the activity says its ok.
+    allow_mid_activity_joins: bool = True
+
     # If the activity fades or transitions in, it should set the length of
     # time here so that previous activities will be kept alive for that
     # long (avoiding 'holes' in the screen)
@@ -275,7 +280,7 @@ class Activity(DependencyComponent, Generic[PlayerType, TeamType]):
 
         (internal)
         """
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
 
         # Create a real-timer that watches a weak-ref of this activity
         # and reports any lingering references keeping it alive.

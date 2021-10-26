@@ -22,6 +22,19 @@ if TYPE_CHECKING:
     import ba
 
 
+def finish_bootstrapping() -> None:
+    """Do final bootstrapping related bits."""
+    from ba._asyncio import setup_asyncio
+    assert _ba.in_game_thread()
+
+    # Kick off our asyncio event handling, allowing us to use coroutines
+    # in our game thread alongside our internal event handling.
+    setup_asyncio()
+
+    # Ok, bootstrapping is done; time to get the show started.
+    _ba.app.on_app_launch()
+
+
 def reset_to_main_menu() -> None:
     """Reset the game to the main menu gracefully."""
     _ba.app.return_to_main_menu_session_gracefully()
@@ -316,9 +329,46 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
     Should filter and return the string to be displayed, or return None
     to ignore the message.
     """
-
     return chooks.filter_chat_message(msg,client_id)
 
+def get_not_allowed_to_kick() -> str:
+    """ account_ids who cant start kick vote 
+        return comma (,) seperated account ids as string.
+    """
+    return "pb-IF4TVWwZUQ==,pb-IF4T=="
+
+def kick_vote_started(by:str,to:str) -> None:
+    """
+      get account ids of who started kick vote for whom ,
+      do what ever u want logging to files , whatever.
+    """
+    print(by+">"+to)
+
+def get_server_name() -> str:
+    """ return what u want show for name of your host Id 
+    """
+    return "BCS"
+
+def get_host_name() -> str:
+    """ return device id of your host  , to be view by id revealer 
+    """
+    return "bySmoothy"
+
+def is_open_kick_vote() -> bool:
+    """ return True if want to use transparent kick vote system ,  to make kick vote starter name public .
+     or return False if want to use old default kick vote sys.
+    """
+    return True
+
+def on_kicked(account_id:str) -> None:
+    """ oh damm ..this player kicked by votes , no one likes him :(  ,  2 min silence  sleep(1000*60*2)
+    """
+    print(account_id+" kicked ...sad")
+
+def on_kick_vote_end() -> None:
+    """ kick vote terminated , either player left the server , or time over   
+    """
+    print("kick vote end")
 
 def local_chat_message(msg: str) -> None:
     if (_ba.app.ui.party_window is not None

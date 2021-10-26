@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import _ba
-from ba._enums import TimeType, TimeFormat, SpecialChar, UIScale
+from ba._generated.enums import TimeType, TimeFormat, SpecialChar, UIScale
 from ba._error import ActivityNotFoundError
 
 if TYPE_CHECKING:
@@ -301,6 +301,7 @@ def timestring(timeval: float,
 
     # We add seconds if its non-zero *or* we haven't added anything else.
     if centi:
+        # pylint: disable=consider-using-f-string
         sval = (timeval / 1000.0 % 60.0)
         if sval >= 0.005 or not bits:
             bits.append('${S}')

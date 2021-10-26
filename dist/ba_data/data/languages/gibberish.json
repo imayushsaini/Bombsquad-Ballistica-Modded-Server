@@ -1,7 +1,7 @@
 {
   "accountRejectedText": "You ac woefije obj acwoew. Aj cowier wore cs?",
   "accountSettingsWindow": {
-    "accountNameRules": "Acoief coej. c woejf. cwoef ocoweofwjfj c wjefowfowef wocjowefff",
+    "accountNameRules": "Acoief coej. c woejf. cwoef ocoweofwjfj c wjefowfowef wocjowefffz",
     "accountProfileText": "(acczntl prfflzlf)",
     "accountsText": "Acctntzz",
     "achievementProgressText": "Achilfjasdflz: ${COUNT} ouzt of ${TOTAL}",
@@ -876,6 +876,7 @@
     "controllersInfoTextFantasia": "Onfe ojfr twjo ploayers cjan usje tjhe keyoiboard, bjut BombjjSquad ifs bfest width gamjepads.\nWiimotejs, adnd iOS/Android devfdsfs to condsdfrol chasdfcters. Hopezzfully you havesf\nsomef of thesfe handffy.  See 'Controllefdrs' undzer 'Settinfewgs' fofr moree inefo.",
     "controllersInfoTextMac": "Onfe ojfr twjo ploayers cjan usje tjhe keyoiboard, bjut BombjjSquad ifs bfest width gamjepads.\nBombSqufad cajn ufe USB gamepd, PS3 codzntrollers, XBsox 360 codsfnolers,\nWiimotejs, adnd iOS/Android devfdsfs to condsdfrol chasdfcters. Hopezzfully you havesf\nsomef of thesfe handffy.  See 'Controllefdrs' undzer 'Settinfewgs' fofr moree inefo.",
     "controllersInfoTextOuya": "Yzz czf usfd OUYA contdsfasdf, PS3 conconafdsf, XBox 360 coancofffnf,\nafg ladsf of ofafsdf USB and Bluetooth gamepdfhfj with BombSquadz.\nYouf canzz alssf use ijOS aknd Androioid dejoivices as cojjntrollers vjia thej fjree\n'BombSquadj Remoftef' appf. Seef 'Controllerss' underz 'Settinfgsf' fozr mosre inffo.",
+    "controllersInfoTextRemoteOnly": "Yeof ocowef ${APP_NAME} owejc oefw eoeo owjocejore,\npower cue afoot focjeo foweifjwoeh coweifowpa oghwoef\ncocwoejrw. cow;oiwjrweirw '${REMOTE_APP_NAME}' apz.",
     "controllersInfoTextScaleFantasia": 0.56,
     "controllersInfoTextScaleMac": 0.58,
     "controllersInfoTextScaleOuya": 0.63,
@@ -1643,6 +1644,7 @@
       "Slovak": "Slihdtbjoy",
       "Spanish": "Snsdnsh",
       "Swedish": "Swdiiszh",
+      "Thai": "Thzff",
       "Turkish": "Twfoijwef",
       "Ukrainian": "Ukckwef",
       "Venetian": "Vwvowefdf",
@@ -1694,6 +1696,7 @@
       "Account linking successful!": "Accjo link succeosf!",
       "Account unlinking successful!": "Accjow cowejowejr sucefwewr!",
       "Accounts are already linked.": "Accojif co woie owjilkn.",
+      "Ad view could not be verified.\nPlease be sure you are running an official and up-to-date version of the game.": "And foci wej fowif ijcowjer.\nPle eocj w jocose fowl jeowijeo few fj cijwoiejr. fofofifjow e ciweocywe.",
       "An error has occurred; (${ERROR})": "An cow fc woof wcef; (${ERROR})",
       "An error has occurred; please contact support. (${ERROR})": "An cowed c woefj wcoi woof weiojrwe rj goije ${ERROR})",
       "An error has occurred; please contact support@froemling.net.": "An f oco ao ocio wj ; pocj oco woei fsuupo co co ifoiwnet",

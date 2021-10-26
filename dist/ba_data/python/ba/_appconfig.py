@@ -97,7 +97,7 @@ def read_config() -> Tuple[AppConfig, bool]:
     """Read the game config."""
     import os
     import json
-    from ba._enums import TimeType
+    from ba._generated.enums import TimeType
 
     config_file_healthy = False
 
@@ -107,7 +107,7 @@ def read_config() -> Tuple[AppConfig, bool]:
     config_contents = ''
     try:
         if os.path.exists(config_file_path):
-            with open(config_file_path) as infile:
+            with open(config_file_path, encoding='utf-8') as infile:
                 config_contents = infile.read()
             config = AppConfig(json.loads(config_contents))
         else:
@@ -140,7 +140,7 @@ def read_config() -> Tuple[AppConfig, bool]:
         prev_path = config_file_path + '.prev'
         try:
             if os.path.exists(prev_path):
-                with open(prev_path) as infile:
+                with open(prev_path, encoding='utf-8') as infile:
                     config_contents = infile.read()
                 config = AppConfig(json.loads(config_contents))
             else:

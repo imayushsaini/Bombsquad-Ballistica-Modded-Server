@@ -37,7 +37,7 @@ class LanguageSubsystem:
         # We don't yet support full unicode display on windows or linux :-(.
         if (language in {
                 'Chinese', 'ChineseTraditional', 'Persian', 'Korean', 'Arabic',
-                'Hindi', 'Vietnamese'
+                'Hindi', 'Vietnamese', 'Thai'
         } and not _ba.can_display_full_unicode()):
             return False
         return True
@@ -79,6 +79,7 @@ class LanguageSubsystem:
             'ar': 'Arabic',
             'zh': 'Chinese',
             'tr': 'Turkish',
+            'th': 'Thai',
             'id': 'Indonesian',
             'sr': 'Serbian',
             'uk': 'Ukrainian',
@@ -161,7 +162,8 @@ class LanguageSubsystem:
         else:
             switched = False
 
-        with open('ba_data/data/languages/english.json') as infile:
+        with open('ba_data/data/languages/english.json',
+                  encoding='utf-8') as infile:
             lenglishvalues = json.loads(infile.read())
 
         # None implies default.
@@ -173,7 +175,7 @@ class LanguageSubsystem:
             else:
                 lmodfile = 'ba_data/data/languages/' + language.lower(
                 ) + '.json'
-                with open(lmodfile) as infile:
+                with open(lmodfile, encoding='utf-8') as infile:
                     lmodvalues = json.loads(infile.read())
         except Exception:
             from ba import _error

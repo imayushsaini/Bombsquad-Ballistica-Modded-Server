@@ -275,6 +275,7 @@ class App:
         self.pro_sale_start_val: Optional[int] = None
 
         self.delegate: Optional[ba.AppDelegate] = None
+        self._asyncio_timer: Optional[ba.Timer] = None
 
     def on_app_launch(self) -> None:
         """Runs after the app finishes bootstrapping.
@@ -290,9 +291,10 @@ class App:
         from bastd import appdelegate
         from bastd import maps as stdmaps
         from bastd.actor import spazappearance
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
         import custom_hooks
         custom_hooks.on_app_launch()
+
         cfg = self.config
 
         self.delegate = appdelegate.AppDelegate()
@@ -582,7 +584,8 @@ class App:
         """
         import urllib.request
         try:
-            val = urllib.request.urlopen('https://example.com').read()
+            with urllib.request.urlopen('https://example.com') as url:
+                val = url.read()
             print('HTTPS TEST SUCCESS', len(val))
         except Exception as exc:
             print('HTTPS TEST FAIL:', exc)
