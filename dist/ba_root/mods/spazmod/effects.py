@@ -21,7 +21,7 @@ from stats import mystats
 from tools import globalvars as gvar
 PlayerType = TypeVar('PlayerType', bound=ba.Player)
 TeamType = TypeVar('TeamType', bound=ba.Team)
-from ba._enums import TimeType
+from ba._generated.enums import TimeType
 tt = ba.TimeType.SIM
 tf = ba.TimeFormat.MILLISECONDS
 
@@ -141,7 +141,7 @@ class Effect(ba.Actor):
         self.checkDeadTimer = None
         self._hasDead = False
         self.light = None
-        
+
         node_id = self.source_player.node.playerID
         cl_str = None
         clID = None
@@ -150,13 +150,13 @@ class Effect(ba.Actor):
                 profiles = c.inputdevice.get_player_profiles()
                 clID = c.inputdevice.client_id
                 cl_str = c.get_account_id()
-                
+
         try:
             if cl_str in custom_effects:
                 effect = custom_effects[cl_str]
-                
+
                 if effect == 'ice':
-                    
+
                     self.emitIce()
                     self.snowTimer = ba.Timer(0.5, self.emitIce, repeat=True, timetype=TimeType.SIM)
                     return
@@ -194,19 +194,19 @@ class Effect(ba.Actor):
                 rank = pats[cl_str]["rank"]
                 if rank < 6:
                     if rank == 1:
-                        
+
                         self.surround = SurroundBall(spaz, shape="bones") #self.neroLightTimer = ba.Timer(500, ba.WeakCall(self.neonLightSwitch,("shine" in self.Decorations),("extra_Highlight" in self.Decorations),("extra_NameColor" in self.Decorations)),repeat = True, timetype=tt, timeformat=tf)
                     elif rank == 2:
-                        
+
                         self.smokeTimer = ba.Timer(40, self.emitSmoke, repeat=True, timetype=tt, timeformat=tf)
                     elif rank == 3:
-                        
+
                         self.addLightColor((1, 0.6, 0.4));self.scorchTimer = ba.Timer(500, self.update_Scorch, repeat=True, timetype=tt, timeformat=tf)
                     elif rank == 4:
-                        
+
                         self.metalTimer = ba.Timer(500, self.emitMetal, repeat=True, timetype=tt, timeformat=tf)
                     else:
-                        
+
                         self.addLightColor((1, 0.6, 0.4));self.checkDeadTimer = ba.Timer(150, self.checkPlayerifDead, repeat=True, timetype=tt, timeformat=tf)
 
         if "smoke" and "spark" and "snowDrops" and "slimeDrops" and "metalDrops" and "Distortion" and "neroLight" and "scorch" and "HealTimer" and "KamikazeCheck" not in self.Decorations:
@@ -277,7 +277,7 @@ class Effect(ba.Actor):
 
     def emitIce(self):
         spaz = self.spazRef()
-        
+
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return

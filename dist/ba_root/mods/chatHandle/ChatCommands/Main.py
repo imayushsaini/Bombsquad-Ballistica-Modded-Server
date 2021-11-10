@@ -12,7 +12,7 @@ from .Handlers import check_permissions
 import ba, _ba
 import setting
 
-
+from serverData import serverdata
 
 
 def command_type(command):
@@ -89,7 +89,10 @@ def Command(msg, clientid):
 	
 	
 	settings = setting.get_settings_data()
-	
+	if accountid in serverdata.clients:
+		if serverdata.clients[accountid]["isMuted"]:
+			_ba.screenmessage("You are on mute", transient=True, clients=[clientid])
+			return None
 	if settings["ChatCommands"]["BrodcastCommand"]:
 		return msg
 	return None

@@ -13,8 +13,11 @@ data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.s
 def get_info(id):
 	with open(data_path+'profiles.json', 'r') as f:
 
-		profile = json.load(f)
-		return profile[id]
+		profiles = json.load(f)
+		if id in profiles:
+
+			return profiles[id]
+
 	return None
 
 def get_profiles():
@@ -23,23 +26,24 @@ def get_profiles():
 		profiles = json.load(f)
 		return profiles
 def commit_profiles(profiles):
-	with open(data_path+'profiles.json', 'r') as f:
+	with open(data_path+'profiles.json', 'w') as f:
 
 		json.dump(profiles,f,indent=4)
 		
 
-def add_profile(id,display_string,allprofiles,currentname):
+def add_profile(id,display_string,currentname):
 	f=open(data_path+"profiles.json","r")
-	profiles=json.load(f.read())
+	profiles=json.load(f)
 	f.close()
+	profiles[id]={"display_string":display_string,
+				  "profiles":[],
+				  "name":currentname,
+				  "isBan":False,
+				  "isMuted":False,
+				  "totaltimeplayer":0,
+				  "lastseen":0}
 
-	profiles[id]['display_string']=[display_string]
-	profiles[id]['profiles']=allprofiles
-	profiles[id]['name']=currentname
-	profiles[id]['isBan']=False,
-	profiles[id]['isMuted']=False,
-	profiles[id]['totaltimeplayer']=0,
-	profiles[id]['lastseen']=0,
+	
 
 	f=open(data_path+"profiles.json","w")
 	json.dump(profiles,f,indent=4)
@@ -67,9 +71,7 @@ def update_profile(id,display_string=None,allprofiles=[],name=None):
 	f.close()
 
 def ban_player(id):
-	f=open(data_path+"profiles.json","r")
-	profiles=json.load(f.read())
-	f.close()
+	profiles= get_profiles()
 	if id in profiles:
 		profiles[id]['isBan']=True
 		commit_profiles(profiles)

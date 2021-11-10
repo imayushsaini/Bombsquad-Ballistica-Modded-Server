@@ -8,7 +8,6 @@ ranks=[]
 import threading,json,os,urllib.request,ba,_ba,setting
 from ba._activity import Activity
 from ba._music import setmusic, MusicType
-from ba._enums import InputType, UIScale
 # False-positive from pylint due to our class-generics-filter.
 from ba._player import EmptyPlayer  # pylint: disable=W0611
 from ba._team import EmptyTeam  # pylint: disable=W0611
@@ -65,14 +64,14 @@ def get_stats_by_id(ID: str):
     if ID in a:
         return a[ID]
     else:
-        
+
         return None
 
 def refreshStats():
     # lastly, write a pretty html version.
     # our stats url could point at something like this...
     pStats = get_all_stats()
-    f=open(htmlfile, 'w')       
+    f=open(htmlfile, 'w')
     f.write(html_start)
     entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
@@ -142,7 +141,7 @@ def refreshStats():
     ranks=_ranks
 
     dump_stats(pStats)
-    
+
     from playersData import pdata
     pdata.update_toppers(toppersIDs)
 
@@ -151,7 +150,7 @@ def update(score_set):
     Given a Session's ScoreSet, tallies per-account kills
     and passes them to a background thread to process and
     store.
-    """ 
+    """
     # look at score-set entries to tally per-account kills for this round
 
     account_kills = {}
@@ -172,7 +171,7 @@ def update(score_set):
     # from disk, do display-string lookups for accounts that need them,
     # and write everything back to disk (along with a pretty html version)
     # We use a background thread so our server doesn't hitch while doing this.
-    
+
     if account_scores:
         UpdateThread(account_kills, account_deaths, account_scores).start()
 
@@ -182,10 +181,10 @@ class UpdateThread(threading.Thread):
         self._account_kills = account_kills
         self.account_deaths = account_deaths
         self.account_scores = account_scores
-        
+
     def run(self):
         # pull our existing stats from disk
-        
+
         try:
             if os.path.exists(statsfile):
                 with open(statsfile) as f:
