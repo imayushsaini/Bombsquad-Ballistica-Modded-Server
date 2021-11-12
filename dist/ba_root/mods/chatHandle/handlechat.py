@@ -5,8 +5,9 @@ from serverData import serverdata
 from chatHandle.ChatCommands import Main
 from tools import Logger
 import ba, _ba
+import setting
 
-
+settings = setting.get_settings_data()
 
 def filter_chat_message(msg, client_id):
 
@@ -22,10 +23,17 @@ def filter_chat_message(msg, client_id):
 		if serverdata.clients[acid]["isMuted"]:
 			_ba.screenmessage("You are on mute", transient=True, clients=[client_id])
 			return None
+		elif serverdata.clients[acid]["accountAge"] < settings['minAgeToChatInHours']:
+			_ba.screenmessage("New accounts not allowed to chat here", transient=True, clients=[client_id])
+			return None
+		else:
+			return msg
 
 
+	else:
+		_ba.screenmessage("Fetching your account info , Wait a minute", transient=True, clients=[client_id])
+		return None
 
-	return msg
 
 """
 	if chatfilter.isAbuse(msg):

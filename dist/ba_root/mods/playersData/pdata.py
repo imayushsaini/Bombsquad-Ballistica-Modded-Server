@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 import _ba, os, json
-
+from serverData import serverdata
 
 
 roles = {}
@@ -31,7 +31,7 @@ def commit_profiles(profiles):
 		json.dump(profiles,f,indent=4)
 		
 
-def add_profile(id,display_string,currentname):
+def add_profile(id,display_string,currentname,age):
 	f=open(data_path+"profiles.json","r")
 	profiles=json.load(f)
 	f.close()
@@ -40,6 +40,7 @@ def add_profile(id,display_string,currentname):
 				  "name":currentname,
 				  "isBan":False,
 				  "isMuted":False,
+				  "accountAge":age,
 				  "totaltimeplayer":0,
 				  "lastseen":0}
 
@@ -47,8 +48,14 @@ def add_profile(id,display_string,currentname):
 
 	f=open(data_path+"profiles.json","w")
 	json.dump(profiles,f,indent=4)
+	serverdata.clients[id]=profiles[id]
 	f.close()
 
+def update_displayString(id,display_string):
+	profiles=get_profiles()
+	if id in profiles:
+		profiles[id]["display_string"]=display_string
+		commit_profiles(profiles)
 
 		
 def update_profile(id,display_string=None,allprofiles=[],name=None):

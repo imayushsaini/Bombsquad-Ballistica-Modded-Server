@@ -29,7 +29,7 @@ def playerspaz_init(player):
 
 def bootstraping():
     print("starting server configuration")
-    _ba.disconnect_client=new_disconnect
+    #_ba.disconnect_client=new_disconnect
     settings = setting.get_settings_data()
     _ba.set_server_device_name(settings["HostDeviceName"])
     _ba.set_server_name(settings["HostName"])

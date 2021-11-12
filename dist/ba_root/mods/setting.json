@@ -26,7 +26,8 @@
     "HostName":"BCS",
     "ShowKickVoteStarterName":true,
     "KickVoteMsgType":"chat",
-
+    "minAgeToChatInHours":78,
+    "minAgeToJoinInHours":48,
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,
