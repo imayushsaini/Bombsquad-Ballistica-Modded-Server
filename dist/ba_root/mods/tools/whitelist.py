@@ -1,4 +1,4 @@
-""" 
+"""
 Private Server whitelist by Mr.Smoothy
 
 * don't dare to remove credits or I will bite you
@@ -11,7 +11,7 @@ GitHub : https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server
 # ba_meta require api 6
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from ba._enums import TimeType
+from ba._generated.enums import TimeType
 
 import ba, _ba, time, json, datetime, setting
 
@@ -50,13 +50,13 @@ def get_whitelist_data():
 		whitelist={}
 		whitelist['pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE']=['smoothyki-id','mr.smoothy']
 		commit(whitelist)
-	
+
 	return whitelist
 
 
 def in_white_list(accountid : str):
 	data = get_whitelist_data()
-	
+
 	if str(accountid) in data:
 		return True
 	else:
@@ -65,13 +65,13 @@ def in_white_list(accountid : str):
 
 def add_to_white_list(accountid : str, display_string : str):
 	data = get_whitelist_data()
-	
+
 	if accountid not in data:
 		data[str(accountid)] = [str(display_string)]
-	
+
 	else:
 		data[str(accountid)].append(str(display_string))
-	
+
 	commit(data)
 
 
@@ -79,13 +79,13 @@ def handle_player_request(player):
 	data = get_whitelist_data()
 	settings = setting.get_settings_data()["white_list"]
 	accountid = player.get_account_id()
-	
+
 	if settings["whitelist_on"]:
 		if in_white_list(accountid):
 			return
 		else:
 			rost = _ba.get_game_roster()
-			
+
 			for i in rost:
 				if i["account_id"] == accountid:
 					_ba.disconnect_client(int(i['client_id']))
@@ -98,45 +98,45 @@ def display_string_in_white_list(display_string : str):
 class Whitelist:
 	def __init__(self):
 		global whitelist
-		
+
 		settings = setting.get_settings_data()["white_list"]
 		whitelist_on = settings["whitelist_on"]
 		spectators = settings["spectators"]
 		lobbychecktime = settings["lobbychecktime"]
 		# _ba.chatmessage(f"{settings} {whitelist_on} {spectators} {lobbychecktime}")
-		
-		
+
+
 		get_whitelist_data()
-		
-		
+
+
 		if whitelist_on and not spectators:
 			self.timer = ba.Timer(lobbychecktime, self.checklobby, repeat=True, timetype=TimeType.REAL)
-	
+
 	def checklobby(self):
 		global whitelist
 		settings = setting.get_settings_data()["white_list"]
 		whitelist_on = settings["whitelist_on"]
 		spectators = settings["spectators"]
 		lobbychecktime = settings["lobbychecktime"]
-		
+
 		if whitelist_on and not spectators:
 			if True:
-				
+
 				rost = _ba.get_game_roster()
 				for i in rost:
 					if i['account_id'] in whitelist and i['account_id'] != '' or i['client_id'] == -1:
-						pass 
-						
+						pass
+
 					else:
 						try:
 							add_commit_to_logs("Kicked from lobby "+i['account_id'])
 						except:
 							pass
 						_ba.disconnect_client(i['client_id'])
-			
+
 			# except:
 			# 	return
 		else:
 			self.timer =None
-	
+
 

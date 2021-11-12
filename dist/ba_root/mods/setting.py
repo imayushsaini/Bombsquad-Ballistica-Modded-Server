@@ -3,13 +3,20 @@ import _ba, json
 
 settings_path = _ba.env()["python_directory_user"]+"/setting.json"
 
+settings=None
 
 
 
 def get_settings_data():
-	with open(settings_path, "r") as f:
-		data = json.load(f)
-	return data
+	global settings
+	if settings==None:
+		with open(settings_path, "r") as f:
+			data = json.load(f)
+			settings=data
+			return settings
+	else:
+
+		return settings
 
 
 

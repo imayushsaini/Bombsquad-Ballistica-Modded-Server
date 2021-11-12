@@ -12,7 +12,7 @@ from ba._language import Lstr
 from ba._player import Player
 
 if TYPE_CHECKING:
-    from typing import Sequence, List, Dict, Any, Optional, Set
+    from typing import Sequence, Any, Optional
     import ba
 
 
@@ -63,10 +63,6 @@ class Session:
             team instead of their own profile colors. This only applies if
             use_teams is enabled.
 
-        allow_mid_activity_joins
-            Whether players should be allowed to join in the middle of
-            activities.
-
         customdata
             A shared dictionary for objects to use as storage on this session.
             Ensure that keys here are unique to avoid collisions.
@@ -74,16 +70,15 @@ class Session:
     """
     use_teams: bool = False
     use_team_colors: bool = True
-    allow_mid_activity_joins: bool = True
 
     # Note: even though these are instance vars, we annotate them at the
     # class level so that docs generation can access their types.
     lobby: ba.Lobby
     max_players: int
     min_players: int
-    sessionplayers: List[ba.SessionPlayer]
+    sessionplayers: list[ba.SessionPlayer]
     customdata: dict
-    sessionteams: List[ba.SessionTeam]
+    sessionteams: list[ba.SessionTeam]
 
     def __init__(self,
                  depsets: Sequence[ba.DependencySet],
@@ -113,7 +108,7 @@ class Session:
         # If things are missing, we'll try to gather them into a single
         # missing-deps exception if possible to give the caller a clean
         # path to download missing stuff and try again.
-        missing_asset_packages: Set[str] = set()
+        missing_asset_packages: set[str] = set()
         for depset in depsets:
             try:
                 depset.resolve()
@@ -138,7 +133,7 @@ class Session:
 
         # Ok; looks like our dependencies check out.
         # Now give the engine a list of asset-set-ids to pass along to clients.
-        required_asset_packages: Set[str] = set()
+        required_asset_packages: set[str] = set()
         for depset in depsets:
             required_asset_packages.update(depset.get_asset_package_ids())
 
@@ -210,18 +205,26 @@ class Session:
             raise NodeNotFoundError()
         return node
 
+    def should_allow_mid_activity_joins(self, activity: ba.Activity) -> bool:
+        """Ask ourself if we should allow joins during an Activity.
+
+        Note that for a join to be allowed, both the Session and Activity
+        have to be ok with it (via this function and the
+        Activity.allow_mid_activity_joins property.
+        """
+        del activity  # Unused.
+        return True
+
     def on_player_request(self, player: ba.SessionPlayer) -> bool:
         """Called when a new ba.Player wants to join the Session.
 
         This should return True or False to accept/reject.
         """
-        from tools import whitelist
-        whitelist.handle_player_request(player)
+
         # Limit player counts *unless* we're in a stress test.
         if _ba.app.stress_test_reset_timer is None:
 
             if len(self.sessionplayers) >= self.max_players:
-
                 # Print a rejection message *only* to the client trying to
                 # join (prevents spamming everyone else in the game).
                 _ba.playsound(_ba.getsound('error'))
@@ -278,7 +281,7 @@ class Session:
             assert isinstance(player, (Player, type(None)))
 
             # Remove them from any current Activity.
-            if activity is not None:
+            if player is not None and activity is not None:
                 if player in activity.players:
                     activity.remove_player(sessionplayer)
                 else:
@@ -335,7 +338,7 @@ class Session:
     def _launch_end_session_activity(self) -> None:
         """(internal)"""
         from ba._activitytypes import EndSessionActivity
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
         with _ba.Context(self):
             curtime = _ba.time(TimeType.REAL)
             if self._ending:
@@ -368,7 +371,7 @@ class Session:
         will replace the old.
         """
         from ba._general import Call
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
 
         # Only pay attention if this is coming from our current activity.
         if activity is not self._activity_retained:
@@ -432,7 +435,7 @@ class Session:
         (on_transition_in, etc) to get it. (so you can't do
         session.setactivity(foo) and then ba.newnode() to add a node to foo)
         """
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
 
         # Make sure we don't get called recursively.
         _rlock = self._SetActivityScopedLock(self)
@@ -492,7 +495,7 @@ class Session:
         """Return the current foreground activity for this session."""
         return self._activity_weak()
 
-    def get_custom_menu_entries(self) -> List[Dict[str, Any]]:
+    def get_custom_menu_entries(self) -> list[dict[str, Any]]:
         """Subclasses can override this to provide custom menu entries.
 
         The returned value should be a list of dicts, each containing
@@ -658,7 +661,8 @@ class Session:
         # However, if we're not allowing mid-game joins, don't actually pass;
         # just announce the arrival and say they'll partake next round.
         if pass_to_activity:
-            if not self.allow_mid_activity_joins:
+            if not (activity.allow_mid_activity_joins
+                    and self.should_allow_mid_activity_joins(activity)):
                 pass_to_activity = False
                 with _ba.Context(self):
                     _ba.screenmessage(

@@ -14,8 +14,7 @@ from typing import TYPE_CHECKING, cast, TypeVar, Generic
 if TYPE_CHECKING:
     import asyncio
     from efro.call import Call as Call  # 'as Call' so we re-export.
-    from weakref import ReferenceType
-    from typing import Any, Dict, Callable, Optional, Type
+    from typing import Any, Callable, Optional
 
 T = TypeVar('T')
 TVAL = TypeVar('TVAL')
@@ -35,7 +34,7 @@ else:
     Call = functools.partial
 
 
-def enum_by_value(cls: Type[TENUM], value: Any) -> TENUM:
+def enum_by_value(cls: type[TENUM], value: Any) -> TENUM:
     """Create an enum from a value.
 
     This is basically the same as doing 'obj = EnumType(value)' except
@@ -45,6 +44,8 @@ def enum_by_value(cls: Type[TENUM], value: Any) -> TENUM:
     to our objects sticking around longer than we want.
     This issue has been submitted to Python as a bug so hopefully we can
     remove this eventually if it gets fixed: https://bugs.python.org/issue42248
+    UPDATE: This has been fixed as of later 3.8 builds, so we can kill this
+    off once we are 3.9+ across the board.
     """
 
     # Note: we don't recreate *ALL* the functionality of the Enum constructor
@@ -56,6 +57,7 @@ def enum_by_value(cls: Type[TENUM], value: Any) -> TENUM:
         assert isinstance(out, cls)
         return out
     except KeyError:
+        # pylint: disable=consider-using-f-string
         raise ValueError('%r is not a valid %s' %
                          (value, cls.__name__)) from None
 
@@ -90,7 +92,18 @@ def utc_this_hour() -> datetime.datetime:
                              tzinfo=now.tzinfo)
 
 
-def empty_weakref(objtype: Type[T]) -> ReferenceType[T]:
+def utc_this_minute() -> datetime.datetime:
+    """Get offset-aware beginning of current minute in the utc time zone."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime(year=now.year,
+                             month=now.month,
+                             day=now.day,
+                             hour=now.hour,
+                             minute=now.minute,
+                             tzinfo=now.tzinfo)
+
+
+def empty_weakref(objtype: type[T]) -> weakref.ref[T]:
     """Return an invalidated weak-reference for the specified type."""
     # At runtime, all weakrefs are the same; our type arg is just
     # for the static type checker.
@@ -230,7 +243,7 @@ class DispatchMethodWrapper(Generic[TARG, TRET]):
     def register(func: Callable[[Any, Any], TRET]) -> Callable:
         """Register a new dispatch handler for this dispatch-method."""
 
-    registry: Dict[Any, Callable]
+    registry: dict[Any, Callable]
 
 
 # noinspection PyProtectedMember,PyTypeHints
@@ -291,7 +304,7 @@ class ValueDispatcher(Generic[TVAL, TRET]):
 
     def __init__(self, call: Callable[[TVAL], TRET]) -> None:
         self._base_call = call
-        self._handlers: Dict[TVAL, Callable[[], TRET]] = {}
+        self._handlers: dict[TVAL, Callable[[], TRET]] = {}
 
     def __call__(self, value: TVAL) -> TRET:
         handler = self._handlers.get(value)
@@ -322,7 +335,7 @@ class ValueDispatcher1Arg(Generic[TVAL, TARG, TRET]):
 
     def __init__(self, call: Callable[[TVAL, TARG], TRET]) -> None:
         self._base_call = call
-        self._handlers: Dict[TVAL, Callable[[TARG], TRET]] = {}
+        self._handlers: dict[TVAL, Callable[[TARG], TRET]] = {}
 
     def __call__(self, value: TVAL, arg: TARG) -> TRET:
         handler = self._handlers.get(value)
@@ -367,7 +380,7 @@ def valuedispatchmethod(
     # in the function call dict and simply return a call.
 
     _base_call = call
-    _handlers: Dict[TVAL, Callable[[TSELF], TRET]] = {}
+    _handlers: dict[TVAL, Callable[[TSELF], TRET]] = {}
 
     def _add_handler(value: TVAL, addcall: Callable[[TSELF], TRET]) -> None:
         if value in _handlers:
@@ -391,7 +404,8 @@ def valuedispatchmethod(
     # To the type checker's eyes we return a ValueDispatchMethod instance;
     # this lets it know about our register func and type-check its usage.
     # In reality we just return a raw function call (for reasons listed above).
-    if TYPE_CHECKING:  # pylint: disable=no-else-return
+    # pylint: disable=undefined-variable, no-else-return
+    if TYPE_CHECKING:
         return ValueDispatcherMethod[TVAL, TRET]()
     else:
         return _call_wrapper
@@ -424,36 +438,76 @@ def make_hash(obj: Any) -> int:
     return hash(tuple(frozenset(sorted(new_obj.items()))))
 
 
-def asserttype(obj: Any, typ: Type[T]) -> T:
+def asserttype(obj: Any, typ: type[T]) -> T:
     """Return an object typed as a given type.
 
     Assert is used to check its actual type, so only use this when
     failures are not expected. Otherwise use checktype.
     """
+    assert isinstance(typ, type), 'only actual types accepted'
     assert isinstance(obj, typ)
     return obj
 
 
-def checktype(obj: Any, typ: Type[T]) -> T:
+def asserttype_o(obj: Any, typ: type[T]) -> Optional[T]:
+    """Return an object typed as a given optional type.
+
+    Assert is used to check its actual type, so only use this when
+    failures are not expected. Otherwise use checktype.
+    """
+    assert isinstance(typ, type), 'only actual types accepted'
+    assert isinstance(obj, (typ, type(None)))
+    return obj
+
+
+def checktype(obj: Any, typ: type[T]) -> T:
     """Return an object typed as a given type.
 
     Always checks the type at runtime with isinstance and throws a TypeError
     on failure. Use asserttype for more efficient (but less safe) equivalent.
     """
+    assert isinstance(typ, type), 'only actual types accepted'
     if not isinstance(obj, typ):
         raise TypeError(f'Expected a {typ}; got a {type(obj)}.')
     return obj
 
 
-def warntype(obj: Any, typ: Type[T]) -> T:
+def checktype_o(obj: Any, typ: type[T]) -> Optional[T]:
+    """Return an object typed as a given optional type.
+
+    Always checks the type at runtime with isinstance and throws a TypeError
+    on failure. Use asserttype for more efficient (but less safe) equivalent.
+    """
+    assert isinstance(typ, type), 'only actual types accepted'
+    if not isinstance(obj, (typ, type(None))):
+        raise TypeError(f'Expected a {typ} or None; got a {type(obj)}.')
+    return obj
+
+
+def warntype(obj: Any, typ: type[T]) -> T:
     """Return an object typed as a given type.
 
     Always checks the type at runtime and simply logs a warning if it is
     not what is expected.
     """
+    assert isinstance(typ, type), 'only actual types accepted'
     if not isinstance(obj, typ):
         import logging
         logging.warning('warntype: expected a %s, got a %s', typ, type(obj))
+    return obj  # type: ignore
+
+
+def warntype_o(obj: Any, typ: type[T]) -> Optional[T]:
+    """Return an object typed as a given type.
+
+    Always checks the type at runtime and simply logs a warning if it is
+    not what is expected.
+    """
+    assert isinstance(typ, type), 'only actual types accepted'
+    if not isinstance(obj, (typ, type(None))):
+        import logging
+        logging.warning('warntype: expected a %s or None, got a %s', typ,
+                        type(obj))
     return obj  # type: ignore
 
 
@@ -495,3 +549,58 @@ def linearstep(edge0: float, edge1: float, x: float) -> float:
     Values outside of the range return 0 or 1.
     """
     return max(0.0, min(1.0, (x - edge0) / (edge1 - edge0)))
+
+
+def _compact_id(num: int, chars: str) -> str:
+    if num < 0:
+        raise ValueError('Negative integers not allowed.')
+
+    # Chars must be in sorted order for sorting to work correctly
+    # on our output.
+    assert ''.join(sorted(list(chars))) == chars
+
+    base = len(chars)
+    out = ''
+    while num:
+        out += chars[num % base]
+        num //= base
+    return out[::-1] or '0'
+
+
+def human_readable_compact_id(num: int) -> str:
+    """Given a positive int, return a compact string representation for it.
+
+    Handy for visualizing unique numeric ids using as few as possible chars.
+    This representation uses only lowercase letters and numbers (minus the
+    following letters for readability):
+     's' is excluded due to similarity to '5'.
+     'l' is excluded due to similarity to '1'.
+     'i' is excluded due to similarity to '1'.
+     'o' is excluded due to similarity to '0'.
+     'z' is excluded due to similarity to '2'.
+
+    When reading human input consisting of these IDs, it may be desirable
+    to map the disallowed chars to their corresponding allowed ones
+    ('o' -> '0', etc).
+
+    Sort order for these ids is the same as the original numbers.
+
+    If more compactness is desired at the expense of readability,
+    use compact_id() instead.
+    """
+    return _compact_id(num, '0123456789abcdefghjkmnpqrtuvwxy')
+
+
+def compact_id(num: int) -> str:
+    """Given a positive int, return a compact string representation for it.
+
+    Handy for visualizing unique numeric ids using as few as possible chars.
+    This version is more compact than human_readable_compact_id() but less
+    friendly to humans due to using both capital and lowercase letters,
+    both 'O' and '0', etc.
+
+    Sort order for these ids is the same as the original numbers.
+    """
+    return _compact_id(
+        num, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        'abcdefghijklmnopqrstuvwxyz')

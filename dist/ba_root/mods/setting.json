@@ -4,15 +4,15 @@
         "spectators": false,
         "lobbychecktime": 1
     },
-    
-    
-    
+
+
+
     "ChatCommands": {
   	  "BrodcastCommand": true
     },
-    
-    
-    
+
+
+
     "textonmap": {
         "top watermark": "Welcome to server \n ip 192.168.0.1",
         "bottom left watermark": "Search Hey Smoothy on Youtube",
@@ -22,9 +22,12 @@
             "message 3"
         ]
     },
-    
-    
-    
+    "HostDeviceName":"v1.3.1",
+    "HostName":"BCS",
+    "ShowKickVoteStarterName":true,
+    "KickVoteMsgType":"chat",
+    "minAgeToChatInHours":78,
+    "minAgeToJoinInHours":48,
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,

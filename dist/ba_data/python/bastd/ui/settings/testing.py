@@ -11,7 +11,7 @@ import _ba
 import ba
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List
+    from typing import Any
 
 
 class TestingWindow(ba.Window):
@@ -19,7 +19,7 @@ class TestingWindow(ba.Window):
 
     def __init__(self,
                  title: ba.Lstr,
-                 entries: List[Dict[str, Any]],
+                 entries: list[dict[str, Any]],
                  transition: str = 'in_right'):
         uiscale = ba.app.ui.uiscale
         self._width = 600
@@ -115,6 +115,7 @@ class TestingWindow(ba.Window):
                                       self._on_minus_press, entry['name']))
             if i == 0:
                 ba.widget(edit=btn, up_widget=self._back_button)
+            # pylint: disable=consider-using-f-string
             entry['widget'] = ba.textwidget(parent=self._subcontainer,
                                             position=(h + 100, v),
                                             size=(0, 0),
@@ -145,7 +146,7 @@ class TestingWindow(ba.Window):
             right_widget=btn,
             on_activate_call=self._on_reset_press)
 
-    def _get_entry(self, name: str) -> Dict[str, Any]:
+    def _get_entry(self, name: str) -> dict[str, Any]:
         for entry in self._entries:
             if entry['name'] == name:
                 return entry
@@ -155,18 +156,21 @@ class TestingWindow(ba.Window):
         for entry in self._entries:
             _ba.value_test(entry['name'],
                            absolute=ba.app.value_test_defaults[entry['name']])
+            # pylint: disable=consider-using-f-string
             ba.textwidget(edit=entry['widget'],
                           text='%.4g' % _ba.value_test(entry['name']))
 
     def _on_minus_press(self, entry_name: str) -> None:
         entry = self._get_entry(entry_name)
         _ba.value_test(entry['name'], change=-entry['increment'])
+        # pylint: disable=consider-using-f-string
         ba.textwidget(edit=entry['widget'],
                       text='%.4g' % _ba.value_test(entry['name']))
 
     def _on_plus_press(self, entry_name: str) -> None:
         entry = self._get_entry(entry_name)
         _ba.value_test(entry['name'], change=entry['increment'])
+        # pylint: disable=consider-using-f-string
         ba.textwidget(edit=entry['widget'],
                       text='%.4g' % _ba.value_test(entry['name']))
 

@@ -15,7 +15,7 @@ import _ba
 import ba
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Dict, List, Tuple, Type, Union, Callable
+    from typing import Any, Optional, Union, Callable
     from bastd.ui.gather import GatherWindow
     from bastd.ui.confirm import ConfirmWindow
 
@@ -706,7 +706,7 @@ class ManualGatherTab(GatherTab):
                 from_other_thread=True,
             )
         except Exception as exc:
-            from efro.net import is_udp_network_error
+            from efro.error import is_udp_network_error
             if is_udp_network_error(exc):
                 ba.pushcall(ba.Call(
                     _safe_set_text, self._checking_state_text,
@@ -850,7 +850,7 @@ class ManualGatherTab(GatherTab):
                               callback=ba.WeakCall(
                                   self._on_accessible_response))
 
-    def _on_accessible_response(self, data: Optional[Dict[str, Any]]) -> None:
+    def _on_accessible_response(self, data: Optional[dict[str, Any]]) -> None:
         t_addr = self._t_addr
         t_accessible = self._t_accessible
         t_accessible_extra = self._t_accessible_extra

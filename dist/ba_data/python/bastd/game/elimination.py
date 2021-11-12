@@ -14,8 +14,7 @@ from bastd.actor.spazfactory import SpazFactory
 from bastd.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Dict, Type, List, Sequence, Optional,
-                        Union)
+    from typing import Any, Sequence, Optional, Union
 
 
 class Icon(ba.Actor):
@@ -23,7 +22,7 @@ class Icon(ba.Actor):
 
     def __init__(self,
                  player: Player,
-                 position: Tuple[float, float],
+                 position: tuple[float, float],
                  scale: float,
                  show_lives: bool = True,
                  show_death: bool = True,
@@ -83,7 +82,7 @@ class Icon(ba.Actor):
                                           })
         self.set_position_and_scale(position, scale)
 
-    def set_position_and_scale(self, position: Tuple[float, float],
+    def set_position_and_scale(self, position: tuple[float, float],
                                scale: float) -> None:
         """(Re)position the icon."""
         assert self.node
@@ -156,7 +155,7 @@ class Player(ba.Player['Team']):
 
     def __init__(self) -> None:
         self.lives = 0
-        self.icons: List[Icon] = []
+        self.icons: list[Icon] = []
 
 
 class Team(ba.Team[Player]):
@@ -164,7 +163,7 @@ class Team(ba.Team[Player]):
 
     def __init__(self) -> None:
         self.survival_seconds: Optional[int] = None
-        self.spawn_order: List[Player] = []
+        self.spawn_order: list[Player] = []
 
 
 # ba_meta export game
@@ -179,9 +178,11 @@ class EliminationGame(ba.TeamGameActivity[Player, Team]):
     # Show messages when players die since it's meaningful here.
     announce_player_deaths = True
 
+    allow_mid_activity_joins = False
+
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[ba.Session]) -> List[ba.Setting]:
+            cls, sessiontype: type[ba.Session]) -> list[ba.Setting]:
         settings = [
             ba.IntSetting(
                 'Lives Per Player',
@@ -222,12 +223,12 @@ class EliminationGame(ba.TeamGameActivity[Player, Team]):
         return settings
 
     @classmethod
-    def supports_session_type(cls, sessiontype: Type[ba.Session]) -> bool:
+    def supports_session_type(cls, sessiontype: type[ba.Session]) -> bool:
         return (issubclass(sessiontype, ba.DualTeamSession)
                 or issubclass(sessiontype, ba.FreeForAllSession))
 
     @classmethod
-    def get_supported_maps(cls, sessiontype: Type[ba.Session]) -> List[str]:
+    def get_supported_maps(cls, sessiontype: type[ba.Session]) -> list[str]:
         return ba.getmaps('melee')
 
     def __init__(self, settings: dict):
@@ -257,23 +258,6 @@ class EliminationGame(ba.TeamGameActivity[Player, Team]):
             self.session, ba.DualTeamSession) else 'last one standing wins'
 
     def on_player_join(self, player: Player) -> None:
-
-        # No longer allowing mid-game joiners here; too easy to exploit.
-        if self.has_begun():
-
-            # Make sure their team has survival seconds set if they're all dead
-            # (otherwise blocked new ffa players are considered 'still alive'
-            # in score tallying).
-            if (self._get_total_team_lives(player.team) == 0
-                    and player.team.survival_seconds is None):
-                player.team.survival_seconds = 0
-            ba.screenmessage(
-                ba.Lstr(resource='playerDelayedJoinText',
-                        subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0),
-            )
-            return
-
         player.lives = self._lives_per_player
 
         if self._solo_mode:
@@ -436,7 +420,7 @@ class EliminationGame(ba.TeamGameActivity[Player, Team]):
             if living_player:
                 assert living_player_pos is not None
                 player_pos = ba.Vec3(living_player_pos)
-                points: List[Tuple[float, ba.Vec3]] = []
+                points: list[tuple[float, ba.Vec3]] = []
                 for team in self.teams:
                     start_pos = ba.Vec3(self.map.get_start_position(team.id))
                     points.append(
@@ -554,7 +538,7 @@ class EliminationGame(ba.TeamGameActivity[Player, Team]):
         if len(self._get_living_teams()) < 2:
             self._round_end_timer = ba.Timer(0.5, self.end_game)
 
-    def _get_living_teams(self) -> List[Team]:
+    def _get_living_teams(self) -> list[Team]:
         return [
             team for team in self.teams
             if len(team.players) > 0 and any(player.lives > 0

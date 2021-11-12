@@ -11,7 +11,7 @@ import _ba
 
 if TYPE_CHECKING:
     import ba
-    from typing import Any, Dict, List, Optional, Tuple, Union, Sequence
+    from typing import Any, Optional, Union, Sequence
 
 
 class LanguageSubsystem:
@@ -37,7 +37,7 @@ class LanguageSubsystem:
         # We don't yet support full unicode display on windows or linux :-(.
         if (language in {
                 'Chinese', 'ChineseTraditional', 'Persian', 'Korean', 'Arabic',
-                'Hindi', 'Vietnamese'
+                'Hindi', 'Vietnamese', 'Thai', 'Tamil'
         } and not _ba.can_display_full_unicode()):
             return False
         return True
@@ -79,12 +79,14 @@ class LanguageSubsystem:
             'ar': 'Arabic',
             'zh': 'Chinese',
             'tr': 'Turkish',
+            'th': 'Thai',
             'id': 'Indonesian',
             'sr': 'Serbian',
             'uk': 'Ukrainian',
             'vi': 'Vietnamese',
             'vec': 'Venetian',
-            'hi': 'Hindi'
+            'hi': 'Hindi',
+            'ta': 'Tamil',
         }
 
         # Special case for Chinese: map specific variations to traditional.
@@ -108,7 +110,7 @@ class LanguageSubsystem:
         return _ba.app.config.get('Lang', self.default_language)
 
     @property
-    def available_languages(self) -> List[str]:
+    def available_languages(self) -> list[str]:
         """A list of all available languages.
 
         Note that languages that may be present in game assets but which
@@ -161,7 +163,8 @@ class LanguageSubsystem:
         else:
             switched = False
 
-        with open('ba_data/data/languages/english.json') as infile:
+        with open('ba_data/data/languages/english.json',
+                  encoding='utf-8') as infile:
             lenglishvalues = json.loads(infile.read())
 
         # None implies default.
@@ -173,7 +176,7 @@ class LanguageSubsystem:
             else:
                 lmodfile = 'ba_data/data/languages/' + language.lower(
                 ) + '.json'
-                with open(lmodfile) as infile:
+                with open(lmodfile, encoding='utf-8') as infile:
                     lmodvalues = json.loads(infile.read())
         except Exception:
             from ba import _error
@@ -400,7 +403,7 @@ class Lstr:
                  resource: str,
                  fallback_resource: str = '',
                  fallback_value: str = '',
-                 subs: Sequence[Tuple[str, Union[str, Lstr]]] = []) -> None:
+                 subs: Sequence[tuple[str, Union[str, Lstr]]] = []) -> None:
         """Create an Lstr from a string resource."""
         ...
 
@@ -408,8 +411,8 @@ class Lstr:
     @overload
     def __init__(self,
                  *,
-                 translate: Tuple[str, str],
-                 subs: Sequence[Tuple[str, Union[str, Lstr]]] = []) -> None:
+                 translate: tuple[str, str],
+                 subs: Sequence[tuple[str, Union[str, Lstr]]] = []) -> None:
         """Create an Lstr by translating a string in a category."""
         ...
 
@@ -418,7 +421,7 @@ class Lstr:
     def __init__(self,
                  *,
                  value: str,
-                 subs: Sequence[Tuple[str, Union[str, Lstr]]] = []) -> None:
+                 subs: Sequence[tuple[str, Union[str, Lstr]]] = []) -> None:
         """Create an Lstr from a raw string value."""
         ...
 
@@ -529,7 +532,7 @@ class Lstr:
         return lstr
 
 
-def _add_to_attr_dict(dst: AttrDict, src: Dict) -> None:
+def _add_to_attr_dict(dst: AttrDict, src: dict) -> None:
     for key, value in list(src.items()):
         if isinstance(value, dict):
             try:

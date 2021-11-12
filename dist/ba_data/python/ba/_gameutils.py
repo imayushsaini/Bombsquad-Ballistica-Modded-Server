@@ -8,11 +8,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import _ba
-from ba._enums import TimeType, TimeFormat, SpecialChar, UIScale
+from ba._generated.enums import TimeType, TimeFormat, SpecialChar, UIScale
 from ba._error import ActivityNotFoundError
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Sequence, Optional
+    from typing import Sequence, Optional
     import ba
 
 TROPHY_CHARS = {
@@ -45,7 +45,7 @@ def get_trophy_string(trophy_id: str) -> str:
 
 def animate(node: ba.Node,
             attr: str,
-            keys: Dict[float, float],
+            keys: dict[float, float],
             loop: bool = False,
             offset: float = 0,
             timetype: ba.TimeType = TimeType.SIM,
@@ -119,7 +119,7 @@ def animate(node: ba.Node,
 def animate_array(node: ba.Node,
                   attr: str,
                   size: int,
-                  keys: Dict[float, Sequence[float]],
+                  keys: dict[float, Sequence[float]],
                   loop: bool = False,
                   offset: float = 0,
                   timetype: ba.TimeType = TimeType.SIM,
@@ -301,6 +301,7 @@ def timestring(timeval: float,
 
     # We add seconds if its non-zero *or* we haven't added anything else.
     if centi:
+        # pylint: disable=consider-using-f-string
         sval = (timeval / 1000.0 % 60.0)
         if sval >= 0.005 or not bits:
             bits.append('${S}')

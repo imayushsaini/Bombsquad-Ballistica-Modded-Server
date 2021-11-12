@@ -7,10 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import _ba
-from ba._enums import UIScale
+from ba._generated.enums import UIScale
 
 if TYPE_CHECKING:
-    from typing import Optional, Dict, Any, Callable, List, Type
+    from typing import Optional, Any, Callable
     from ba.ui import UICleanupCheck
     import ba
 
@@ -43,13 +43,13 @@ class UISubsystem:
         else:
             raise RuntimeError(f'Invalid UIScale value: {interfacetype}')
 
-        self.window_states: Dict[Type, Any] = {}  # FIXME: Kill this.
+        self.window_states: dict[type, Any] = {}  # FIXME: Kill this.
         self.main_menu_selection: Optional[str] = None  # FIXME: Kill this.
         self.have_party_queue_window = False
         self.quit_window: Any = None
         self.dismiss_wii_remotes_window_call: (Optional[Callable[[],
                                                                  Any]]) = None
-        self.cleanupchecks: List[UICleanupCheck] = []
+        self.cleanupchecks: list[UICleanupCheck] = []
         self.upkeeptimer: Optional[ba.Timer] = None
         self.use_toolbars = env.get('toolbar_test', True)
         self.party_window: Any = None  # FIXME: Don't use Any.
@@ -70,7 +70,7 @@ class UISubsystem:
     def on_app_launch(self) -> None:
         """Should be run on app launch."""
         from ba.ui import UIController, ui_upkeep
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
 
         # IMPORTANT: If tweaking UI stuff, make sure it behaves for small,
         # medium, and large UI modes. (doesn't run off screen, etc).
@@ -107,7 +107,7 @@ class UISubsystem:
     def set_main_menu_window(self, window: ba.Widget) -> None:
         """Set the current 'main' window, replacing any existing."""
         existing = self._main_menu_window
-        from ba._enums import TimeType
+        from ba._generated.enums import TimeType
         from inspect import currentframe, getframeinfo
 
         # Let's grab the location where we were called from to report

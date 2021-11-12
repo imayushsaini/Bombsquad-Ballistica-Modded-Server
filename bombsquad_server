@@ -1,7 +1,7 @@
-#!/usr/bin/env -S python3.8 -O
+#!/usr/bin/env python3.9
 # Released under the MIT License. See LICENSE for details.
 #
-"""BombSquad server manager."""
+"""BallisticaCore server manager."""
 from __future__ import annotations
 
 import json
@@ -28,7 +28,7 @@ from efro.error import CleanError
 from efro.terminal import Clr
 
 if TYPE_CHECKING:
-    from typing import Optional, List, Dict, Union, Tuple
+    from typing import Optional, Union
     from types import FrameType
     from bacommon.servermanager import ServerCommand
 
@@ -36,7 +36,7 @@ VERSION_STR = '1.3'
 
 # Version history:
 # 1.3.1
-#  Windows binary is now named BombSquadHeadless.exe
+#  Windows binary is now named BallisticaCoreHeadless.exe
 # 1.3:
 #  Added show_tutorial config option
 #  Added team_names config option
@@ -63,10 +63,10 @@ VERSION_STR = '1.3'
 
 
 class ServerManagerApp:
-    """An app which manages BombSquad server execution.
+    """An app which manages BallisticaCore server execution.
 
     Handles configuring, launching, re-launching, and otherwise
-    managing BombSquad operating in server mode.
+    managing BallisticaCore operating in server mode.
     """
 
     # How many seconds we wait after asking our subprocess to do an immediate
@@ -81,7 +81,7 @@ class ServerManagerApp:
         self._interactive = sys.stdin.isatty()
         self._wrapper_shutdown_desired = False
         self._done = False
-        self._subprocess_commands: List[Union[str, ServerCommand]] = []
+        self._subprocess_commands: list[Union[str, ServerCommand]] = []
         self._subprocess_commands_lock = Lock()
         self._subprocess_force_kill_time: Optional[float] = None
         self._auto_restart = True
@@ -126,7 +126,7 @@ class ServerManagerApp:
 
         dbgstr = 'debug' if __debug__ else 'opt'
         print(
-            f'{Clr.CYN}{Clr.BLD}BombSquad server manager {VERSION_STR}'
+            f'{Clr.CYN}{Clr.BLD}BallisticaCore server manager {VERSION_STR}'
             f' starting up ({dbgstr} mode)...{Clr.RST}',
             flush=True)
 
@@ -251,8 +251,8 @@ class ServerManagerApp:
 
     def screenmessage(self,
                       message: str,
-                      color: Optional[Tuple[float, float, float]] = None,
-                      clients: Optional[List[int]] = None) -> None:
+                      color: Optional[tuple[float, float, float]] = None,
+                      clients: Optional[list[int]] = None) -> None:
         """Display a screen-message.
 
         This will have no name attached and not show up in chat history.
@@ -265,7 +265,7 @@ class ServerManagerApp:
 
     def chatmessage(self,
                     message: str,
-                    clients: Optional[List[int]] = None) -> None:
+                    clients: Optional[list[int]] = None) -> None:
         """Send a chat message from the server.
 
         This will have the server's name attached and will be logged
@@ -403,7 +403,7 @@ class ServerManagerApp:
         out = (
             f'{Clr.BLD}{filename} usage:{Clr.RST}\n' + cls._par(
                 'This script handles configuring, launching, re-launching,'
-                ' and otherwise managing BombSquad operating'
+                ' and otherwise managing BallisticaCore operating'
                 ' in server mode. It can be run with no arguments, but'
                 ' accepts the following optional ones:') + f'\n'
             f'{Clr.BLD}--help:{Clr.RST}\n'
@@ -513,7 +513,7 @@ class ServerManagerApp:
                 f"Config file not found: '{self._config_path}'.")
 
         import yaml
-        with open(self._config_path) as infile:
+        with open(self._config_path, encoding='utf-8') as infile:
             user_config_raw = yaml.safe_load(infile.read())
 
         # An empty config file will yield None, and that's ok.
@@ -533,7 +533,7 @@ class ServerManagerApp:
                   flush=True)
         return out
 
-    def _enable_tab_completion(self, locs: Dict) -> None:
+    def _enable_tab_completion(self, locs: dict) -> None:
         """Enable tab-completion on platforms where available (linux/mac)."""
         try:
             import readline
@@ -575,8 +575,8 @@ class ServerManagerApp:
         os.environ['BA_SERVER_WRAPPER_MANAGED'] = '1'
 
         print(f'{Clr.CYN}Launching server subprocess...{Clr.RST}', flush=True)
-        binary_name = ('BombSquadHeadless.exe'
-                       if os.name == 'nt' else './bombsquad_headless')
+        binary_name = ('BallisticaCoreHeadless.exe'
+                       if os.name == 'nt' else './ballisticacore_headless')
         assert self._ba_root_path is not None
         self._subprocess = None
 
@@ -646,13 +646,13 @@ class ServerManagerApp:
         os.makedirs(self._ba_root_path, exist_ok=True)
         cfgpath = os.path.join(self._ba_root_path, 'config.json')
         if os.path.exists(cfgpath):
-            with open(cfgpath) as infile:
+            with open(cfgpath, encoding='utf-8') as infile:
                 bincfg = json.loads(infile.read())
         else:
             bincfg = {}
 
         # Some of our config values translate directly into the
-        # bombsquad config file; the rest we pass at runtime.
+        # ballisticacore config file; the rest we pass at runtime.
         bincfg['Port'] = self._config.port
         bincfg['Auto Balance Teams'] = self._config.auto_balance_teams
         bincfg['Show Tutorial'] = self._config.show_tutorial
@@ -668,7 +668,7 @@ class ServerManagerApp:
             del bincfg['Custom Team Colors']
 
         bincfg['Idle Exit Minutes'] = self._config.idle_exit_minutes
-        with open(cfgpath, 'w') as outfile:
+        with open(cfgpath, 'w', encoding='utf-8') as outfile:
             outfile.write(json.dumps(bincfg))
 
     def _enqueue_server_command(self, command: ServerCommand) -> None:
@@ -855,7 +855,7 @@ class ServerManagerApp:
 
 
 def main() -> None:
-    """Run the BombSquad server manager."""
+    """Run the BallisticaCore server manager."""
     try:
         ServerManagerApp().run()
     except CleanError as exc:

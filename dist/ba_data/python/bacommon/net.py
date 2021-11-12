@@ -4,33 +4,36 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional, Any, Annotated
+from dataclasses import dataclass, field
 
-from efro import entity
-from efro.dataclassio import ioprepped
+from efro.dataclassio import ioprepped, IOAttrs
 
 if TYPE_CHECKING:
     pass
 
 
-class ServerNodeEntry(entity.CompoundValue):
+@ioprepped
+@dataclass
+class ServerNodeEntry:
     """Information about a specific server."""
-    region = entity.Field('r', entity.StringValue())
-    address = entity.Field('a', entity.StringValue())
-    port = entity.Field('p', entity.IntValue())
+    region: Annotated[str, IOAttrs('r')]
+    address: Annotated[str, IOAttrs('a')]
+    port: Annotated[int, IOAttrs('p')]
 
 
-class ServerNodeQueryResponse(entity.Entity):
+@ioprepped
+@dataclass
+class ServerNodeQueryResponse:
     """A response to a query about server-nodes."""
 
     # If present, something went wrong, and this describes it.
-    error = entity.Field('e', entity.OptionalStringValue(store_default=False))
+    error: Annotated[Optional[str], IOAttrs('e', store_default=False)] = None
 
     # The set of servernodes.
-    servers = entity.CompoundListField('s',
-                                       ServerNodeEntry(),
-                                       store_default=False)
+    servers: Annotated[list[ServerNodeEntry],
+                       IOAttrs('s', store_default=False)] = field(
+                           default_factory=list)
 
 
 @ioprepped
@@ -52,10 +55,13 @@ class PrivateHostingConfig:
     playlist_name: str = 'Unknown'
     randomize: bool = False
     tutorial: bool = False
-    custom_team_names: Optional[Tuple[str, str]] = None
-    custom_team_colors: Optional[Tuple[Tuple[float, float, float],
-                                       Tuple[float, float, float]]] = None
-    playlist: Optional[List[Dict[str, Any]]] = None
+    custom_team_names: Optional[tuple[str, str]] = None
+    custom_team_colors: Optional[tuple[tuple[float, float, float],
+                                       tuple[float, float, float]]] = None
+    playlist: Optional[list[dict[str, Any]]] = None
+    exit_minutes: float = 120.0
+    exit_minutes_unclean: float = 180.0
+    exit_minutes_idle: float = 10.0
 
 
 @ioprepped

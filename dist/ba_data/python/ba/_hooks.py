@@ -18,8 +18,21 @@ from typing import TYPE_CHECKING
 import _ba
 
 if TYPE_CHECKING:
-    from typing import List, Sequence, Optional, Dict, Any
+    from typing import Sequence, Optional, Any
     import ba
+
+
+def finish_bootstrapping() -> None:
+    """Do final bootstrapping related bits."""
+    from ba._asyncio import setup_asyncio
+    assert _ba.in_game_thread()
+
+    # Kick off our asyncio event handling, allowing us to use coroutines
+    # in our game thread alongside our internal event handling.
+    setup_asyncio()
+
+    # Ok, bootstrapping is done; time to get the show started.
+    _ba.app.on_app_launch()
 
 
 def reset_to_main_menu() -> None:
@@ -319,6 +332,31 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
 
     return chooks.filter_chat_message(msg,client_id)
 
+def kick_vote_started(by:str,to:str) -> None:
+    """
+      get account ids of who started kick vote for whom ,
+      do what ever u want logging to files , whatever.
+    """
+    print(by+">"+to)
+
+def on_kicked(account_id:str) -> None:
+    pass
+    # print(account_id+" kicked ...sad")
+
+def on_kick_vote_end() -> None:
+    pass
+    # print("kick vote end")
+
+from tools import servercheck
+def on_player_join(pb_id:str)-> None:
+    servercheck.on_player_join(pb_id)
+    pass
+    # print(pb_id+" joined  python layer")
+
+def on_player_leave(pb_id:str)-> None:
+    pass
+    #
+    print(pb_id+" left python layer")
 
 def local_chat_message(msg: str) -> None:
     if (_ba.app.ui.party_window is not None
@@ -326,7 +364,7 @@ def local_chat_message(msg: str) -> None:
         _ba.app.ui.party_window().on_chat_message(msg)
 
 
-def get_player_icon(sessionplayer: ba.SessionPlayer) -> Dict[str, Any]:
+def get_player_icon(sessionplayer: ba.SessionPlayer) -> dict[str, Any]:
     info = sessionplayer.get_icon_info()
     return {
         'texture': _ba.gettexture(info['texture']),

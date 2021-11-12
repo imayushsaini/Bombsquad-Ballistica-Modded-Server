@@ -15,7 +15,7 @@ from bastd.actor.bomb import Bomb
 from bastd.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, List, Dict, Type, Type
+    from typing import Any, Sequence, Optional
 
 
 class Player(ba.Player['Team']):
@@ -44,14 +44,18 @@ class MeteorShowerGame(ba.TeamGameActivity[Player, Team]):
     # Print messages when players die (since its meaningful in this game).
     announce_player_deaths = True
 
-    # we're currently hard-coded for one map..
+    # Don't allow joining after we start
+    # (would enable leave/rejoin tomfoolery).
+    allow_mid_activity_joins = False
+
+    # We're currently hard-coded for one map.
     @classmethod
-    def get_supported_maps(cls, sessiontype: Type[ba.Session]) -> List[str]:
+    def get_supported_maps(cls, sessiontype: type[ba.Session]) -> list[str]:
         return ['Rampage']
 
     # We support teams, free-for-all, and co-op sessions.
     @classmethod
-    def supports_session_type(cls, sessiontype: Type[ba.Session]) -> bool:
+    def supports_session_type(cls, sessiontype: type[ba.Session]) -> bool:
         return (issubclass(sessiontype, ba.DualTeamSession)
                 or issubclass(sessiontype, ba.FreeForAllSession)
                 or issubclass(sessiontype, ba.CoopSession))
@@ -92,22 +96,6 @@ class MeteorShowerGame(ba.TeamGameActivity[Player, Team]):
 
         # Check for immediate end (if we've only got 1 player, etc).
         ba.timer(5.0, self._check_end_game)
-
-    def on_player_join(self, player: Player) -> None:
-        # Don't allow joining after we start
-        # (would enable leave/rejoin tomfoolery).
-        if self.has_begun():
-            ba.screenmessage(
-                ba.Lstr(resource='playerDelayedJoinText',
-                        subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0),
-            )
-            # For score purposes, mark them as having died right as the
-            # game started.
-            assert self._timer is not None
-            player.death_time = self._timer.getstarttime()
-            return
-        self.spawn_player(player)
 
     def on_player_leave(self, player: Player) -> None:
         # Augment default behavior.

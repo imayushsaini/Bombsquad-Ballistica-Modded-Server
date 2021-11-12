@@ -1,11 +1,11 @@
 from .Handlers import handlemsg, handlemsg_all,send
 from playersData import pdata
 from tools.whitelist import add_to_white_list, add_commit_to_logs
-
+from serverData import serverdata
 import ba, _ba, time, setting
 
 
-Commands = ['kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+Commands = ['ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
 CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist','effect']
 
 
@@ -23,9 +23,11 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	Returns:
 		None 
 	"""
+
 	if command == 'kick':
 		kick(arguments)
-		
+	elif command == 'ban':
+		ban(arguments)
 	elif command in ['end', 'next']:
 		end(arguments)
 	
@@ -33,10 +35,10 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		quit(arguments)
 		
 	elif command in ['mute', 'mutechat']:
-		mute()
+		mute(arguments)
 
 	elif command in ['unmute', 'unmutechat']:
-		un_mute()
+		un_mute(arguments)
 		
 	elif command in ['remove', 'rm']:
 		remove(arguments)
@@ -111,6 +113,20 @@ def end(arguments):
 		except:
 			pass
 
+def ban(arguments):
+	try:
+		cl_id=int(arguments[0])
+		ac_id=""
+		for ros in _ba.get_game_roster():
+			if ros["client_id"]==cl_id:
+				pdata.ban_player(ros['account_id'])
+				ac_id=ros['account_id']
+		if ac_id in serverdata.clients:
+			serverdata.clients[ac_id]["isBan"]=True
+		kick(arguments)
+	except:
+		pass
+	
 
 
 def quit(arguments):
@@ -120,13 +136,35 @@ def quit(arguments):
 
 
 
-def mute():
+def mute(arguments):
+	try:
+		cl_id=int(arguments[0])
+		ac_id=""
+		for ros in _ba.get_game_roster():
+			if ros["client_id"]==cl_id:
+				pdata.mute(ros['account_id'])
+				ac_id=ros['account_id']
+		if ac_id in serverdata.clients:
+			serverdata.clients[ac_id]["isMuted"]=True
+	except:
+		pass
 	return
 
 
 
-def un_mute():
-	return
+def un_mute(arguments):
+	try:
+		cl_id=int(arguments[0])
+		ac_id=""
+		for ros in _ba.get_game_roster():
+			if ros["client_id"]==cl_id:
+				pdata.unmute(ros['account_id'])
+				ac_id=ros['account_id']
+		if ac_id in serverdata.clients:
+			serverdata.clients[ac_id]["isMuted"]=False
+		return
+	except:
+		pass
 
 
 
