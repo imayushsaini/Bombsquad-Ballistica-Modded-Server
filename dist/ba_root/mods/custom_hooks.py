@@ -3,6 +3,7 @@ import ba
 import _ba
 from chatHandle import handlechat
 import setting
+from tools import servercheck
 def filter_chat_message(msg, client_id):
 
     return handlechat.filter_chat_message(msg, client_id)
@@ -12,6 +13,8 @@ def on_app_launch():
     from tools import whitelist
     whitelist.Whitelist()
     bootstraping()
+    servercheck.checkserver().start()
+
 
 	#something
 
@@ -28,7 +31,7 @@ def playerspaz_init(player):
 
 
 def bootstraping():
-    print("starting server configuration")
+    
     #_ba.disconnect_client=new_disconnect
     settings = setting.get_settings_data()
     _ba.set_server_device_name(settings["HostDeviceName"])

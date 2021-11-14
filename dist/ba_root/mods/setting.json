@@ -28,6 +28,8 @@
     "KickVoteMsgType":"chat",
     "minAgeToChatInHours":78,
     "minAgeToJoinInHours":48,
+    "maxWarnCount":2,
+    "WarnCooldownMinutes":30,
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,

@@ -8,53 +8,17 @@
         "totaltimeplayer": 0,
         "lastseen": 0
     },
-    "pb-IF4TVWwZUQ=d=": {
+    "pb-IF5XUm9eAg==": {
         "display_string": [
-            "\ue030Android48444292",
-            "\ue030PC295588"
+            "\ue030PC402015"
         ],
         "profiles": [],
-        "name": "\ue030PC295588",
+        "name": "\ue030PC402015",
         "isBan": false,
         "isMuted": false,
-        "accountAge": 8231.662564509445,
-        "totaltimeplayer": 0,
-        "lastseen": 0
-    },
-    "pb-IF4TVWwZUQ==": {
-        "display_string": [
-            "\ue030Android48444292",
-            "\ue030PC295588"
-        ],
-        "profiles": [],
-        "name": "\ue030PC295588",
-        "isBan": false,
-        "isMuted": false,
-        "accountAge": 8231.7627117525,
-        "totaltimeplayer": 0,
-        "lastseen": 0
-    },
-    "pb-IF4oUmwDFQ==": {
-        "display_string": [
-            "\ue030PC401824"
-        ],
-        "profiles": [],
-        "name": "\ue030PC401824",
-        "isBan": false,
-        "isMuted": false,
-        "accountAge": 0.15915736722222223,
-        "totaltimeplayer": 0,
-        "lastseen": 0
-    },
-    "pb-IF4dUmwsIg==": {
-        "display_string": [
-            "\ue030PC401877"
-        ],
-        "profiles": [],
-        "name": "\ue030PC401877",
-        "isBan": false,
-        "isMuted": false,
-        "accountAge": 0.01221103722222222,
+        "accountAge": "2021-11-12 20:30:30",
+        "registerOn": 1636801177.809589,
+        "canStartKickVote":true,
         "totaltimeplayer": 0,
         "lastseen": 0
     }
