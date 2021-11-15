@@ -68,8 +68,10 @@ class checkserver(object):
 			
 			newPlayers.append(ros['account_id'])
 			if ros['account_id'] not in self.players and ros['client_id'] !=-1:
-				print(ros['account_id'])
-				LoadProfile(ros['account_id']).start()
+				
+				if ros['account_id'] != None:
+
+					LoadProfile(ros['account_id']).start()
 		
 		self.players=newPlayers
 
@@ -190,7 +192,7 @@ class LoadProfile(threading.Thread):
 	def __init__(self,pb_id):
 		threading.Thread.__init__(self)
 		self.pbid=pb_id
-		print("thread obj")
+		
 
 	def run(self):
 		player_data=pdata.get_info(self.pbid)
