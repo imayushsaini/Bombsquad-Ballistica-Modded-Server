@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 import _ba, os, json
 from serverData import serverdata
-
+import time
 
 roles = {}
 data = {}
@@ -12,7 +12,6 @@ data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.s
 # ============== player data =======================
 def get_info(id):
 	with open(data_path+'profiles.json', 'r') as f:
-
 		profiles = json.load(f)
 		if id in profiles:
 
@@ -41,6 +40,8 @@ def add_profile(id,display_string,currentname,age):
 				  "isBan":False,
 				  "isMuted":False,
 				  "accountAge":age,
+				  "registerOn":time.time(),
+				  "canStartKickVote":True,
 				  "totaltimeplayer":0,
 				  "lastseen":0}
 

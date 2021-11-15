@@ -56,15 +56,36 @@ import setting
 
 # 		pdata.update_profile(serverdata.cachedclients[player])
 
+class checkserver(object):
+	def start(self):
+		self.players=[]
+		
+		self.t1=ba.timer(1,  ba.Call(self.check),repeat=True)
+
+	def check(self):
+		newPlayers=[]
+		for ros in _ba.get_game_roster():
+			
+			newPlayers.append(ros['account_id'])
+			if ros['account_id'] not in self.players and ros['client_id'] !=-1:
+				
+				if ros['account_id'] != None:
+
+					LoadProfile(ros['account_id']).start()
+		
+		self.players=newPlayers
+
 settings = setting.get_settings_data()
 
-def on_player_join(pbid):
+
+
+def on_player_join_server(pbid,player_data):
 	
-	player_data=pdata.get_info(pbid)
+	#player_data=pdata.get_info(pbid)
 	
 	if player_data!=None:
 		device_strin=""
-		if player_data["isBan"] or player_data["accountAge"] < settings["minAgeToJoinInHours"]:
+		if player_data["isBan"] or get_account_age(player_data["accountAge"]) < settings["minAgeToJoinInHours"]:
 			for ros in _ba.get_game_roster():
 				if ros['account_id']==pbid:
 					if not player_data["isBan"]:
@@ -74,6 +95,10 @@ def on_player_join(pbid):
 		else:
 
 			serverdata.clients[pbid]=player_data
+			serverdata.clients[pbid]["warnCount"]=0
+			serverdata.clients[pbid]["lastWarned"]=time.time()
+			if not player_data["canStartKickVote"]:
+				_ba.disable_kickvote(pbid)
 
 			verify_account(pbid,player_data)
 		
@@ -126,7 +151,7 @@ def _make_request_safe(request, retries=2, raise_err=True):
         if raise_err:
             raise
 
-def get_account_age_in_hours(pb_id):
+def get_account_creation_date(pb_id):
 	# thanks rikko 
     account_creation_url = "http://bombsquadgame.com/accountquery?id=" + pb_id
     account_creation = _make_request_safe(lambda: urllib.request.urlopen(account_creation_url))
@@ -141,11 +166,11 @@ def get_account_age_in_hours(pb_id):
             creation_time = datetime.datetime.strptime("/".join(creation_time), "%Y/%m/%d/%H/%M/%S")
             # Convert to IST
             creation_time += datetime.timedelta(hours=5, minutes=30)
-            print(creation_time)
-            now = datetime.datetime.now()
-            delta = now - creation_time
-            delta_hours = delta.total_seconds() / (60 * 60)
-            return delta_hours
+            return str(creation_time)
+            # now = datetime.datetime.now()
+            # delta = now - creation_time
+            # delta_hours = delta.total_seconds() / (60 * 60)
+            # return delta_hours
 
 def get_device_accounts(pb_id):
 	url="http://bombsquadgame.com/bsAccountInfo?buildNumber=20258&accountID="+pb_id
@@ -161,6 +186,25 @@ def get_device_accounts(pb_id):
 # =======  yes fucking threading code , dont touch ==============
 
 
+# ============ file I/O =============
+
+class LoadProfile(threading.Thread):
+	def __init__(self,pb_id):
+		threading.Thread.__init__(self)
+		self.pbid=pb_id
+		
+
+	def run(self):
+		player_data=pdata.get_info(self.pbid)
+		_ba.pushcall(Call(on_player_join_server,self.pbid,player_data),from_other_thread=True)
+
+
+
+
+
+
+
+# ================ http ================
 class FetchThread(threading.Thread):
     def __init__(self,target, callback=None,pb_id="ji",display_string="XXX"):
         
@@ -178,7 +222,7 @@ class FetchThread(threading.Thread):
 
 def my_acc_age(pb_id):
     
-    return get_account_age_in_hours(pb_id)
+    return get_account_creation_date(pb_id)
 
 
 def save_age(age, pb_id,display_string):
@@ -193,7 +237,7 @@ def save_age(age, pb_id,display_string):
 		    display_string=display_string
 		)
     thread2.start()
-    if age < settings["minAgeToJoinInHours"]:
+    if get_account_age(age) < settings["minAgeToJoinInHours"]:
     	msg="New Accounts not allowed to play here , come back tmrw."
     	_ba.pushcall(Call(kick_by_pb_id,pb_id,msg),from_other_thread=True)
 
@@ -201,6 +245,7 @@ def save_ids(ids,pb_id,display_string):
 
 	
 	pdata.update_displayString(pb_id,ids)
+
 
 	if display_string not in ids:
 		msg="Spoofed Id detected , Goodbye"
@@ -219,3 +264,12 @@ def kick_by_pb_id(pb_id,msg):
 
 
 
+
+
+
+def get_account_age(ct):
+    creation_time=datetime.datetime.strptime(ct,"%Y-%m-%d %H:%M:%S")
+    now = datetime.datetime.now()
+    delta = now - creation_time
+    delta_hours = delta.total_seconds() / (60 * 60)
+    return delta_hours

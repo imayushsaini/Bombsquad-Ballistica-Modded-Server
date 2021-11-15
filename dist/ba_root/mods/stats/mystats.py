@@ -5,6 +5,7 @@ mystats module for BombSquad version 1.5.29
 Provides functionality for dumping player stats to disk between rounds.
 """
 ranks=[]
+top3Name=[]
 import threading,json,os,urllib.request,ba,_ba,setting
 from ba._activity import Activity
 from ba._music import setmusic, MusicType
@@ -15,7 +16,7 @@ from typing import Any, Dict, Optional
 from ba._lobby import JoinInfo
 from ba import _activitytypes as ba_actypes
 from ba._activitytypes import *
-
+import urllib.request
 #variables
 our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
@@ -136,11 +137,14 @@ def refreshStats():
         </table>
     </body>
 </html>''')
+
+
     f.close()
     global ranks
     ranks=_ranks
 
     dump_stats(pStats)
+    updateTop3Names(toppersIDs[0:3])
 
     from playersData import pdata
     pdata.update_toppers(toppersIDs)
@@ -245,3 +249,23 @@ def getRank(acc_id):
         refreshStats()
     if acc_id in ranks:
         return ranks.index(acc_id)+1
+
+
+
+def updateTop3Names(ids):
+    global top3Name
+    names=[]
+    for id in ids:
+        url="http://bombsquadgame.com/bsAccountInfo?buildNumber=20258&accountID="+id
+        data=urllib.request.urlopen(url)
+        if data is not None:
+            try:
+                name=json.loads(data.read())["profileDisplayString"]
+            except ValueError:
+                names.append("???")
+            else:
+                names.append(name)
+    top3Name=names
+
+
+

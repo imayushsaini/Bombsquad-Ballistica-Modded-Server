@@ -576,7 +576,7 @@ class ServerManagerApp:
 
         print(f'{Clr.CYN}Launching server subprocess...{Clr.RST}', flush=True)
         binary_name = ('BallisticaCoreHeadless.exe'
-                       if os.name == 'nt' else './ballisticacore_headless')
+                       if os.name == 'nt' else './bombsquad_headless')
         assert self._ba_root_path is not None
         self._subprocess = None
 

@@ -347,9 +347,9 @@ def on_kick_vote_end() -> None:
     pass
     # print("kick vote end")
 
-from tools import servercheck
+
 def on_player_join(pb_id:str)-> None:
-    servercheck.on_player_join(pb_id)
+
     pass
     # print(pb_id+" joined  python layer")
 

@@ -15,19 +15,26 @@
 
     "textonmap": {
         "top watermark": "Welcome to server \n ip 192.168.0.1",
-        "bottom left watermark": "Search Hey Smoothy on Youtube",
+        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.2",
         "center highlights": [
             "message 1",
             "message 2",
             "message 3"
         ]
     },
+    "autoNightMode":{
+        "enable":true,
+        "startTime":"18:30",
+        "endTime":"06:00"
+    },
     "HostDeviceName":"v1.3.1",
     "HostName":"BCS",
     "ShowKickVoteStarterName":true,
     "KickVoteMsgType":"chat",
     "minAgeToChatInHours":78,
-    "minAgeToJoinInHours":48,
+    "minAgeToJoinInHours":24,
+    "maxWarnCount":2,
+    "WarnCooldownMinutes":30,
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,
