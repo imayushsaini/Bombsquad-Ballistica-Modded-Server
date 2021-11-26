@@ -6,7 +6,9 @@
         "isBan": false,
         "isMuted": false,
         "totaltimeplayer": 0,
-        "lastseen": 0
+        "lastseen": 0,
+        "spamCount": 0,
+        "lastSpam": 1637911682.2054627
     },
     "pb-IF5XUm9eAg==": {
         "display_string": [
@@ -14,12 +16,14 @@
         ],
         "profiles": [],
         "name": "\ue030PC402015",
-        "isBan": false,
+        "isBan": true,
         "isMuted": false,
         "accountAge": "2021-11-12 20:30:30",
         "registerOn": 1636801177.809589,
-        "canStartKickVote":true,
+        "canStartKickVote": true,
         "totaltimeplayer": 0,
-        "lastseen": 0
+        "lastseen": 0,
+        "spamCount": 4,
+        "lastSpam": 1637912278.8745685
     }
 }

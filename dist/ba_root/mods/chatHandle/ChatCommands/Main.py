@@ -8,12 +8,12 @@ from .commands import Cheats
 
 from .Handlers import clientid_to_accountid
 from .Handlers import check_permissions
-
+from chatHandle.chatFilter import ChatFilter
 import ba, _ba
 import setting
 
 from serverData import serverdata
-
+settings = setting.get_settings_data()
 
 def command_type(command):
 	"""
@@ -88,7 +88,8 @@ def Command(msg, clientid):
 			_ba.screenmessage("access denied", transient=True, clients=[clientid])
 	
 	
-	settings = setting.get_settings_data()
+	
+	
 	if accountid in serverdata.clients:
 		if serverdata.clients[accountid]["isMuted"]:
 			_ba.screenmessage("You are on mute", transient=True, clients=[clientid])

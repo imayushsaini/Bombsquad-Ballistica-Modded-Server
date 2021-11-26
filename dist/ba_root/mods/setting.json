@@ -4,15 +4,9 @@
         "spectators": false,
         "lobbychecktime": 1
     },
-
-
-
     "ChatCommands": {
   	  "BrodcastCommand": true
     },
-
-
-
     "textonmap": {
         "top watermark": "Welcome to server \n ip 192.168.0.1",
         "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.2",
@@ -25,9 +19,12 @@
     "autoNightMode":{
         "enable":true,
         "startTime":"18:30",
-        "endTime":"06:00"
+        "endTime":"06:00",
+        "fireflies":true
     },
-    "HostDeviceName":"v1.3.1",
+    "sameCharacterForTeam":false,
+    "newResultBoard":true,
+    "HostDeviceName":"v1.3.2",
     "HostName":"BCS",
     "ShowKickVoteStarterName":true,
     "KickVoteMsgType":"chat",
@@ -35,6 +32,10 @@
     "minAgeToJoinInHours":24,
     "maxWarnCount":2,
     "WarnCooldownMinutes":30,
+    "warnMsg":"WARNING !!!",
+    "afterWarnKickMsg":"Enough warnings, Goodbye have a nice day :)",
+    "firstTimeJoinMsg":"Welcome to the server,we r saving all your account details and chats",
+    "regularWelcomeMsg":"Welcome Back",
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,

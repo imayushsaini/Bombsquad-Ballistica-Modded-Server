@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, TypeVar, overload
 
 import ba
 from bastd.actor.spaz import Spaz
-
+from spazmod import modifyspaz
 if TYPE_CHECKING:
     from typing import Any, Sequence, Optional, Literal
 
@@ -56,6 +56,7 @@ class PlayerSpaz(Spaz):
         Note: this does not wire up any controls;
         you must call connect_controls_to_player() to do so.
         """
+        character=modifyspaz.getCharacter(player,character)
 
         super().__init__(color=color,
                          highlight=highlight,
@@ -70,7 +71,7 @@ class PlayerSpaz(Spaz):
         self.last_player_held_by: Optional[ba.Player] = None
         self._player = player
         self._drive_player_position()
-        from spazmod import modifyspaz
+
         modifyspaz.main(self, self.node, self._player)
 
     # Overloads to tell the type system our return type based on doraise val.

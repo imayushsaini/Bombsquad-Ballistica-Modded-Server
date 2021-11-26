@@ -7,9 +7,13 @@ import ba, _ba
 import setting
 from stats import mystats
 from datetime import datetime
+from spazmod import modifyspaz
+from tools import fireflies
 class textonmap:
 
 	def __init__(self):
+		modifyspaz.setTeamCharacter()
+		
 		setti=setting.get_settings_data()
 		data = setti['textonmap']
 		left = data['bottom left watermark']

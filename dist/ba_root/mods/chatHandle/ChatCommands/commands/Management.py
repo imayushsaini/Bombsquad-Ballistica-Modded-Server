@@ -3,7 +3,7 @@ from playersData import pdata
 from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
 import ba, _ba, time, setting
-
+import _thread
 
 Commands = ['ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
 CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist','effect']
@@ -119,7 +119,8 @@ def ban(arguments):
 		ac_id=""
 		for ros in _ba.get_game_roster():
 			if ros["client_id"]==cl_id:
-				pdata.ban_player(ros['account_id'])
+				_thread.start_new_thread(pdata.ban_player,(ros['account_id'],))
+				
 				ac_id=ros['account_id']
 		if ac_id in serverdata.clients:
 			serverdata.clients[ac_id]["isBan"]=True
@@ -142,7 +143,8 @@ def mute(arguments):
 		ac_id=""
 		for ros in _ba.get_game_roster():
 			if ros["client_id"]==cl_id:
-				pdata.mute(ros['account_id'])
+				_thread.start_new_thread(pdata.mute,(ros['account_id'],))
+				
 				ac_id=ros['account_id']
 		if ac_id in serverdata.clients:
 			serverdata.clients[ac_id]["isMuted"]=True

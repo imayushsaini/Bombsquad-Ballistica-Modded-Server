@@ -4,7 +4,7 @@ from playersData import pdata
 from serverData import serverdata
 from chatHandle.ChatCommands import Main
 from tools import Logger, servercheck
-from chatHandle import chatFilter
+from chatHandle.chatFilter import ChatFilter
 import ba, _ba
 import setting
 
@@ -22,8 +22,7 @@ def filter_chat_message(msg, client_id):
 			acid = i['account_id']
 	Logger.log(acid+" | "+msg,"chat")
 
-	if acid in serverdata.clients:
-
+	if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 		if serverdata.clients[acid]["isMuted"]:
 			_ba.screenmessage("You are on mute", transient=True, clients=[client_id])
 			return None
@@ -31,9 +30,10 @@ def filter_chat_message(msg, client_id):
 			_ba.screenmessage("New accounts not allowed to chat here", transient=True, clients=[client_id])
 			return None
 		else:
-			return msg
+			return ChatFilter.filter(msg,acid,client_id)
 
 
 	else:
 		_ba.screenmessage("Fetching your account info , Wait a minute", transient=True, clients=[client_id])
 		return None
+

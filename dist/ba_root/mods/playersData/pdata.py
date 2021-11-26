@@ -2,7 +2,7 @@
 import _ba, os, json
 from serverData import serverdata
 import time
-
+import _thread
 roles = {}
 data = {}
 custom = {}
@@ -42,6 +42,8 @@ def add_profile(id,display_string,currentname,age):
 				  "accountAge":age,
 				  "registerOn":time.time(),
 				  "canStartKickVote":True,
+				  "spamCount":0,
+				  "lastSpam":time.time(),
 				  "totaltimeplayer":0,
 				  "lastseen":0}
 
@@ -82,22 +84,31 @@ def ban_player(id):
 	profiles= get_profiles()
 	if id in profiles:
 		profiles[id]['isBan']=True
-		commit_profiles(profiles)
+		_thread.start_new_thread(commit_profiles,(profiles,))
+		# commit_profiles(profiles)
 
 def mute(id):
 	profiles=get_profiles()
 	if id in profiles:
 
 		profiles[id]["isMuted"]=True
-		commit_profiles(profiles)
+		_thread.start_new_thread(commit_profiles,(profiles,))
+		# commit_profiles(profiles)
 
 def unmute(id):
 	profiles=get_profiles()
 	if id in profiles:
 		profiles[id]["isMuted"]=False
+		_thread.start_new_thread(commit_profiles,(profiles,))
+		# commit_profiles(profiles)
+
+def updateSpam(id,spamCount,lastSpam):
+	profiles=get_profiles()
+	if id in profiles:
+		profiles[id]["spamCount"]=spamCount
+		profiles[id]["lastSpam"]=lastSpam
+		
 		commit_profiles(profiles)
-
-
 
 
 

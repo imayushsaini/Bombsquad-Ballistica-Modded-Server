@@ -4,11 +4,18 @@ import _ba
 from chatHandle import handlechat
 import setting
 from tools import servercheck
+from tools import ServerUpdate
 import _thread
 from stats import mystats
 from datetime import datetime
 from ba import _activity
 
+from typing import Optional, Any
+from spazmod import modifyspaz
+from bastd.activity import dualteamscore
+from bastd.activity import multiteamscore
+from bastd.actor.zoomtext import ZoomText
+# from tools import fireflies
 settings = setting.get_settings_data()
 
 def filter_chat_message(msg, client_id):
@@ -21,6 +28,8 @@ def on_app_launch():
     whitelist.Whitelist()
     bootstraping()
     servercheck.checkserver().start()
+    ServerUpdate.check()
+
 
 
 	#something
@@ -55,14 +64,17 @@ def new_disconnect(clid,duration=120):
     _ba.ban_client(clid,duration)
 
 org_begin=ba._activity.Activity.on_begin 
-
 def new_begin(self):
     org_begin(self)
     night_mode()
     
-    
-
 ba._activity.Activity.on_begin=new_begin
+
+org_end=ba._activity.Activity.end
+def new_end(self,results:Any=None,delay:float=0.0,force:bool=False):
+    
+    org_end(self,results,delay,force)
+ba._activity.Activity.end=new_end
 
 
 def night_mode():
@@ -75,4 +87,11 @@ def night_mode():
         
         if now.time() > start.time() or now.time() < end.time():
             activity = _ba.get_foreground_host_activity()
+
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
+
+            # if settings['autoNightMode']['fireflies']:
+            #     fireflies.factory()
+
+
+
