@@ -16,21 +16,26 @@ def filter(msg,pb_id,client_id):
 
 	now = time.time()
 
-	if "lastMsg" in serverdata.clients[pb_id]:
+	if "lastMsgTime" in serverdata.clients[pb_id]:
 		count=serverdata.clients[pb_id]["cMsgCount"]
-		if now - serverdata.clients[pb_id]["lastMsg"] < 5:
+		if now - serverdata.clients[pb_id]["lastMsgTime"] < 5:
 			count+=1
 			if count >=2:
 				addWarn(pb_id,client_id)
 				count =0
+		else if now - serverdata.clients[pb_id]["lastMsgTime"] < 30:
+			if serverdata.clients[pb_id]["lastMsg"]==msg:
+				addWarn(pb_id,client_id)
 		else:
 			count =0
 
 		serverdata.clients[pb_id]['cMsgCount']=count
-		serverdata.clients[pb_id]['lastMsg']=now
+		serverdata.clients[pb_id]['lastMsgTime']=now
+		serverdata.clients[pb_id]['lastMsg']=msg
 	else:
 		serverdata.clients[pb_id]['cMsgCount']=0
-		serverdata.clients[pb_id]['lastMsg']=now
+		serverdata.clients[pb_id]['lastMsgTime']=now
+		serverdata.clients[pb_id]['lastMsg']=msg
 	return new_msg
 
 

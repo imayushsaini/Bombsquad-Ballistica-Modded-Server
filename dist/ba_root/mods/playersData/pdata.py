@@ -52,6 +52,11 @@ def add_profile(id,display_string,currentname,age):
 	f=open(data_path+"profiles.json","w")
 	json.dump(profiles,f,indent=4)
 	serverdata.clients[id]=profiles[id]
+	serverdata.clients[id]["warnCount"]=0
+	serverdata.clients[id]["lastWarned"]=time.time()
+	serverdata.clients[id]["verified"]=False
+	serverdata.clients[id]["rejoincount"]=1
+	serverdata.clients[id]["lastJoin"]=time.time()
 	f.close()
 
 def update_displayString(id,display_string):
