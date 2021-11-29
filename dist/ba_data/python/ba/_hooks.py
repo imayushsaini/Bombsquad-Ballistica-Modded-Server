@@ -347,9 +347,7 @@ def on_kick_vote_end() -> None:
     pass
     # print("kick vote end")
 
-
 def on_player_join(pb_id:str)-> None:
-
     pass
     # print(pb_id+" joined  python layer")
 

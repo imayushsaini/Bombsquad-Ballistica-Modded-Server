@@ -34,10 +34,10 @@
    "Complete": false
   },
   "Mine Games": {
-   "Complete": false
+   "Complete": true
   },
   "Off You Go Then": {
-   "Complete": false
+   "Complete": true
   },
   "Onslaught God": {
    "Complete": false
@@ -46,7 +46,7 @@
    "Complete": false
   },
   "Onslaught Training Victory": {
-   "Complete": false
+   "Complete": true
   },
   "Onslaught Wizard": {
    "Complete": false
@@ -76,7 +76,7 @@
    "Complete": false
   },
   "Rookie Onslaught Victory": {
-   "Complete": false
+   "Complete": true
   },
   "Runaround God": {
    "Complete": false
@@ -97,7 +97,7 @@
    "Complete": false
   },
   "Super Punch": {
-   "Complete": false
+   "Complete": true
   },
   "TNT Terror": {
    "Complete": false
@@ -126,7 +126,206 @@
  },
  "Auto Account State": "Server",
  "Auto Balance Teams": true,
- "Campaigns": {},
+ "Bear Coin": 814,
+ "Bear Store": {
+  "Buy Firebombs": false,
+  "Buy Option": false,
+  "Buy Percentage": false,
+  "Promo Code": {
+   "B-0mB3RYT2z": [
+    true,
+    910
+   ],
+   "B-Asd14mON9G0D": [
+    true,
+    910
+   ],
+   "D-rAcK0cJ23": [
+    true,
+    910
+   ],
+   "E-Am54igO42Os": [
+    true,
+    600
+   ],
+   "E-M4uN3K34XB": [
+    true,
+    840
+   ],
+   "E-a27ZO6f3Y": [
+    true,
+    600
+   ],
+   "G-Am54igO42Os": [
+    true,
+    1100
+   ],
+   "P-tRo8nM8dZ": [
+    true,
+    2800
+   ],
+   "PM-731ClcAF": [
+    true,
+    50000
+   ],
+   "Y-tU2B3S": [
+    true,
+    500
+   ]
+  }
+ },
+ "Campaigns": {
+  "Easy": {
+   "Onslaught Training": {
+    "Complete": true,
+    "High Scores": {
+     "1 Player": [
+      [
+       286,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       261,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       239,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       49,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       46,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       28,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       5,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       5,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       5,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       5,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ]
+     ]
+    },
+    "Rating": 10.0
+   },
+   "Rookie Onslaught": {
+    "Complete": false,
+    "High Scores": {
+     "1 Player": [
+      [
+       297,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ],
+      [
+       34,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "smoothie"
+         }
+        ]
+       }
+      ]
+     ]
+    },
+    "Rating": 10.0
+   }
+  }
+ },
  "Custom Team Colors": [
   [
    2.0,
@@ -144,23 +343,79 @@
   "barfi"
  ],
  "Default Player Profiles": {
-  "Client Input Device #1": "__account__",
-  "Client Input Device #10": "__account__",
-  "Client Input Device #2": "__account__",
-  "Client Input Device #3": "Goku",
-  "Client Input Device #4": "\ud83d\udc30cute bunny\ud83d\udc9e",
-  "Client Input Device #5": "__account__",
-  "Client Input Device #6": "__account__",
-  "Client Input Device #8": "AARAV SINGH",
-  "Client Input Device #9": "__account__"
+  "Client Input Device #1": "_random",
+  "Client Input Device #2": "__account__"
  },
- "Free-for-All Max Players": 20,
  "Free-for-All Playlist Randomize": true,
  "Free-for-All Playlist Selection": "__default__",
- "Free-for-All Playlists": {},
+ "Free-for-All Playlists": {
+  "Just Death Match": [
+   {
+    "settings": {
+     "Epic Mode": false,
+     "Kills to Win Per Player": 10,
+     "Respawn Times": 1.0,
+     "Time Limit": 300,
+     "map": "Doom Shroom"
+    },
+    "type": "bs_death_match.DeathMatchGame"
+   },
+   {
+    "settings": {
+     "Epic Mode": false,
+     "Kills to Win Per Player": 10,
+     "Respawn Times": 1.0,
+     "Time Limit": 300,
+     "map": "Crag Castle"
+    },
+    "type": "bs_death_match.DeathMatchGame"
+   }
+  ],
+  "My Free-for-All Playlist": [
+   {
+    "settings": {
+     "Allow Negative Scores": false,
+     "Epic Mode": false,
+     "Kills to Win Per Player": 5,
+     "Respawn Times": 1.0,
+     "Time Limit": 0,
+     "map": "Courtyard"
+    },
+    "type": "bastd.game.deathmatch.DeathMatchGame"
+   }
+  ]
+ },
  "Idle Exit Minutes": null,
  "Local Account Name": "Server3258837",
- "PSTR": 0,
+ "PPM Settings": {
+  "Healing Damage PTG": 72,
+  "Powers Gravity": true,
+  "Powerup Name": true,
+  "Powerup Scale": 1.0,
+  "Powerup Style": "Auto",
+  "Powerup Time": false,
+  "Powerup With Shield": true,
+  "Powerups": {
+   "Curse": 1,
+   "Fire Bombs": 3,
+   "Fly Bombs": 3,
+   "Goodbye": 2,
+   "Healing Damage": 1,
+   "Health": 1,
+   "Ice Bombs": 3,
+   "Ice Man": 1,
+   "Impact Bombs": 3,
+   "Impairment Bombs": 2,
+   "Mine Bombs": 2,
+   "Punch": 3,
+   "Shield": 2,
+   "Speed": 2,
+   "Sticky Bombs": 3,
+   "Tank Shield": 1,
+   "Triple": 3
+  },
+  "Tank Shield PTG": 96
+ },
  "Player Profiles": {
   "__account__": {
    "character": "Spaz",
@@ -177,8 +432,11 @@
   }
  },
  "Plugins": {
-  "bobmsquadhttpapi.HeySmoothy": {
+  "CharacterChooser.HeySmoothy": {
    "enabled": true
+  },
+  "bobmsquadhttpapi.HeySmoothy": {
+   "enabled": false
   },
   "importcustomcharacters.HeySmoothy": {
    "enabled": true
@@ -186,32 +444,56 @@
  },
  "Port": 43210,
  "Region Pings": {
-  "af-south-1": 310.4873846001974,
-  "ap-northeast-1": 160.38350760028334,
-  "ap-northeast-2": 151.66848159996152,
-  "ap-south-1": 42.999430000327266,
-  "ap-southeast-1": 85.54219160010689,
-  "ap-southeast-2": 177.78437579947786,
-  "ca-central-1": 235.28795540041756,
-  "eu-central-1": 157.53134780030814,
-  "eu-north-1": 178.57811620054417,
-  "eu-south-1": 148.7286152001907,
-  "eu-west-1": 174.8420205996481,
-  "eu-west-2": 164.6547662004923,
-  "eu-west-3": 163.58985420019962,
-  "me-south-1": 74.75811940041604,
-  "sa-east-1": 346.15190239976437,
-  "us-east-1": 225.80962139903568,
-  "us-east-2": 244.04948919953313,
-  "us-west-1": 267.5949521999537,
-  "us-west-2": 280.6645522005638
+  "af-south-1": 328.2357999996748,
+  "ap-northeast-1": 150.0941541948123,
+  "ap-northeast-2": 160.2201884064998,
+  "ap-south-1": 45.05286179925315,
+  "ap-southeast-1": 101.91129060697858,
+  "ap-southeast-2": 183.6228000029223,
+  "ca-central-1": 262.4569968022115,
+  "eu-central-1": 155.88790780561976,
+  "eu-north-1": 181.94498299446423,
+  "eu-south-1": 156.48616400256287,
+  "eu-west-1": 179.42955539320246,
+  "eu-west-2": 158.43393659518915,
+  "eu-west-3": 170.620519401622,
+  "me-south-1": 78.16982959693996,
+  "sa-east-1": 345.57150000182446,
+  "us-east-1": 238.92560360513744,
+  "us-east-2": 257.30932620124076,
+  "us-west-1": 255.34800000605173,
+  "us-west-2": 292.9734999925131
  },
+ "Selected Coop Game": "Easy:Rookie Onslaught",
  "Show Tutorial": false,
  "Signed In Last Session": false,
- "Team Game Max Players": 20,
  "Team Tournament Playlist Randomize": true,
- "Team Tournament Playlist Selection": "\u041a\u043e\u043f\u0438\u044f \u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u043f\u043b\u0435\u0439-\u043b\u0438\u0441\u0442 \u0440\u0435\u0436\u0438\u043c\u0430 \u041a\u043e\u043c\u0430\u043d\u0434\u044b",
+ "Team Tournament Playlist Selection": "My Teams Playlist",
  "Team Tournament Playlists": {
+  "My Teams Playlist": [
+   {
+    "settings": {
+     "Epic Mode": false,
+     "Kills to Win Per Player": 1,
+     "Respawn Times": 1.0,
+     "Time Limit": 0,
+     "map": "Doom Shroom"
+    },
+    "type": "bastd.game.deathmatch.DeathMatchGame"
+   }
+  ],
+  "My Teams Playlist 2": [
+   {
+    "settings": {
+     "Epic Mode": false,
+     "Kills to Win Per Player": 5,
+     "Respawn Times": 1.0,
+     "Time Limit": 0,
+     "map": "Happy Thoughts"
+    },
+    "type": "bastd.game.deathmatch.DeathMatchGame"
+   }
+  ],
   "\u041a\u043e\u043f\u0438\u044f \u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u043f\u043b\u0435\u0439-\u043b\u0438\u0441\u0442 \u0440\u0435\u0436\u0438\u043c\u0430 \u041a\u043e\u043c\u0430\u043d\u0434\u044b": [
    {
     "settings": {

@@ -17,6 +17,7 @@ from ba._lobby import JoinInfo
 from ba import _activitytypes as ba_actypes
 from ba._activitytypes import *
 import urllib.request
+import custom_hooks
 #variables
 our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
@@ -156,6 +157,7 @@ def update(score_set):
     store.
     """
     # look at score-set entries to tally per-account kills for this round
+    custom_hooks.scoreScreenBegin()
 
     account_kills = {}
     account_deaths = {}

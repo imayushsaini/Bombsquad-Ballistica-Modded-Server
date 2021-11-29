@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     import ba
 
 TEAM_COLORS = [(0.2, 0.4, 1.6)]
-TEAM_NAMES = ['Good Guys']
+TEAM_NAMES = ['Humans']
 
 
 class CoopSession(Session):
@@ -33,7 +33,7 @@ class CoopSession(Session):
     """
     use_teams = True
     use_team_colors = False
-    allow_mid_activity_joins = False
+    allow_mid_activity_joins = True
 
     # Note: even though these are instance vars, we annotate them at the
     # class level so that docs generation can access their types.
@@ -92,11 +92,11 @@ class CoopSession(Session):
 
     def should_allow_mid_activity_joins(self, activity: ba.Activity) -> bool:
         # pylint: disable=cyclic-import
-        from ba._gameactivity import GameActivity
+        # from ba._gameactivity import GameActivity
 
         # Disallow any joins in the middle of the game.
-        if isinstance(activity, GameActivity):
-            return False
+        # if isinstance(activity, GameActivity):
+        #     return False
 
         return True
 
@@ -127,10 +127,12 @@ class CoopSession(Session):
         level = self.campaign.getlevel(self.campaign_level_name)
 
         nextlevel: Optional[ba.Level]
-        if level.index < len(levels) - 1:
-            nextlevel = levels[level.index + 1]
-        else:
-            nextlevel = None
+        # if level.index < len(levels) - 1:
+        #     nextlevel = levels[level.index + 1]
+        # else:
+        #     nextlevel = None
+        nextlevel=levels[(level.index+1)%len(levels)]
+        
         if nextlevel:
             gametype = nextlevel.gametype
             settings = nextlevel.get_settings()
@@ -278,8 +280,18 @@ class CoopSession(Session):
 
         # If we're in a between-round activity or a restart-activity,
         # hop into a round.
+
+
+        if outcome=="victory" or outcome=="restart" or outcome=="defeat":
+            outcome = 'next_level'
+        
+
+
         if (isinstance(activity,
-                       (JoinActivity, CoopScoreScreen, TransitionActivity))):
+                       (JoinActivity, CoopScoreScreen, TransitionActivity))) or True:
+            
+            from tools import TeamBalancer
+            TeamBalancer.checkToExitCoop()
 
             if outcome == 'next_level':
                 if self._next_game_instance is None:
@@ -339,7 +351,11 @@ class CoopSession(Session):
         # actual round.
         elif isinstance(activity, TutorialActivity):
             self.setactivity(_ba.newactivity(TransitionActivity))
+
         else:
+            pass
+        if False:
+            
 
             playerinfos: list[ba.PlayerInfo]
 

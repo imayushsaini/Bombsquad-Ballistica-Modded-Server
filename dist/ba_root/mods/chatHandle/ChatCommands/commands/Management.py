@@ -4,8 +4,8 @@ from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
 import ba, _ba, time, setting
 import _thread
-
-Commands = ['ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+from tools import playlist
+Commands = ['playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
 CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist','effect']
 
 
@@ -23,8 +23,9 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	Returns:
 		None 
 	"""
-
-	if command == 'kick':
+	if command =='playlist':
+		changeplaylist(arguments)
+	elif command == 'kick':
 		kick(arguments)
 	elif command == 'ban':
 		ban(arguments)
@@ -96,7 +97,16 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 
 
-
+def changeplaylist(arguments):
+	if len(arguments)==0:
+		_ba.chatmessage("enter list code or name")
+	else:
+		if arguments[0]=='coop':
+			serverdata.coopmode=True
+		else:
+			serverdata.coopmode=False
+		playlist.setPlaylist(arguments[0])
+	return
 
 
 def kick(arguments):
@@ -138,6 +148,8 @@ def quit(arguments):
 
 
 def mute(arguments):
+	if len(arguments)==0:
+		serverdata.muted=True
 	try:
 		cl_id=int(arguments[0])
 		ac_id=""
@@ -155,6 +167,8 @@ def mute(arguments):
 
 
 def un_mute(arguments):
+	if len(arguments)==0:
+		serverdata.muted=False
 	try:
 		cl_id=int(arguments[0])
 		ac_id=""

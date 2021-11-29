@@ -14,7 +14,11 @@ from typing import Optional, Any
 from spazmod import modifyspaz
 from bastd.activity import dualteamscore
 from bastd.activity import multiteamscore
+from bastd.activity import drawscore
 from bastd.actor.zoomtext import ZoomText
+from tools import TeamBalancer
+from bastd.activity.coopscore import CoopScoreScreen
+# from bastd.activity.multiteamvictory import 
 # from tools import fireflies
 settings = setting.get_settings_data()
 
@@ -55,6 +59,12 @@ def bootstraping():
     _ba.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
     _ba.set_kickvote_msg_type(settings["KickVoteMsgType"])
     _thread.start_new_thread(mystats.refreshStats,())
+    if settings["elPatronPowerups"]["enable"]:
+        from tools import elPatronPowerups
+        elPatronPowerups.enable()
+    if settings["mikirogQuickTurn"]["enable"]:
+        from tools import wavedash
+        
 
 
 
@@ -72,9 +82,19 @@ ba._activity.Activity.on_begin=new_begin
 
 org_end=ba._activity.Activity.end
 def new_end(self,results:Any=None,delay:float=0.0,force:bool=False):
+    act=_ba.get_foreground_host_activity()
+    if isinstance(act,CoopScoreScreen):
+        TeamBalancer.checkToExitCoop()
     
     org_end(self,results,delay,force)
+    
 ba._activity.Activity.end=new_end
+org_player_join=ba._activity.Activity.on_player_join
+def on_player_join(self, player) -> None:
+    TeamBalancer.on_player_join()
+    org_player_join(self,player)
+ba._activity.Activity.on_player_join=on_player_join
+
 
 
 def night_mode():
@@ -95,3 +115,16 @@ def night_mode():
 
 
 
+from tools import dualteamscore as newdts
+
+if settings["newResultBoard"]:
+
+
+    dualteamscore.TeamVictoryScoreScreenActivity=  newdts.TeamVictoryScoreScreenActivity
+
+    multiteamscore.MultiTeamScoreScreenActivity.show_player_scores = newdts.show_player_scores
+
+    drawscore.DrawScoreScreenActivity=newdts.DrawScoreScreenActivity
+
+def scoreScreenBegin():
+    TeamBalancer.balanceTeams()

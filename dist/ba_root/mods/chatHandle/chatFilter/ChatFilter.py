@@ -23,7 +23,7 @@ def filter(msg,pb_id,client_id):
 			if count >=2:
 				addWarn(pb_id,client_id)
 				count =0
-		else if now - serverdata.clients[pb_id]["lastMsgTime"] < 30:
+		elif now - serverdata.clients[pb_id]["lastMsgTime"] < 30:
 			if serverdata.clients[pb_id]["lastMsg"]==msg:
 				addWarn(pb_id,client_id)
 		else:

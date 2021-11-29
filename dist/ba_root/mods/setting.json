@@ -8,19 +8,59 @@
   	  "BrodcastCommand": true
     },
     "textonmap": {
-        "top watermark": "Welcome to server \n ip 192.168.0.1",
+        "top watermark": "Welcome to server \nip 192.168.0.1",
         "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.2",
-        "center highlights": [
-            "message 1",
-            "message 2",
-            "message 3"
-        ]
+        "center highlights":{
+            "color":[1,0,0],
+            "randomColor":true,
+            "msg":[
+                "message 1",
+                "message 2",
+                "message 3"
+                ]
+        } 
+    },
+    "leaderboard":{
+        "enable":true,
+        "barsBehindName":true
     },
     "autoNightMode":{
         "enable":true,
         "startTime":"18:30",
         "endTime":"06:00",
         "fireflies":true
+    },
+    "playlists":{
+        "default":12345,
+        "team":12345,
+        "ffa":22222,
+        "elim":34343,
+        "death":23432
+    },
+    "coopModeWithLessPlayers":{
+        "enable":true,
+        "minPlayerToExitCoop":4
+    },
+    "mikirogQuickTurn":{
+        "enable":true
+    },
+    "elPatronPowerups":{
+        "enable":true,
+        "settings":{"Powers Gravity": true,
+            "Tank Shield PTG": 96,
+            "Healing Damage PTG": 72,
+            "Powerup Style": "Auto",
+            "Powerup Scale": 1.0,
+            "Powerup Name": true,
+            "Powerup With Shield": true,
+            "Powerup Time": false},
+        "Quantity":{ "Shield": 2,
+             "Punch": 3, "Mine Bombs": 2,
+            "Impact Bombs": 3, "Ice Bombs": 3, "Triple": 3,
+            "Sticky Bombs": 3, "Curse": 1, "Health": 1,
+            "Speed": 2, "Healing Damage": 1, "Goodbye": 2,
+            "Ice Man": 1,"Tank Shield": 1, "Impairment Bombs": 2,
+            "Fire Bombs": 3, "Fly Bombs": 3}
     },
     "sameCharacterForTeam":false,
     "newResultBoard":true,
