@@ -45,4 +45,9 @@ Here you can ban player , mute them , disable their kick votes
 - Character chooser , players can choose any character while joining .
 - Restrict New accounts to join or chat in server.
 - Custom characters , easy to load and use characters made by character maker.
+- Auto Team Balance , player shift to small team in dualteam mode.
+- Integrated ElPatronPowerups.
+- Auto switch to coop mode when players are less then threshold.
+- Change playlist on fly with playlist code or name , i.e /playlist teams , /playlist coop , /playlist 34532
+- New Splitted Team score screen. 
 - other small small feature improvement here there find yourself.
