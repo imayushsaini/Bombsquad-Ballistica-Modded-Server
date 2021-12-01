@@ -6,6 +6,7 @@ import _thread
 roles = {}
 data = {}
 custom = {}
+whitelist=[]
 data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.sep)
 
 
@@ -293,3 +294,9 @@ def update_toppers(topperlist):
 	commit_roles(roles)
 
 
+def loadWhitelist():
+	global whitelist
+	with open(data_path+"whitelist.json","r") as f:
+		data=json.loads(f.read())
+		for id in data:
+			whitelist.append(id)

@@ -831,7 +831,7 @@ class OnslaughtGame(ba.CoopGameActivity[Player, Team]):
                     assert self.initialplayerinfos is not None
                     self.stats.player_scored(
                         player,
-                        int(100 / len(self.initialplayerinfos)),
+                        int(100 / 5),
                         scale=1.4,
                         color=(0.6, 0.6, 1.0, 1.0),
                         title=ba.Lstr(resource='completionBonusText'),

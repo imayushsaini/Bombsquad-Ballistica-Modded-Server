@@ -1,12 +1,12 @@
 from .Handlers import handlemsg, handlemsg_all,send
 from playersData import pdata
-from tools.whitelist import add_to_white_list, add_commit_to_logs
+# from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
 import ba, _ba, time, setting
 import _thread
 from tools import playlist
 Commands = ['playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
-CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'whitelist','effect']
+CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera','effect']
 
 
 
@@ -86,8 +86,8 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	elif command in ['customeffect','effect']:
 		set_custom_effect(arguments)
 
-	elif command in ['add', 'whitelist']:
-		whitelst_it(accountid, arguments)
+	# elif command in ['add', 'whitelist']:
+	# 	whitelst_it(accountid, arguments)
 	
 	elif command == 'spectators':
 		spectators(arguments)
@@ -369,34 +369,34 @@ def remove_command_to_role(arguments):
 
 
 
-def whitelst_it(accountid : str, arguments):
-	settings = setting.get_settings_data()
+# def whitelst_it(accountid : str, arguments):
+# 	settings = setting.get_settings_data()
 	
-	if arguments[0] == 'on':
-		if settings["white_list"]["whitelist_on"]:
-			_ba.chatmessage("Already on")
-		else:
-			settings["white_list"]["whitelist_on"] = True
-			setting.commit(settings)
-			_ba.chatmessage("whitelist on")
-			from tools import whitelist
-			whitelist.Whitelist() 
-		return
+# 	if arguments[0] == 'on':
+# 		if settings["white_list"]["whitelist_on"]:
+# 			_ba.chatmessage("Already on")
+# 		else:
+# 			settings["white_list"]["whitelist_on"] = True
+# 			setting.commit(settings)
+# 			_ba.chatmessage("whitelist on")
+# 			from tools import whitelist
+# 			whitelist.Whitelist() 
+# 		return
 		
-	elif arguments[0] == 'off':
-		settings["white_list"]["whitelist_on"] = False
-		setting.commit(settings)
-		_ba.chatmessage("whitelist off")
-		return
+# 	elif arguments[0] == 'off':
+# 		settings["white_list"]["whitelist_on"] = False
+# 		setting.commit(settings)
+# 		_ba.chatmessage("whitelist off")
+# 		return
 	
-	else:
-		rost = _ba.get_game_roster()
+	# else:
+	# 	rost = _ba.get_game_roster()
 		
-		for i in rost:
-			if i['client_id'] == int(arguments[0]):
-				add_to_white_list(i['account_id'], i['display_string'])
-				_ba.chatmessage(str(i['display_string'])+" whitelisted")
-				add_commit_to_logs(accountid+" added "+i['account_id'])
+	# 	for i in rost:
+	# 		if i['client_id'] == int(arguments[0]):
+	# 			add_to_white_list(i['account_id'], i['display_string'])
+	# 			_ba.chatmessage(str(i['display_string'])+" whitelisted")
+	# 			add_commit_to_logs(accountid+" added "+i['account_id'])
 
 
 

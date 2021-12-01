@@ -1,15 +1,12 @@
 {
-    "white_list": {
-        "whitelist_on": false,
-        "spectators": false,
-        "lobbychecktime": 1
-    },
+    "whitelist": false,
+
     "ChatCommands": {
   	  "BrodcastCommand": true
     },
     "textonmap": {
         "top watermark": "Welcome to server \nip 192.168.0.1",
-        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.2",
+        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.3",
         "center highlights":{
             "color":[1,0,0],
             "randomColor":true,
@@ -39,7 +36,7 @@
     },
     "coopModeWithLessPlayers":{
         "enable":true,
-        "minPlayerToExitCoop":4
+        "minPlayerToExitCoop":0
     },
     "mikirogQuickTurn":{
         "enable":true

@@ -18,6 +18,9 @@ from bastd.activity import drawscore
 from bastd.actor.zoomtext import ZoomText
 from tools import TeamBalancer
 from bastd.activity.coopscore import CoopScoreScreen
+from ba import _hooks
+from tools import Logger
+from playersData import pdata
 # from bastd.activity.multiteamvictory import 
 # from tools import fireflies
 settings = setting.get_settings_data()
@@ -28,8 +31,6 @@ def filter_chat_message(msg, client_id):
 
 
 def on_app_launch():
-    from tools import whitelist
-    whitelist.Whitelist()
     bootstraping()
     servercheck.checkserver().start()
     ServerUpdate.check()
@@ -64,6 +65,9 @@ def bootstraping():
         elPatronPowerups.enable()
     if settings["mikirogQuickTurn"]["enable"]:
         from tools import wavedash
+
+    if settings["whitelist"]:
+        pdata.loadWhitelist()
         
 
 
@@ -128,3 +132,17 @@ if settings["newResultBoard"]:
 
 def scoreScreenBegin():
     TeamBalancer.balanceTeams()
+
+
+def kick_vote_started(by,to):
+    Logger.log(by+" started kick vote for "+to)
+
+_hooks.kick_vote_started=kick_vote_started
+
+def on_kicked(id):
+    Logger.log(id+" kicked by kickvotes")
+
+_hooks.on_kicked=on_kicked
+
+def on_kick_vote_end():
+    Logger.log("Kick vote End")

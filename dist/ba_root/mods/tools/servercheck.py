@@ -15,7 +15,9 @@ from ba._general import Call
 import threading
 import setting
 import _thread
+from tools import Logger
 from tools import profanity
+
 # class ServerChecker:
 
 # 	def __init__():
@@ -58,6 +60,8 @@ from tools import profanity
 
 # 		pdata.update_profile(serverdata.cachedclients[player])
 
+settings = setting.get_settings_data()
+
 class checkserver(object):
 	def start(self):
 		self.players=[]
@@ -72,10 +76,22 @@ class checkserver(object):
 			if ros['account_id'] not in self.players and ros['client_id'] !=-1:
 				d_str=ros['display_string']
 				d_str2=profanity.censor(d_str)
+				Logger.log(d_str+"||"+ros["account_id"]+"|| joined server","playerjoin")
 				if d_str2!=d_str:
 					_ba.screenmessage("Profanity in Id , change your ID and join back",color=(1,0,0),transient=True,clients=[ros['client_id']])
+					Logger.log(d_str+"||"+ros["account_id"]+"|| kicked by profanity check","sys")
 					_ba.disconnect_client(ros['client_id'],1)
+					
 					return
+				if settings["whitelist"] and ros["account_id"]!=None:
+					if ros["account_id"] not in pdata.whitelist:
+						_ba.screenmessage("Not in whitelist,contact admin",color=(1,0,0),transient=True,clients=[ros['client_id']])
+						Logger.log(d_str+"||"+ros["account_id"]+" | kicked > not in whitelist")
+						_ba.disconnect_client(ros['client_id'])
+					
+							
+						return
+
 				if ros['account_id'] != None:
 					if ros['account_id'] in serverdata.clients:
 						on_player_join_server(ros['account_id'],serverdata.clients[ros['account_id']])
@@ -84,7 +100,7 @@ class checkserver(object):
 		
 		self.players=newPlayers
 
-settings = setting.get_settings_data()
+
 
 
 
@@ -102,7 +118,9 @@ def on_player_join_server(pbid,player_data):
 			rejoinCount+=1
 			if rejoinCount >2:
 				_ba.screenmessage("Joining too fast , slow down dude",color=(1,0,1),transient=True,clients=[clid])
+				Logger.log(pbid+"|| kicked for joining too fast")
 				_ba.disconnect_client(clid)
+				
 				_thread.start_new_thread(reportSpam,(pbid,))
 				
 				return
@@ -113,6 +131,10 @@ def on_player_join_server(pbid,player_data):
 		serverdata.clients[pbid]["lastJoin"]=now
 
 
+
+
+
+
 	
 	if player_data!=None:
 		device_strin=""
@@ -121,7 +143,9 @@ def on_player_join_server(pbid,player_data):
 				if ros['account_id']==pbid:
 					if not player_data["isBan"]:
 						_ba.screenmessage("New Accounts not allowed here , come back later",color=(1,0,0), transient=True,clients=[ros['client_id']])
+					Logger.log(pbid+" | kicked > reason:Banned account")
 					_ba.disconnect_client(ros['client_id'])
+					
 			return
 		else:
 			if pbid not in serverdata.clients:
@@ -285,6 +309,7 @@ def save_age(age, pb_id,display_string):
     thread2.start()
     if get_account_age(age) < settings["minAgeToJoinInHours"]:
     	msg="New Accounts not allowed to play here , come back tmrw."
+    	Logger.log(pb_id+"|| kicked > new account")
     	_ba.pushcall(Call(kick_by_pb_id,pb_id,msg),from_other_thread=True)
 
 def save_ids(ids,pb_id,display_string):
@@ -297,6 +322,7 @@ def save_ids(ids,pb_id,display_string):
 		msg="Spoofed Id detected , Goodbye"
 		_ba.pushcall(Call(kick_by_pb_id,pb_id,msg),from_other_thread=True)
 		serverdata.clients[pb_id]["verified"]=False
+		Logger.log(pb_id+"|| kicked , for using spoofed id "+display_string)
 	else:
 		serverdata.clients[pb_id]["verified"]=True
 	
@@ -307,7 +333,6 @@ def kick_by_pb_id(pb_id,msg):
 		if ros['account_id']==pb_id:
 			_ba.screenmessage(msg, transient=True, clients=[ros['client_id']])
 			_ba.disconnect_client(ros['client_id'])
-			_ba.chatmessage("id spoofer kicked")
 
 	
 

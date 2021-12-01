@@ -25,18 +25,18 @@ def log(msg,mtype='sys'):
 			chats=[]
 	elif mtype=="playerjoin":
 		joinlog.append(msg)
-		if len(joinlog)>10:
+		if len(joinlog)>3:
 			dumplogs(joinlog,"joinlog").start()
 			joinlog=[]
 	elif mtype=='chatcmd':
 		cmndlog.append(msg)
-		if len(cmndlog)>10:
+		if len(cmndlog)>3:
 			dumplogs(cmndlog,"cmndlog").start()
 			cmndlog=[]
 
 	else:
 		misclogs.append(msg)
-		if len(misclogs)>10:
+		if len(misclogs)>5:
 			dumplogs(misclogs,"sys").start()
 			misclogs=[]
 
