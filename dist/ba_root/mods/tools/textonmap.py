@@ -8,7 +8,7 @@ import setting
 from stats import mystats
 from datetime import datetime
 from spazmod import modifyspaz
-from tools import fireflies
+
 import random
 setti=setting.get_settings_data()
 class textonmap:
