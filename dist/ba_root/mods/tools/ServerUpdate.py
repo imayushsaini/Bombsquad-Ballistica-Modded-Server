@@ -3,7 +3,7 @@ import time
 import _thread
 import urllib.request
 from efro.terminal import Clr
-
+import json
 VERSION=61
 
 def check():
