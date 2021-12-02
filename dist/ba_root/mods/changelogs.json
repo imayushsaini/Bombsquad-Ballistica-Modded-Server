@@ -2,5 +2,9 @@
        "61":{
               "log":"msg here \n about updates",
               "time":"1 Dec 2021"
+       },
+       "62":{
+              "log":"bug fix in logger.py",
+              "time":"2 DEC 2021  1:40PM IST"
        }
 }

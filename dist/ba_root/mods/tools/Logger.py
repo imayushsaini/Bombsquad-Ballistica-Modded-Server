@@ -57,11 +57,11 @@ class dumplogs(threading.Thread):
 
 
 		elif self.type=='joinlog':
-			f.open(serverdata+"joining.log","a+")
+			f=open(serverdata+"joining.log","a+")
 			
 
 		elif self.type=='cmndlog':
-			f.open(serverdata+"cmndusage.log","a+")
+			f=open(serverdata+"cmndusage.log","a+")
 			
 		else:
 			f=open(serverdata+"logs.log","a+")
