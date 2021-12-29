@@ -6,5 +6,10 @@
        "62":{
               "log":"bug fix in logger.py",
               "time":"2 DEC 2021  1:40PM IST"
+       },
+       "63":{
+              "log":"Logger bug fix, integrated discordbot : have fun :)",
+              "time":"28 DEC 2021"
        }
+
 }

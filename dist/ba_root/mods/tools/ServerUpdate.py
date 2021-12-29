@@ -4,7 +4,7 @@ import _thread
 import urllib.request
 from efro.terminal import Clr
 import json
-VERSION=62
+VERSION=63
 
 def check():
 	_thread.start_new_thread(updateProfilesJson,())

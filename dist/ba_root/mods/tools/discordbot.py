@@ -117,7 +117,7 @@ def get_live_players_msg():
         pass
     if not msg:
         msg="```No one``` \n"
-    msg_2="\n\n***Current:v*** "+stats['playlist']['current'] +"\n ***Next: ***"+stats['playlist']['next'] +"\n\n."
+    msg_2="\n\n***Current: *** "+stats['playlist']['current'] +"\n ***Next: ***"+stats['playlist']['next'] +"\n\n."
     return msg_1+msg+msg_2
 
 def get_chats():
@@ -192,32 +192,4 @@ class BsDataThread(object):
 
         
         # stats['teamInfo']=self.getTeamInfo()
-
-# import discord
-# import asyncio
-
-# class MyClient(discord.Client):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-
-#         # create the background task and run it in the background
-#         self.bg_task = self.loop.create_task(self.my_background_task())
-
-#     async def on_ready(self):
-#         print(f'Logged in as {self.user} (ID: {self.user.id})')
-#         print('------')
-
-#     async def my_background_task(self):
-#         await self.wait_until_ready()
-#         counter = 0
-#         channel = self.get_channel(924697770554687548) # channel ID goes here
-#         while not self.is_closed():
-#             counter += 1
-#             await channel.send(counter)
-#             await asyncio.sleep(60) # task runs every 60 seconds
-
-
-# client = MyClient()
-# client.run('OTI0NjQ4NjU0MzgyNDUyODA2.YchoKg.I4ycF_0WPkP8FANo_Xlrqa2BWgg')
-
 
