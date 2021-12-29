@@ -13,12 +13,22 @@ settings = setting.get_settings_data()
 def filter_chat_message(msg, client_id):
 
 	if client_id ==-1:
+		if msg.startswith("/"):
+			Main.Command(msg,client_id)
+			return None
 		return msg
 	acid=""
+	displaystring=""
+	currentname=""
 
 	for i in _ba.get_game_roster():
 		if i['client_id'] == client_id:
 			acid = i['account_id']
+			try:
+				currentname=i['players'][0]['name_full']
+			except:
+				currentname="<in-lobby>"
+			displaystring=i['display_string']
 	if acid:
 		msg=ChatFilter.filter(msg,acid,client_id)
 
@@ -26,7 +36,7 @@ def filter_chat_message(msg, client_id):
 		return Main.Command(msg, client_id)
 	
 	
-	Logger.log(acid+" | "+msg,"chat")
+	Logger.log(acid+" | "+displaystring+"|"+currentname+"| " +msg,"chat")
 
 	if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 		

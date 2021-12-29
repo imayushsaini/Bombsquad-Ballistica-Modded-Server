@@ -467,6 +467,9 @@
  "Selected Coop Game": "Easy:Rookie Onslaught",
  "Show Tutorial": false,
  "Signed In Last Session": false,
+ "Team Game Max Player": 25,
+ "Team Game Max Players": 25,
+  "Free-for-All Max Players":25,
  "Team Tournament Playlist Randomize": true,
  "Team Tournament Playlist Selection": "My Teams Playlist",
  "Team Tournament Playlists": {

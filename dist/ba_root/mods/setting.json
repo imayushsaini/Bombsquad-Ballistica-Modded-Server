@@ -35,7 +35,7 @@
         "death":23432
     },
     "coopModeWithLessPlayers":{
-        "enable":true,
+        "enable":false,
         "minPlayerToExitCoop":0
     },
     "mikirogQuickTurn":{
@@ -58,6 +58,13 @@
             "Speed": 2, "Healing Damage": 1, "Goodbye": 2,
             "Ice Man": 1,"Tank Shield": 1, "Impairment Bombs": 2,
             "Fire Bombs": 3, "Fly Bombs": 3}
+    },
+    "discordbot":{
+        "enable":true,
+        "token":"<secret-token-here>",
+        "liveChat":true,
+        "liveStatsChannelID":925440043672285205,
+        "logsChannelID":925440079843958834
     },
     "sameCharacterForTeam":false,
     "newResultBoard":true,

@@ -54,7 +54,6 @@ def Command(msg, clientid):
 	Returns:
 		any
 	"""
-	
 	command = msg.lower().split(" ")[0].split("/")[1]
 	arguments = msg.lower().split(" ")[1:]
 	accountid = clientid_to_accountid(clientid)

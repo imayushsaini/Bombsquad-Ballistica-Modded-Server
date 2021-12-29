@@ -68,6 +68,15 @@ def bootstraping():
 
     if settings["whitelist"]:
         pdata.loadWhitelist()
+    if settings["discordbot"]["enable"]:
+        from tools import discordbot
+        discordbot.token=settings["discordbot"]["token"]
+        discordbot.liveStatsChannelID=settings["discordbot"]["liveStatsChannelID"]
+        discordbot.logsChannelID=settings["discordbot"]["logsChannelID"]
+        discordbot.liveChat=settings["discordbot"]["liveChat"]
+        discordbot.BsDataThread()
+        discordbot.init()
+
         
 
 

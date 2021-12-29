@@ -5,8 +5,8 @@ from serverData import serverdata
 import ba, _ba, time, setting
 import _thread
 from tools import playlist
-Commands = ['playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
-CommandAliases = ['rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera','effect']
+Commands = ['maxplayers','playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+CommandAliases = ['max','rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera','effect']
 
 
 
@@ -23,7 +23,9 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	Returns:
 		None 
 	"""
-	if command =='playlist':
+	if command in ['maxplayers','max']:
+		changepartysize(arguments)
+	elif command =='playlist':
 		changeplaylist(arguments)
 	elif command == 'kick':
 		kick(arguments)
@@ -95,7 +97,11 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	elif command == 'lobbytime':
 		change_lobby_check_time(arguments)
 
-
+def changepartysize(arguments):
+	if len(arguments)==0:
+		_ba.chatmessage("enter number")
+	else:
+		_ba.set_public_party_max_size(int(arguments[0]))
 
 def changeplaylist(arguments):
 	if len(arguments)==0:

@@ -5,6 +5,11 @@ import os
 import threading
 # ct stores current time
 
+import setting
+settings = setting.get_settings_data()
+
+if settings['discordbot']["enable"]:
+	from tools import discordbot
 
 
 path=_ba.env()['python_directory_user']
@@ -13,8 +18,13 @@ chats=[]
 joinlog=[]
 cmndlog=[]
 misclogs=[]
+
 def log(msg,mtype='sys'):
 	global chats,joinlog,cmndlog,misclogs
+
+	if settings['discordbot']["enable"]:
+		m=msg.replace('||','|')
+		discordbot.push_log("***"+mtype+":***"+m)
 
 	ct=datetime.datetime.now()
 	msg=str(ct)+": "+msg +"\n"

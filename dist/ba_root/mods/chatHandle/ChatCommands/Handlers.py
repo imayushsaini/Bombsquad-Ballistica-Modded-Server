@@ -39,6 +39,9 @@ def check_permissions(accountid, command):
 	"""
 	roles = pdata.get_roles()
 
+	if is_server(accountid):
+		return True
+
 	for role in roles:
 		if accountid in roles[role]["ids"]  and "ALL" in roles[role]["commands"]:
 			return True
@@ -47,3 +50,8 @@ def check_permissions(accountid, command):
 			return True
 	return False
 
+
+def is_server(accid):
+	for i in _ba.get_game_roster():
+		if i['account_id']==accid and i['client_id']==-1:
+			return True
