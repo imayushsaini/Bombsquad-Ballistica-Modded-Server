@@ -38,6 +38,7 @@
         "enable":false,
         "minPlayerToExitCoop":0
     },
+    "plugins": {
     "mikirogQuickTurn":{
         "enable":true
     },
@@ -59,6 +60,9 @@
             "Ice Man": 1,"Tank Shield": 1, "Impairment Bombs": 2,
             "Fire Bombs": 3, "Fly Bombs": 3}
     },
+    "characterChooser": {
+        "enable": true
+    }},
     "discordbot":{
         "enable":false,
         "token":"<secret-token-here>",
