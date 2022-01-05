@@ -2,5 +2,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 .mypy_cache/
-dist/ba_root/config.json
-dist/ba_root/config.json.prev
+
