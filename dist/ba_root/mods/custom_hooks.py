@@ -63,12 +63,12 @@ def bootstraping():
     _ba.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
     _ba.set_kickvote_msg_type(settings["KickVoteMsgType"])
     _thread.start_new_thread(mystats.refreshStats,())
-    if settings["plugins"]["elPatronPowerups"]["enable"]:
+    if settings["elPatronPowerups"]["enable"]:
         from plugins import elPatronPowerups
         elPatronPowerups.enable()
-    if settings["plugins"]["mikirogQuickTurn"]["enable"]:
+    if settings["mikirogQuickTurn"]["enable"]:
         from plugins import wavedash
-    if settings["plugins"]["characterChooser"]["enable"]:
+    if settings["characterChooser"]["enable"]:
         from plugins import CharacterChooser
 
     if settings["whitelist"]:
