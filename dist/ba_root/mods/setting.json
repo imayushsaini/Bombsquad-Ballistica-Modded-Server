@@ -38,7 +38,7 @@
         "enable":false,
         "minPlayerToExitCoop":0
     },
-    "plugins": {
+    
     "mikirogQuickTurn":{
         "enable":true
     },
@@ -62,7 +62,7 @@
     },
     "characterChooser": {
         "enable": true
-    }},
+    },
     "discordbot":{
         "enable":false,
         "token":"<secret-token-here>",
