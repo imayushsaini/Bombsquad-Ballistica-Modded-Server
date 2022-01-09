@@ -10,10 +10,7 @@
        "63":{
               "log":"Logger bug fix, integrated discordbot : have fun :)",
               "time":"28 DEC 2021"
-       },
-       "64":{
-              "log": "Plugins folder integration",
-              "time": "6 JAN 2022"
        }
+      
 
 }
