@@ -21,6 +21,7 @@ from bastd.activity.coopscore import CoopScoreScreen
 from ba import _hooks
 from tools import Logger
 from playersData import pdata
+from tools import afk_check
 # from bastd.activity.multiteamvictory import 
 # from tools import fireflies
 settings = setting.get_settings_data()
@@ -34,6 +35,8 @@ def on_app_launch():
     bootstraping()
     servercheck.checkserver().start()
     ServerUpdate.check()
+    if settings["afk_remover"]['enable']:
+        afk_check.checkIdle().start()
 
 
 

@@ -70,6 +70,12 @@
         "liveStatsChannelID":925440043672285205,
         "logsChannelID":925440079843958834
     },
+    "afk_remover":{
+        "enable":true,
+        "ingame_idle_time_in_secs":60,
+        "kick_idle_from_lobby":true,
+        "lobby_idle_time_in_secs":10
+    },
     "sameCharacterForTeam":false,
     "newResultBoard":true,
     "HostDeviceName":"v1.3.2",
