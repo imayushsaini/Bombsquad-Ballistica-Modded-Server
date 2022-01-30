@@ -99,3 +99,20 @@ def Command(msg, clientid):
 		return msg
 	return None
 
+
+def QuickAccess(msg,client_id):
+	if msg.startswith(","):
+		acid=""
+		teamid=0
+		for i in _ba.get_foreground_host_session().sessionplayers:
+			if i.inputdevice.client_id==client_id:
+				teamid=i.sessionteam.id
+
+		for i in _ba.get_foreground_host_session().sessionplayers:
+			if teamid==i.sessionteam.id and i.inputdevice.client_id!=client_id:
+				_ba.screenmessage(i.getname(True)+":"+msg[1:],clients=[i.inputdevice.client_id],color=(0.3,0.6,0.3))
+	
+	return None;
+
+
+

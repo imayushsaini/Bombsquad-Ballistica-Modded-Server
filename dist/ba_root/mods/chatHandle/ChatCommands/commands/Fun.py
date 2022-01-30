@@ -1,8 +1,8 @@
 from .Handlers import handlemsg, handlemsg_all
 import ba, _ba
+from tools import corelib
 
-
-Commands = ['fly', 'invisible', 'headless', 'creepy', 'celebrate', 'spaz']
+Commands = ['fly', 'invisible', 'headless', 'creepy', 'celebrate', 'spaz','speed']
 CommandAliases = ['inv', 'hl', 'creep', 'celeb']
 
 
@@ -21,8 +21,11 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	Returns:
 		None 
 	"""
+
+	if command=='speed':
+		speed(arguments)
 	
-	if command == 'fly':
+	elif command == 'fly':
 		fly(arguments)
 		
 	elif command in ['inv', 'invisible']:
@@ -41,11 +44,18 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		spaz(arguments)
 		
 
+def speed(arguments):
+	if arguments ==[] or arguments==['']:
+		return
+	else:
+		corelib.set_speed(float(arguments[0]))
+		
 
 def fly(arguments):
 	
 	if arguments == [] or arguments == ['']:
 		return
+	
 		
 	elif arguments[0] == 'all':
 		

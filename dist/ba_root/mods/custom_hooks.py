@@ -20,10 +20,13 @@ from tools import TeamBalancer
 from bastd.activity.coopscore import CoopScoreScreen
 from ba import _hooks
 from tools import Logger
+
+
 from playersData import pdata
+
 from tools import afk_check
 # from bastd.activity.multiteamvictory import 
-# from tools import fireflies
+from tools import fireflies
 settings = setting.get_settings_data()
 
 def filter_chat_message(msg, client_id):
@@ -64,12 +67,10 @@ def bootstraping():
     _ba.set_kickvote_msg_type(settings["KickVoteMsgType"])
     _thread.start_new_thread(mystats.refreshStats,())
     if settings["elPatronPowerups"]["enable"]:
-        from plugins import elPatronPowerups
+        from tools import elPatronPowerups
         elPatronPowerups.enable()
     if settings["mikirogQuickTurn"]["enable"]:
-        from plugins import wavedash
-    if settings["characterChooser"]["enable"]:
-        from plugins import CharacterChooser
+        from tools import wavedash
 
     if settings["whitelist"]:
         pdata.loadWhitelist()
@@ -81,6 +82,7 @@ def bootstraping():
         discordbot.liveChat=settings["discordbot"]["liveChat"]
         discordbot.BsDataThread()
         discordbot.init()
+    importgames()
 
         
 
@@ -128,8 +130,8 @@ def night_mode():
 
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
 
-            # if settings['autoNightMode']['fireflies']:
-            #     fireflies.factory()
+            if settings['autoNightMode']['fireflies']:
+                fireflies.factory(settings['autoNightMode']["fireflies_random_color"])
 
 
 
@@ -160,3 +162,12 @@ _hooks.on_kicked=on_kicked
 
 def on_kick_vote_end():
     Logger.log("Kick vote End")
+
+
+
+
+def importgames():
+    from games import SquidRace
+    from games import StumbleRace
+    from games import SubwayRun
+    from maps import InTheAir

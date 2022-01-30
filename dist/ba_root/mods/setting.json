@@ -25,7 +25,8 @@
         "enable":true,
         "startTime":"18:30",
         "endTime":"06:00",
-        "fireflies":true
+        "fireflies":true,
+        "fireflies_random_color":false
     },
     "playlists":{
         "default":12345,
@@ -38,7 +39,6 @@
         "enable":false,
         "minPlayerToExitCoop":0
     },
-    
     "mikirogQuickTurn":{
         "enable":true
     },
@@ -60,9 +60,6 @@
             "Ice Man": 1,"Tank Shield": 1, "Impairment Bombs": 2,
             "Fire Bombs": 3, "Fly Bombs": 3}
     },
-    "characterChooser": {
-        "enable": true
-    },
     "discordbot":{
         "enable":false,
         "token":"<secret-token-here>",
@@ -76,9 +73,10 @@
         "kick_idle_from_lobby":true,
         "lobby_idle_time_in_secs":10
     },
+    "allowTeamChat":true,
     "sameCharacterForTeam":false,
     "newResultBoard":true,
-    "HostDeviceName":"v1.3.2",
+    "HostDeviceName":"v1.4",
     "HostName":"BCS",
     "ShowKickVoteStarterName":true,
     "KickVoteMsgType":"chat",

@@ -35,7 +35,9 @@ def filter_chat_message(msg, client_id):
 	if msg.startswith("/"):
 		return Main.Command(msg, client_id)
 	
-	
+	if msg.startswith(",") and settings["allowTeamChat"]:
+		return Main.QuickAccess(msg,client_id)
+
 	Logger.log(acid+" | "+displaystring+"|"+currentname+"| " +msg,"chat")
 
 	if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
