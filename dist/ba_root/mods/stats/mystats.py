@@ -18,6 +18,7 @@ from ba import _activitytypes as ba_actypes
 from ba._activitytypes import *
 import urllib.request
 import custom_hooks
+import datetime
 #variables
 our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
@@ -45,16 +46,55 @@ html_start = f'''<!DOCTYPE html>
                 <th><b>Games Played</b></th>
             </tr>
 '''
+statsDefault={
+    "pb-IF4VAk4a": {
+        "rank": 65,
+        "name": "pb-IF4VAk4a",
+        "scores": 0,
+        "total_damage": 0.0,
+        "kills": 0,
+        "deaths": 0,
+        "games": 18,
+        "kd": 0.0,
+        "avg_score": 0.0,
+        "aid": "pb-IF4VAk4a"
+    }
+}
 #                <th><b>Total Damage</b></th>  #removed this line as it isn't crt data
 
 #useful functions
+seasonStartDate=None
+import shutil,os
 def get_all_stats():
+    global seasonStartDate
     if os.path.exists(statsfile):
+        renameFile=False
         with open(statsfile, 'r') as f:
-            return json.loads(f.read())
-    else: print('Stats file not found!')
+            jsonData=json.loads(f.read())
+            try:
+                stats=jsonData["stats"]
+                
+                seasonStartDate=datetime.datetime.strptime(jsonData["startDate"],"%d-%m-%Y")
+                if (datetime.datetime.now()-seasonStartDate).days >=our_settings["statsResetAfterDays"]:
+                    backupStatsFile()
+                    seasonStartDate=datetime.datetime.now()
+                    return statsDefault
+                return stats
+            except:
+                return jsonData    
+    else:
+        return {}
+
+def backupStatsFile():
+    shutil.copy(statsfile,statsfile.replace(".json","")+str(seasonStartDate)+".json")
+    
+
 
 def dump_stats(s: dict):
+    global seasonStartDate
+    if seasonStartDate ==None:
+        seasonStartDate=datetime.datetime.now()
+    s={"startDate":seasonStartDate.strftime("%d-%m-%Y") , "stats":s}
     if os.path.exists(statsfile):
         with open(statsfile, 'w') as f:
             f.write(json.dumps(s, indent=4))
@@ -73,8 +113,9 @@ def refreshStats():
     # lastly, write a pretty html version.
     # our stats url could point at something like this...
     pStats = get_all_stats()
-    f=open(htmlfile, 'w')
-    f.write(html_start)
+    # f=open(htmlfile, 'w')
+    # f.write(html_start)
+    
     entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
     entries.sort(reverse=True)
@@ -123,24 +164,24 @@ def refreshStats():
             pStats[str(aid)]["kd"] = float(p_kd)
             pStats[str(aid)]["avg_score"] = float(p_avg_score)
 
-            if rank < 201:
-                #<td>{str(dmg)}</td> #removed this line as it isn't crt data
-                f.write(f'''
-            <tr>
-                <td>{str(rank)}</td>
-                <td style="text-align:center">{str(name)}</td>
-                <td>{str(scores)}</td>
-                <td>{str(kills)}</td>
-                <td>{str(deaths)}</td>
-                <td>{str(games)}</td>
-            </tr>''')
-    f.write('''
-        </table>
-    </body>
-</html>''')
+#             if rank < 201:
+#                 #<td>{str(dmg)}</td> #removed this line as it isn't crt data
+#                 f.write(f'''
+#             <tr>
+#                 <td>{str(rank)}</td>
+#                 <td style="text-align:center">{str(name)}</td>
+#                 <td>{str(scores)}</td>
+#                 <td>{str(kills)}</td>
+#                 <td>{str(deaths)}</td>
+#                 <td>{str(games)}</td>
+#             </tr>''')
+#     f.write('''
+#         </table>
+#     </body>
+# </html>''')
 
 
-    f.close()
+    # f.close()
     global ranks
     ranks=_ranks
 
@@ -192,9 +233,7 @@ class UpdateThread(threading.Thread):
         # pull our existing stats from disk
 
         try:
-            if os.path.exists(statsfile):
-                with open(statsfile) as f:
-                    stats = json.loads(f.read())
+            stats=get_all_stats()
         except:
             stats={}
 

@@ -17,6 +17,7 @@
                 ]
         } 
     },
+    "statsResetAfterDays":31,
     "leaderboard":{
         "enable":true,
         "barsBehindName":true

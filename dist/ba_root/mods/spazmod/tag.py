@@ -9,6 +9,7 @@ def addtag(node,player):
     roles=pdata.get_roles()
     p_roles=pdata.get_player_roles(account_id)
     tag=None
+    col=(0.5,0.5,1) # default color for custom tags
     if account_id in customtag:
         tag=customtag[account_id]
     elif p_roles !=[]:

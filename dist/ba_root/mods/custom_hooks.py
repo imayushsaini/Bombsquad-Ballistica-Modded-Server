@@ -165,9 +165,18 @@ def on_kick_vote_end():
 
 
 
-
+import os
+import importlib
 def importgames():
-    from games import SquidRace
-    from games import StumbleRace
-    from games import SubwayRun
-    from maps import InTheAir
+    games=os.listdir("ba_root/mods/games")
+    for game in games:
+        if game.endswith(".py") or game.endswith(".so"):
+            importlib.import_module("games."+game.replace(".so","").replace(".py",""))
+    maps=os.listdir("ba_root/mods/maps")
+    for map in maps:
+        if map.endswith(".py") or map.endswith(".so"):
+            importlib.import_module("maps."+map.replace(".so","").replace(".py",""))
+
+
+
+    
