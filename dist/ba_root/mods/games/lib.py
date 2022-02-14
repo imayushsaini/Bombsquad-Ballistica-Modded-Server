@@ -48,7 +48,7 @@ class Player(ba.Player['Team']):
 class Team(ba.Team[Player]):
     """Our team type for this game."""
 
-    def __init__(self, time_remaining=0) -> None:
+    def __init__(self, time_remaining=None) -> None:
         self.time_remaining = time_remaining
         self.survival_seconds: Optional[int] = None
         self.spawn_order: list[Player] = []
@@ -57,13 +57,13 @@ class Team(ba.Team[Player]):
         self.lap = 0
         self.finished = False
 
-    def __init__(self):
-        self.survival_seconds: Optional[int] = None
-        self.spawn_order: list[Player] = []
-        self.score = 0
-        self.time: Optional[float] = None
-        self.lap = 0
-        self.finished = False
+    #def __init__(self):
+    #    self.survival_seconds: Optional[int] = None
+    #    self.spawn_order: list[Player] = []
+    #    self.score = 0
+    #    self.time: Optional[float] = None
+    #    self.lap = 0
+    #    self.finished = False
 
 
 
