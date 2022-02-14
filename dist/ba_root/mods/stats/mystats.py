@@ -198,7 +198,6 @@ def update(score_set):
     store.
     """
     # look at score-set entries to tally per-account kills for this round
-    custom_hooks.scoreScreenBegin()
 
     account_kills = {}
     account_deaths = {}
