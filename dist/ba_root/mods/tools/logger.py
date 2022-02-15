@@ -1,86 +1,98 @@
+"""Module to Keeps the log of multiple things."""
 
-import ba,_ba
-import datetime;
+# ba_meta require api 6
+# (see https://ballistica.net/wiki/meta-tag-system)
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from dataclasses import dataclass
+
 import os
+import datetime
 import threading
-# ct stores current time
-
 import setting
-settings = setting.get_settings_data()
+import _ba
 
-if settings['discordbot']["enable"]:
-	from tools import discordbot
+if TYPE_CHECKING:
+    pass
 
 
-path=_ba.env()['python_directory_user']
-serverdata=os.path.join(path,"serverData" + os.sep)
-chats=[]
-joinlog=[]
-cmndlog=[]
-misclogs=[]
+SETTINGS = setting.get_settings_data()
+SERVER_DATA_PATH = os.path.join(
+    _ba.env()["python_directory_user"], "serverData" + os.sep
+)
 
-def log(msg,mtype='sys'):
-	global chats,joinlog,cmndlog,misclogs
 
-	if settings['discordbot']["enable"]:
-		m=msg.replace('||','|')
-		discordbot.push_log("***"+mtype+":***"+m)
+if SETTINGS["discordbot"]["enable"]:
+    from features import discord_bot
 
-	ct=datetime.datetime.now()
-	msg=str(ct)+": "+msg +"\n"
-	if mtype=='chat':
-		chats.append(msg)
-		if len(chats) >10:
-			dumplogs(chats,"chat").start()
-			chats=[]
-	elif mtype=="playerjoin":
-		joinlog.append(msg)
-		if len(joinlog)>3:
-			dumplogs(joinlog,"joinlog").start()
-			joinlog=[]
-	elif mtype=='chatcmd':
-		cmndlog.append(msg)
-		if len(cmndlog)>3:
-			dumplogs(cmndlog,"cmndlog").start()
-			cmndlog=[]
 
-	else:
-		misclogs.append(msg)
-		if len(misclogs)>5:
-			dumplogs(misclogs,"sys").start()
-			misclogs=[]
+@dataclass
+class RecentLogs:
+    """Saves the recent logs."""
+
+    chats: list[str] = []
+    joinlog: list[str] = []
+    cmndlog: list[str] = []
+    misclogs: list[str] = []
+
+
+def log(msg: str, mtype: str = "sys") -> None:
+    """Cache and dumps the log."""
+    logs = RecentLogs()
+
+    if SETTINGS["discordbot"]["enable"]:
+        message = msg.replace("||", "|")
+        discord_bot.push_log("***" + mtype + ":***" + message)
+
+    current_time = datetime.datetime.now()
+    msg = f"{current_time} + : {msg} \n"
+
+    if mtype == "chat":
+        logs.chats.append(msg)
+        if len(logs.chats) > 10:
+            dumplogs(logs.chats, "chat").start()
+            logs.chats = []
+
+    elif mtype == "playerjoin":
+        logs.joinlog.append(msg)
+        if len(logs.joinlog) > 3:
+            dumplogs(logs.joinlog, "joinlog").start()
+            logs.joinlog = []
+
+    elif mtype == "chatcmd":
+        logs.cmndlog.append(msg)
+        if len(logs.cmndlog) > 3:
+            dumplogs(logs.cmndlog, "cmndlog").start()
+            logs.cmndlog = []
+
+    else:
+        logs.misclogs.append(msg)
+        if len(logs.misclogs) > 5:
+            dumplogs(logs.misclogs, "sys").start()
+            logs.misclogs = []
 
 
 class dumplogs(threading.Thread):
-	def __init__(self,msg,mtype='sys'):
-		threading.Thread.__init__(self)
-		self.msg=msg
-		self.type=mtype
+    """Dumps the logs in the server data."""
 
-	def run(self):
+    def __init__(self, msg, mtype="sys"):
+        super().__init__()
+        self.msg = msg
+        self.type = mtype
 
+    def run(self):
 
-		if self.type=='chat':
-			
-			f=open(serverdata+"Chat Logs.log","a+")
-			
+        if self.type == "chat":
+            log_path = SERVER_DATA_PATH + "Chat Logs.log"
+        elif self.type == "joinlog":
+            log_path = SERVER_DATA_PATH + "joining.log"
+        elif self.type == "cmndlog":
+            log_path = SERVER_DATA_PATH + "cmndusage.log"
+        else:
+            log_path = SERVER_DATA_PATH + "logs.log"
 
-
-		elif self.type=='joinlog':
-			f=open(serverdata+"joining.log","a+")
-			
-
-		elif self.type=='cmndlog':
-			f=open(serverdata+"cmndusage.log","a+")
-			
-		else:
-			f=open(serverdata+"logs.log","a+")
-		for m in self.msg:
-			f.write(m)
-		f.close()
-
-
-
-
-
-
+        with open(log_path, mode="a+", encoding="utf-8") as file:
+            for msg in self.msg:
+                file.write(msg)
