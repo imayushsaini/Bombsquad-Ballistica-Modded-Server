@@ -18,12 +18,23 @@ from bastd.actor.powerupbox import PowerupBoxFactory
 import ba,_ba,bastd,weakref,random,math,time,base64,os,json,setting
 from playersData import pdata
 from stats import mystats
-from tools import globalvars as gvar
 PlayerType = TypeVar('PlayerType', bound=ba.Player)
 TeamType = TypeVar('TeamType', bound=ba.Team)
 from ba._generated.enums import TimeType
 tt = ba.TimeType.SIM
 tf = ba.TimeFormat.MILLISECONDS
+
+multicolor = {0:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              750:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              1000:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              1250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              1500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              1750:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              2000:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              2250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
+              2500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0))}
 
 class SurroundBallFactory(object):
     def __init__(self):
@@ -216,7 +227,7 @@ class Effect(ba.Actor):
                 self.source_player.actor.node.addDeathAction(ba.Call(self.handlemessage,ba.DieMessage()))
 
     def add_multicolor_effect(self):
-        if spaz.node: ba.animate_array(spaz.node, 'color', 3, gvar.multicolor, True, timetype=tt, timeformat=tf)
+        if spaz.node: ba.animate_array(spaz.node, 'color', 3, multicolor, True, timetype=tt, timeformat=tf)
 
     def checkPlayerifDead(self):
         spaz = self.spazRef()
