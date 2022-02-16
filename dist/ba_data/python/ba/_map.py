@@ -210,8 +210,8 @@ class Map(Actor):
         # Set various globals.
         gnode = _ba.getactivity().globalsnode
         import ba
-        from tools import textonmap
-        textonmap.textonmap()
+        from features import text_on_map
+        text_on_map.textonmap()
 
         # Set area-of-interest bounds.
         aoi_bounds = self.get_def_bound_box('area_of_interest_bounds')

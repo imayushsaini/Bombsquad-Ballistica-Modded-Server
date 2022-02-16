@@ -3,7 +3,7 @@
 from playersData import pdata
 from serverData import serverdata
 from chatHandle.ChatCommands import Main
-from tools import Logger, servercheck
+from tools import logger, servercheck
 from chatHandle.chatFilter import ChatFilter
 import ba, _ba
 import setting

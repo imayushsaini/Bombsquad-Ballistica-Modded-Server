@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import os
 import datetime
@@ -32,10 +32,10 @@ if SETTINGS["discordbot"]["enable"]:
 class RecentLogs:
     """Saves the recent logs."""
 
-    chats: list[str] = []
-    joinlog: list[str] = []
-    cmndlog: list[str] = []
-    misclogs: list[str] = []
+    chats: list[str] = field(default_factory=list)
+    joinlog: list[str] = field(default_factory=list)
+    cmndlog: list[str] = field(default_factory=list)
+    misclogs: list[str] = field(default_factory=list)
 
 
 def log(msg: str, mtype: str = "sys") -> None:

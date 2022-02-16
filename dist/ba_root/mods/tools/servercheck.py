@@ -15,8 +15,8 @@ from ba._general import Call
 import threading
 import setting
 import _thread
-from tools import Logger
-from tools import profanity
+from tools import logger
+from features import profanity
 
 # class ServerChecker:
 

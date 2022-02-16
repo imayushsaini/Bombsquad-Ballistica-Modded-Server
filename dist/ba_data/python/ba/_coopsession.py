@@ -290,8 +290,8 @@ class CoopSession(Session):
         if (isinstance(activity,
                        (JoinActivity, CoopScoreScreen, TransitionActivity))) or True:
             
-            from tools import TeamBalancer
-            TeamBalancer.checkToExitCoop()
+            from features import team_balancer
+            team_balancer.checkToExitCoop()
 
             if outcome == 'next_level':
                 if self._next_game_instance is None:
