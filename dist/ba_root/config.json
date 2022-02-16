@@ -432,15 +432,21 @@
      }
     },
     "Plugins": {
-     "CharacterChooser.HeySmoothy": {
-      "enabled": true
-     },
-     "bobmsquadhttpapi.HeySmoothy": {
-      "enabled": false
-     },
-     "importcustomcharacters.HeySmoothy": {
-      "enabled": true
-     }
+        "plugins.Init": {
+         "enabled": true
+        },
+        "plugins.CharacterChooser.HeySmoothy": {
+         "enabled": true
+        },
+        "plugins.bombsquadhttpapi.HeySmoothy": {
+         "enabled": false
+        },
+        "plugins.importcustomcharacters.HeySmoothy": {
+         "enabled": false
+        },
+        "plugins.wavedash.MikiWavedashTest": {
+         "enabled": true
+        }
     },
     "Port": 43210,
     "Region Pings": {
