@@ -59,10 +59,10 @@ def list(clientid):
 	session = _ba.get_foreground_host_session()
 	
 	
-	for i in session.sessionplayers:
-		list += p.format(i.getname(icon = False),
-		i.inputdevice.client_id, i.id)+"\n"
-	
+	for index, player in enumerate(session.sessionplayers):
+		list += p.format(player.getname(icon = False),
+		player.inputdevice.client_id, index)+"\n"
+
 	send(list, clientid)
 	
 

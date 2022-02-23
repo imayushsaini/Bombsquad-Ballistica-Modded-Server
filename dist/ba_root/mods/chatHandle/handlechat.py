@@ -3,7 +3,7 @@
 from playersData import pdata
 from serverData import serverdata
 from chatHandle.ChatCommands import Main
-from tools import Logger, servercheck
+from tools import logger, servercheck
 from chatHandle.chatFilter import ChatFilter
 import ba, _ba
 import setting
@@ -38,7 +38,7 @@ def filter_chat_message(msg, client_id):
 	if msg.startswith(",") and settings["allowTeamChat"]:
 		return Main.QuickAccess(msg,client_id)
 
-	Logger.log(acid+" | "+displaystring+"|"+currentname+"| " +msg,"chat")
+	logger.log(acid+" | "+displaystring+"|"+currentname+"| " +msg,"chat")
 
 	if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 		
