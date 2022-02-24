@@ -38,7 +38,7 @@ def filter_chat_message(msg, client_id):
 	if msg.startswith(",") and settings["allowTeamChat"]:
 		return Main.QuickAccess(msg,client_id)
 
-	logger.log(acid+" | "+displaystring+"|"+currentname+"| " +msg,"chat")
+	logger.log("Unique Id :"+acid+"\nLogin Id :"+displaystring+"\nProfile :"+currentname+"\nMessage : \n" +msg,"chat")
 
 	if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 		

@@ -2,7 +2,7 @@
 import discord
 import asyncio
 from threading import Thread
-from discord.ext.commands import Bot
+from discord.ext import commands
 import ba
 from ba._general import Call
 import _ba
@@ -11,7 +11,7 @@ import os
 import _thread
 import logging
 logging.getLogger('asyncio').setLevel(logging.WARNING)
-client = Bot(command_prefix='!')
+client = commands.Bot(command_prefix=['Bs.','bs.'], case_insensitive = True)
 
 # client = discord.Client()
 
@@ -30,9 +30,6 @@ def push_log(msg):
     logs.append(msg)
 
 def init():
-    
-
-    
     loop = asyncio.get_event_loop()
     loop.create_task(client.start(token))
     

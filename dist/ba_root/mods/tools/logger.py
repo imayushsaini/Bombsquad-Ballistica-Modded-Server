@@ -43,8 +43,7 @@ def log(msg: str, mtype: str = "sys") -> None:
     logs = RecentLogs()
 
     if SETTINGS["discordbot"]["enable"]:
-        message = msg.replace("||", "|")
-        discord_bot.push_log("**_" + mtype + ":_**" + message)
+        discord_bot.push_log(mtype + "|" + msg)
 
     current_time = datetime.datetime.now()
     msg = f"{current_time} + : {msg} \n"
