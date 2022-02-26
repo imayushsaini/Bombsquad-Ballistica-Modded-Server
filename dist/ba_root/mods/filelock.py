@@ -85,7 +85,6 @@ class FileLock(object):
         """
         if not self.is_locked:
             self.acquire()
-            print(f"{self.file_name.split('/')[-1]} locked")
         return self
 
     def __exit__(self, type, value, traceback):
@@ -94,7 +93,6 @@ class FileLock(object):
         """
         if self.is_locked:
             self.release()
-        print(f"{self.file_name.split('/')[-1]} unlocked")
 
     def __del__(self):
         """Make sure that the FileLock instance doesn't leave a lockfile
