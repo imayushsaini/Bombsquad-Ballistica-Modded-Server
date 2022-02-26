@@ -23,14 +23,6 @@
         "commands": [],
         "ids": []
     },
-    "top5": {
-        "tag": "top5", "tagcolor": [1,
-            1,
-            1
-        ],
-        "commands": [],
-        "ids": ["pb-IF4VAk4a"]
-    },
     "smoothy": {
         "tag": "smoothy", "tagcolor": [1,
             1,
@@ -46,5 +38,13 @@
         ],
         "commands": [],
         "ids": []
+    },
+    "top5": {
+        "tag": "top5", "tagcolor": [1,
+            1,
+            1
+        ],
+        "commands": [],
+        "ids": ["pb-IF5XUm9eAg==", "pb-IF43VUwlAg==", "pb-IF4iVUc5Cg==", "pb-IF4vNnMJ", "pb-IF4TVWwZUQ=="]
     }
 }

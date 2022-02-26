@@ -1,302 +1,540 @@
-# Released under the MIT License. See LICENSE for details.
-import _ba, os, json
-from serverData import serverdata
+"""Module to manage players data."""
+
+# ba_meta require api 6
+# (see https://ballistica.net/wiki/meta-tag-system)
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import time
+import os
 import _thread
-roles = {}
-data = {}
-custom = {}
-whitelist=[]
-data_path = os.path.join(_ba.env()['python_directory_user'],"playersData" + os.sep)
+
+from serverData import serverdata
+from file_handle import OpenJson
+import _ba  # pylint: disable=import-error
 
 
-# ============== player data =======================
-def get_info(id):
-	with open(data_path+'profiles.json', 'r') as f:
-		profiles = json.load(f)
-		if id in profiles:
-
-			return profiles[id]
-
-	return None
-
-def get_profiles():
-	with open(data_path+'profiles.json', 'r') as f:
-
-		profiles = json.load(f)
-		return profiles
-def commit_profiles(profiles):
-	with open(data_path+'profiles.json', 'w') as f:
-
-		json.dump(profiles,f,indent=4)
-		
-
-def add_profile(id,display_string,currentname,age):
-	f=open(data_path+"profiles.json","r")
-	profiles=json.load(f)
-	f.close()
-	profiles[id]={"display_string":display_string,
-				  "profiles":[],
-				  "name":currentname,
-				  "isBan":False,
-				  "isMuted":False,
-				  "accountAge":age,
-				  "registerOn":time.time(),
-				  "canStartKickVote":True,
-				  "spamCount":0,
-				  "lastSpam":time.time(),
-				  "totaltimeplayer":0,
-				  "lastseen":0}
-
-	
-
-	f=open(data_path+"profiles.json","w")
-	json.dump(profiles,f,indent=4)
-	serverdata.clients[id]=profiles[id]
-	serverdata.clients[id]["warnCount"]=0
-	serverdata.clients[id]["lastWarned"]=time.time()
-	serverdata.clients[id]["verified"]=False
-	serverdata.clients[id]["rejoincount"]=1
-	serverdata.clients[id]["lastJoin"]=time.time()
-	f.close()
-
-def update_displayString(id,display_string):
-	profiles=get_profiles()
-	if id in profiles:
-		profiles[id]["display_string"]=display_string
-		commit_profiles(profiles)
-
-		
-def update_profile(id,display_string=None,allprofiles=[],name=None):
-	f=open(data_path+"profiles.json","r")
-	profiles=json.load(f.read())
-	f.close()
-	if id in profiles:
-		if display_string != None and display_string not in profiles[id]['display_string']:
-			profiles[id]['display_string'].append(display_string)
-		if profiles!=[]:
-			for profile in allprofiles:
-				if profile not in profiles[id]['profiles']:
-					profiles[id]['profiles'].append(profile)
-		if name != None:
-			profiles[id]['name']=name
+if TYPE_CHECKING:
+    pass
 
 
-	f=open(data_path+"profiles.json","w")
-	json.dump(profiles,f,indent=4)
-	f.close()
-
-def ban_player(id):
-	profiles= get_profiles()
-	if id in profiles:
-		profiles[id]['isBan']=True
-		_thread.start_new_thread(commit_profiles,(profiles,))
-		# commit_profiles(profiles)
-
-def mute(id):
-	profiles=get_profiles()
-	if id in profiles:
-
-		profiles[id]["isMuted"]=True
-		_thread.start_new_thread(commit_profiles,(profiles,))
-		# commit_profiles(profiles)
-
-def unmute(id):
-	profiles=get_profiles()
-	if id in profiles:
-		profiles[id]["isMuted"]=False
-		_thread.start_new_thread(commit_profiles,(profiles,))
-		# commit_profiles(profiles)
-
-def updateSpam(id,spamCount,lastSpam):
-	profiles=get_profiles()
-	if id in profiles:
-		profiles[id]["spamCount"]=spamCount
-		profiles[id]["lastSpam"]=lastSpam
-		
-		commit_profiles(profiles)
+PLAYERS_DATA_PATH = os.path.join(
+    _ba.env()["python_directory_user"], "playersData" + os.sep
+)
 
 
+class CacheData:  # pylint: disable=too-few-public-methods
+    """Stores the cache data."""
+
+    roles: dict = {}
+    data: dict = {}
+    custom: dict = {}
+    whitelist: list[str] = []
 
 
-#================    ROLES  ==========================
+def get_info(account_id: str) -> dict | None:
+    """Returns the information about player.
 
-def commit_roles(data):
-	global roles
-	if data == {}:
-		return
-	output=json.dumps(data,indent=4)
-	import re
-	output2 = re.sub(r'": \[\s+', '": [', output)
-	output3 = re.sub(r'",\s+', '", ', output2)
-	output4 = re.sub(r'"\s+\]', '"]', output3)
-	with open(data_path+'roles.json','w') as f:
-		f.write(output4)
+    Parameters
+    ----------
+    account_id : str
+        account_id of the client
 
-
-def get_roles():
-	global roles
-	if roles == {}:
-		with open(data_path+'roles.json', 'r') as f:
-			roles = json.load(f)
-	return roles
+    Returns
+    -------
+    dict | None
+        information of client
+    """
+    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+        profiles = profiles_file.load()
+        if account_id in profiles:
+            return profiles[account_id]
+    return None
 
 
-def create_role(role):
-	global roles
-	_roles = get_roles()
-	if role not in _roles:
-		_roles[role] = {
-			"tag":role,
-			"tagcolor":[1,1,1],
-			"commands":[],
-			"ids":[]
-			}
-		roles = _roles
-		commit_roles(_roles)
-		return
-	return
+def get_profiles() -> dict:
+    """Returns the profiles of all players.
+
+    Returns
+    -------
+    dict
+        profiles of the players
+    """
+    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+        profiles = profiles_file.load()
+        return profiles
 
 
-def add_player_role(role, id):
-	global roles
-	_roles = get_roles()
-	if role in _roles:
-		
-		if id not in _roles[role]["ids"]:
-			_roles[role]["ids"].append(id)
-			roles  =_roles
-			commit_roles(_roles)
-			
-	else:
-		print("no role such")
-	
+def commit_profiles(profiles: dict) -> None:
+    """Commits the given profiles in the database.
+
+    Parameters
+    ----------
+    profiles : dict
+        profiles of all players
+    """
+    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+        profiles_file.dump(profiles, indent=4)
 
 
-def remove_player_role(role, id):
-	global roles
-	_roles = get_roles()
-	if role in _roles:
-		_roles[role]["ids"].remove(id)
-		roles  =_roles
-		commit_roles(_roles)
-		return "removed from "+role
-	return "role not exists"
+def add_profile(
+    account_id: str,
+    display_string: str,
+    current_name: str,
+    account_age: int,
+) -> None:
+    """Adds the profile in database.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    display_string : str
+        display string of the client
+    current_name : str
+        name of the client
+    account_age : int
+        account_age of the account
+    """
+    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+        profiles = profiles_file.load()
+        profiles[account_id] = {
+            "display_string": display_string,
+            "profiles": [],
+            "name": current_name,
+            "isBan": False,
+            "isMuted": False,
+            "accountAge": account_age,
+            "registerOn": time.time(),
+            "canStartKickVote": True,
+            "spamCount": 0,
+            "lastSpam": time.time(),
+            "totaltimeplayer": 0,
+            "lastseen": 0,
+        }
+    commit_profiles(profiles)
+
+    serverdata.clients[account_id] = profiles[account_id]
+    serverdata.clients[account_id]["warnCount"] = 0
+    serverdata.clients[account_id]["lastWarned"] = time.time()
+    serverdata.clients[account_id]["verified"] = False
+    serverdata.clients[account_id]["rejoincount"] = 1
+    serverdata.clients[account_id]["lastJoin"] = time.time()
 
 
+def update_display_string(account_id: str, display_string: str) -> None:
+    """Updates the display string of the account.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    display_string : str
+        new display string to be updated
+    """
+    profiles = get_profiles()
+    if account_id in profiles:
+        profiles[account_id]["display_string"] = display_string
+        commit_profiles(profiles)
 
 
-def add_command_role(role, command):
-	global roles
-	_roles = get_roles()
-	if role in _roles:
-		if command not in _roles[role]["commands"]:
-			_roles[role]["commands"].append(command)
-			roles  =_roles
-			commit_roles(_roles)
-			return "command added to "+role
-	return "command not exists"
+def update_profile(
+    account_id: str,
+    display_string: str = None,
+    allprofiles: list[str] = None,
+    name: str = None,
+) -> None:
+    """Updates the profile of client.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    display_string : str, optional
+        display string of the account, by default None
+    allprofiles : list[str], optional
+        all profiles of the client, by default None
+    name : str, optional
+        name to be updated, by default None
+    """
+    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+        profiles = profiles_file.load()
+
+        if profiles is None:
+            return
+
+        if account_id in profiles and display_string is not None:
+            if display_string not in profiles[account_id]["display_string"]:
+                profiles[account_id]["display_string"].append(display_string)
+
+        if allprofiles is not None:
+            for profile in allprofiles:
+                if profile not in profiles[account_id]["profiles"]:
+                    profiles[account_id]["profiles"].append(profile)
+
+        if name is not None:
+            profiles[account_id]["name"] = name
+
+        commit_profiles(profiles)
 
 
-def remove_command_role(role, command):
-	global roles
-	_roles = get_roles()
-	if role in _roles:
-		if command in _roles[role]["commands"]:
-			_roles[role]["commands"].remove(command)
-			roles  =_roles
-			commit_roles(_roles)
-			return "command added to "+role
-	return "command not exists"
+def ban_player(account_id: str) -> None:
+    """Bans the player.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the player to be banned
+    """
+    profiles = get_profiles()
+    if account_id in profiles:
+        profiles[account_id]["isBan"] = True
+        _thread.start_new_thread(commit_profiles, (profiles,))
 
 
-def change_role_tag(role, tag):
-	global roles
-	_roles = get_roles()
-	if role in _roles:
-		_roles[role]['tag'] = tag
-		roles = _roles
-		commit_roles(_roles)
-		return "tag changed"
-	return "role not exists"
+def mute(account_id: str) -> None:
+    """Mutes the player.
+
+    Parameters
+    ----------
+    account_id : str
+        acccount id of the player to be muted
+    """
+    profiles = get_profiles()
+    if account_id in profiles:
+        profiles[account_id]["isMuted"] = True
+        _thread.start_new_thread(commit_profiles, (profiles,))
 
 
-def get_player_roles(acc_id):
-	
-	_roles = get_roles()
-	roles=[]
-	for role in _roles:
-		if acc_id in _roles[role]["ids"]:
-			roles.append(role)
-	return roles
+def unmute(account_id: str) -> None:
+    """Unmutes the player.
+
+    Parameters
+    ----------
+    account_id : str
+        acccount id of the player to be unmuted
+    """
+    profiles = get_profiles()
+    if account_id in profiles:
+        profiles[account_id]["isMuted"] = False
+        _thread.start_new_thread(commit_profiles, (profiles,))
 
 
-##### those ups done will clean it in future 
+def update_spam(account_id: str, spam_count: int, last_spam: float) -> None:
+    """Updates the spam time and count.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    spam_count : int
+        spam count to be added
+    last_spam : float
+        last spam time
+    """
+    profiles = get_profiles()
+    if account_id in profiles:
+        profiles[account_id]["spamCount"] = spam_count
+        profiles[account_id]["lastSpam"] = last_spam
+
+        commit_profiles(profiles)
 
 
+def commit_roles(data: dict) -> None:
+    """Commits the roles in database.
 
-#=======================  CUSTOM EFFECTS/TAGS ===============
+    Parameters
+    ----------
+    data : dict
+        data to be commited
+    """
+    if not data:
+        return
 
-
-def get_custom():
-	global custom
-	if custom=={}:
-		with open(data_path+"custom.json","r") as f:
-			custom = json.loads(f.read())
-		return custom
-	return custom
-
-
-def set_effect(effect, id):
-	global custom
-	_custom = get_custom()
-	_custom['customeffects'][id] = effect
-	custom = _custom
-	commit_c()
+    with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
+        roles_file.format(data)
 
 
-def set_tag(tag, id):
-	
-	global custom
-	_custom = get_custom()
-	_custom['customtag'][id] = tag
-	custom = _custom
-	commit_c()
+def get_roles() -> dict:
+    """Returns the roles.
+
+    Returns
+    -------
+    dict
+        roles
+    """
+    if CacheData.roles == {}:
+        with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
+            roles = roles_file.load()
+        return roles
+    return CacheData.roles
 
 
-def remove_effect(id):
-	global custom
-	_custom = get_custom()
-	_custom['customeffects'].pop(id)
-	custom = _custom
-	commit_c()
+def create_role(role: str) -> None:
+    """Ceates the role.
+
+    Parameters
+    ----------
+    role : str
+        role to be created
+    """
+    roles = get_roles()
+
+    if role in roles:
+        return
+
+    roles[role] = {
+        "tag": role,
+        "tagcolor": [1, 1, 1],
+        "commands": [],
+        "ids": [],
+    }
+    CacheData.roles = roles
+    commit_roles(roles)
 
 
-def remove_tag(id):
-	global custom
-	_custom = get_custom()
-	_custom['customtag'].pop(id)
-	custom = _custom
-	commit_c()
+def add_player_role(role: str, account_id: str) -> None:
+    """Adds the player to the role.
+
+    Parameters
+    ----------
+    role : str
+        role to be added
+    account_id : str
+        account id of the client
+    """
+    roles = get_roles()
+
+    if role in roles:
+        if account_id not in roles[role]["ids"]:
+            roles[role]["ids"].append(account_id)
+            CacheData.roles = roles
+            commit_roles(roles)
+
+    else:
+        print("no role such")
+
+
+def remove_player_role(role: str, account_id: str) -> str:
+    """Removes the role from player.
+
+    Parameters
+    ----------
+    role : str
+        role to br removed
+    account_id : str
+        account id of the client
+
+    Returns
+    -------
+    str
+        status of the removing role
+    """
+    roles = get_roles()
+    if role in roles:
+        roles[role]["ids"].remove(account_id)
+        CacheData.roles = roles
+        commit_roles(roles)
+        return "removed from " + role
+    return "role not exists"
+
+
+def add_command_role(role: str, command: str) -> str:
+    """Adds the command to the role.
+
+    Parameters
+    ----------
+    role : str
+        role to add the command
+    command : str
+        command to be added
+
+    Returns
+    -------
+    str
+        status of the adding command
+    """
+    roles = get_roles()
+    if role in roles:
+        if command not in roles[role]["commands"]:
+            roles[role]["commands"].append(command)
+            CacheData.roles = roles
+            commit_roles(roles)
+            return "command added to " + role
+    return "command not exists"
+
+
+def remove_command_role(role: str, command: str) -> str:
+    """Removes the command from the role.
+
+    Parameters
+    ----------
+    role : str
+        role to remove command from
+    command : str
+        command to be removed
+
+    Returns
+    -------
+    str
+        status of the removing command
+    """
+    roles = get_roles()
+    if role in roles:
+        if command in roles[role]["commands"]:
+            roles[role]["commands"].remove(command)
+            CacheData.roles = roles
+            commit_roles(roles)
+            return "command added to " + role
+    return "command not exists"
+
+
+def change_role_tag(role: str, tag: str) -> str:
+    """Changes the tag of the role.
+
+    Parameters
+    ----------
+    role : str
+        role to chnage the tag
+    tag : str
+        tag to be added
+
+    Returns
+    -------
+    str
+        status of the adding tag
+    """
+    roles = get_roles()
+    if role in roles:
+        roles[role]["tag"] = tag
+        CacheData.roles = roles
+        commit_roles(roles)
+        return "tag changed"
+    return "role not exists"
+
+
+def get_player_roles(account_id: str) -> list[str]:
+    """Returns the avalibe roles of the account.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+
+    Returns
+    -------
+    list[str]
+        list of the roles
+    """
+
+    roles = get_roles()
+    have_roles = []
+    for role in roles:
+        if account_id in roles[role]["ids"]:
+            have_roles.append(role)
+    return have_roles
+
+
+def get_custom() -> dict:
+    """Returns the custom effects.
+
+    Returns
+    -------
+    dict
+        custom effects
+    """
+    if CacheData.custom == {}:
+        with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
+            custom = custom_file.load()
+        return custom
+    return CacheData.custom
+
+
+def set_effect(effect: str, accout_id: str) -> None:
+    """Sets the costum effect for the player.
+
+    Parameters
+    ----------
+    effect : str
+        effect to be added to the player
+    accout_id : str
+        account id of the client
+    """
+    custom = get_custom()
+    custom["customeffects"][accout_id] = effect
+    CacheData.custom = custom
+    commit_c()
+
+
+def set_tag(tag: str, account_id: str) -> None:
+    """Sets the custom tag to the player.
+
+    Parameters
+    ----------
+    tag : str
+        tag to be added to the player
+    account_id : str
+        account id of the client
+    """
+    custom = get_custom()
+    custom["customtag"][account_id] = tag
+    CacheData.custom = custom
+    commit_c()
+
+
+def remove_effect(account_id: str) -> None:
+    """Removes the effect from player.
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    """
+    custom = get_custom()
+    custom["customeffects"].pop(account_id)
+    CacheData.custom = custom
+    commit_c()
+
+
+def remove_tag(account_id: str) -> None:
+    """Removes the tag from the player
+
+    Parameters
+    ----------
+    account_id : str
+        account id of the client
+    """
+    custom = get_custom()
+    custom["customtag"].pop(account_id)
+    CacheData.custom = custom
+    commit_c()
 
 
 def commit_c():
-	global custom
-	with open(data_path+"custom.json",'w') as f:
-		json.dump(custom,f,indent=4)
-
-def update_toppers(topperlist):
-	global roles
-	_roles = get_roles()
-	if "top5" not in _roles:
-		create_role("top5")
-	roles["top5"]["ids"]=topperlist
-	commit_roles(roles)
+    """Commits the custom data into the custom.json."""
+    with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
+        custom_file.dump(CacheData.custom, indent=4)
 
 
-def loadWhitelist():
-	global whitelist
-	with open(data_path+"whitelist.json","r") as f:
-		data=json.loads(f.read())
-		for id in data:
-			whitelist.append(id)
+def update_toppers(topper_list: list[str]) -> None:
+    """Updates the topper list into top5 role.
+
+    Parameters
+    ----------
+    topper_list : list[str]
+        list of the topper players
+    """
+    roles = get_roles()
+    if "top5" not in roles:
+        create_role("top5")
+    CacheData.roles["top5"]["ids"] = topper_list
+    commit_roles(roles)
+
+
+def load_white_list() -> None:
+    """Loads the whitelist."""
+    with OpenJson(PLAYERS_DATA_PATH + "whitelist.json") as whitelist_file:
+        data = whitelist_file.load()
+        for account_id in data:
+            CacheData.whitelist.append(account_id)
