@@ -98,6 +98,7 @@ def import_discord_bot() -> None:
         discord_bot.liveStatsChannelID=settings["discordbot"]["liveStatsChannelID"]
         discord_bot.logsChannelID=settings["discordbot"]["logsChannelID"]
         discord_bot.liveChat=settings["discordbot"]["liveChat"]
+        discord_bot.roleID=settings["discordbot"]["roleID"]
         discord_bot.BsDataThread()
         discord_bot.init()
 

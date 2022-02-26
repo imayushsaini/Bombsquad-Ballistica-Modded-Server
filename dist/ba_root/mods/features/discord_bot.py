@@ -10,12 +10,16 @@ import json
 import os
 import _thread
 import logging
+import setting
 logging.getLogger('asyncio').setLevel(logging.WARNING)
 client = commands.Bot(command_prefix=['Bs.','bs.'], case_insensitive = True)
 
-
+#Dont Change Anything(Head To Settings.json)
 token = ''
-roleid = [] #copy discord role id which have permission to use the commands
+roleid = "" #copy discord role id which have permission to use the commands
+liveStatsChannelID = ""
+logsChannelID = ""
+liveChat = True
 
 #Logging
 
@@ -27,7 +31,6 @@ logs= []
 def push_log(msg):
     global logs
     logs.append(msg)
-    get_logs()
 
 def init():
     loop = asyncio.get_event_loop()
@@ -35,17 +38,30 @@ def init():
     
     Thread(target=loop.run_forever).start()
 
+async def automatic():
+    await client.wait_until_ready()
+    while not client.is_closed():
+        chnl = client.get_channel(liveStatsChannelID)
+        lby = get_live_players()
+        embed = discord.Embed(title ="Lobby Players", description = lby, color = discord.Colour.random())
+	    embed.set_footer(text = f"Enjoy In Our Server")
+        await chnl.send(embed = embed)
+        await chnl.send(get_game())
+        await chnl.send("```\n"+get_chat_messages()+"\n```")
+        await asyncio.sleep(8)
 
-@client.event
-async def on_message(message):
-    global channel
-    if message.author == client.user:
-        return
-    channel=message.channel
-    
-    if message.channel.id==logsChannelID:
-        _ba.pushcall(Call(_ba.chatmessage,message.content),from_other_thread=True)
+async def livelog():
+    await client.wait_until_ready()
+    while not client.is_closed():
+        chnl = client.get_channel(logsChannelID)
+        lby = get_logs().split("|")
+        embed = discord.Embed(title =lby[0], description = lby[1], color = discord.Colour.random())
+	    embed.set_footer(text = f"Enjoy In Our Server")
+        await chnl.send(embed = embed)
+        await asyncio.sleep(9)
 
+client.loop.create_task(automatic())
+client.loop.create_task(livelog())
 
 @client.event
 async def on_ready():
@@ -56,53 +72,59 @@ async def on_ready():
 async def lobby(ctx):
     await ctx.send("Getting Lobby Players.....")
 	await asyncio.sleep(1)
-    lbby = get_live_players
+    lbby = get_live_players()
     embed = discord.Embed(title ="Lobby Players", description = lbby, color = ctx.author.color)
-	embed.set_footer(text = f"Made By ItsBlitz")
+	embed.set_footer(text = f"Requested By {ctx.author.name}")
     await ctx.send(embed = embed)
 
 @client.command()
-@commands.has_role(i for i in roleid)
-async def live(ctx):
-	lbby = get_live_players()
-	embed = discord.Embed(title ="Live Status", description = lbby, color = ctx.author.color)
-	embed.set_footer(text = f"Made By ItsBlitz")
-	msg = await ctx.send(embed = embed)
-	while True:
-		await asyncio.sleep(8)
-		lbb = get_live_players()
-		emd = discord.Embed(title ="Live Status", description = lbb, color = ctx.author.color)
-		emd.set_footer(text = f"Made By ItsBlitz")
-		await msg.edit(embed = emd)
+@commands.has_role(roleid)
+async def statsid(ctx, chnl:discord.TextChannel):
+    try:
+        c_id = chnl.id
+        setting.commit({"logsChannelID":c_id})
+        await ctx.send("Logs Channel Updated")
+    except:
+        await ctx.send("Mention Channel Correctly")
+
+@client.command()
+@commands.has_role(roleid)
+async def logsid(ctx, chnl:discord.TextChannel):
+    try:
+        c_id = chnl.id
+        setting.commit({"logsChannelID":c_id})
+        await ctx.send("Logs Channel Updated")
+    except:
+        await ctx.send("Mention Channel Correctly")
+
+@client.command()
+@commands.has_role(roleid)
+async def roleid(ctx, role:discord.Role):
+    try:
+        r_id = role.id
+        setting.commit({"roleID":r_id})
+        await ctx.send("Role Updated")
+    except:
+        await ctx.send("Mention Role Correctly")
+
+#Messaging
+@client.command()
+async def chatmsg(ctx,*,msg:str):
+	if not msg.startwith("/"):
+        _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
+        await ctx.send("Message Delivered")
+    else:
+        await ctx.send("Error 404")
 
 
 @client.command()
-@commands.has_role()
-async def livechats(ctx):
-	lbby = get_chats()
-	embed = discord.Embed(title ="Live Chats", description = lbby, color = ctx.author.color)
-	embed.set_footer(text = f"Made By ItsBlitz")
-	msg = await ctx.send(embed = embed)
-	while True:
-		await asyncio.sleep(8)
-		lbb = get_chats()
-		emd = discord.Embed(title ="Live Chats", description = lbb, color = ctx.author.color)
-		emd.set_footer(text = f"Made By ItsBlitz")
-		await msg.edit(embed = emd)
-
-@client.command()
-@commands.has_role()
-async def logs(ctx):
-	lbby = get_logs().split("|")
-	embed = discord.Embed(title =lbby[0], description = lbby[1], color = ctx.author.color)
-	embed.set_footer(text = f"Made By ItsBlitz")
-	await ctx.send(embed = embed)
-	while True:
-		await asyncio.sleep(3)
-		lbb = get_logs().split("|")
-		emd = discord.Embed(title =lbb[0], description = lbb[1], color = ctx.author.color)
-		emd.set_footer(text = f"Made By ItsBlitz")
-		await ctx.send(embed = emd)
+@commands.has_role(roleid)
+async def cmd(ctx,*,msg:str):
+	if msg.startwith("/"):
+        _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
+        await ctx.send("Command Executed")
+    else:
+        await ctx.send("Error 404")
 
 def get_live_players():
     global stats
@@ -128,10 +150,6 @@ def get_logs():
     logs.pop[0]
     return log
 
-def emd_maker(title,desc,color):
-    embed = discord.Embed(title =title, description = desc, color = color)
-	embed.set_footer(text = f"Made By ItsBlitz")
-    return embed
 
 class BsDataThread(object):
     def __init__(self):
