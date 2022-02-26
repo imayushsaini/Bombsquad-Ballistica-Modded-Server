@@ -83,7 +83,7 @@ def bootstraping():
 
     # import features
     if settings["whitelist"]:
-        pdata.loadWhitelist()
+        pdata.load_white_list()
 
     import_discord_bot()
     import_games()

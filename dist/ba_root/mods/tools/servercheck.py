@@ -90,7 +90,7 @@ class checkserver(object):
 					
 					return
 				if settings["whitelist"] and ros["account_id"]!=None:
-					if ros["account_id"] not in pdata.whitelist:
+					if ros["account_id"] not in pdata.CacheData.whitelist:
 						_ba.screenmessage("Not in whitelist,contact admin",color=(1,0,0),transient=True,clients=[ros['client_id']])
 						logger.log(d_str+"||"+ros["account_id"]+" | kicked > not in whitelist")
 						_ba.disconnect_client(ros['client_id'])
@@ -321,7 +321,7 @@ def save_age(age, pb_id,display_string):
 def save_ids(ids,pb_id,display_string):
 
 	
-	pdata.update_displayString(pb_id,ids)
+	pdata.update_display_string(pb_id,ids)
 
 
 	if display_string not in ids:
