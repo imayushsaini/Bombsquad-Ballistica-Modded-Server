@@ -42,12 +42,23 @@ async def automatic():
     await client.wait_until_ready()
     while not client.is_closed():
         chnl = client.get_channel(liveStatsChannelID)
+        msgs = await chnl.history(limit=5).flatten()
+        for i in msgs:
+            if i.author.id == client.author.id:
+                idd = i.id
+                msg = await chnl.fetch_message(msg)
+                await msg.delete()
+
+        new_msg1 = await chnl.send("Getting Stats........")
+        new_msg2 = await chnl.send("Getting Game.........")
+        new_msg3 = await chnl.send("Getting Chats........")
+
         lby = get_live_players()
         embed = discord.Embed(title ="Lobby Players", description = lby, color = discord.Colour.random())
 	    embed.set_footer(text = f"Enjoy In Our Server")
-        await chnl.send(embed = embed)
-        await chnl.send(get_game())
-        await chnl.send("```\n"+get_chat_messages()+"\n```")
+        await new_msg1.edit(content = None,embed = embed)
+        await new_msg2.edit(content = get_game())
+        await new_msg3.edit(content = "```\n"+get_chats()+"\n```")
         await asyncio.sleep(8)
 
 async def livelog():
@@ -56,7 +67,7 @@ async def livelog():
         chnl = client.get_channel(logsChannelID)
         lby = get_logs().split("|")
         embed = discord.Embed(title =lby[0], description = lby[1], color = discord.Colour.random())
-	    embed.set_footer(text = f"Enjoy In Our Server")
+	    embed.set_footer(text = f"Server Logs")
         await chnl.send(embed = embed)
         await asyncio.sleep(9)
 
@@ -110,7 +121,7 @@ async def roleid(ctx, role:discord.Role):
 #Messaging
 @client.command()
 async def chatmsg(ctx,*,msg:str):
-	if not msg.startwith("/"):
+	if not msg.startswith("/"):
         _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
         await ctx.send("Message Delivered")
     else:
@@ -120,7 +131,7 @@ async def chatmsg(ctx,*,msg:str):
 @client.command()
 @commands.has_role(roleid)
 async def cmd(ctx,*,msg:str):
-	if msg.startwith("/"):
+	if msg.startswith("/"):
         _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
         await ctx.send("Command Executed")
     else:
@@ -142,8 +153,10 @@ def get_chats():
     while len(livec) > 15:
         for i in range(len(livec)-15):
             livec.pop(0)
-    return livec
-
+    msg = ""
+    for mg in livec:
+        msg += mg + "\n"
+    return msg
 def get_logs():
     global logs
     log = logs[0]
