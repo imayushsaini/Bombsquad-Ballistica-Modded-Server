@@ -18,8 +18,7 @@ from bastd.actor.spaz import Spaz
 if TYPE_CHECKING:
     pass
 
-# ba_meta export plugin
-class MikiWavedashTest(ba.Plugin):
+class MikiWavedashTest:
     
 
     class FootConnectMessage:
