@@ -267,6 +267,7 @@ def get_roles() -> dict:
     if CacheData.roles == {}:
         with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
             roles = roles_file.load()
+            CacheData.roles = roles
         return roles
     return CacheData.roles
 
