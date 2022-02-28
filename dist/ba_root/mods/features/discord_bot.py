@@ -46,7 +46,7 @@ async def automatic():
         for i in msgs:
             if i.author.id == client.user.id:
                 idd = i.id
-                msg = await chnl.fetch_message(msg)
+                msg = await chnl.fetch_message(idd)
                 await msg.delete()
 
         new_msg1 = await chnl.send("Getting Stats........")
