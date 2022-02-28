@@ -44,7 +44,7 @@ async def automatic():
         chnl = client.get_channel(liveStatsChannelID)
         msgs = await chnl.history(limit=5).flatten()
         for i in msgs:
-            if i.author.id == client.author.id:
+            if i.author.id == client.user.id:
                 idd = i.id
                 msg = await chnl.fetch_message(msg)
                 await msg.delete()
