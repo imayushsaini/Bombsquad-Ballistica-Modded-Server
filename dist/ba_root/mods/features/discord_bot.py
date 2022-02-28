@@ -145,7 +145,9 @@ def get_live_players():
 def get_game():
     global stats
     liveg = stats['game']
-    return liveg
+    curr = liveg["Current"]
+    nexxt = liveg["Next"]
+    return f"`Current : {curr} , Next : {nexxt}`"
 
 def get_chats():
     global stats
