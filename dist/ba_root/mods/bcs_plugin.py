@@ -132,12 +132,12 @@ def get_top200():
     return json.dumps(top200)
 
 
-# ba_meta export plugin
-class InitalRun(ba.Plugin):
+class InitalRun:
     def __init__(self):
         print("start flask")
         flask_run = _thread.start_new_thread(app.run, ("0.0.0.0",80,False ))
 
-
+def enable():
+    InitalRun()
 # SAMPLE OUTPUT
 # {'system': {'cpu': 80, 'ram': 34}, 'roster': {}, 'chats': [], 'playlist': {'current': 'Meteor Shower @ Rampage', 'next': 'Assault @ Step Right Up'}, 'teamInfo': {'sessionType': 'DualTeamSession', 0: {'name': 'Blue', 'color': (0.1, 0.25, 1.0), 'score': 1, 'players': [{'name': 'Jolly', 'device_id': '\ue030PC295588', 'inGame': True, 'character': 'xmas', 'account_id': 'pb-IF4TVWwZUQ=='}]}, 1: {'name': 'Red', 'color': (1.0, 0.25, 0.2), 'score': 0, 'players': []}}}
