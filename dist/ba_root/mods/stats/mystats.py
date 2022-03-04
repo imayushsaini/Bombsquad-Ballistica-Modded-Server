@@ -69,7 +69,7 @@ def get_all_stats():
     global seasonStartDate
     if os.path.exists(statsfile):
         renameFile=False
-        with open(statsfile, 'r') as f:
+        with open(statsfile, 'r',encoding='utf8') as f:
             jsonData=json.loads(f.read())
             try:
                 stats=jsonData["stats"]
@@ -80,7 +80,8 @@ def get_all_stats():
                     seasonStartDate=datetime.datetime.now()
                     return statsDefault
                 return stats
-            except:
+            except OSError as e:
+                print(e)
                 return jsonData    
     else:
         return {}
@@ -96,8 +97,8 @@ def dump_stats(s: dict):
         seasonStartDate=datetime.datetime.now()
     s={"startDate":seasonStartDate.strftime("%d-%m-%Y") , "stats":s}
     if os.path.exists(statsfile):
-        with open(statsfile, 'w') as f:
-            f.write(json.dumps(s, indent=4))
+        with open(statsfile, 'w',encoding='utf8') as f:
+            f.write(json.dumps(s, indent=4,ensure_ascii=False))
             f.close()
     else: print('Stats file not found!')
 
@@ -198,6 +199,7 @@ def update(score_set):
     store.
     """
     # look at score-set entries to tally per-account kills for this round
+    
 
     account_kills = {}
     account_deaths = {}
@@ -230,7 +232,7 @@ class UpdateThread(threading.Thread):
 
     def run(self):
         # pull our existing stats from disk
-
+        import datetime
         try:
             stats=get_all_stats()
         except:
@@ -244,14 +246,11 @@ class UpdateThread(threading.Thread):
                 # (we only do this when first creating the entry to save time,
                 # though it may be smart to refresh it periodically since
                 # it may change)
-                '''url = 'http://bombsquadgame.com/accountquery?id=' + account_id
-                response = json.loads(
-                    urllib.request.urlopen(urllib.Request(url)).read())
-                print('response variable from mystats.py line 183:')
-                print(response)
-                name_html = response['name_html']'''
+                
+                
+                
                 stats[account_id] = {'rank': 0,
-                                     'name': "default",
+                                     'name': "deafult name",
                                      'scores': 0,
                                      'total_damage': 0,
                                      'kills': 0,
@@ -259,17 +258,29 @@ class UpdateThread(threading.Thread):
                                      'games': 0,
                                      'kd': 0,
                                      'avg_score': 0,
+                                     'last_seen':str(datetime.datetime.now()),
                                      'aid': str(account_id)}
 
             #Temporary codes to change 'name_html' to 'name'
-            if 'name_html' in stats[account_id]:
-                stats[account_id].pop('name_html')
-                stats[account_id]['name'] = 'default'
-
+            # if 'name_html' in stats[account_id]:
+            #     stats[account_id].pop('name_html')
+            #     stats[account_id]['name'] = 'default'
+            url="http://bombsquadgame.com/bsAccountInfo?buildNumber=20258&accountID="+account_id
+            data=urllib.request.urlopen(url)
+            if data is not None:
+                try:
+                    name=json.loads(data.read())["profileDisplayString"]
+                except ValueError:
+                    stats[account_id]['name']= "???"
+                else:
+                    stats[account_id]['name']= name
+            
             # now increment their kills whether they were already there or not
+            
             stats[account_id]['kills'] += kill_count
             stats[account_id]['deaths'] += self.account_deaths[account_id]
             stats[account_id]['scores'] += self.account_scores[account_id]
+            stats[account_id]['last_seen'] = str(datetime.datetime.now())
             # also incrementing the games played and adding the id
             stats[account_id]['games'] += 1
             stats[account_id]['aid'] = str(account_id)
