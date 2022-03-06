@@ -33,14 +33,17 @@ ResponseReturnValue = t.Union[
     "WSGIApplication",
 ]
 
+GenericException = t.TypeVar("GenericException", bound=Exception, contravariant=True)
+
 AppOrBlueprintKey = t.Optional[str]  # The App key is None, whereas blueprints are named
 AfterRequestCallable = t.Callable[["Response"], "Response"]
-BeforeRequestCallable = t.Callable[[], None]
-ErrorHandlerCallable = t.Callable[[Exception], ResponseReturnValue]
-TeardownCallable = t.Callable[[t.Optional[BaseException]], "Response"]
+BeforeFirstRequestCallable = t.Callable[[], None]
+BeforeRequestCallable = t.Callable[[], t.Optional[ResponseReturnValue]]
+TeardownCallable = t.Callable[[t.Optional[BaseException]], None]
 TemplateContextProcessorCallable = t.Callable[[], t.Dict[str, t.Any]]
-TemplateFilterCallable = t.Callable[[t.Any], str]
-TemplateGlobalCallable = t.Callable[[], t.Any]
-TemplateTestCallable = t.Callable[[t.Any], bool]
+TemplateFilterCallable = t.Callable[..., t.Any]
+TemplateGlobalCallable = t.Callable[..., t.Any]
+TemplateTestCallable = t.Callable[..., bool]
 URLDefaultCallable = t.Callable[[str, dict], None]
 URLValuePreprocessorCallable = t.Callable[[t.Optional[str], t.Optional[dict]], None]
+ErrorHandlerCallable = t.Callable[[GenericException], ResponseReturnValue]
