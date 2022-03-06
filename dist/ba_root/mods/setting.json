@@ -44,7 +44,7 @@
         "enable":true
     },
     "ballistica_web": {
-        "enable":true
+        "enable":false
     },
     "elPatronPowerups":{
         "enable":true,
