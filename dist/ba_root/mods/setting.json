@@ -43,6 +43,9 @@
     "mikirogQuickTurn":{
         "enable":true
     },
+    "ballistica_web": {
+        "enable":false
+    },
     "elPatronPowerups":{
         "enable":true,
         "settings":{"Powers Gravity": true,

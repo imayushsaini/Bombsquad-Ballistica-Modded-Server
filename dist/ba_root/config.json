@@ -443,9 +443,6 @@
         },
         "plugins.importcustomcharacters.HeySmoothy": {
          "enabled": false
-        },
-        "plugins.wavedash.MikiWavedashTest": {
-         "enabled": true
         }
     },
     "Port": 43210,

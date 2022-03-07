@@ -80,10 +80,13 @@ def bootstraping():
         elPatronPowerups.enable()
     if settings["mikirogQuickTurn"]["enable"]:
         from plugins import wavedash  # pylint: disable=unused-import
+    if settings["ballistica_web"]["enable"]:
+        import bcs_plugin
+        bcs_plugin.enable()
 
     # import features
     if settings["whitelist"]:
-        pdata.loadWhitelist()
+        pdata.load_white_list()
 
     import_discord_bot()
     import_games()
