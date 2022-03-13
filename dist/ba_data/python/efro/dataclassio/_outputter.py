@@ -14,10 +14,11 @@ import typing
 import datetime
 from typing import TYPE_CHECKING
 
+from efro.util import check_utc
 from efro.dataclassio._base import (Codec, _parse_annotated, EXTRA_ATTRS_ATTR,
                                     _is_valid_for_codec, _get_origin,
                                     SIMPLE_TYPES, _raise_type_error,
-                                    _ensure_datetime_is_timezone_aware)
+                                    IOExtendedData)
 from efro.dataclassio._prep import PrepSession
 
 if TYPE_CHECKING:
@@ -37,6 +38,11 @@ class _Outputter:
 
     def run(self) -> Any:
         """Do the thing."""
+
+        # For special extended data types, call their 'will_output' callback.
+        if isinstance(self._obj, IOExtendedData):
+            self._obj.will_output()
+
         return self._process_dataclass(type(self._obj), self._obj, '')
 
     def _process_dataclass(self, cls: type, obj: Any, fieldpath: str) -> Any:
@@ -44,6 +50,7 @@ class _Outputter:
         # pylint: disable=too-many-branches
         prep = PrepSession(explicit=False).prep_dataclass(type(obj),
                                                           recursion_level=0)
+        assert prep is not None
         fields = dataclasses.fields(obj)
         out: Optional[dict[str, Any]] = {} if self._create else None
         for field in fields:
@@ -60,7 +67,7 @@ class _Outputter:
             # If we're not storing default values for this fella,
             # we can skip all output processing if we've got a default value.
             if ioattrs is not None and not ioattrs.store_default:
-                default_factory: Any = field.default_factory  # type: ignore
+                default_factory: Any = field.default_factory
                 if default_factory is not dataclasses.MISSING:
                     if default_factory() == value:
                         continue
@@ -113,14 +120,14 @@ class _Outputter:
             return value if self._create else None
 
         if origin is typing.Union:
-            # Currently the only unions we support are None/Value
+            # Currently, the only unions we support are None/Value
             # (translated from Optional), which we verified on prep.
             # So let's treat this as a simple optional case.
             if value is None:
                 return None
             childanntypes_l = [
                 c for c in typing.get_args(anntype) if c is not type(None)
-            ]
+            ]  # noqa (pycodestyle complains about *is* with type)
             assert len(childanntypes_l) == 1
             return self._process_value(cls, fieldpath, childanntypes_l[0],
                                        value, ioattrs)
@@ -242,7 +249,7 @@ class _Outputter:
             if not isinstance(value, origin):
                 raise TypeError(f'Expected a {origin} for {fieldpath};'
                                 f' found a {type(value)}.')
-            _ensure_datetime_is_timezone_aware(value)
+            check_utc(value)
             if ioattrs is not None:
                 ioattrs.validate_datetime(value, fieldpath)
             if self._codec is Codec.FIRESTORE:

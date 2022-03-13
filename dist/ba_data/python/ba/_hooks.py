@@ -119,6 +119,11 @@ def gear_vr_controller_warning() -> None:
                       color=(1, 0, 0))
 
 
+def uuid_str() -> str:
+    import uuid
+    return str(uuid.uuid4())
+
+
 def orientation_reset_cb_message() -> None:
     from ba._language import Lstr
     _ba.screenmessage(
@@ -370,3 +375,13 @@ def get_player_icon(sessionplayer: ba.SessionPlayer) -> dict[str, Any]:
         'tint_color': info['tint_color'],
         'tint2_color': info['tint2_color']
     }
+
+
+def hash_strings(inputs: list[str]) -> str:
+    """Hash provided strings into a short output string."""
+    import hashlib
+    sha = hashlib.sha1()
+    for inp in inputs:
+        sha.update(inp.encode())
+
+    return sha.hexdigest()

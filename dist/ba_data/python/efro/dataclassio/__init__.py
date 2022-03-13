@@ -10,24 +10,43 @@ data formats in a nondestructive manner.
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import TYPE_CHECKING, TypeVar
 
 from efro.dataclassio._outputter import _Outputter
 from efro.dataclassio._inputter import _Inputter
-from efro.dataclassio._base import Codec, IOAttrs
-from efro.dataclassio._prep import ioprep, ioprepped, is_ioprepped_dataclass
+from efro.dataclassio._base import Codec, IOAttrs, IOExtendedData
+from efro.dataclassio._prep import (ioprep, ioprepped, will_ioprep,
+                                    is_ioprepped_dataclass)
 from efro.dataclassio._pathcapture import DataclassFieldLookup
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Optional
 
 __all__ = [
-    'Codec', 'IOAttrs', 'ioprep', 'ioprepped', 'is_ioprepped_dataclass',
-    'DataclassFieldLookup', 'dataclass_to_dict', 'dataclass_to_json',
-    'dataclass_from_dict', 'dataclass_from_json', 'dataclass_validate'
+    'Codec', 'IOAttrs', 'IOExtendedData', 'ioprep', 'ioprepped', 'will_ioprep',
+    'is_ioprepped_dataclass', 'DataclassFieldLookup', 'dataclass_to_dict',
+    'dataclass_to_json', 'dataclass_from_dict', 'dataclass_from_json',
+    'dataclass_validate'
 ]
 
 T = TypeVar('T')
+
+
+class JsonStyle(Enum):
+    """Different style types for json."""
+
+    # Single line, no spaces, no sorting. Not deterministic.
+    # Use this for most storage purposes.
+    FAST = 'fast'
+
+    # Single line, no spaces, sorted keys. Deterministic.
+    # Use this when output may be hashed or compared for equality.
+    SORTED = 'sorted'
+
+    # Multiple lines, spaces, sorted keys. Deterministic.
+    # Use this for pretty human readable output.
+    PRETTY = 'pretty'
 
 
 def dataclass_to_dict(obj: Any,
@@ -45,7 +64,7 @@ def dataclass_to_dict(obj: Any,
     the ability to do a lossless round-trip with data).
 
     If coerce_to_float is True, integer values present on float typed fields
-    will be converted to floats in the dict output. If False, a TypeError
+    will be converted to float in the dict output. If False, a TypeError
     will be triggered.
     """
 
@@ -59,18 +78,23 @@ def dataclass_to_dict(obj: Any,
 
 def dataclass_to_json(obj: Any,
                       coerce_to_float: bool = True,
-                      pretty: bool = False) -> str:
+                      pretty: bool = False,
+                      sort_keys: Optional[bool] = None) -> str:
     """Utility function; return a json string from a dataclass instance.
 
     Basically json.dumps(dataclass_to_dict(...)).
+    By default, keys are sorted for pretty output and not otherwise, but
+    this can be overridden by supplying a value for the 'sort_keys' arg.
     """
     import json
     jdict = dataclass_to_dict(obj=obj,
                               coerce_to_float=coerce_to_float,
                               codec=Codec.JSON)
+    if sort_keys is None:
+        sort_keys = pretty
     if pretty:
-        return json.dumps(jdict, indent=2, sort_keys=True)
-    return json.dumps(jdict, separators=(',', ':'))
+        return json.dumps(jdict, indent=2, sort_keys=sort_keys)
+    return json.dumps(jdict, separators=(',', ':'), sort_keys=sort_keys)
 
 
 def dataclass_from_dict(cls: type[T],
@@ -94,10 +118,10 @@ def dataclass_from_dict(cls: type[T],
     (as this would break the ability to do a lossless round-trip with data).
 
     If coerce_to_float is True, int values passed for float typed fields
-    will be converted to float values. Otherwise a TypeError is raised.
+    will be converted to float values. Otherwise, a TypeError is raised.
 
     If allow_unknown_attrs is False, AttributeErrors will be raised for
-    attributes present in the dict but not on the data class. Otherwise they
+    attributes present in the dict but not on the data class. Otherwise, they
     will be preserved as part of the instance and included if it is
     exported back to a dict, unless discard_unknown_attrs is True, in which
     case they will simply be discarded.
