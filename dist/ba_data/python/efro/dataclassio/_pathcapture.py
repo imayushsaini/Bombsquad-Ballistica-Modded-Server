@@ -36,6 +36,7 @@ class _PathCapture:
 
         prep = PrepSession(explicit=False).prep_dataclass(self._cls,
                                                           recursion_level=0)
+        assert prep is not None
         try:
             anntype = prep.annotations[name]
         except KeyError as exc:
@@ -75,7 +76,7 @@ class DataclassFieldLookup(Generic[T]):
         # We tell the type system that we are returning an instance
         # of our class, which allows it to perform type checking on
         # member lookups. In reality, however, we are providing a
-        # special object which captures path lookups so we can build
+        # special object which captures path lookups, so we can build
         # a string from them.
         if not TYPE_CHECKING:
             out = callback(_PathCapture(self.cls))

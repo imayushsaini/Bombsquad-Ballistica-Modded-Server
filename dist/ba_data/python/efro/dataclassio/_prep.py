@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, TypeVar, get_type_hints
 from efro.dataclassio._base import _parse_annotated, _get_origin, SIMPLE_TYPES
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Optional
 
 T = TypeVar('T')
 
@@ -27,11 +27,15 @@ T = TypeVar('T')
 # (basically for detecting recursive types)
 MAX_RECURSION = 10
 
-# Attr name for data we store on dataclass types as part of prep.
+# Attr name for data we store on dataclass types that have been prepped.
 PREP_ATTR = '_DCIOPREP'
 
+# We also store the prep-session while the prep is in progress.
+# (necessary to support recursive types).
+PREP_SESSION_ATTR = '_DCIOPREPSESSION'
 
-def ioprep(cls: type) -> None:
+
+def ioprep(cls: type, globalns: dict = None) -> None:
     """Prep a dataclass type for use with this module's functionality.
 
     Prepping ensures that all types contained in a data class as well as
@@ -45,10 +49,14 @@ def ioprep(cls: type) -> None:
 
     Prepping a dataclass involves evaluating its type annotations, which,
     as of PEP 563, are stored simply as strings. This evaluation is done
-    in the module namespace containing the class, so all referenced types
-    must be defined at that level.
+    with localns set to the class dict (so that types defined in the class
+    can be used) and globalns set to the containing module's class.
+    It is possible to override globalns for special cases such as when
+    prepping happens as part of an execed string instead of within a
+    module.
     """
-    PrepSession(explicit=True).prep_dataclass(cls, recursion_level=0)
+    PrepSession(explicit=True,
+                globalns=globalns).prep_dataclass(cls, recursion_level=0)
 
 
 def ioprepped(cls: type[T]) -> type[T]:
@@ -61,6 +69,23 @@ def ioprepped(cls: type[T]) -> type[T]:
     errors as early as possible in execution.
     """
     ioprep(cls)
+    return cls
+
+
+def will_ioprep(cls: type[T]) -> type[T]:
+    """Class decorator hinting that we will prep a class later.
+
+    In some cases (such as recursive types) we cannot use the @ioprepped
+    decorator and must instead call ioprep() explicitly later. However,
+    some of our custom pylint checking behaves differently when the
+    @ioprepped decorator is present, in that case requiring type annotations
+    to be present and not simply forward declared under an "if TYPE_CHECKING"
+    block. (since they are used at runtime).
+
+    The @will_ioprep decorator triggers the same pylint behavior
+    differences as @ioprepped (which are necessary for the later ioprep() call
+    to work correctly) but without actually running any prep itself.
+    """
     return cls
 
 
@@ -87,11 +112,19 @@ class PrepData:
 class PrepSession:
     """Context for a prep."""
 
-    def __init__(self, explicit: bool):
+    def __init__(self, explicit: bool, globalns: Optional[dict] = None):
         self.explicit = explicit
+        self.globalns = globalns
 
-    def prep_dataclass(self, cls: type, recursion_level: int) -> PrepData:
-        """Run prep on a dataclass if necessary and return its prep data."""
+    def prep_dataclass(self, cls: type,
+                       recursion_level: int) -> Optional[PrepData]:
+        """Run prep on a dataclass if necessary and return its prep data.
+
+        The only case where this will return None is for recursive types
+        if the type is already being prepped higher in the call order.
+        """
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-branches
 
         # We should only need to do this once per dataclass.
         existing_data = getattr(cls, PREP_ATTR, None)
@@ -99,14 +132,27 @@ class PrepSession:
             assert isinstance(existing_data, PrepData)
             return existing_data
 
-        # If we run into classes containing themselves, we may have
-        # to do something smarter to handle it.
+        # Sanity check.
+        # Note that we now support recursive types via the PREP_SESSION_ATTR,
+        # so we theoretically shouldn't run into this this.
         if recursion_level > MAX_RECURSION:
             raise RuntimeError('Max recursion exceeded.')
 
         # We should only be passed classes which are dataclasses.
         if not isinstance(cls, type) or not dataclasses.is_dataclass(cls):
             raise TypeError(f'Passed arg {cls} is not a dataclass type.')
+
+        # Add a pointer to the prep-session while doing the prep.
+        # This way we can ignore types that we're already in the process
+        # of prepping and can support recursive types.
+        existing_prep = getattr(cls, PREP_SESSION_ATTR, None)
+        if existing_prep is not None:
+            if existing_prep is self:
+                return None
+            # We shouldn't need to support failed preps
+            # or preps from multiple threads at once.
+            raise RuntimeError('Found existing in-progress prep.')
+        setattr(cls, PREP_SESSION_ATTR, self)
 
         # Generate a warning on non-explicit preps; we prefer prep to
         # happen explicitly at runtime so errors can be detected early on.
@@ -123,10 +169,10 @@ class PrepSession:
             # which allows us to pick up nested classes, etc.
             resolved_annotations = get_type_hints(cls,
                                                   localns=vars(cls),
+                                                  globalns=self.globalns,
                                                   include_extras=True)
             # pylint: enable=unexpected-keyword-arg
         except Exception as exc:
-            print('GOT', cls.__dict__)
             raise TypeError(
                 f'dataclassio prep for {cls} failed with error: {exc}.'
                 f' Make sure all types used in annotations are defined'
@@ -175,6 +221,10 @@ class PrepSession:
             annotations=resolved_annotations,
             storage_names_to_attr_names=storage_names_to_attr_names)
         setattr(cls, PREP_ATTR, prepdata)
+
+        # Clear our prep-session tag.
+        assert getattr(cls, PREP_SESSION_ATTR, None) is self
+        delattr(cls, PREP_SESSION_ATTR)
         return prepdata
 
     def prep_type(self, cls: type, attrname: str, anntype: Any,
@@ -303,7 +353,7 @@ class PrepSession:
         """Run prep on a Union type."""
         typeargs = typing.get_args(anntype)
         if (len(typeargs) != 2
-                or len([c for c in typeargs if c is type(None)]) != 1):
+                or len([c for c in typeargs if c is type(None)]) != 1):  # noqa
             raise TypeError(f'Union {anntype} for attr \'{attrname}\' on'
                             f' {cls.__name__} is not supported by dataclassio;'
                             f' only 2 member Unions with one type being None'
