@@ -196,3 +196,4 @@ class SpecialChar(Enum):
     FLAG_PHILIPPINES = 87
     FLAG_CHILE = 88
     MIKIROG = 89
+    V2_LOGO = 90

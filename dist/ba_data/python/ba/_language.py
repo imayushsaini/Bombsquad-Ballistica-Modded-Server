@@ -87,6 +87,7 @@ class LanguageSubsystem:
             'vec': 'Venetian',
             'hi': 'Hindi',
             'ta': 'Tamil',
+            'fil': 'Filipino',
         }
 
         # Special case for Chinese: map specific variations to traditional.
@@ -373,7 +374,7 @@ class Lstr:
     currently-active language.
 
     To see available resource keys, look at any of the bs_language_*.py files
-    in the game or the translations pages at bombsquadgame.com/translate.
+    in the game or the translations pages at legacy.ballistica.net/translate.
 
     # EXAMPLE 1: specify a string from a resource path
     mynode.text = ba.Lstr(resource='audioSettingsWindow.titleText')

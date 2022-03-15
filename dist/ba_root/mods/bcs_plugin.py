@@ -33,15 +33,19 @@ class BsDataThread(object):
         
         lboard=mystats.get_all_stats()
         leaderboard=lboard
-        entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in lboard.values()]
-        
+        try:
+            entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid'],a['last_seen']) for a in lboard.values()]
+        except:
+            print("stats reset is required , please clear out stats.json records , or download fresh stats.json from github")
+            import _ba
+            _ba.quit()
         entries.sort(reverse=True)
         rank=0
         for entry in entries:
             rank+=1
             if rank >201:
                 break
-            _t200[entry[5]]={"rank":rank,"scores":int(entry[0]),"games":int(entry[3]),"kills":int(entry[1]),"deaths":int(entry[2]),"name_html":entry[4],"last_seen":"entry[6]"}
+            _t200[entry[5]]={"rank":rank,"scores":int(entry[0]),"games":int(entry[3]),"kills":int(entry[1]),"deaths":int(entry[2]),"name_html":entry[4],"last_seen":entry[6]}
             top200=_t200
             
     def refreshStats(self):

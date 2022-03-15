@@ -11,10 +11,19 @@ import functools
 from enum import Enum
 from typing import TYPE_CHECKING, cast, TypeVar, Generic
 
+_pytz_utc: Any
+
+# We don't *require* pytz, but we want to support it for tzinfos if available.
+try:
+    import pytz
+    _pytz_utc = pytz.utc
+except ModuleNotFoundError:
+    _pytz_utc = None  # pylint: disable=invalid-name
+
 if TYPE_CHECKING:
     import asyncio
     from efro.call import Call as Call  # 'as Call' so we re-export.
-    from typing import Any, Callable, Optional
+    from typing import Any, Callable, Optional, NoReturn
 
 T = TypeVar('T')
 TVAL = TypeVar('TVAL')
@@ -60,6 +69,14 @@ def enum_by_value(cls: type[TENUM], value: Any) -> TENUM:
         # pylint: disable=consider-using-f-string
         raise ValueError('%r is not a valid %s' %
                          (value, cls.__name__)) from None
+
+
+def check_utc(value: datetime.datetime) -> None:
+    """Ensure a datetime value is timezone-aware utc."""
+    if (value.tzinfo is not datetime.timezone.utc
+            and (_pytz_utc is None or value.tzinfo is not _pytz_utc)):
+        raise ValueError('datetime value does not have timezone set as'
+                         ' datetime.timezone.utc')
 
 
 def utc_now() -> datetime.datetime:
@@ -240,7 +257,8 @@ class DispatchMethodWrapper(Generic[TARG, TRET]):
         pass
 
     @staticmethod
-    def register(func: Callable[[Any, Any], TRET]) -> Callable:
+    def register(
+            func: Callable[[Any, Any], TRET]) -> Callable[[Any, Any], TRET]:
         """Register a new dispatch handler for this dispatch-method."""
 
     registry: dict[Any, Callable]
@@ -312,12 +330,16 @@ class ValueDispatcher(Generic[TVAL, TRET]):
             return handler()
         return self._base_call(value)
 
-    def _add_handler(self, value: TVAL, call: Callable[[], TRET]) -> None:
+    def _add_handler(self, value: TVAL,
+                     call: Callable[[], TRET]) -> Callable[[], TRET]:
         if value in self._handlers:
             raise RuntimeError(f'Duplicate handlers added for {value}')
         self._handlers[value] = call
+        return call
 
-    def register(self, value: TVAL) -> Callable[[Callable[[], TRET]], None]:
+    def register(
+            self,
+            value: TVAL) -> Callable[[Callable[[], TRET]], Callable[[], TRET]]:
         """Add a handler to the dispatcher."""
         from functools import partial
         return partial(self._add_handler, value)
@@ -343,13 +365,16 @@ class ValueDispatcher1Arg(Generic[TVAL, TARG, TRET]):
             return handler(arg)
         return self._base_call(value, arg)
 
-    def _add_handler(self, value: TVAL, call: Callable[[TARG], TRET]) -> None:
+    def _add_handler(self, value: TVAL,
+                     call: Callable[[TARG], TRET]) -> Callable[[TARG], TRET]:
         if value in self._handlers:
             raise RuntimeError(f'Duplicate handlers added for {value}')
         self._handlers[value] = call
+        return call
 
-    def register(self,
-                 value: TVAL) -> Callable[[Callable[[TARG], TRET]], None]:
+    def register(
+        self, value: TVAL
+    ) -> Callable[[Callable[[TARG], TRET]], Callable[[TARG], TRET]]:
         """Add a handler to the dispatcher."""
         from functools import partial
         return partial(self._add_handler, value)
@@ -363,8 +388,9 @@ if TYPE_CHECKING:
         def __call__(self, value: TVAL) -> TRET:
             ...
 
-        def register(self,
-                     value: TVAL) -> Callable[[Callable[[TSELF], TRET]], None]:
+        def register(
+            self, value: TVAL
+        ) -> Callable[[Callable[[TSELF], TRET]], Callable[[TSELF], TRET]]:
             """Add a handler to the dispatcher."""
             ...
 
@@ -579,6 +605,8 @@ def human_readable_compact_id(num: int) -> str:
      'o' is excluded due to similarity to '0'.
      'z' is excluded due to similarity to '2'.
 
+    Therefore for n chars this can store values of 21^n.
+
     When reading human input consisting of these IDs, it may be desirable
     to map the disallowed chars to their corresponding allowed ones
     ('o' -> '0', etc).
@@ -599,8 +627,39 @@ def compact_id(num: int) -> str:
     friendly to humans due to using both capital and lowercase letters,
     both 'O' and '0', etc.
 
+    Therefore for n chars this can store values of 62^n.
+
     Sort order for these ids is the same as the original numbers.
     """
     return _compact_id(
         num, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         'abcdefghijklmnopqrstuvwxyz')
+
+
+def assert_never(value: NoReturn) -> NoReturn:
+    """Trick for checking exhaustive handling of Enums, etc.
+
+    See https://github.com/python/typing/issues/735
+    """
+    assert False, f'Unhandled value: {value} ({type(value).__name__})'
+
+
+def unchanging_hostname() -> str:
+    """Return an unchanging name for the local device.
+
+    Similar to the `hostname` call (or os.uname().nodename in Python)
+    except attempts to give a name that doesn't change depending on
+    network conditions. (A Mac will tend to go from Foo to Foo.local,
+    Foo.lan etc. throughout its various adventures)
+    """
+    import os
+    import platform
+    import subprocess
+
+    # On Mac, this should give the computer name assigned in System Prefs.
+    if platform.system() == 'Darwin':
+        return subprocess.run(
+            ['scutil', '--get', 'ComputerName'],
+            check=True,
+            capture_output=True).stdout.decode().strip().replace(' ', '-')
+    return os.uname().nodename

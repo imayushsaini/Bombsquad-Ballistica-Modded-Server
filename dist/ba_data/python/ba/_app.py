@@ -3,8 +3,9 @@
 """Functionality related to the high level state of the app."""
 from __future__ import annotations
 
-from enum import Enum
 import random
+import logging
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import _ba
@@ -184,6 +185,9 @@ class App:
 
         self.state = self.State.LAUNCHING
 
+        self._app_launched = False
+        self._app_paused = False
+
         # Config.
         self.config_file_healthy = False
 
@@ -348,27 +352,6 @@ class App:
         for key in ('lc14173', 'lc14292'):
             cfg.setdefault(key, launch_count)
 
-        # Debugging - make note if we're using the local test server so we
-        # don't accidentally leave it on in a release.
-        # FIXME - should move this to the native layer.
-        server_addr = _ba.get_master_server_address()
-        if 'localhost' in server_addr:
-            _ba.timer(2.0,
-                      lambda: _ba.screenmessage(
-                          'Note: using local server',
-                          (1, 1, 0),
-                          log=True,
-                      ),
-                      timetype=TimeType.REAL)
-        elif 'test' in server_addr:
-            _ba.timer(2.0,
-                      lambda: _ba.screenmessage(
-                          'Note: using test server-module',
-                          (1, 1, 0),
-                          log=True,
-                      ),
-                      timetype=TimeType.REAL)
-
         cfg['launchCount'] = launch_count
         cfg.commit()
 
@@ -389,20 +372,40 @@ class App:
         self.accounts.on_app_launch()
         self.plugins.on_app_launch()
 
-        self.state = self.State.RUNNING
+        # See note below in on_app_pause.
+        if self.state != self.State.LAUNCHING:
+            logging.error('on_app_launch found state %s; expected LAUNCHING.',
+                          self.state)
+
+        self._app_launched = True
+        self._update_state()
 
         # from ba._dependency import test_depset
         # test_depset()
+        if bool(False):
+            self._test_https()
+
+    def _update_state(self) -> None:
+        if self._app_paused:
+            self.state = self.State.PAUSED
+        else:
+            if self._app_launched:
+                self.state = self.State.RUNNING
+            else:
+                self.state = self.State.LAUNCHING
 
     def on_app_pause(self) -> None:
         """Called when the app goes to a suspended state."""
-        self.state = self.State.PAUSED
+
+        self._app_paused = True
+        self._update_state()
         self.plugins.on_app_pause()
 
     def on_app_resume(self) -> None:
         """Run when the app resumes from a suspended state."""
 
-        self.state = self.State.RUNNING
+        self._app_paused = False
+        self._update_state()
         self.fg_state += 1
         self.accounts.on_app_resume()
         self.music.on_app_resume()
@@ -586,6 +589,8 @@ class App:
         try:
             with urllib.request.urlopen('https://example.com') as url:
                 val = url.read()
+            _ba.screenmessage('HTTPS SUCCESS!')
             print('HTTPS TEST SUCCESS', len(val))
         except Exception as exc:
+            _ba.screenmessage('HTTPS FAIL.')
             print('HTTPS TEST FAIL:', exc)
