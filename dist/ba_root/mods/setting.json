@@ -43,6 +43,9 @@
     "mikirogQuickTurn":{
         "enable":true
     },
+    "colorful_explosions":{
+        "enable":false
+    },
     "ballistica_web": {
         "enable":false
     },

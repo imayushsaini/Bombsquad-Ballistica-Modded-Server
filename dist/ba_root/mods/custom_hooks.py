@@ -80,6 +80,9 @@ def bootstraping():
         elPatronPowerups.enable()
     if settings["mikirogQuickTurn"]["enable"]:
         from plugins import wavedash  # pylint: disable=unused-import
+    if settings["colorful_explosions"]["enable"]:
+        from plugins import color_explosion
+        color_explosion.enable()
     if settings["ballistica_web"]["enable"]:
         import bcs_plugin
         bcs_plugin.enable()
