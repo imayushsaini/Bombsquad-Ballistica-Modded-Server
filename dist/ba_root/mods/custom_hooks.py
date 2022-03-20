@@ -84,8 +84,14 @@ def bootstraping():
         from plugins import color_explosion
         color_explosion.enable()
     if settings["ballistica_web"]["enable"]:
-        import bcs_plugin
+        from plugins import bcs_plugin
         bcs_plugin.enable()
+    if settings["character_chooser"]["enable"]:
+        from plugins import CharacterChooser
+        CharacterChooser.enable()
+    if settings["custom_characters"]["enable"]:
+        from plugins import importcustomcharacters
+        importcustomcharacters.enable()
 
     # import features
     if settings["whitelist"]:
