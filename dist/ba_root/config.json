@@ -433,16 +433,7 @@
     },
     "Plugins": {
         "plugins.Init": {
-         "enabled": true
-        },
-        "plugins.CharacterChooser.HeySmoothy": {
-         "enabled": true
-        },
-        "plugins.bombsquadhttpapi.HeySmoothy": {
-         "enabled": false
-        },
-        "plugins.importcustomcharacters.HeySmoothy": {
-         "enabled": false
+            "enabled": true
         }
     },
     "Port": 43210,

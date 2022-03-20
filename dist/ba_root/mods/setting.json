@@ -49,6 +49,12 @@
     "ballistica_web": {
         "enable":false
     },
+    "character_chooser":{
+        "enable":true
+    },
+    "custom_characters": {
+        "enable":true
+    },
     "elPatronPowerups":{
         "enable":true,
         "settings":{"Powers Gravity": true,

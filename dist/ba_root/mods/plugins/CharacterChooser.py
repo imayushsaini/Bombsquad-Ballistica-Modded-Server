@@ -346,15 +346,9 @@ def _update_text(self) -> None:
         
         self._text_node.text = text
 
-# ba_meta export plugin
-class HeySmoothy(ba.Plugin):
+def enable() -> None:
+    _lobby.Chooser.__init__=__init__
+    _lobby.Chooser._set_ready=_set_ready
     
-    def __init__(self):
-        _lobby.Chooser.__init__=__init__
-        _lobby.Chooser._set_ready=_set_ready
-        
-        _lobby.Chooser._update_text=_update_text
-        _lobby.Chooser.handlemessage=handlemessage
-        
-        
-    
+    _lobby.Chooser._update_text=_update_text
+    _lobby.Chooser.handlemessage=handlemessage
