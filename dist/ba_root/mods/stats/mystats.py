@@ -119,7 +119,7 @@ def refreshStats():
     
     entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
-    entries.sort(reverse=True)
+    entries.sort(key=lambda x:x[1] or 0,reverse=True)
     rank = 0
     toppers = {}
     toppersIDs=[]
