@@ -37,10 +37,10 @@ class RecentLogs:
     cmndlog: list[str] = field(default_factory=list)
     misclogs: list[str] = field(default_factory=list)
 
+logs = RecentLogs()
 
 def log(msg: str, mtype: str = "sys") -> None:
     """Cache and dumps the log."""
-    logs = RecentLogs()
 
     if SETTINGS["discordbot"]["enable"]:
         message = msg.replace("||", "|")
