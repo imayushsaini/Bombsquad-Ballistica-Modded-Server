@@ -84,7 +84,7 @@ def bootstraping():
         from plugins import color_explosion
         color_explosion.enable()
     if settings["ballistica_web"]["enable"]:
-        import bcs_plugin
+        from plugins import bcs_plugin
         bcs_plugin.enable()
 
     # import features
