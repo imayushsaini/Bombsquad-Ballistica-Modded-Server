@@ -52,7 +52,7 @@ def floater(clientid):
 		from .. import floater
 		floater.assignFloInputs(clientid)
 	except:
-		pass
+		return
 
 def speed(arguments):
 	if arguments ==[] or arguments==['']:
