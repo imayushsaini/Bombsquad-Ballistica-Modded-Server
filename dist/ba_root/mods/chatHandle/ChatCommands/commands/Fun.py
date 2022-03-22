@@ -49,7 +49,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 def floater(clientid):
 	try:
-		from features import floater
+		from .. import floater
 		floater.assignFloInputs(clientid)
 	except:
 		pass
