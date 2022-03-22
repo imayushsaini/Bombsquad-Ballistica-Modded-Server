@@ -2,8 +2,8 @@ from .Handlers import handlemsg, handlemsg_all
 import ba, _ba
 from tools import corelib
 
-Commands = ['fly', 'invisible', 'headless', 'creepy', 'celebrate', 'spaz','speed']
-CommandAliases = ['inv', 'hl', 'creep', 'celeb']
+Commands = ['fly', 'invisible', 'headless', 'creepy', 'celebrate', 'spaz', 'speed', 'floater']
+CommandAliases = ['inv', 'hl', 'creep', 'celeb', 'flo']
 
 
 
@@ -43,6 +43,16 @@ def ExcelCommand(command, arguments, clientid, accountid):
 	elif command == 'spaz':
 		spaz(arguments)
 		
+	elif command in ['floater','flo']:
+		floater(clientid)
+		
+
+def floater(clientid):
+	try:
+		from .. import floater
+		floater.assignFloInputs(clientid)
+	except:
+		pass
 
 def speed(arguments):
 	if arguments ==[] or arguments==['']:
