@@ -44,13 +44,16 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		spaz(arguments)
 		
 	elif command in ['floater','flo']:
-		floater(clientid)
+		floater(arguments,clientid)
 		
 
-def floater(clientid):
+def floater(arguments,clientid):
 	try:
 		from .. import floater
-		floater.assignFloInputs(clientid)
+		if arguments ==[]:
+			floater.assignFloInputs(clientid)
+		else:
+			floater.assignFloInputs(arguments[0])
 	except:
 		pass
 
