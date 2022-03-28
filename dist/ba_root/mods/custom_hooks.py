@@ -110,6 +110,7 @@ def import_discord_bot() -> None:
         discord_bot.liveStatsChannelID=settings["discordbot"]["liveStatsChannelID"]
         discord_bot.logsChannelID=settings["discordbot"]["logsChannelID"]
         discord_bot.liveChat=settings["discordbot"]["liveChat"]
+        discord_bot.roleID=settings["discordbot"]["roleID"]
         discord_bot.BsDataThread()
         discord_bot.init()
 
@@ -196,7 +197,7 @@ def on_kicked(account_id: str) -> None:
 
 def on_kick_vote_end():
     """Runs when kickvote is ended."""
-    logger.log("Kick vote End")
+    logger.log("Kick vote ended")
 
 
 _hooks.kick_vote_started=kick_vote_started

@@ -2,7 +2,7 @@
 import discord
 import asyncio
 from threading import Thread
-from discord.ext.commands import Bot
+from discord.ext import commands
 import ba
 from ba._general import Call
 import _ba
@@ -10,19 +10,22 @@ import json
 import os
 import _thread
 import logging
+import setting
 logging.getLogger('asyncio').setLevel(logging.WARNING)
-client = Bot(command_prefix='!')
+client = commands.Bot(command_prefix=['Bs.','bs.'], case_insensitive = True)
 
-# client = discord.Client()
+#Dont Change Anything(Head To Settings.json)
+token = ''
+roleid = "" #copy discord role id which have permission to use the commands
+liveStatsChannelID = ""
+logsChannelID = ""
+liveChat = True
 
+#Logging
 
-stats={}
-livestatsmsgs=[]
-logsChannelID=859519868838608970
-liveStatsChannelID=924697770554687548
-liveChat=True
-token=''
-logs=[]
+stats = {}
+pl = {}
+logs= []
 
 
 def push_log(msg):
@@ -30,111 +33,137 @@ def push_log(msg):
     logs.append(msg)
 
 def init():
-    
-
-    
     loop = asyncio.get_event_loop()
     loop.create_task(client.start(token))
     
     Thread(target=loop.run_forever).start()
 
-channel=None
-@client.event
-async def on_message(message):
-    global channel
-    if message.author == client.user:
-        return
-    channel=message.channel
-    
-    if message.channel.id==logsChannelID:
-        _ba.pushcall(Call(_ba.chatmessage,message.content),from_other_thread=True)
+async def automatic():
+    await client.wait_until_ready()
+    while not client.is_closed():
+        chnl = client.get_channel(liveStatsChannelID)
+        msgs = await chnl.history(limit=5).flatten()
+        for i in msgs:
+            if i.author.id == client.user.id:
+                idd = i.id
+                msg = await chnl.fetch_message(idd)
+                await msg.delete()
 
+        new_msg1 = await chnl.send("Getting Stats........")
+        new_msg2 = await chnl.send("Getting Game.........")
+        new_msg3 = await chnl.send("Getting Chats........")
+
+        lby = get_live_players()
+        embed = discord.Embed(title ="Lobby Players", description = lby, color = discord.Colour.random())
+	    embed.set_footer(text = f"Enjoy In Our Server")
+        await new_msg1.edit(content = None,embed = embed)
+        await new_msg2.edit(content = get_game())
+        await new_msg3.edit(content = "```\n"+get_chats()+"\n```")
+        await asyncio.sleep(8)
+
+async def livelog():
+    await client.wait_until_ready()
+    while not client.is_closed():
+        chnl = client.get_channel(logsChannelID)
+        lby = get_logs().split("|")
+        embed = discord.Embed(title =lby[0], description = lby[1], color = discord.Colour.random())
+	    embed.set_footer(text = f"Server Logs")
+        await chnl.send(embed = embed)
+        await asyncio.sleep(9)
+
+client.loop.create_task(automatic())
+client.loop.create_task(livelog())
 
 @client.event
 async def on_ready():
     print("Discord bot logged in as: %s, %s" % (client.user.name, client.user.id))
-    
-    await verify_channel()
 
-async def verify_channel():
-    global livestatsmsgs
-    channel=client.get_channel(liveStatsChannelID)
-    botmsg_count=0
-    msgs = await channel.history(limit=5).flatten()
-    for msg in msgs:
-        if msg.author.id==client.user.id:
-            botmsg_count+=1
-            livestatsmsgs.append(msg)
+#Live Players
+@client.command()
+async def lobby(ctx):
+    await ctx.send("Getting Lobby Players.....")
+	await asyncio.sleep(1)
+    lbby = get_live_players()
+    embed = discord.Embed(title ="Lobby Players", description = lbby, color = ctx.author.color)
+	embed.set_footer(text = f"Requested By {ctx.author.name}")
+    await ctx.send(embed = embed)
 
-    livestatsmsgs.reverse()
-    while(botmsg_count<2):
-        new_msg=await channel.send("msg reserved for live stats")
-        livestatsmsgs.append(new_msg)
-        botmsg_count+=1
-    asyncio.run_coroutine_threadsafe(refresh_stats(),client.loop)
-    asyncio.run_coroutine_threadsafe(send_logs(),client.loop)
-    # client.loop.create_task(refresh_stats())
-    # client.loop.create_task(send_logs())
-
-async def refresh_stats():
-    await client.wait_until_ready()
-
-    while not client.is_closed():
-        
-        await livestatsmsgs[0].edit(content=get_live_players_msg())
-        await livestatsmsgs[1].edit(content=get_chats())
-        await asyncio.sleep(5)
-
-async def send_logs():
-    global logs
-    #  safely dispatch logs to dc channel , without being rate limited and getting ban from discord
-    # still we sending 2 msg and updating 2 msg within 5 seconds , umm still risky ...nvm not my problem
-    channel=client.get_channel(logsChannelID)
-    await client.wait_until_ready()
-    while not client.is_closed():
-        if logs:
-            msg=''
-            for msg_ in logs:
-                msg+=msg_+"\n"
-            logs=[]
-            if msg:
-                await channel.send(msg)
-
-        await asyncio.sleep(5)
-
-
-
-def get_live_players_msg():
-    global stats
-    msg_1='***Live Stats :***\n\n ***Players in server***\n\n'
-    msg=''
+@client.command()
+@commands.has_role(roleid)
+async def statsid(ctx, chnl:discord.TextChannel):
     try:
-        for id in stats['roster']:
-            name=stats['roster'][id]['name']
-            device_id=stats['roster'][id]['device_id']
-            msg+=id +" -> "+name+" -> "+device_id+" \n"
+        c_id = chnl.id
+        setting.commit({"logsChannelID":c_id})
+        await ctx.send("Logs Channel Updated")
     except:
-        pass
-    if not msg:
-        msg="```No one``` \n"
-    msg_2="\n\n***Current: *** "+stats['playlist']['current'] +"\n ***Next: ***"+stats['playlist']['next'] +"\n\n."
-    return msg_1+msg+msg_2
+        await ctx.send("Mention Channel Correctly")
+
+@client.command()
+@commands.has_role(roleid)
+async def logsid(ctx, chnl:discord.TextChannel):
+    try:
+        c_id = chnl.id
+        setting.commit({"logsChannelID":c_id})
+        await ctx.send("Logs Channel Updated")
+    except:
+        await ctx.send("Mention Channel Correctly")
+
+@client.command()
+@commands.has_role(roleid)
+async def roleid(ctx, role:discord.Role):
+    try:
+        r_id = role.id
+        setting.commit({"roleID":r_id})
+        await ctx.send("Role Updated")
+    except:
+        await ctx.send("Mention Role Correctly")
+
+#Messaging
+@client.command()
+async def chatmsg(ctx,*,msg:str):
+	if not msg.startswith("/"):
+        _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
+        await ctx.send("Message Delivered")
+    else:
+        await ctx.send("Error 404")
+
+
+@client.command()
+@commands.has_role(roleid)
+async def cmd(ctx,*,msg:str):
+	if msg.startswith("/"):
+        _ba.pushcall(Call(_ba.chatmessage,msg),from_other_thread=True)
+        await ctx.send("Command Executed")
+    else:
+        await ctx.send("Error 404")
+
+def get_live_players():
+    global stats
+    livep = stats['live']
+    return livep
+    
+def get_game():
+    global stats
+    liveg = stats['game']
+    curr = liveg["Current"]
+    nexxt = liveg["Next"]
+    return f"`Current : {curr} , Next : {nexxt}`"
 
 def get_chats():
-    msg_1='***Live Chat***\n\n'
-    msg=''
-    try:
-        for msg_ in stats['chats']:
-            msg+=msg_+"\n"
-    except:
-        pass
-    if not msg:
-        msg= "```Empty```\n"
-    if not liveChat:
-        return '```disabled```'
-    return msg_1+msg
-
-
+    global stats
+    livec = stats['chats']
+    while len(livec) > 15:
+        for i in range(len(livec)-15):
+            livec.pop(0)
+    msg = ""
+    for mg in livec:
+        msg += mg + "\n"
+    return msg
+def get_logs():
+    global logs
+    log = logs[0]
+    logs.pop[0]
+    return log
 
 
 class BsDataThread(object):
@@ -163,16 +192,27 @@ class BsDataThread(object):
             
     def refreshStats(self):
         
-        liveplayers={}
         nextMap=''
         currentMap=''
-        global stats
-        
+        global stats,pl
+        liveplayers = u"{0:^16}{1:^15}{2:^10}\n--------------------------------------------------\n".format('Name','ClientID','PlayerID')
+	    lname = None
+	    lcid = None
+	    lpid = None
         for i in _ba.get_game_roster():
-            try:
-                liveplayers[i['account_id']]={'name':i['players'][0]['name_full'],'client_id':i['client_id'],'device_id':i['display_string']}
-            except:
-                liveplayers[i['account_id']]={'name':"<in-lobby>",'clientid':i['client_id'],'device_id':i['display_string']}
+            if i['players'] == []:
+                lname = str(i['display_string'])
+                lcid = str(i['client_id'])
+                lpid = str('In Lobby')
+                pl[lname] = [lcid,lpid]
+                liveplayers += u"{0:^16}{1:^15}{2:^10}\n".format(lname, lcid, lpid)
+            else:
+                for lp in i['players']:
+                    lname = lp['name_full']
+                    lcid = i['client_id']
+                    lpid = lp['id']
+                    liveplayers += u"{0:^16}{1:^15}{2:^10}\n".format(lname, lcid, lpid)
+                    pl[lname] = [lcid,lpid]
         try:    
             nextMap=_ba.get_foreground_host_session().get_next_game_description().evaluate()
 
@@ -182,13 +222,13 @@ class BsDataThread(object):
             currentMap=gametype.get_settings_display_string(current_game_spec).evaluate()
         except:
             pass
-        minigame={'current':currentMap,'next':nextMap}
+        minigame={'Current':currentMap,'Next':nextMap}
         # system={'cpu':p.cpu_percent(),'ram':p.virtual_memory().percent}
         #system={'cpu':80,'ram':34}
         # stats['system']=system
-        stats['roster']=liveplayers
+        stats['live']="#"+liveplayers
         stats['chats']=_ba.get_chat_messages()
-        stats['playlist']=minigame
+        stats['game']=minigame
 
         
         # stats['teamInfo']=self.getTeamInfo()

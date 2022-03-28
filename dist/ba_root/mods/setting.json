@@ -78,7 +78,8 @@
         "token":"<secret-token-here>",
         "liveChat":true,
         "liveStatsChannelID":925440043672285205,
-        "logsChannelID":925440079843958834
+        "logsChannelID":925440043672285205,
+        "roleID":123156551
     },
     "afk_remover":{
         "enable":true,
