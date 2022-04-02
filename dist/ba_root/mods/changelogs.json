@@ -18,7 +18,10 @@
        "65":{
               "log":"/speed command,fireflies,3 new games,team chat,custom tag color for role,end command fix",
               "time":"30 Jan 2021"
+       },
+       "68":{
+              "log":"1.6.10 , bug fix ,auto error logging, more mini games , discord bot integration ,warn bypass for owner",
+              "time":"2nd April 2022"
        }
       
-
 }
