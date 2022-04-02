@@ -13,7 +13,7 @@ settings = setting.get_settings_data()
 def check_permissions(accountid):
 	roles = pdata.get_roles()
 	for role in roles:
-		if accountid in roles[role]["ids"]  and "ALL" in roles[role]["commands"]:
+		if accountid in roles[role]["ids"]  and ( role == "bypass-warn" or role=="owner") :
 			return True
 	return False
 
