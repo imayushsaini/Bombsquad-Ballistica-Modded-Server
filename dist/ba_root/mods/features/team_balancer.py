@@ -18,13 +18,15 @@ def balanceTeams():
 		return
 	teamASize=0
 	teamBSize=0
+	try:
 
-	for player in session.sessionplayers:
-		if player.sessionteam.id==0:
-			teamASize+=1
-		else:
-			teamBSize+=1
-	
+		for player in session.sessionplayers:
+			if player.sessionteam.id==0:
+				teamASize+=1
+			else:
+				teamBSize+=1
+	except:
+		pass
 	if abs(teamBSize-teamASize)>=0:
 		if teamBSize> teamASize and teamBSize!=0:
 			movePlayers(1,0,abs(teamBSize-teamASize)-1)
@@ -32,6 +34,9 @@ def balanceTeams():
 			movePlayers(0,1,abs(teamBSize-teamASize)-1)
 
 def movePlayers(fromTeam,toTeam,count):
+	return  
+	# disabling team balance for now , until we found solution 
+	#  Error : on score screen when shifted player left the game on_player_leave unable to found player in activity team
 	session=_ba.get_foreground_host_session()
 	fromTeam=session.sessionteams[fromTeam]
 	toTeam=session.sessionteams[toTeam]
