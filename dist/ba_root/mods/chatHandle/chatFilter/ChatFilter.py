@@ -28,6 +28,8 @@ def filter(msg,pb_id,client_id):
 			_ba.screenmessage("Special role found, Warn BYPASSED!", color=(0,1,0), transient=True, clients=[client_id])
 
 	now = time.time()
+	if pb_id not in serverdata.clients:
+		return None
 
 	if "lastMsgTime" in serverdata.clients[pb_id]:
 		count=serverdata.clients[pb_id]["cMsgCount"]
