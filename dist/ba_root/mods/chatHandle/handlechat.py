@@ -28,6 +28,9 @@ def filter_chat_message(msg, client_id):
 				currentname=i['players'][0]['name_full']
 			except:
 				currentname="<in-lobby>"
+				if settings['disableLobbyChat']:
+					_ba.screenmessage("Server on mute", transient=True, clients=[client_id])
+					return
 			displaystring=i['display_string']
 	if acid:
 		msg=ChatFilter.filter(msg,acid,client_id)
