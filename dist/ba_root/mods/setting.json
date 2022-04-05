@@ -87,6 +87,7 @@
         "lobby_idle_time_in_secs":10
     },
     "allowTeamChat":true,
+    "disableLobbyChat":false,
     "sameCharacterForTeam":false,
     "newResultBoard":true,
     "HostDeviceName":"v1.4",

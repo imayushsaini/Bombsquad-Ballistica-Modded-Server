@@ -28,6 +28,9 @@ def filter_chat_message(msg, client_id):
 				currentname=i['players'][0]['name_full']
 			except:
 				currentname="<in-lobby>"
+				if settings['disableLobbyChat']:
+					_ba.screenmessage("Join the game to chat...", transient=True, clients=[client_id],color=(1,0,0))
+					return
 			displaystring=i['display_string']
 	if acid:
 		msg=ChatFilter.filter(msg,acid,client_id)
