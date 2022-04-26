@@ -5,7 +5,6 @@
 from typing import Optional, Any, Dict, List, Type, Sequence
 from ba._gameactivity import GameActivity
 import ba,_ba
-import psutil as p
 import json
 import os
 import _thread
@@ -71,8 +70,8 @@ class BsDataThread(object):
         except:
             pass
         minigame={'current':currentMap,'next':nextMap}
-        system={'cpu':p.cpu_percent(),'ram':p.virtual_memory().percent}
-        #system={'cpu':80,'ram':34}
+        # system={'cpu':"p.cpu_percent()",'ram':p.virtual_memory().percent}
+        system={'cpu':"null",'ram':'null'}
         stats['system']=system
         stats['roster']=liveplayers
         stats['chats']=_ba.get_chat_messages()
@@ -139,7 +138,7 @@ def get_top200():
 class InitalRun:
     def __init__(self):
         print("start flask")
-        flask_run = _thread.start_new_thread(app.run, ("0.0.0.0",80,False ))
+        flask_run = _thread.start_new_thread(app.run, ("0.0.0.0",5000,False ))
 
 def enable():
     InitalRun()

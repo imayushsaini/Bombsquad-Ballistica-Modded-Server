@@ -57,7 +57,8 @@ statsDefault={
         "games": 18,
         "kd": 0.0,
         "avg_score": 0.0,
-        "aid": "pb-IF4VAk4a"
+        "aid": "pb-IF4VAk4a",
+        "last_seen": "2022-04-26 17:01:13.715014"
     }
 }
 #                <th><b>Total Damage</b></th>  #removed this line as it isn't crt data
