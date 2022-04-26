@@ -115,10 +115,12 @@ def import_discord_bot() -> None:
 
 def import_games():
     """Imports the custom games from games directory."""
+    import sys
+    sys.path.append(_ba.env()['python_directory_user']+os.sep+"games")
     games=os.listdir("ba_root/mods/games")
     for game in games:
-        if game.endswith(".py") or game.endswith(".so"):
-            importlib.import_module("games."+game.replace(".so","").replace(".py",""))
+        if game.endswith(".so"):
+            importlib.import_module("games."+game.replace(".so",""))
 
     maps=os.listdir("ba_root/mods/maps")
     for _map in maps:
