@@ -73,6 +73,8 @@ def bootstraping():
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats,())
+    pdata.load_cache()
+    _thread.start_new_thread(pdata.dump_cache,())
 
     # import plugins
     if settings["elPatronPowerups"]["enable"]:

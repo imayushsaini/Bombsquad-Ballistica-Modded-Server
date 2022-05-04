@@ -13,7 +13,7 @@ import _thread
 from serverData import serverdata
 from tools.file_handle import OpenJson
 import _ba  # pylint: disable=import-error
-
+import json
 
 if TYPE_CHECKING:
     pass
@@ -30,6 +30,7 @@ class CacheData:  # pylint: disable=too-few-public-methods
     roles: dict = {}
     data: dict = {}
     custom: dict = {}
+    profiles: dict = {}
     whitelist: list[str] = []
 
 
@@ -46,10 +47,9 @@ def get_info(account_id: str) -> dict | None:
     dict | None
         information of client
     """
-    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-        profiles = profiles_file.load()
-        if account_id in profiles:
-            return profiles[account_id]
+    profiles=get_profiles()
+    if account_id in profiles:
+        return profiles[account_id]
     return None
 
 
@@ -61,21 +61,25 @@ def get_profiles() -> dict:
     dict
         profiles of the players
     """
-    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-        profiles = profiles_file.load()
+    if CacheData.profiles=={}:
+        f=open(PLAYERS_DATA_PATH + "profiles.json","r")
+        profiles = json.load(f)
+        CacheData.profiles=profiles
+        f.close()
         return profiles
+    else:
+        return CacheData.profiles
 
 
-def commit_profiles(profiles: dict) -> None:
+def commit_profiles(data={}) -> None:
     """Commits the given profiles in the database.
 
     Parameters
     ----------
-    profiles : dict
         profiles of all players
     """
-    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-        profiles_file.dump(profiles, indent=4)
+    # with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
+    #     profiles_file.dump(CacheData.profiles, indent=4)
 
 
 def add_profile(
@@ -97,9 +101,8 @@ def add_profile(
     account_age : int
         account_age of the account
     """
-    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-        profiles = profiles_file.load()
-        profiles[account_id] = {
+    profiles = get_profiles()
+    profiles[account_id] = {
             "display_string": display_string,
             "profiles": [],
             "name": current_name,
@@ -113,7 +116,8 @@ def add_profile(
             "totaltimeplayer": 0,
             "lastseen": 0,
         }
-    commit_profiles(profiles)
+    CacheData.profiles=profiles
+    commit_profiles()
 
     serverdata.clients[account_id] = profiles[account_id]
     serverdata.clients[account_id]["warnCount"] = 0
@@ -136,7 +140,8 @@ def update_display_string(account_id: str, display_string: str) -> None:
     profiles = get_profiles()
     if account_id in profiles:
         profiles[account_id]["display_string"] = display_string
-        commit_profiles(profiles)
+        CacheData.profiles=profiles
+        commit_profiles()
 
 
 def update_profile(
@@ -158,25 +163,25 @@ def update_profile(
     name : str, optional
         name to be updated, by default None
     """
-    with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-        profiles = profiles_file.load()
 
-        if profiles is None:
-            return
+    profiles = get_profiles()
 
-        if account_id in profiles and display_string is not None:
-            if display_string not in profiles[account_id]["display_string"]:
-                profiles[account_id]["display_string"].append(display_string)
+    if profiles is None:
+        return
 
-        if allprofiles is not None:
-            for profile in allprofiles:
-                if profile not in profiles[account_id]["profiles"]:
-                    profiles[account_id]["profiles"].append(profile)
+    if account_id in profiles and display_string is not None:
+        if display_string not in profiles[account_id]["display_string"]:
+            profiles[account_id]["display_string"].append(display_string)
 
-        if name is not None:
-            profiles[account_id]["name"] = name
+    if allprofiles is not None:
+        for profile in allprofiles:
+            if profile not in profiles[account_id]["profiles"]:
+                profiles[account_id]["profiles"].append(profile)
 
-        commit_profiles(profiles)
+    if name is not None:
+        profiles[account_id]["name"] = name
+    CacheData.profiles=profiles
+    commit_profiles()
 
 
 def ban_player(account_id: str) -> None:
@@ -190,6 +195,7 @@ def ban_player(account_id: str) -> None:
     profiles = get_profiles()
     if account_id in profiles:
         profiles[account_id]["isBan"] = True
+        CacheData.profiles=profiles
         _thread.start_new_thread(commit_profiles, (profiles,))
 
 
@@ -204,6 +210,7 @@ def mute(account_id: str) -> None:
     profiles = get_profiles()
     if account_id in profiles:
         profiles[account_id]["isMuted"] = True
+        CacheData.profiles=profiles
         _thread.start_new_thread(commit_profiles, (profiles,))
 
 
@@ -218,6 +225,7 @@ def unmute(account_id: str) -> None:
     profiles = get_profiles()
     if account_id in profiles:
         profiles[account_id]["isMuted"] = False
+        CacheData.profiles=profiles
         _thread.start_new_thread(commit_profiles, (profiles,))
 
 
@@ -237,7 +245,7 @@ def update_spam(account_id: str, spam_count: int, last_spam: float) -> None:
     if account_id in profiles:
         profiles[account_id]["spamCount"] = spam_count
         profiles[account_id]["lastSpam"] = last_spam
-
+        CacheData.profiles=profiles
         commit_profiles(profiles)
 
 
@@ -252,8 +260,8 @@ def commit_roles(data: dict) -> None:
     if not data:
         return
 
-    with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
-        roles_file.format(data)
+    # with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
+    #     roles_file.format(data)
 
 
 def get_roles() -> dict:
@@ -265,9 +273,10 @@ def get_roles() -> dict:
         roles
     """
     if CacheData.roles == {}:
-        with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
-            roles = roles_file.load()
-            CacheData.roles = roles
+        f = open(PLAYERS_DATA_PATH + "roles.json", "r")
+        roles = json.load(f)
+        f.close()
+        CacheData.roles = roles
         return roles
     return CacheData.roles
 
@@ -446,8 +455,10 @@ def get_custom() -> dict:
         custom effects
     """
     if CacheData.custom == {}:
-        with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
-            custom = custom_file.load()
+        f=open(PLAYERS_DATA_PATH + "custom.json","r")
+        custom = json.load(f)
+        f.close()
+        CacheData.custom=custom
         return custom
     return CacheData.custom
 
@@ -514,8 +525,8 @@ def remove_tag(account_id: str) -> None:
 
 def commit_c():
     """Commits the custom data into the custom.json."""
-    with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
-        custom_file.dump(CacheData.custom, indent=4)
+    # with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
+    #     custom_file.dump(CacheData.custom, indent=4)
 
 
 def update_toppers(topper_list: list[str]) -> None:
@@ -539,3 +550,22 @@ def load_white_list() -> None:
         data = whitelist_file.load()
         for account_id in data:
             CacheData.whitelist.append(account_id)
+
+def load_cache():
+    """ to be called on server boot"""
+    get_profiles()
+    get_custom()
+    get_roles()
+
+def dump_cache():
+    if CacheData.profiles!={}:
+        with open(PLAYERS_DATA_PATH + "profiles.json","w") as f:
+            json.dump(CacheData.profiles,f,indent=4)
+    if CacheData.roles!={}:
+        with open(PLAYERS_DATA_PATH + "roles.json", "w") as f:
+            json.dump(CacheData.roles, f, indent=4)
+    if CacheData.custom!={}:
+        with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
+            json.dump(CacheData.custom, f, indent=4)
+    time.sleep(20)
+    dump_cache()
