@@ -1,6 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 
 
+from tkinter.tix import Tree
 from .commands import NormalCommands
 from .commands import Management
 from .commands import Fun
@@ -110,7 +111,7 @@ def QuickAccess(msg,client_id):
 
 		for i in _ba.get_foreground_host_session().sessionplayers:
 			if i.sessionteam and teamid==i.sessionteam.id and i.inputdevice.client_id!=client_id:
-				_ba.screenmessage(i.getname(True)+":"+msg[1:],clients=[i.inputdevice.client_id],color=(0.3,0.6,0.3))
+				_ba.screenmessage(i.getname(True)+":"+msg[1:],clients=[i.inputdevice.client_id],color=(0.3,0.6,0.3),transient=True)
 	
 	return None;
 
