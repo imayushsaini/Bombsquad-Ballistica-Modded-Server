@@ -62,11 +62,17 @@ def get_profiles() -> dict:
         profiles of the players
     """
     if CacheData.profiles=={}:
-        f=open(PLAYERS_DATA_PATH + "profiles.json","r")
-        profiles = json.load(f)
-        CacheData.profiles=profiles
-        f.close()
-        return profiles
+        try:
+            f=open(PLAYERS_DATA_PATH + "profiles.json","r")
+            profiles = json.load(f)
+            CacheData.profiles=profiles
+            f.close()
+        except:
+            f=open(PLAYERS_DATA_PATH + "profiles.json.backup","r")
+            profiles = json.load(f)
+            CacheData.profiles=profiles
+            f.close()
+            return profiles
     else:
         return CacheData.profiles
 
@@ -273,11 +279,16 @@ def get_roles() -> dict:
         roles
     """
     if CacheData.roles == {}:
-        f = open(PLAYERS_DATA_PATH + "roles.json", "r")
-        roles = json.load(f)
-        f.close()
-        CacheData.roles = roles
-        return roles
+        try:
+            f = open(PLAYERS_DATA_PATH + "roles.json", "r")
+            roles = json.load(f)
+            f.close()
+            CacheData.roles = roles
+        except:
+            f = open(PLAYERS_DATA_PATH + "roles.json.backup", "r")
+            roles = json.load(f)
+            f.close()
+            CacheData.roles = roles
     return CacheData.roles
 
 
@@ -455,11 +466,16 @@ def get_custom() -> dict:
         custom effects
     """
     if CacheData.custom == {}:
-        f=open(PLAYERS_DATA_PATH + "custom.json","r")
-        custom = json.load(f)
-        f.close()
-        CacheData.custom=custom
-        return custom
+        try:
+            f=open(PLAYERS_DATA_PATH + "custom.json","r")
+            custom = json.load(f)
+            f.close()
+            CacheData.custom=custom
+        except:
+            f=open(PLAYERS_DATA_PATH + "custom.json.backup","r")
+            custom = json.load(f)
+            f.close()
+            CacheData.custom=custom
     return CacheData.custom
 
 
@@ -557,14 +573,18 @@ def load_cache():
     get_custom()
     get_roles()
 
+import shutil
 def dump_cache():
     if CacheData.profiles!={}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json.backup")
         with open(PLAYERS_DATA_PATH + "profiles.json","w") as f:
             json.dump(CacheData.profiles,f,indent=4)
     if CacheData.roles!={}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "roles.json",PLAYERS_DATA_PATH + "roles.json.backup")
         with open(PLAYERS_DATA_PATH + "roles.json", "w") as f:
             json.dump(CacheData.roles, f, indent=4)
     if CacheData.custom!={}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "custom.json",PLAYERS_DATA_PATH + "custom.json.backup")
         with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
             json.dump(CacheData.custom, f, indent=4)
     time.sleep(20)
