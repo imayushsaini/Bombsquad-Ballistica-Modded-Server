@@ -1,7 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 
 
-from tkinter.tix import Tree
 from .commands import NormalCommands
 from .commands import Management
 from .commands import Fun
