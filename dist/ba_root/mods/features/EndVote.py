@@ -1,10 +1,6 @@
 import _ba, ba
 import time
-""" 
-End Vote by mr.smoothy 
-with no timer and minimum message
-for BCS scripts only
-"""
+
 last_end_vote_start_time = 0
 end_vote_duration = 30
 game_started_on = 0
@@ -23,6 +19,7 @@ def vote_end(pb_id, client_id):
     if now < game_started_on + min_game_duration_to_start_end_vote:
         _ba.screenmessage("Seems game just started, Try again after some time", transient=True,
                           clients=[client_id])
+        return
     if len(voters) == 0:
         _ba.chatmessage("end vote started")
 
