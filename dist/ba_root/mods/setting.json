@@ -88,6 +88,7 @@
     },
     "allowTeamChat":true,
     "allowEndVote":true,
+    "allowInGameChat":true,
     "sameCharacterForTeam":false,
     "newResultBoard":true,
     "HostDeviceName":"v1.4",

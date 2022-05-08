@@ -38,10 +38,12 @@ def filter_chat_message(msg, client_id):
 
     if msg.startswith(",") and settings["allowTeamChat"]:
         return Main.QuickAccess(msg, client_id)
-    
+    if msg.startswith(".") and settings["allowInGameChat"]:
+        return Main.QuickAccess(msg, client_id)
+
     if msg == "end" and settings["allowEndVote"]:
         EndVote.vote_end(acid, client_id)
-        
+
     logger.log(acid + " | " + displaystring + "|" + currentname + "| " + msg, "chat")
 
     if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
