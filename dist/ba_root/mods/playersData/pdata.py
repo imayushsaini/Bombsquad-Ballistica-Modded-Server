@@ -574,18 +574,22 @@ def load_cache():
     get_roles()
 
 import shutil
+import copy
 def dump_cache():
     if CacheData.profiles!={}:
         shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json.backup")
+        profiles= copy.deepcopy(CacheData.profiles)
         with open(PLAYERS_DATA_PATH + "profiles.json","w") as f:
-            json.dump(CacheData.profiles,f,indent=4)
+            json.dump(profiles,f,indent=4)
     if CacheData.roles!={}:
         shutil.copyfile(PLAYERS_DATA_PATH + "roles.json",PLAYERS_DATA_PATH + "roles.json.backup")
+        roles= copy.deepcopy(CacheData.roles)
         with open(PLAYERS_DATA_PATH + "roles.json", "w") as f:
-            json.dump(CacheData.roles, f, indent=4)
+            json.dump(roles, f, indent=4)
     if CacheData.custom!={}:
         shutil.copyfile(PLAYERS_DATA_PATH + "custom.json",PLAYERS_DATA_PATH + "custom.json.backup")
+        custom= copy.deepcopy(CacheData.custom)
         with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
-            json.dump(CacheData.custom, f, indent=4)
+            json.dump(custom, f, indent=4)
     time.sleep(20)
     dump_cache()
