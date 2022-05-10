@@ -1,10 +1,12 @@
+#  EndVote by -mr.smoothy
+
 import _ba, ba
 import time
 
 last_end_vote_start_time = 0
 end_vote_duration = 30
 game_started_on = 0
-min_game_duration_to_start_end_vote = 60
+min_game_duration_to_start_end_vote = 30
 
 voters = []
 
@@ -34,7 +36,7 @@ def vote_end(pb_id, client_id):
         voters.append(pb_id)
         _ba.screenmessage("Thanks for vote , encourage other players to type 'end' too.", transient=True,
                           clients=[client_id])
-
+        update_vote_text(required_votes(len(active_players)) - len(voters))
     if len(voters) >= required_votes(len(active_players)):
         _ba.chatmessage("end vote succeed")
         try:
@@ -50,9 +52,9 @@ def vote_end(pb_id, client_id):
 
 def required_votes(players):
     if players == 2:
-        return 2
+        return 1
     elif players == 3:
-        return 3
+        return 2
     elif players == 4:
         return 2
     elif players == 5:
@@ -65,3 +67,30 @@ def required_votes(players):
         return 4
     else:
         return players - 3
+
+def update_vote_text(votes_needed):
+    activity=_ba.get_foreground_host_activity()
+    if hasattr(activity,"end_vote_text"):
+        activity.end_vote_text.node.text = "{} more votes to end this map\ntype 'end' to vote".format(votes_needed)
+    else:
+        with _ba.Context(_ba.get_foreground_host_activity()):
+            node= ba.NodeActor(ba.newnode('text',
+                                   attrs={
+                                       'v_attach': 'top',
+                                       'h_attach': 'center',
+                                       'h_align': 'center',
+                                       'color': (1, 1, 0.5, 1),
+                                       'flatness': 0.5,
+                                       'shadow': 0.5,
+                                       'position': (-200, -30),
+                                       'scale': 0.7,
+                                       'text': '{} more votes to end this map \n type \'end\' to vote'.format(votes_needed)
+                                   })).autoretain()
+            activity.end_vote_text=node
+            ba.timer(10,remove_vote_text)
+
+
+def remove_vote_text():
+    activity = _ba.get_foreground_host_activity()
+    if hasattr(activity, "end_vote_text"):
+        activity.end_vote_text.node.delete()
