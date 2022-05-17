@@ -95,6 +95,8 @@ def bootstraping():
     if settings["custom_characters"]["enable"]:
         from plugins import importcustomcharacters
         importcustomcharacters.enable()
+    if settings["StumbledScoreScreen"]:
+        from features import StumbledScoreScreen
 
     # import features
     if settings["whitelist"]:
