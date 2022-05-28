@@ -322,10 +322,12 @@ def updateTop3Names(ids):
         if data is not None:
             try:
                 name = json.loads(data.read())["profileDisplayString"]
+                if (not value):
+                    raise ValueError
             except ValueError:
                 names.append("???")
+                
             else:
                 names.append(name)
     top3Name = names
-
 
