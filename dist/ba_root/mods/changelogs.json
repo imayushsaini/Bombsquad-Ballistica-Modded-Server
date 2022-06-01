@@ -22,6 +22,10 @@
        "68":{
               "log":"1.6.10 , bug fix ,auto error logging, more mini games , discord bot integration ,warn bypass for owner",
               "time":"2nd April 2022"
+       },
+       "69":{
+              "log":"added StumbledScoreScreen, End Vote System , in-game pop chat,error logging , other bug fix",
+              "time":"1st June 2022"
        }
       
 }
