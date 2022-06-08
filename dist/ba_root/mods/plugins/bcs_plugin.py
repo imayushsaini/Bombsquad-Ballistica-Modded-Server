@@ -97,7 +97,7 @@ class BsDataThread(object):
                             'device_id':player.inputdevice.get_account_name(True),
                             'inGame':player.in_game,
                             'character':player.character,
-                            'account_id':player.get_account_id()
+                            'account_id':player.get_v1_account_id()
                             }
                 data[team.id]['players'].append(teamplayer)
 

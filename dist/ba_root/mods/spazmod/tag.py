@@ -3,7 +3,7 @@ from playersData import pdata
 import ba, setting
 def addtag(node,player):
     session_player=player.sessionplayer
-    account_id=session_player.get_account_id()
+    account_id=session_player.get_v1_account_id()
     customtag_=pdata.get_custom()
     customtag=customtag_['customtag']
     roles=pdata.get_roles()
@@ -25,7 +25,7 @@ def addtag(node,player):
 from stats import mystats
 def addrank(node,player):
 	session_player=player.sessionplayer
-	account_id=session_player.get_account_id()
+	account_id=session_player.get_v1_account_id()
 	rank=mystats.getRank(account_id)
 
 	if rank:

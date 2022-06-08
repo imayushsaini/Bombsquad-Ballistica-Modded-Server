@@ -160,7 +160,7 @@ class Effect(ba.Actor):
             if (c.activityplayer) and (c.activityplayer.node.playerID == node_id):
                 profiles = c.inputdevice.get_player_profiles()
                 clID = c.inputdevice.client_id
-                cl_str = c.get_account_id()
+                cl_str = c.get_v1_account_id()
 
         try:
             if cl_str in custom_effects:

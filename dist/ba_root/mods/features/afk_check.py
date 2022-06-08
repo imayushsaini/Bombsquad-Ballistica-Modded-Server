@@ -18,7 +18,7 @@ class checkIdle(object):
             last_input=int(player.inputdevice.get_last_input_time())
             afk_time=int((current-last_input)/1000)
             if afk_time in range(INGAME_TIME,INGAME_TIME+20):
-                self.warn_player(player.get_account_id(),"Press any button within "+str(INGAME_TIME+20-afk_time)+" secs")
+                self.warn_player(player.get_v1_account_id(),"Press any button within "+str(INGAME_TIME+20-afk_time)+" secs")
             if afk_time > INGAME_TIME+20:
                 player.remove_from_game()
         if LOBBY_KICK:

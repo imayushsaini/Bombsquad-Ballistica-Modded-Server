@@ -217,7 +217,7 @@ def update(score_set):
     account_scores = {}
 
     for p_entry in score_set.get_records().values():
-        account_id = p_entry.player.get_account_id()
+        account_id = p_entry.player.get_v1_account_id()
         if account_id is not None:
             account_kills.setdefault(account_id, 0)  # make sure exists
             account_kills[account_id] += p_entry.accum_kill_count

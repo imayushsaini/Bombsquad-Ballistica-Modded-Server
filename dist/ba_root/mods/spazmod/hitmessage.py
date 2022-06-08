@@ -20,7 +20,7 @@ def handle_hit(msg, hp, dmg, hit_by, msg_pos):
             hit_by_account_id = None
             for c in _ba.get_foreground_host_session().sessionplayers:
                 if (c.activityplayer) and (c.activityplayer.node.playerID == hit_by_id):
-                    hit_by_account_id = c.get_account_id()
+                    hit_by_account_id = c.get_v1_account_id()
                     if hit_by_account_id in damage_data: damage_data[hit_by_account_id] += float(dmg)
                     else: damage_data[hit_by_account_id] = float(dmg)
     #Send Screen Texts in enabled

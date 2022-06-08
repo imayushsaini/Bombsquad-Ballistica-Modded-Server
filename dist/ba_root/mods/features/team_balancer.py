@@ -42,8 +42,8 @@ def movePlayers(fromTeam,toTeam,count):
 	toTeam=session.sessionteams[toTeam]
 	for i in range(0,count):
 		player=fromTeam.players.pop()
-		print("moved"+player.get_account_id())
-		broadCastShiftMsg(player.get_account_id())
+		print("moved"+player.get_v1_account_id())
+		broadCastShiftMsg(player.get_v1_account_id())
 		player.setdata(team=toTeam,character=player.character,color=toTeam.color,highlight=player.highlight)
 		iconinfo=player.get_icon_info()
 		player.set_icon_info(iconinfo['texture'],iconinfo['tint_texture'],toTeam.color,player.highlight)

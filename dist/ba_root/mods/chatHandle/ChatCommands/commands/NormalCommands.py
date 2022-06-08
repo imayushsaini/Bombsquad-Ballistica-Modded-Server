@@ -80,7 +80,7 @@ def accountid_request(arguments, clientid, accountid):
 			player = session.sessionplayers[int(arguments[0])]
 			
 			name = player.getname(full=True, icon=True)
-			accountid = player.get_account_id()
+			accountid = player.get_v1_account_id()
 			
 			send(f" {name}'s account id is '{accountid}' ", clientid)
 		except:
