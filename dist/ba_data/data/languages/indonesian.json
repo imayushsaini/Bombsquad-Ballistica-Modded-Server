@@ -29,6 +29,8 @@
     "signInWithGooglePlayText": "Masuk menggunakan Google Play",
     "signInWithTestAccountInfoText": "(akun tipe lama; gunakan akun device untuk kedepannya)",
     "signInWithTestAccountText": "Masuk menggunakan akun percobaan",
+    "signInWithV2InfoText": "(Akun yang berfungsi di semua akun)",
+    "signInWithV2Text": "Daftar dengan akun bombsquad",
     "signOutText": "Keluar",
     "signingInText": "Sedang masuk...",
     "signingOutText": "Sedang keluar...",
@@ -36,6 +38,7 @@
     "titleText": "Akun",
     "unlinkAccountsInstructionsText": "Pilih akun yang akan diputuskan.",
     "unlinkAccountsText": "Memutus Akun.",
+    "v2LinkInstructionsText": "Gunakan tautan ini untuk membuat akun atau masuk.",
     "viaAccount": "(melalui akun ${NAME})",
     "youAreSignedInAsText": "Kamu terdaftar sebagai:"
   },
@@ -494,6 +497,7 @@
     "yourPowerRankingText": "Peringkat Kekuatan Kamu:"
   },
   "copyOfText": "Salinan ${NAME}",
+  "copyText": "Salin",
   "createEditPlayerText": "<Buat/Edit pemain>",
   "createText": "Buat",
   "creditsWindow": {
@@ -1500,6 +1504,7 @@
       "Dutch": "Belanda",
       "English": "Inggris",
       "Esperanto": "Esperanto",
+      "Filipino": "Filipina",
       "Finnish": "Finlandia",
       "French": "Prancis",
       "German": "Jerman",
@@ -1520,6 +1525,7 @@
       "Slovak": "Slovakia",
       "Spanish": "Spanyol",
       "Swedish": "Swedia",
+      "Tamil": "Tamil",
       "Thai": "Thai",
       "Turkish": "Turki",
       "Ukrainian": "Ukraina",

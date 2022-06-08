@@ -11,18 +11,18 @@
     "linkAccountsEnterCodeText": "Inserir código",
     "linkAccountsGenerateCodeText": "Gerar código",
     "linkAccountsInfoText": "(compartilhar progresso entre várias plataformas)",
-    "linkAccountsInstructionsNewText": "Para vincular duas contas, gere um código na primeira\ne insira o código na segunda. O progresso da\nsegunda conta será sincronizado com ambas.\n(Progresso da primeira conta será perdido)\n\nVocê pode vincular ${COUNT} contas.\n\nIMPORTANTE: apenas vincule contas que você tem acesso; \nSe você vincular a conta de um amigo vocês não\nserão capazes de jogar online ao mesmo tempo.",
+    "linkAccountsInstructionsNewText": "Para vincular duas contas, gere um código na primeira\ne insira o código na segunda. O progresso da\nsegunda conta será sincronizado com ambas.\n(O progresso da primeira conta será perdido)\n\nVocê pode vincular até ${COUNT} contas.\n\nIMPORTANTE: vincule apenas contas que tem acesso; \nSe você vincular a conta de um amigo, vocês não\nirão conseguir jogar online ao mesmo tempo.",
     "linkAccountsInstructionsText": "Para vincular duas contas, gere um código\nem uma delas e o insira na outra.\nProgresso e inventário serão combinados.\nVocê pode vincular até ${COUNT} contas.\n\nIMPORTANTE: Vincule apenas as contas que você possui!\nSe você vincular contas a seus amigos, você\nnão será capaz de jogar ao mesmo tempo!\n\nAlém disso: isso não pode ser desfeito atualmente, então tenha cuidado!",
     "linkAccountsText": "Vincular contas",
     "linkedAccountsText": "Contas vinculadas:",
     "nameChangeConfirm": "Mudar o nome da sua conta para ${NAME}?",
     "notLoggedInText": "<não logado>",
-    "resetProgressConfirmNoAchievementsText": "Isso reiniciará o seu progresso no cooperativo e\nsuas pontuações (mas não os seus bilhetes).\nIsso não pode ser desfeito. Tem certeza?",
-    "resetProgressConfirmText": "Isso reiniciará o seu progresso no cooperativo,\nsuas conquistas e suas pontuações\n(mas não os seus bilhetes). Isso não pode\nser desfeito. Tem certeza?",
+    "resetProgressConfirmNoAchievementsText": "Isto reiniciará o seu progresso no cooperativo e\nas suas pontuações (mas não os seus bilhetes).\nIsto não pode ser desfeito. Tem certeza?",
+    "resetProgressConfirmText": "Isto reiniciará o seu progresso no cooperativo,\nas suas conquistas e as suas pontuações\n(mas não os seus bilhetes). Isto não pode\nser desfeito. Tem certeza?",
     "resetProgressText": "Reiniciar progresso",
     "setAccountName": "Escolha o nome da conta",
     "setAccountNameDesc": "Escolha o nome que será exibido na sua conta.\nVocê pode usar o nome de uma de suas contas\nou criar um nome personalizado exclusivo.",
-    "signInInfoText": "Inicie a sessão para ganhar bilhetes, compita online e compartilhe\nseu progresso entre vários dispositivos.",
+    "signInInfoText": "Inicie sessão para ganhar bilhetes, compita online e compartilhe\no seu progresso entre vários dispositivos.",
     "signInText": "Iniciar sessão",
     "signInWithDeviceInfoText": "(uma conta automática disponível apenas neste aparelho)",
     "signInWithDeviceText": "Iniciar sessão com conta do dispositivo",
@@ -30,6 +30,8 @@
     "signInWithGooglePlayText": "Iniciar sessão com Google Play",
     "signInWithTestAccountInfoText": "(tipo de conta legado; use as contas do dispositivo daqui em diante)",
     "signInWithTestAccountText": "Iniciar sessão com conta teste",
+    "signInWithV2InfoText": "(uma conta que funciona em todas as plataformas)",
+    "signInWithV2Text": "Iniciar sessão com conta do BombSquad",
     "signOutText": "Finalizar sessão",
     "signingInText": "Iniciando sessão...",
     "signingOutText": "Finalizando sessão...",
@@ -40,6 +42,7 @@
     "titleText": "Conta",
     "unlinkAccountsInstructionsText": "Selecione uma conta para desvincular",
     "unlinkAccountsText": "Desvincular contas",
+    "v2LinkInstructionsText": "Utilize o link para criar uma conta ou entrar nela.",
     "viaAccount": "(via ${NAME})",
     "youAreLoggedInAsText": "Você está logado como:",
     "youAreSignedInAsText": "Iniciou sessão como:"
@@ -52,7 +55,7 @@
       "descriptionComplete": "Matou 3 inimigos com TNT",
       "descriptionFull": "Mate 3 inimigos com TNT no ${LEVEL}",
       "descriptionFullComplete": "Matou 3 inimigos com TNT no ${LEVEL}",
-      "name": "Quem Brinca com Fogo Sai Queimado"
+      "name": "Quem brinca com fogo, sai queimado"
     },
     "Boxer": {
       "description": "Ganhe sem usar bombas",
@@ -207,7 +210,7 @@
       "descriptionComplete": "Ganhou sem deixar os inimigos marcarem",
       "descriptionFull": "Ganhe no ${LEVEL} sem deixar os inimigos marcarem",
       "descriptionFullComplete": "Ganhou no ${LEVEL} sem deixar os inimigos marcarem",
-      "name": "${LEVEL} De Levada"
+      "name": "${LEVEL} de levada"
     },
     "Rookie Football Victory": {
       "description": "Ganhe a partida",
@@ -245,8 +248,8 @@
       "name": "Mago do ${LEVEL}"
     },
     "Sharing is Caring": {
-      "descriptionFull": "Compartilhe o jogo com um amigo com êxito",
-      "descriptionFullComplete": "Jogo compartilhado com um amigo com êxito",
+      "descriptionFull": "Compartilhe o jogo com um amigo",
+      "descriptionFullComplete": "Jogo compartilhado com um amigo",
       "name": "Compartilhar é amar"
     },
     "Stayin' Alive": {
@@ -261,14 +264,14 @@
       "descriptionComplete": "Causou 100% de dano com um soco",
       "descriptionFull": "Cause 100% de dano com um soco no ${LEVEL}",
       "descriptionFullComplete": "Causou 100% de dano com um soco no ${LEVEL}",
-      "name": "Super Mega Soco"
+      "name": "Super mega soco"
     },
     "Super Punch": {
       "description": "Cause 50% de dano com um soco",
       "descriptionComplete": "Causou 50% de dano com um soco",
       "descriptionFull": "Cause 50% de dano com um soco no ${LEVEL}",
       "descriptionFullComplete": "Causou 50% de dano com um soco no ${LEVEL}",
-      "name": "Super Soco"
+      "name": "Supersoco"
     },
     "TNT Terror": {
       "description": "Mate 6 inimigos com TNT",
@@ -333,15 +336,15 @@
     "titleText": "Adicionar jogo"
   },
   "allowText": "Permitir",
-  "alreadySignedInText": "Sua conta está logada em outro dispositivo;\nMude de conta ou feche o jogo no seu\noutro dispositivo e tente novamente.",
-  "apiVersionErrorText": "Não pôde carregar o módulo ${NAME}; ele é destinado à versão ${VERSION_USED}; exigimos a ${VERSION_REQUIRED}.",
+  "alreadySignedInText": "A conta tem sessão iniciada em outro dispositivo;\nMude de conta ou feche o jogo no seu\noutro dispositivo e tente novamente.",
+  "apiVersionErrorText": "Não é possível carregar o módulo ${NAME}; ele é destinado à versão ${VERSION_USED}; exigimos a ${VERSION_REQUIRED}.",
   "audioSettingsWindow": {
     "headRelativeVRAudioInfoText": "(\"Auto\" ativado apenas quando os fones estão conectados)",
     "headRelativeVRAudioText": "Áudio para fones de RV",
     "musicVolumeText": "Volume da música",
     "soundVolumeText": "Volume do som",
-    "soundtrackButtonText": "Trilha Sonora",
-    "soundtrackDescriptionText": "(tocar sua própria música durante o jogo)",
+    "soundtrackButtonText": "Trilha sonora",
+    "soundtrackDescriptionText": "(tocar a sua própria música durante o jogo)",
     "titleText": "Áudio"
   },
   "autoText": "Auto",
@@ -359,13 +362,13 @@
   "boostText": "Impulso",
   "bsRemoteConfigureInAppText": "${REMOTE_APP_NAME} é configurado no próprio aplicativo.",
   "buttonText": "botão",
-  "canWeDebugText": "Gostaria que BombSquad reportasse erros, falhas e \ninformações básicas de uso para o desenvolvedor?\n\nEstes dados não contêm informações pessoais e ajudam\na manter o jogo funcionando sem erros e livre de problemas.",
+  "canWeDebugText": "Deseja que o BombSquad comunique os erros, falhas e \ninformações básicas de uso para o desenvolvedor?\n\nEstes dados não contêm informações pessoais e ajudam\na manter o jogo funcionando corretamente.",
   "cancelText": "Cancelar",
   "cantConfigureDeviceText": "Desculpe, ${DEVICE} não é configurável.",
   "challengeEndedText": "Este desafio acabou.",
-  "chatMuteText": "Silenciar bate-papo",
-  "chatMutedText": "Bate-papo silenciado",
-  "chatUnMuteText": "Reativar som do bate-papo",
+  "chatMuteText": "Silenciar chat",
+  "chatMutedText": "Chat silenciado",
+  "chatUnMuteText": "Reativar som do chat",
   "choosingPlayerText": "<escolhendo jogador>",
   "completeThisLevelToProceedText": "Você deve completar \neste nível para continuar!",
   "completionBonusText": "Bônus de conclusão",
@@ -389,10 +392,10 @@
   "configGamepadWindow": {
     "advancedText": "Avançado",
     "advancedTitleText": "Configuração avançada dos controles",
-    "analogStickDeadZoneDescriptionText": "(ative isto se seu personagem 'escorrega' quando você solta o direcional)",
+    "analogStickDeadZoneDescriptionText": "(ative isto se o personagem 'escorrega' quando você solta o direcional)",
     "analogStickDeadZoneText": "Área morta do analógico",
     "appliesToAllText": "(serve para todos os controles deste tipo)",
-    "autoRecalibrateDescriptionText": "(ative isto se o seu personagem não se move na velocidade máxima)",
+    "autoRecalibrateDescriptionText": "(ative isto se o personagem não se move na velocidade máxima)",
     "autoRecalibrateDescriptionTextScale": 0.4,
     "autoRecalibrateText": "Calibrar automaticamente o analógico",
     "autoRecalibrateTextScale": 0.65,
@@ -431,7 +434,7 @@
     "twoInOneSetupText": "Configuração do Controle 2-em-1",
     "uiOnlyDescriptionText": "(impede que este controle entre em um jogo)",
     "uiOnlyText": "Limitar o Uso ao Menu",
-    "unassignedButtonsRunText": "Todo Botão Não Definido Executa",
+    "unassignedButtonsRunText": "Todo o botão não definido executa",
     "unassignedButtonsRunTextScale": 0.8,
     "unsetText": "<não definido>",
     "vrReorientButtonText": "Botão Reorientar VR"
@@ -499,7 +502,7 @@
     "powerRankingPointsMultText": "(x ${NUMBER} pts)",
     "powerRankingPointsText": "${NUMBER} pts",
     "powerRankingPointsToRankedText": "(${CURRENT} de ${REMAINING} pts)",
-    "powerRankingText": "Classificação Geral",
+    "powerRankingText": "Classificação geral",
     "prizesText": "Prêmios",
     "proMultInfoText": "Jogadores com a versão ${PRO}\nrecebem um aumento de ${PERCENT}% nos pontos.",
     "seeMoreText": "Mais...",
@@ -520,10 +523,10 @@
   "createEditPlayerText": "<Criar/Editar jogador>",
   "createText": "Criar",
   "creditsWindow": {
-    "additionalAudioArtIdeasText": "Áudio adicional, Arte inicial e Ideias por ${NAME}",
+    "additionalAudioArtIdeasText": "Áudio adicional, Arte inicial e ideias por ${NAME}",
     "additionalMusicFromText": "Música adicional de ${NAME}",
     "allMyFamilyText": "Toda a família e amigos que ajudaram nos testes",
-    "codingGraphicsAudioText": "Programação, Gráficos e Áudio por ${NAME}",
+    "codingGraphicsAudioText": "Programação, gráficos e áudio por ${NAME}",
     "creditsText": "  Codificação, Gráficos, e Áudio por Eric Froemling\n  \n  Áudio Adicional, Trabalho de Arte Inicial, e Ideias por Raphael Suter\n  \n  Som & Música:\n\n${SOUND_AND_MUSIC}\n\n     Música de Domínio Público via Musopen.com (um ótimo site para música clássica)\n        Agradecimentos especialmente para o Exército dos EUA, Marinha e Bandas da Marinha.\n\n     Um grande obrigado aos seguintes colaboradores do freesound.org para o uso de seus sons:\n${FREESOUND_NAMES}\n\n  Agradecimentos Especiais:\n\n     Todd, Laura, e Robert Froemling\n     Todos os meus amigos e familiares que ajudaram a testar o jogo\n     Quem quer que inventou o café\n\n  Legal:\n\n${LEGAL_STUFF}\n\n                                                             www.froemling.net\n",
     "languageTranslationsText": "Traduções:",
     "legalText": "Legal:",
@@ -932,7 +935,7 @@
     "arrowsToExitListText": "aperte ${LEFT} ou ${RIGHT} para sair da lista",
     "buttonText": "botão",
     "cantKickHostError": "Você não pode expulsar o anfitrião.",
-    "chatBlockedText": "O bate-papo de ${NAME} está bloqueado por ${TIME} segundo(s).",
+    "chatBlockedText": "O chat de ${NAME} está bloqueado por ${TIME} segundo(s).",
     "connectedToGameText": "Conectou-se a '${NAME}'",
     "connectedToPartyText": "Entrou na sala de ${NAME}!",
     "connectingToPartyText": "Conectando...",
@@ -1006,7 +1009,7 @@
   "kickVoteStartedText": "Uma votação para expulsar ${NAME} foi iniciada.",
   "kickVoteText": "Votação para expulsar",
   "kickVotingDisabledText": "A votação para expulsar está desativado.",
-  "kickWithChatText": "Digite ${YES} no bate-papo para sim e ${NO} para não.",
+  "kickWithChatText": "Escreva ${YES} no chat para sim e ${NO} para não.",
   "killsTallyText": "${COUNT} abates",
   "killsText": "Abates",
   "kioskWindow": {
@@ -1132,7 +1135,7 @@
   "ownFlagAtYourBaseWarning": "Sua própria bandeira deve estar\nem sua base para fazer um ponto!",
   "packageModsEnabledErrorText": "Não pode jogar em rede enquanto local-package-mods estiverem ativados (veja Configurações > Avançado)",
   "partyWindow": {
-    "chatMessageText": "Mensagem do bate-papo",
+    "chatMessageText": "Mensagem do chat",
     "emptyText": "Sua sala está vazia",
     "hostText": "(anfitrião)",
     "sendText": "Enviar",
@@ -1217,7 +1220,7 @@
   "purchasingText": "Comprando...",
   "quitGameText": "Sair do ${APP_NAME}?",
   "quittingIn5SecondsText": "Saindo em 5 segundos...",
-  "randomPlayerNamesText": "João,Maria,Anderson,Lucas,Roberto,César,Felipe,Pedro,Zézinho,Jaílson,Hélvio,Plínio,Clara,Lorena,Beatriz,Wandernilson,Marcos,Michele,Taís,Florentina,Tadeu,Teodoro,Gabriel,Joelma,Chimbinha,Lula,Dilma,Leonardo,Irene,Samanta,Gioconda,Guilhermina,Guilherme,Frederico,Bartolomeu,Dionísio,Diógenes,Haroldo,Ronaldinho,Ricardo,Selma,Bruna,Vanderlei,Danilo,Celso,Vitória,Denise,Samuel,Daniel,Gigi,Manuel,Wiz,Gretchen,Creusa,Chico,Leôncio,Leônidas,Washington,Cleusa,José,Joane,Severino,Casé,Carlos,Davi,Bianca,Clautila,Dafne,Jorge,Sandra,Armando,Basílio,Rochele,Camila,Débora,Rafael,Jonatan,Clodomiro,Clodovil,Vera,Simão,Raíssa,Toni,Tânia,Regina,Bela,Max,Maximiliano,Claudinei,Cláudio,Luciana,Anália,Aparecida,Marcelo,Flávio,Emílio,Tiago,Hebe,Ana,Beth,Gugu,Vítor,Nílton,Maurício,Marciano,Belquior,Clemente,Rosa,Rose,Rosemar,Gabriela,Sérgio,Antônio,Ben,Ivan,jamim,Abreu,Luís,Elton,Fabiana,Waldir,Wilson,Tainá,Tainara,Xuxa,Sacha,Teotônio,Téo,Valdirene,Laurindo,Priscila,Joaquim,Estevão,Gilmar,Erick,Gilson,Romário,Dunga,Ludmila,Luciano,Gilvan,Tamara,Carla,Zezé,Fernando,Fernanda,Adegesto,Acheropita,Anatalino,Lino,Araci,Marluci,Eusébio,Darcília,Dignatario,Ernesto,Cássio,Conrado,Fábio,Heitor,Ivan,Murilo,Andressa,Mateus,Otávio,Helena,atuamãe,Laís,Lavínia,Leila,Letícia,Nair,Henrique,Lara,Diogo,Diego,Geniclécio,Serafim,Lisa,Inri,Eusébio,Gerônimo,Bernardo,Bernadete,Henriete,Eliete,Fudêncio,Peruíbe,Tomás,Tomashedisso,Giovana,Prieto,Gabriely,Suélen,Jamily,Jamil,Geraldo,Nazareth,Forníco,Ícaro,Breno,Bruno,Cilmara,Nilza,Caio,Borges,Cleimara,Janeclécio,Iram,Tico,Teco,Genilson,Marlos,William,Nando,Nanda,Isabel,Jamal,Elias,Félix,Caroline,Carolina,Vilma,Rafaely,Tonho,Túnica,Miguel,Cona,Jones,Juan,Anastácio",
+  "randomPlayerNamesText": "João,Maria,Anderson,Lucas,Roberto,César,Felipe,Pedro,Zézinho,Jaílson,Hélvio,Plínio,Clara,Lorena,Beatriz,Wandernilson,Marcos,Michele,Taís,Florentina,Tadeu,Teodoro,Gabriel,Joelma,Chimbinha,Lula,Dilma,Leonardo,Irene,Samanta,Gioconda,Guilhermina,Guilherme,Frederico,Bartolomeu,Dionísio,Diógenes,Haroldo,Ronaldinho,Ricardo,Selma,Bruna,Vanderlei,Danilo,Celso,Vitória,Denise,Samuel,Daniel,Gigi,Manuel,Wiz,Gretchen,Creusa,Chico,Leôncio,Leônidas,Washington,Cleusa,José,Joane,Severino,Casé,Carlos,Davi,Bianca,Clautila,Dafne,Jorge,Sandra,Armando,Basílio,Rochele,Camila,Débora,Rafael,Jonatan,Clodomiro,Clodovil,Vera,Simão,Raíssa,Toni,Tânia,Regina,Bela,Max,Maximiliano,Claudinei,Cláudio,Luciana,Anália,Aparecida,Marcelo,Flávio,Emílio,Tiago,Hebe,Ana,Beth,Gugu,Vítor,Nílton,Maurício,Marciano,Belquior,Clemente,Rosa,Rose,Rosemar,Gabriela,Sérgio,Antônio,Ben,Ivan,jamim,Abreu,Luís,Elton,Fabiana,Waldir,Wilson,Tainá,Tainara,Xuxa,Sacha,Teotônio,Téo,Valdirene,Laurindo,Priscila,Joaquim,Estevão,Gilmar,Erick,Gilson,Romário,Dunga,Ludmila,Luciano,Gilvan,Tamara,Carla,Zezé,Fernando,Fernanda,Adegesto,Acheropita,Anatalino,Lino,Araci,Marluci,Eusébio,Darcília,Dignatario,Ernesto,Cássio,Conrado,Fábio,Heitor,Ivan,Murilo,Andressa,Mateus,Otávio,Helena,Laís,Lavínia,Leila,Letícia,Nair,Henrique,Lara,Diogo,Diego,Geniclécio,Serafim,Lisa,Inri,Eusébio,Gerônimo,Bernardo,Bernadete,Henriete,Eliete,Fudêncio,Peruíbe,Tomás,Tomashedisso,Giovana,Prieto,Gabriely,Suélen,Jamily,Jamil,Geraldo,Nazareth,Forníco,Ícaro,Breno,Bruno,Cilmara,Nilza,Caio,Borges,Cleimara,Janeclécio,Iram,Tico,Teco,Genilson,Marlos,William,Nando,Nanda,Isabel,Jamal,Elias,Félix,Caroline,Carolina,Vilma,Rafaely,Tonho,Túnica,Miguel,Jones,Juan,Anastácio,Francisco,Xavier",
   "randomText": "Aleatório",
   "rankText": "Classificação",
   "ratingText": "Avaliação",
@@ -1607,6 +1610,7 @@
       "Dutch": "Holandês",
       "English": "Inglês",
       "Esperanto": "Esperanto",
+      "Filipino": "Filipino",
       "Finnish": "Finlandês",
       "French": "Francês",
       "German": "Alemão",
@@ -1627,6 +1631,7 @@
       "Slovak": "Eslovaco",
       "Spanish": "Espanhol",
       "Swedish": "Sueco",
+      "Tamil": "tâmil",
       "Thai": "Tailandês",
       "Turkish": "Turco",
       "Ukrainian": "Ucraniano",

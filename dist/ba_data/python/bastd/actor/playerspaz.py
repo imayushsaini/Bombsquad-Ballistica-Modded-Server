@@ -12,20 +12,20 @@ from spazmod import modifyspaz
 if TYPE_CHECKING:
     from typing import Any, Sequence, Optional, Literal
 
+# pylint: disable=invalid-name
 PlayerType = TypeVar('PlayerType', bound=ba.Player)
 TeamType = TypeVar('TeamType', bound=ba.Team)
+# pylint: enable=invalid-name
 
 
 class PlayerSpazHurtMessage:
-    """A message saying a ba.PlayerSpaz was hurt.
+    """A message saying a PlayerSpaz was hurt.
 
-    category: Message Classes
-
-    Attributes:
-
-       spaz
-          The ba.PlayerSpaz that was hurt
+    Category: **Message Classes**
     """
+
+    spaz: PlayerSpaz
+    """The PlayerSpaz that was hurt"""
 
     def __init__(self, spaz: PlayerSpaz):
         """Instantiate with the given ba.Spaz value."""
@@ -33,15 +33,15 @@ class PlayerSpazHurtMessage:
 
 
 class PlayerSpaz(Spaz):
-    """A ba.Spaz subclass meant to be controlled by a ba.Player.
+    """A Spaz subclass meant to be controlled by a ba.Player.
 
-    category: Gameplay Classes
+    Category: **Gameplay Classes**
 
     When a PlayerSpaz dies, it delivers a ba.PlayerDiedMessage
     to the current ba.Activity. (unless the death was the result of the
     player leaving the game, in which case no message is sent)
 
-    When a PlayerSpaz is hurt, it delivers a ba.PlayerSpazHurtMessage
+    When a PlayerSpaz is hurt, it delivers a PlayerSpazHurtMessage
     to the current ba.Activity.
     """
 
@@ -72,8 +72,7 @@ class PlayerSpaz(Spaz):
         self._player = player
         self._drive_player_position()
 
-        import custom_hooks
-        custom_hooks.playerspaz_init(self, self.node, self._player)
+        modifyspaz.main(self, self.node, self._player)
 
     # Overloads to tell the type system our return type based on doraise val.
 

@@ -1,12 +1,12 @@
 {
   "accountSettingsWindow": {
-    "accountNameRules": "Los nombres no deben contener emoticonos o caracteres especiales",
+    "accountNameRules": "Los nombres no deben contener emojis o caracteres especiales",
     "accountProfileText": "(Perfil de la cuenta)",
     "accountsText": "Cuentas",
     "achievementProgressText": "Logros: ${COUNT} de ${TOTAL}",
     "campaignProgressText": "Progreso de campaña [Dificil]: ${PROGRESS}",
     "changeOncePerSeason": "Solamente puedes cambiarlo una vez por temporada.",
-    "changeOncePerSeasonError": "Debes esperar hasta la siguiente temporada para cambiarlo de nuevo (${NUM} días)",
+    "changeOncePerSeasonError": "Debes esperar hasta la siguiente temporada para cambiarlo de nuevo (en ${NUM} día/s)",
     "customName": "Nombre personalizado",
     "deviceSpecificAccountText": "Actualmente usando una cuenta específica de dispositivo: ${NAME}",
     "linkAccountsEnterCodeText": "Registrar Código",
@@ -21,7 +21,7 @@
     "resetProgressConfirmNoAchievementsText": "Esto reiniciará tu progreso en el modo\ncooperativo y tus puntajes (A excepción de tus tickets).\nNo podrás recuperar los cambios. ¿Estás seguro?",
     "resetProgressConfirmText": "Esto reiniciará tus logros, récords\ny progreso en el modo cooperativo.\nLos cambios no se pueden deshacer.\n¿Estás seguro?",
     "resetProgressText": "Reiniciar progreso",
-    "setAccountName": "Establecer nombre de cuenta",
+    "setAccountName": "Establecer nombre de la cuenta",
     "setAccountNameDesc": "Selecciona el nombre a mostrar para tu cuenta. \nPuedes usar el nombre de tu cuenta asociada\no crear un nombre personalizado.",
     "signInInfoText": "Inicia sesión para obtener tickets, competir en línea\ny compartir tu progreso en otras plataformas.",
     "signInText": "Iniciar sesión",
@@ -29,8 +29,10 @@
     "signInWithDeviceText": "Iniciar sesión con cuenta del dispositivo",
     "signInWithGameCircleText": "Iniciar sesión con Game Circle",
     "signInWithGooglePlayText": "Iniciar sesión con Google Play",
-    "signInWithTestAccountInfoText": "(Cuenta de herencia, usa la cuenta del dispositivo para avanzar)",
+    "signInWithTestAccountInfoText": "(Cuenta de prueba, usa la cuenta del dispositivo para avanzar)",
     "signInWithTestAccountText": "Registrarse con una Cuenta de Prueba",
+    "signInWithV2InfoText": "(una cuenta que funciona en todas las plataformas)",
+    "signInWithV2Text": "Inicie cesión con una cuenta de bosquad",
     "signOutText": "Cerrar Sesión",
     "signingInText": "Iniciando sesión...",
     "signingOutText": "Cerrando sesión...",
@@ -41,6 +43,7 @@
     "titleText": "Cuenta",
     "unlinkAccountsInstructionsText": "Selecciona una cuenta para dejar de enlazar con ella",
     "unlinkAccountsText": "Desenlazar cuentas.",
+    "v2LinkInstructionsText": "Usa este encale para crearte una cuenta o para iniciar sesión",
     "viaAccount": "(por cuenta ${NAME})",
     "youAreLoggedInAsText": "Estás conectado como:",
     "youAreSignedInAsText": "Has iniciado sesión como:"
@@ -49,15 +52,15 @@
   "achievementText": "Logro",
   "achievements": {
     "Boom Goes the Dynamite": {
-      "description": "Elimina 3 enemigos con TNT",
-      "descriptionComplete": "Eliminaste a 3 enemigos con TNT",
-      "descriptionFull": "Elimina 3 enemigos con TNT en ${LEVEL}",
-      "descriptionFullComplete": "Eliminaste 3 enemigos con TNT en ${LEVEL}",
+      "description": "Elimina 3 enemigos con una caja de TNT",
+      "descriptionComplete": "Eliminaste a 3 enemigos con una caja de TNT",
+      "descriptionFull": "Elimina 3 enemigos con una caja de TNT en ${LEVEL}",
+      "descriptionFullComplete": "Eliminaste 3 enemigos con una caja de TNT en ${LEVEL}",
       "name": "La dinamita hace Boom!"
     },
     "Boxer": {
       "description": "Gana sin usar bombas",
-      "descriptionComplete": "Ganaste sin usar bombas",
+      "descriptionComplete": "Ganaste sin usar ninguna bomba",
       "descriptionFull": "Completa ${LEVEL} sin usar bombas",
       "descriptionFullComplete": "Completaste ${LEVEL} sin usar bombas",
       "name": "Boxeador"
@@ -68,7 +71,7 @@
       "name": "Juego Doble"
     },
     "Flawless Victory": {
-      "description": "Gana sin ser golpeado",
+      "description": "Gana sin haber recibido ningún golpe",
       "descriptionComplete": "Ganaste sin ser golpeado",
       "descriptionFull": "Gana ${LEVEL} sin ser golpeado",
       "descriptionFullComplete": "Ganaste ${LEVEL} sin ser golpeado",
@@ -1250,7 +1253,7 @@
     "start": "Empezar",
     "version_mismatch": "Las versiones no coinciden.\nAsegurate que BombSquad y BombSquad Remote\nestán actuizados e intenta de nuevo."
   },
-  "removeInGameAdsText": "Desbloquea \"${PRO}\" en la tienda para remover la publicidad del juego.",
+  "removeInGameAdsText": "Desbloquea \"${PRO}\" en la tienda para quitar la publicidad del juego.",
   "renameText": "Renombrar",
   "replayEndText": "Terminar Repetición",
   "replayNameDefaultText": "Repetición Último Juego",
@@ -1598,6 +1601,7 @@
       "Dutch": "Holandés",
       "English": "Inglés",
       "Esperanto": "Esperanto",
+      "Filipino": "filipino",
       "Finnish": "Finlandés",
       "French": "Francés",
       "German": "Alemán",
@@ -1905,7 +1909,7 @@
   "voteDelayText": "No puedes iniciar otra votación por ${NUMBER} segundos.",
   "voteInProgressText": "Ya hay una votación en progreso.",
   "votedAlreadyText": "Ya has votado.",
-  "votesNeededText": "Requiere ${NUMBER} votos",
+  "votesNeededText": "Se requiere ${NUMBER} votos",
   "vsText": "vs.",
   "waitingForHostText": "(esperando a que ${HOST} continúe)",
   "waitingForLocalPlayersText": "Esperando jugadores locales...",
@@ -1956,7 +1960,7 @@
   "winsPlayerText": "¡${NAME} Gana!",
   "winsTeamText": "¡${NAME} Gana!!",
   "winsText": "¡${NAME} Gana!",
-  "worldScoresUnavailableText": "Puntuaciones mundiales no disponibles.",
+  "worldScoresUnavailableText": "Puntuaciones globales no disponibles.",
   "worldsBestScoresText": "Mejores puntuaciones Mundiales",
   "worldsBestTimesText": "Mejores tiempos Mundiales",
   "xbox360ControllersWindow": {
@@ -1965,7 +1969,7 @@
     "macInstructions2TextScale": 0.76,
     "macInstructionsText": "Para usar controles de Xbox 360, necesitarás instalar\nel controlador para Mac disponible en el siguiente enlace.\nFunciona con controles con cable e inalámbricos.",
     "macInstructionsTextScale": 0.8,
-    "ouyaInstructionsText": "Para usar controles con cable de Xbox 360 con BombSquad, simplemente\nconéctalos al puerto USB de tu dispositivo. Puedes usar un concentrador USB\npara conectar múltiples controles.\n\nPara usar controles inalámbricos, necesitarás un receptor inalámbrico,\ndisponible como parte del paquete “Xbox 360 wireless Controller for\nWindows”, o vendido por separado. Cada receptor se conecta a un puerto\nUSB y permite que conectes hasta cuatro controles inalámbricos.",
+    "ouyaInstructionsText": "Para usar controles con cable de Xbox 360 con BombSquad, simplemente\nconéctalos al puerto USB de tu dispositivo. Puedes usar un conector USB\npara conectar múltiples controles.\n\nPara usar controles inalámbricos, necesitarás un receptor inalámbrico,\ndisponible como parte del paquete “Xbox 360 wireless Controller for\nWindows”, o vendido por separado. Cada receptor se conecta a un puerto\nUSB y permite que conectes hasta cuatro controles inalámbricos.",
     "ouyaInstructionsTextScale": 0.8,
     "titleText": "Controles de Xbox 360 con ${APP_NAME}:"
   },

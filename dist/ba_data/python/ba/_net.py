@@ -14,7 +14,6 @@ import _ba
 if TYPE_CHECKING:
     from typing import Any, Union, Callable, Optional
     import socket
-    import ba
     MasterServerCallback = Callable[[Union[None, dict[str, Any]]], None]
 
 # Timeout for standard functions talking to the master-server/etc.
@@ -26,9 +25,14 @@ class NetworkSubsystem:
 
     def __init__(self) -> None:
 
-        # Anyone accessing/modifying region_pings should hold this lock.
-        self.region_pings_lock = threading.Lock()
-        self.region_pings: dict[str, float] = {}
+        # Anyone accessing/modifying zone_pings should hold this lock,
+        # as it is updated by a background thread.
+        self.zone_pings_lock = threading.Lock()
+
+        # Region IDs mapped to average pings. This will remain empty
+        # until enough pings have been run to be reasonably certain
+        # that a nearby server has been pinged.
+        self.zone_pings: dict[str, float] = {}
 
         # For debugging.
         self.v1_test_log: str = ''
@@ -106,7 +110,7 @@ class MasterServerCallThread(threading.Thread):
     def run(self) -> None:
         # pylint: disable=too-many-branches, consider-using-with
         import urllib.request
-        import urllib.error
+        import urllib.parse
         import json
 
         from efro.error import is_urllib_network_error
@@ -114,19 +118,19 @@ class MasterServerCallThread(threading.Thread):
         try:
             self._data = _general.utf8_all(self._data)
             _ba.set_thread_name('BA_ServerCallThread')
-            parse = urllib.parse
             if self._request_type == 'get':
                 response = urllib.request.urlopen(
                     urllib.request.Request(
                         (_ba.get_master_server_address() + '/' +
-                         self._request + '?' + parse.urlencode(self._data)),
-                        None, {'User-Agent': _ba.app.user_agent_string}),
+                         self._request + '?' +
+                         urllib.parse.urlencode(self._data)), None,
+                        {'User-Agent': _ba.app.user_agent_string}),
                     timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS)
             elif self._request_type == 'post':
                 response = urllib.request.urlopen(
                     urllib.request.Request(
                         _ba.get_master_server_address() + '/' + self._request,
-                        parse.urlencode(self._data).encode(),
+                        urllib.parse.urlencode(self._data).encode(),
                         {'User-Agent': _ba.app.user_agent_string}),
                     timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS)
             else:

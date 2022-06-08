@@ -27,6 +27,8 @@
     "signInWithGooglePlayText": "Sign in with Google Play",
     "signInWithTestAccountInfoText": "(legacy account type; use device accounts going forward)",
     "signInWithTestAccountText": "Sign in with test account",
+    "signInWithV2InfoText": "(an account that works on all platforms)",
+    "signInWithV2Text": "Sign in with a BombSquad account",
     "signOutText": "Sign Out",
     "signingInText": "Signing in...",
     "signingOutText": "Signing out...",
@@ -34,6 +36,7 @@
     "titleText": "Account",
     "unlinkAccountsInstructionsText": "Select an account to unlink",
     "unlinkAccountsText": "Unlink Accounts",
+    "v2LinkInstructionsText": "Use this link to create an account or sign in.",
     "viaAccount": "(via account ${NAME})",
     "youAreSignedInAsText": "You are signed in as:"
   },
@@ -494,6 +497,7 @@
     "yourPowerRankingText": "Your Power Ranking:"
   },
   "copyOfText": "${NAME} Copy",
+  "copyText": "Copy",
   "createEditPlayerText": "<Create/Edit Player>",
   "createText": "Create",
   "creditsWindow": {
@@ -1504,6 +1508,7 @@
       "Dutch": null,
       "English": null,
       "Esperanto": null,
+      "Filipino": null,
       "Finnish": null,
       "French": null,
       "German": null,

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class CleanError(Exception):
-    """An error that should be presented to the user as a simple message.
+    """An error that can be presented to the user as a simple message.
 
     These errors should be completely self-explanatory, to the point where
     a traceback or other context would not be useful.
@@ -41,7 +41,7 @@ class CommunicationError(Exception):
     This covers anything network-related going wrong in the sending
     of data or receiving of a response. This error does not imply
     that data was not received on the other end; only that a full
-    response round trip was not completed.
+    acknowledgement round trip was not completed.
 
     These errors should be gracefully handled whenever possible, as
     occasional network outages are generally unavoidable.
@@ -55,14 +55,18 @@ class RemoteError(Exception):
     occurs remotely. The error string can consist of a remote stack
     trace or a simple message depending on the context.
 
-    Depending on the situation, more specific error types such as CleanError
-    may be raised due to the remote error, so this one is considered somewhat
-    of a catch-all.
+    Communication systems should raise more specific error types when
+    more introspection/control is needed; this is intended somewhat as
+    a catch-all.
     """
 
     def __str__(self) -> str:
         s = ''.join(str(arg) for arg in self.args)
         return f'Remote Exception Follows:\n{s}'
+
+
+class IntegrityError(ValueError):
+    """Data has been tampered with or corrupted in some form."""
 
 
 def is_urllib_network_error(exc: BaseException) -> bool:
@@ -75,7 +79,6 @@ def is_urllib_network_error(exc: BaseException) -> bool:
     ignored or presented to the user as general 'network-unavailable'
     states.
     """
-    import urllib.request
     import urllib.error
     import http.client
     import errno
@@ -134,4 +137,46 @@ def is_udp_network_error(exc: BaseException) -> bool:
                 10051,
         }:
             return True
+    return False
+
+
+def is_asyncio_streams_network_error(exc: BaseException) -> bool:
+    """Is the provided exception a network-related error?
+
+    This should be passed an exception which resulted from creating and
+    using asyncio streams. It should return True for any errors that could
+    conceivably arise due to unavailable/poor network connections,
+    firewall/connectivity issues, etc. These issues can often be safely
+    ignored or presented to the user as general 'connection-lost' events.
+    """
+    import errno
+    import ssl
+
+    if isinstance(exc, (
+            ConnectionError,
+            TimeoutError,
+            EOFError,
+    )):
+        return True
+
+    # Also some specific errno ones.
+    if isinstance(exc, OSError):
+        if exc.errno == 10051:  # Windows unreachable network error.
+            return True
+        if exc.errno in {
+                errno.ETIMEDOUT,
+                errno.EHOSTUNREACH,
+                errno.ENETUNREACH,
+        }:
+            return True
+
+    # Am occasionally getting a specific SSL error on shutdown which I
+    # believe is harmless (APPLICATION_DATA_AFTER_CLOSE_NOTIFY).
+    # It sounds like it may soon be ignored by Python (as of March 2022).
+    # Let's still complain, however, if we get any SSL errors besides
+    # this one. https://bugs.python.org/issue39951
+    if isinstance(exc, ssl.SSLError):
+        if 'APPLICATION_DATA_AFTER_CLOSE_NOTIFY' in str(exc):
+            return True
+
     return False

@@ -27,6 +27,8 @@
     "signInWithGooglePlayText": "Google Play உடன் உள்நுழைக",
     "signInWithTestAccountInfoText": "(மரபு கணக்கு வகை; முன்னோக்கி செல்லும் சாதனக் கணக்குகளைப் பயன்படுத்தவும்)",
     "signInWithTestAccountText": "சோதனைக் கணக்கில் உள்நுழைக",
+    "signInWithV2InfoText": "(அனைத்து தளங்களிலும் செயல்படும் கணக்கு)",
+    "signInWithV2Text": "BombSquad கணக்கில் உள்நுழையவும்",
     "signOutText": "வெளியேறு",
     "signingInText": "புகுபதிகை நடைபெறுகிறது...",
     "signingOutText": "விடுபதிகை நடைபெறுகிறது...",
@@ -34,6 +36,7 @@
     "titleText": "கணக்கு",
     "unlinkAccountsInstructionsText": "இணைப்பை நீக்குவதற்கான கணக்கைத் தேர்ந்தெடுக்கவும்",
     "unlinkAccountsText": "கணக்கை நீக்க",
+    "v2LinkInstructionsText": "கணக்கை உருவாக்க அல்லது உள்நுழைய இந்த இணைப்பைப் பயன்படுத்தவும்.",
     "viaAccount": "${NAME} கணக்கின் வழியாக",
     "youAreSignedInAsText": "நீங்கள் உள்நுழைந்துள்ளீர்கள்"
   },
@@ -494,6 +497,7 @@
     "yourPowerRankingText": "உங்கள் சக்தி தரவரிசை:"
   },
   "copyOfText": "${NAME} பிரதி",
+  "copyText": "நகல்",
   "createEditPlayerText": "<பிளேயரை உருவாக்கவும்/திருத்தவும்>",
   "createText": "உருவாக்கு",
   "creditsWindow": {
@@ -952,7 +956,7 @@
     "singlePlayerExamplesText": "ஒற்றை வீரர் / கூட்டுறவு உதாரணங்கள்",
     "versusExamplesText": "வெர்சஸ் உதாரணங்கள்"
   },
-  "languageSetText": "மொழி இப்போது \"${LANGUAGE}\".",
+  "languageSetText": "மொழி இப்போது \"${LANGUAGE}\" இல் இருக்கிறது.",
   "lapNumberText": "சுற்று ${CURRENT}/${TOTAL}",
   "lastGamesText": "(கடைசி ${COUNT} விளையாட்டுகள்)",
   "leaderboardsText": "லீடர்போர்டுகள்",
@@ -1497,6 +1501,7 @@
       "Dutch": "டச்",
       "English": "ஆங்கிலம்",
       "Esperanto": "எசபராண்டோ",
+      "Filipino": "பிலிபினோ",
       "Finnish": "பின்னிஷ்",
       "French": "பிரெஞ்ச்",
       "German": "ஜெர்மன்",
@@ -1517,6 +1522,7 @@
       "Slovak": "ஸ்லோவக்",
       "Spanish": "ஸ்பானிஷ்",
       "Swedish": "ஸ்வீடிஷ்",
+      "Tamil": "தமிழ்",
       "Thai": "தாய்",
       "Turkish": "டர்கிஷ்",
       "Ukrainian": "உக்ரைனியன்",

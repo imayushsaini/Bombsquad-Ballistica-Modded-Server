@@ -29,6 +29,8 @@
     "signInWithGooglePlayText": "đăng nhập bằng google chơi trò chơi",
     "signInWithTestAccountInfoText": "(loại tài khoản đặc biệt; chỉ đăng nhập trên máy này)",
     "signInWithTestAccountText": "Đăng nhập bằng tài khoản máy tính",
+    "signInWithV2InfoText": "(một tài khoản hoạt động trên tất cả các nền tảng)",
+    "signInWithV2Text": "Đăng nhập bằng tài khoản BombSquad",
     "signOutText": "Đăng Xuất",
     "signingInText": "Đang đăng nhập...",
     "signingOutText": "Đang Đăng xuất...",
@@ -39,6 +41,7 @@
     "titleText": "Tài Khoản",
     "unlinkAccountsInstructionsText": "Chọn tài khoản để hủy kết nối",
     "unlinkAccountsText": "Hủy kết nối",
+    "v2LinkInstructionsText": "Sử dụng liên kết này để tạo tài khoản hoặc đăng nhập.",
     "viaAccount": "(qua tài khoản ${NAME})",
     "youAreSignedInAsText": "Bạn đang đăng nhập tài khoản:"
   },
@@ -497,6 +500,7 @@
     "yourPowerRankingText": "Xếp hạng sức mạnh của bạn"
   },
   "copyOfText": "${NAME} copy",
+  "copyText": "Sao chép",
   "createEditPlayerText": "<tạo/chỉnh sửa người chơi>",
   "createText": "Tạo",
   "creditsWindow": {
@@ -1498,6 +1502,7 @@
       "Dutch": "Tiếng Hà Lan",
       "English": "Tiếng Anh",
       "Esperanto": "Quốc tế ngữ",
+      "Filipino": "Người Phi Luật Tân",
       "Finnish": "Tiếng Phần Lan",
       "French": "Tiếng Pháp",
       "German": "Tiếng Đức",
@@ -1518,6 +1523,7 @@
       "Slovak": "Tiếng Slovakia",
       "Spanish": "Tiếng Tây Ban Nha",
       "Swedish": "Tiếng Thụy Điển",
+      "Tamil": "Tamil",
       "Thai": "Tiếng thái",
       "Turkish": "Tiếng Thổ Nhĩ Kỳ",
       "Ukrainian": "Tiếng Ukraina",

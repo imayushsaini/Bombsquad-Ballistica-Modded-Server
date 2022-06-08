@@ -12,14 +12,17 @@ import logging
 from enum import Enum
 import dataclasses
 import typing
+import types
 import datetime
 from typing import TYPE_CHECKING, TypeVar, get_type_hints
 
 # noinspection PyProtectedMember
-from efro.dataclassio._base import _parse_annotated, _get_origin, SIMPLE_TYPES
+from efro.dataclassio._base import (_parse_annotated, _get_origin,
+                                    SIMPLE_TYPES)
 
 if TYPE_CHECKING:
     from typing import Any, Optional
+    from efro.dataclassio._base import IOAttrs
 
 T = TypeVar('T')
 
@@ -214,6 +217,7 @@ class PrepSession:
             self.prep_type(cls,
                            attrname,
                            anntype,
+                           ioattrs=ioattrs,
                            recursion_level=recursion_level + 1)
 
         # Success! Store our resolved stuff with the class and we're done.
@@ -228,19 +232,18 @@ class PrepSession:
         return prepdata
 
     def prep_type(self, cls: type, attrname: str, anntype: Any,
-                  recursion_level: int) -> None:
+                  ioattrs: Optional[IOAttrs], recursion_level: int) -> None:
         """Run prep on a dataclass."""
         # pylint: disable=too-many-return-statements
         # pylint: disable=too-many-branches
+        # pylint: disable=too-many-statements
 
-        # If we run into classes containing themselves, we may have
-        # to do something smarter to handle it.
         if recursion_level > MAX_RECURSION:
             raise RuntimeError('Max recursion exceeded.')
 
         origin = _get_origin(anntype)
 
-        if origin is typing.Union:
+        if origin is typing.Union or origin is types.UnionType:
             self.prep_union(cls,
                             attrname,
                             anntype,
@@ -256,6 +259,32 @@ class PrepSession:
             raise TypeError(
                 f'Unsupported type found for \'{attrname}\' on {cls}:'
                 f' {anntype}')
+
+        # If a soft_default value/factory was passed, we do some basic
+        # type checking on the top-level value here. We also run full
+        # recursive validation on values later during inputting, but this
+        # should catch at least some errors early on, which can be
+        # useful since soft_defaults are not static type checked.
+        if ioattrs is not None:
+            have_soft_default = False
+            soft_default: Any = None
+            if ioattrs.soft_default is not ioattrs.MISSING:
+                have_soft_default = True
+                soft_default = ioattrs.soft_default
+            elif ioattrs.soft_default_factory is not ioattrs.MISSING:
+                assert callable(ioattrs.soft_default_factory)
+                have_soft_default = True
+                soft_default = ioattrs.soft_default_factory()
+
+            # Do a simple type check for the top level to catch basic
+            # soft_default mismatches early; full check will happen at
+            # input time.
+            if have_soft_default:
+                if not isinstance(soft_default, origin):
+                    raise TypeError(
+                        f'{cls} attr {attrname} has type {origin}'
+                        f' but soft_default value is type {type(soft_default)}'
+                    )
 
         if origin in SIMPLE_TYPES:
             return
@@ -273,6 +302,7 @@ class PrepSession:
             self.prep_type(cls,
                            attrname,
                            childtypes[0],
+                           ioattrs=None,
                            recursion_level=recursion_level + 1)
             return
 
@@ -304,6 +334,7 @@ class PrepSession:
                 self.prep_type(cls,
                                attrname,
                                childtypes[1],
+                               ioattrs=None,
                                recursion_level=recursion_level + 1)
             return
 
@@ -325,6 +356,7 @@ class PrepSession:
                 self.prep_type(cls,
                                attrname,
                                childtype,
+                               ioattrs=None,
                                recursion_level=recursion_level + 1)
             return
 
@@ -362,6 +394,7 @@ class PrepSession:
             self.prep_type(cls,
                            attrname,
                            childtype,
+                           None,
                            recursion_level=recursion_level + 1)
 
     def prep_enum(self, enumtype: type[Enum]) -> None:

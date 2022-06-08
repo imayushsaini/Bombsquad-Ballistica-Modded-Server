@@ -19,7 +19,7 @@ T = TypeVar('T', bound='DependencyComponent')
 class Dependency(Generic[T]):
     """A dependency on a DependencyComponent (with an optional config).
 
-    Category: Dependency Classes
+    Category: **Dependency Classes**
 
     This class is used to request and access functionality provided
     by other DependencyComponent classes from a DependencyComponent class.
@@ -87,7 +87,7 @@ class Dependency(Generic[T]):
 class DependencyComponent:
     """Base class for all classes that can act as or use dependencies.
 
-    category: Dependency Classes
+    Category: **Dependency Classes**
     """
 
     _dep_entry: weakref.ref[DependencyEntry]
@@ -146,7 +146,7 @@ class DependencyEntry:
             # This allows us to inject its data properly before __init__().
             print('creating', self.cls)
             instance = self.cls.__new__(self.cls)
-            # pylint: disable=protected-access
+            # pylint: disable=protected-access, unnecessary-dunder-call
             instance._dep_entry = weakref.ref(self)
             instance.__init__()  # type: ignore
 
@@ -165,7 +165,7 @@ class DependencyEntry:
 class DependencySet(Generic[T]):
     """Set of resolved dependencies and their associated data.
 
-    Category: Dependency Classes
+    Category: **Dependency Classes**
 
     To use DependencyComponents, a set must be created, resolved, and then
     loaded. The DependencyComponents are only valid while the set remains
@@ -291,7 +291,7 @@ class DependencySet(Generic[T]):
 class AssetPackage(DependencyComponent):
     """ba.DependencyComponent representing a bundled package of game assets.
 
-    Category: Asset Classes
+    Category: **Asset Classes**
     """
 
     def __init__(self) -> None:

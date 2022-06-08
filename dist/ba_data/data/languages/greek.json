@@ -28,6 +28,8 @@
     "signInWithGooglePlayText": "Σύνδεση με Google Play",
     "signInWithTestAccountInfoText": "(προσωρινός λογαριασμός. Δημιουργήστε λογαριασμό συσκευής για συνέχιση προόδου)",
     "signInWithTestAccountText": "Σύνδεση με δοκιμαστικό λογαριασμό",
+    "signInWithV2InfoText": "ένας λογαριασμός που λειτουργεί σε όλες τις πλατφορμες",
+    "signInWithV2Text": "Συνδεθείτε με ένα λογαριασμό BombSquad",
     "signOutText": "Αποσύνδεση",
     "signingInText": "Σύνδεση...",
     "signingOutText": "Αποσύνδεση...",
@@ -35,6 +37,7 @@
     "titleText": "Λογαριασμός",
     "unlinkAccountsInstructionsText": "Επιλέξτε έναν λογαριασμό για αποδέσμευση",
     "unlinkAccountsText": "Αποδέσμευση Λογαριασμών",
+    "v2LinkInstructionsText": "Χρησημοποιήστε αυτόν τον σύνδεσμο για να δημιουργήσετε έναν λογαριασμό ή για να συνδεθείτε.",
     "viaAccount": "(μέσω λογαριασμού ${NAME})",
     "youAreSignedInAsText": "Είστε συνδεδεμένοι ως:"
   },
@@ -494,6 +497,7 @@
     "yourPowerRankingText": "Η Κατάταξη Δύναμής Σας:"
   },
   "copyOfText": "${NAME} Αντίγραφο",
+  "copyText": "αντίγραφο",
   "createEditPlayerText": "<Δημιουργία/Επεξεργασία Παίκτη>",
   "createText": "Δημιουργία",
   "creditsWindow": {
@@ -1500,6 +1504,7 @@
       "Dutch": "Ολλανδικά",
       "English": "Αγγλικά",
       "Esperanto": "Εσπαράντο",
+      "Filipino": "Φιλιπινέζικα",
       "Finnish": "Φινλανδικά",
       "French": "Γαλλικά",
       "German": "Γερμανικά",
@@ -1520,6 +1525,7 @@
       "Slovak": "Σλοβακικά",
       "Spanish": "Ισπανικά",
       "Swedish": "Σουηδικά",
+      "Tamil": "Ταμίλ",
       "Thai": "ταϊλανδέζικο",
       "Turkish": "Τούρκικα",
       "Ukrainian": "Ουκρανικά",

@@ -28,6 +28,8 @@
     "signInWithGooglePlayText": "Увайсці з дапамогаю Google Play",
     "signInWithTestAccountInfoText": "(акаўнт, які ўжо існуе; спачатку увайдзіце з прылады)",
     "signInWithTestAccountText": "Увайсці з тэст-акаўнта",
+    "signInWithV2InfoText": "(уліковы запіс, які працуе на ўсіх платформах)",
+    "signInWithV2Text": "Увайдзіце з уліковым запісам BombSquad",
     "signOutText": "Выйсці",
     "signingInText": "Уваход...",
     "signingOutText": "Выхад...",
@@ -38,6 +40,7 @@
     "titleText": "Акаўнт",
     "unlinkAccountsInstructionsText": "Выберыце ўліковы запіс, каб спыніць сувязь",
     "unlinkAccountsText": "Адлучэнне акаунтау",
+    "v2LinkInstructionsText": "Выкарыстоўвайце гэтую спасылку, каб стварыць уліковы запіс або ўвайсці.",
     "viaAccount": "(праз акаунт ${NAME})",
     "youAreSignedInAsText": "Вы ўвайшлі як:"
   },
@@ -496,6 +499,7 @@
     "yourPowerRankingText": "Ваш Узровень:"
   },
   "copyOfText": "Копія ${NAME}",
+  "copyText": "Копія",
   "createEditPlayerText": "<Стварыць/Змяніць Гульца>",
   "createText": "Стварыць",
   "creditsWindow": {
@@ -1511,6 +1515,7 @@
       "Dutch": "Нямецкая",
       "English": "Англійская",
       "Esperanto": "Эсперанта",
+      "Filipino": "філіпінскі",
       "Finnish": "Фінская",
       "French": "Французская",
       "German": "Нямецкая",
@@ -1531,6 +1536,7 @@
       "Slovak": "Славацкая",
       "Spanish": "Гішпанская",
       "Swedish": "Шведская",
+      "Tamil": "тамільская",
       "Thai": "Тайская мова",
       "Turkish": "Турэцкі",
       "Ukrainian": "Украінскі",

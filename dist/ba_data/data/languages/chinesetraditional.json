@@ -27,6 +27,8 @@
     "signInWithGooglePlayText": "用play商店登入",
     "signInWithTestAccountInfoText": "(舊有的帳號登入方式；使用後來的創設的帳號)",
     "signInWithTestAccountText": "用測試帳號登入",
+    "signInWithV2InfoText": "(可用於所有平臺的賬戶)",
+    "signInWithV2Text": "使用Bombsquad賬戶登入",
     "signOutText": "登出",
     "signingInText": "登入中…",
     "signingOutText": "登出中…",
@@ -34,6 +36,7 @@
     "titleText": "帳號",
     "unlinkAccountsInstructionsText": "選擇一個要解除連結的帳號",
     "unlinkAccountsText": "解除連結帳號",
+    "v2LinkInstructionsText": "使用此鏈接新建或登錄賬戶",
     "viaAccount": "(透過帳號 ${NAME})",
     "youAreSignedInAsText": "您以這帳號登入："
   },
@@ -492,6 +495,7 @@
     "yourPowerRankingText": "你的能力排名："
   },
   "copyOfText": "${NAME} 拷貝",
+  "copyText": "複製",
   "createEditPlayerText": "<創建/編輯玩家>",
   "createText": "創建",
   "creditsWindow": {
@@ -1492,6 +1496,7 @@
       "Dutch": "荷蘭語",
       "English": "英語",
       "Esperanto": "世界語",
+      "Filipino": "菲律賓語",
       "Finnish": "芬蘭語",
       "French": "法語",
       "German": "德語",
@@ -1512,6 +1517,7 @@
       "Slovak": "斯洛伐克語",
       "Spanish": "西班牙語",
       "Swedish": "瑞典語",
+      "Tamil": "泰米爾語",
       "Thai": "泰語",
       "Turkish": "土耳其語",
       "Ukrainian": "烏克蘭語",

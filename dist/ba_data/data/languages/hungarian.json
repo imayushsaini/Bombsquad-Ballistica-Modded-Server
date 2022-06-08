@@ -30,6 +30,8 @@
     "signInWithGooglePlayText": "Belépés Google fiókkal",
     "signInWithTestAccountInfoText": "(Egy régi típusú felhasználó; Mostantól a készülék felhasználóját használd.)",
     "signInWithTestAccountText": "Bejelentkezés teszt felhasználóval",
+    "signInWithV2InfoText": "(egy fiók, amely minden platformon működik)",
+    "signInWithV2Text": "Jelentkezzen be BombSquad fiókkal",
     "signOutText": "Kijelentkezés",
     "signingInText": "Bejelentkezés...",
     "signingOutText": "Kijelentkezés...",
@@ -40,6 +42,7 @@
     "titleText": "Felhasználó",
     "unlinkAccountsInstructionsText": "Válassz ki egy fiókot a leválasztáshoz",
     "unlinkAccountsText": "Fiókok leválasztása",
+    "v2LinkInstructionsText": "Használja ezt a linket fiók létrehozásához vagy bejelentkezéshez.",
     "viaAccount": "(számlán keresztül ${NAME})",
     "youAreSignedInAsText": "Be vagy jelentkezve, mint:"
   },
@@ -498,6 +501,7 @@
     "yourPowerRankingText": "Helyezésed:"
   },
   "copyOfText": "${NAME} másolata",
+  "copyText": "Másolat",
   "createEditPlayerText": "<Játékos készítése/szerkesztése>",
   "createText": "Készíts",
   "creditsWindow": {
@@ -1513,6 +1517,7 @@
       "Dutch": "Holland",
       "English": "Angol",
       "Esperanto": "Eszperanto",
+      "Filipino": "Filippínó",
       "Finnish": "Finn",
       "French": "Francia",
       "German": "Német",
@@ -1533,6 +1538,7 @@
       "Slovak": "Szlovák",
       "Spanish": "Spanyol",
       "Swedish": "Svéd",
+      "Tamil": "Tamil",
       "Thai": "Thai, Thai ember",
       "Turkish": "Török",
       "Ukrainian": "Ukrán",
