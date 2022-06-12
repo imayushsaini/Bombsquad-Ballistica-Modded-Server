@@ -30,6 +30,8 @@
     "signInWithGooglePlayText": "Príhlásit sa s Google Play",
     "signInWithTestAccountInfoText": "(starý typ účtu; v budúcnosti používajte účty zariadení)",
     "signInWithTestAccountText": "Prihlásit sa s testovacím účtom",
+    "signInWithV2InfoText": "(účet, ktorý funguje na všetkých platformách)",
+    "signInWithV2Text": "Prihláste sa pomocou účtu BombSquad",
     "signOutText": "Odhlasujem",
     "signingInText": "Prihlasujem",
     "signingOutText": "Odhlasujem",
@@ -39,6 +41,7 @@
     "titleText": "Konto",
     "unlinkAccountsInstructionsText": "Vyberte účet, s ktorým chcete zrušiť prepojenie",
     "unlinkAccountsText": "Zrušiť prepojenie účtov",
+    "v2LinkInstructionsText": "Pomocou tohto odkazu si vytvorte účet alebo sa prihláste.",
     "viaAccount": "(cez účet ${NAME})",
     "youAreLoggedInAsText": "Si prihlásený ako:",
     "youAreSignedInAsText": "Si prihlásený ako:"
@@ -498,6 +501,7 @@
     "yourPowerRankingText": "Tvoje Umiestnenie:"
   },
   "copyOfText": "${NAME} Kópia",
+  "copyText": "Kopírovať",
   "createEditPlayerText": "<Vytvoriť/Upraviť Charakter>",
   "createText": "Vytvoriť",
   "creditsWindow": {
@@ -1498,6 +1502,7 @@
       "Dutch": "Holandčina",
       "English": "Angličtina",
       "Esperanto": "Esperanto",
+      "Filipino": "Filipínsky",
       "Finnish": "Fínčina",
       "French": "Francúžtina",
       "German": "Nemčina",
@@ -1518,6 +1523,7 @@
       "Slovak": "Slovenčina",
       "Spanish": "Španielčina",
       "Swedish": "Švédčina",
+      "Tamil": "Tamilčina",
       "Thai": "Thajské",
       "Turkish": "Turečtina",
       "Ukrainian": "Ukrainčina",

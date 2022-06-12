@@ -301,7 +301,7 @@ def add_role_to_player(arguments):
 		session = _ba.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
-				roles=pdata.add_player_role(arguments[0],i.get_account_id())
+				roles=pdata.add_player_role(arguments[0],i.get_v1_account_id())
 	except:
 		return
 
@@ -312,7 +312,7 @@ def remove_role_from_player(arguments):
 		session = _ba.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
-				roles=pdata.remove_player_role(arguments[0],i.get_account_id())
+				roles=pdata.remove_player_role(arguments[0],i.get_v1_account_id())
 
 	except:
 		return
@@ -323,7 +323,7 @@ def get_roles_of_player(arguments,clientid):
 		reply=""
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[0]):
-				roles=pdata.get_player_roles(i.get_account_id())
+				roles=pdata.get_player_roles(i.get_v1_account_id())
 				print(roles)
 		for role in roles:
 			reply=reply+role+","
@@ -341,7 +341,7 @@ def set_custom_tag(arguments):
 		session = _ba.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
-				roles=pdata.set_tag(arguments[0],i.get_account_id())
+				roles=pdata.set_tag(arguments[0],i.get_v1_account_id())
 	except:
 	    return
 def set_custom_effect(arguments):
@@ -349,7 +349,7 @@ def set_custom_effect(arguments):
 		session = _ba.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
-				roles=pdata.set_effect(arguments[0],i.get_account_id())
+				roles=pdata.set_effect(arguments[0],i.get_v1_account_id())
 	except:
 	    return
 

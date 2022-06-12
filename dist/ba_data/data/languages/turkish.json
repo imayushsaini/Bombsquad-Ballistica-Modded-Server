@@ -15,7 +15,7 @@
     "linkAccountsInstructionsText": "İki hesabı birbirine bağlamak için, birinde kod oluşturun\nve o kodu diğerinde girin.\nİlerlemeler ve envanterler birleşecektir.\n${COUNT} taneye kadar hesap bağlayabilirsiniz.\n\nÖNEMLİ: Yalnızca kendi hesaplarını bağla!\nEğer arkadaşınla hesapları bağlarsan\naynı anda oynayamayacaksınız!\n\nAyrıca: bu işlem şu anda geri alınamaz, yani dikkatli ol!",
     "linkAccountsText": "Hesapları Bağla",
     "linkedAccountsText": "Bağlı Hesaplar:",
-    "nameChangeConfirm": "Hesap adını ${NAME} olarak değiştir?",
+    "nameChangeConfirm": "Hesap adın ${NAME} olarak değiştirilsinmi ?",
     "resetProgressConfirmNoAchievementsText": "Bu co-op ilerlemeyi ve \nlokaldeki yüksek puanlarnı sıfırlar(ama biletlerini değil).\nBu geri alınamaz. Emin misiniz?",
     "resetProgressConfirmText": "Bu co-op ilerlemeyi, başarıları ve \nEn yüksek skorları sıfırlayacak \n(ama biletlerini değil). Bu işlem\ngeri alınamaz. Emin misin?",
     "resetProgressText": "İlerlemeyi Sıfırla",
@@ -29,6 +29,8 @@
     "signInWithGooglePlayText": "Google Play ile Giriş yap",
     "signInWithTestAccountInfoText": "(miras hesabı;bu cihaz hesaplarını ileride de kullan)",
     "signInWithTestAccountText": "Test hesabı ile Giriş yap",
+    "signInWithV2InfoText": "(bütün platformlarda çalışan bir hesap)",
+    "signInWithV2Text": "BombSquad hesabıyla giriş yap",
     "signOutText": "Çıkış Yap",
     "signingInText": "Giriş yapılıyor...",
     "signingOutText": "Çıkış yapılıyor...",
@@ -36,6 +38,7 @@
     "titleText": "Hesap",
     "unlinkAccountsInstructionsText": "Ayırmak için bir hesap seç",
     "unlinkAccountsText": "Hesapları ayır",
+    "v2LinkInstructionsText": "Bu bağlantıyı kullanarak bir hesap oluşturun yada giriş yapın.",
     "viaAccount": "(${NAME}hesabı ile)",
     "youAreSignedInAsText": "Aşağıdaki ile giriş yapıldı"
   },
@@ -495,6 +498,7 @@
     "yourPowerRankingText": "Oyuncu Sıralaman:"
   },
   "copyOfText": "Kopya ${NAME}",
+  "copyText": "Kopyala",
   "createEditPlayerText": "<Oyuncu Oluştur/Düzenle>",
   "createText": "Oluştur",
   "creditsWindow": {
@@ -1496,6 +1500,7 @@
       "Dutch": "Flemenkçe",
       "English": "İngilizce",
       "Esperanto": "Esperanto",
+      "Filipino": "Filipince",
       "Finnish": "Fince",
       "French": "Fransızca",
       "German": "Almanca",
@@ -1516,6 +1521,7 @@
       "Slovak": "Slovakça",
       "Spanish": "İspanyolca",
       "Swedish": "İsveççe",
+      "Tamil": "Tamilce",
       "Thai": "Tayland dili",
       "Turkish": "Türkçe",
       "Ukrainian": "Ukrayna",
@@ -1846,7 +1852,7 @@
     "macInstructions2Text": "Kablosuz olarak kullanmak için; ayrıca 'Xbox 360 Kontroller for Windows'\nile gelen bir alıcı kullanman lazım. \nBir alıcı sana 4 taneye kadar bağlantı sağlar.\n\nÖnemli: 3.şahıs alıcılar bu sürücü ile çalışmaz;\nAlıcının 'Microsoft' için olduğuna dikkat et 'XBOX 360' değil.\nMicrosoft bunu uzun süredir ayrı olarak satmıyor. Kontrolcüleri ile \nbirlikte alabilirsin ya da ebay de araştırabilirsin.\n\nEğer bunu kullanışlı bulduysan, lütfen değerlendirerek sürücü\ngeliştirilmesine bu siteden bağış yap.",
     "macInstructionsText": "Xbox 360 kolunu kullanmak için aşağıdaki bağlantıdaki\nMac sürücüsü yüklemen gerekiyor.\nKablolu ve Kablosuz kontroller de çalışır.",
     "ouyaInstructionsText": "BombSquad ile kablolu Xbox 360 kontrolcüsü kullanmak için basitçe\ncihazının USB girişine takın. Çoklu kontrolcü kullanmak için USB\nçoklayıcı kullanabilirsiniz.\n\nKablosuz kontrolcü için \"Xbox 360 Wireless Controller for Windows\"\nkablosuz alıcısına ihtiyacınız var. Her alıcıya\nUSB girişi ile bağlanır ve 4 kablosuz kontrolcüye\nkadar desteklenir.",
-    "titleText": "Xbox 360 Kontrolcüsünü ${APP_NAME} ile kullan:"
+    "titleText": "Xbox 360 Kontrolcüsü ${APP_NAME} ile kullanılıyor:"
   },
   "yesAllowText": "Evet, Kabul!",
   "yourBestScoresText": "En-İyi Skorların",

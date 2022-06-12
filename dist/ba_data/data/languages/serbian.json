@@ -29,6 +29,8 @@
     "signInWithGooglePlayText": "Пријави се преко Гугл Плеја",
     "signInWithTestAccountInfoText": "(налог за тестирање нових ствари које ће ускоро изаћи)",
     "signInWithTestAccountText": "Пријави се са тест профилом",
+    "signInWithV2InfoText": "(налог који функционише на свим платформама)",
+    "signInWithV2Text": "Улогуј се помоћу Bombsquad налога",
     "signOutText": "Одјави се",
     "signingInText": "Пријављивање...",
     "signingOutText": "Одјављивање...",
@@ -38,6 +40,7 @@
     "titleText": "Налог",
     "unlinkAccountsInstructionsText": "Изабери налог за раздвајање",
     "unlinkAccountsText": "Раздвоји налоге",
+    "v2LinkInstructionsText": "Искористи овај линк да направиш налог или да се улогујеш.",
     "viaAccount": "(преко налога ${NAME})",
     "youAreSignedInAsText": "Пријављен си као:"
   },
@@ -498,6 +501,7 @@
     "yourPowerRankingText": "Твој ранк:"
   },
   "copyOfText": "Копирај \"${NAME}\"",
+  "copyText": "Копирај",
   "createEditPlayerText": "<Направи/измени играча>",
   "createText": "Направи",
   "creditsWindow": {
@@ -1508,6 +1512,7 @@
       "Dutch": "Холандски",
       "English": "Енглески",
       "Esperanto": "Есперантски",
+      "Filipino": "филипински",
       "Finnish": "Фински",
       "French": "Француски",
       "German": "Немачки",
@@ -1528,6 +1533,7 @@
       "Slovak": "Словачки",
       "Spanish": "Шпански",
       "Swedish": "Шведски",
+      "Tamil": "тамилски",
       "Thai": "Тхаи",
       "Turkish": "Турски",
       "Ukrainian": "Украјински",

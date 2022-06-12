@@ -29,6 +29,8 @@
     "signInWithGooglePlayText": "Google Play سجل دخولك عبر",
     "signInWithTestAccountInfoText": "(حساب موجود على هاتفك; استخدم حساب الهاتف للمتابعة)",
     "signInWithTestAccountText": "تسجيل الدخول بحساب تجريبي",
+    "signInWithV2InfoText": "حساب يعمل على جميع المنصات",
+    "signInWithV2Text": "قم بتسجيل الدخول باستخدام حساب BombSquad",
     "signOutText": "تسجيل الخروج",
     "signingInText": "...جارٍ تسجيل دخولك",
     "signingOutText": "...جارٍ تسجيل خروجك",
@@ -37,6 +39,7 @@
     "titleText": "الحساب",
     "unlinkAccountsInstructionsText": "حدد حسابا لإلغاء ربطه",
     "unlinkAccountsText": "إلغاء ربط الحسابات",
+    "v2LinkInstructionsText": "استخدم هذا الارتباط لإنشاء حساب أو تسجيل الدخول.",
     "viaAccount": "(${NAME} عبر الحساب)",
     "youAreSignedInAsText": ": قمت بتسجيل الدخول كـ"
   },
@@ -496,6 +499,7 @@
     "yourPowerRankingText": "تصنيف الطاقة:"
   },
   "copyOfText": "${NAME} نسخ",
+  "copyText": "ينسخ",
   "createEditPlayerText": "<اصنع او عدل حساب>",
   "createText": "اصنع",
   "creditsWindow": {
@@ -1496,6 +1500,7 @@
       "Dutch": "هولندي",
       "English": "الإنجليزية",
       "Esperanto": "الاسبرانتو",
+      "Filipino": "الفلبينية",
       "Finnish": "اللغة الفنلندية",
       "French": "الفرنسية",
       "German": "الألمانية",
@@ -1516,6 +1521,7 @@
       "Slovak": "السلوفاكية",
       "Spanish": "الإسبانية",
       "Swedish": "اللغة السويدية",
+      "Tamil": "اللغةالتاميلية",
       "Thai": "تايلاندي",
       "Turkish": "اللغة التركية",
       "Ukrainian": "الأوكراني",

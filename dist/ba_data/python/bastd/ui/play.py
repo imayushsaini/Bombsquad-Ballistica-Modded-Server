@@ -417,6 +417,7 @@ class PlayWindow(ba.Window):
 
         self._restore_state()
 
+    # noinspection PyUnresolvedReferences
     @staticmethod
     def _preload_modules() -> None:
         """Preload modules we use (called in bg thread)."""
@@ -446,7 +447,7 @@ class PlayWindow(ba.Window):
         # pylint: disable=cyclic-import
         from bastd.ui.account import show_sign_in_prompt
         from bastd.ui.coop.browser import CoopBrowserWindow
-        if _ba.get_account_state() != 'signed_in':
+        if _ba.get_v1_account_state() != 'signed_in':
             show_sign_in_prompt()
             return
         self._save_state()

@@ -17,14 +17,16 @@ if TYPE_CHECKING:
     from bastd.actor.playerspaz import PlayerSpaz
     import ba
 
+# pylint: disable=invalid-name
 PlayerType = TypeVar('PlayerType', bound='ba.Player')
 TeamType = TypeVar('TeamType', bound='ba.Team')
+# pylint: enable=invalid-name
 
 
 class TeamGameActivity(GameActivity[PlayerType, TeamType]):
     """Base class for teams and free-for-all mode games.
 
-    Category: Gameplay Classes
+    Category: **Gameplay Classes**
 
     (Free-for-all is essentially just a special case where every
     ba.Player has their own ba.Team)
@@ -120,7 +122,7 @@ class TeamGameActivity(GameActivity[PlayerType, TeamType]):
         unless 'announce_winning_team' is False.
         (for results without a single most-important winner).
         """
-        # pylint: disable=arguments-differ
+        # pylint: disable=arguments-renamed
         from ba._coopsession import CoopSession
         from ba._multiteamsession import MultiTeamSession
         from ba._general import Call

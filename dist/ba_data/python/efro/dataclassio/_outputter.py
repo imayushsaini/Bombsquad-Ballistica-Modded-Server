@@ -11,6 +11,7 @@ from __future__ import annotations
 from enum import Enum
 import dataclasses
 import typing
+import types
 import datetime
 from typing import TYPE_CHECKING
 
@@ -39,11 +40,22 @@ class _Outputter:
     def run(self) -> Any:
         """Do the thing."""
 
+        assert dataclasses.is_dataclass(self._obj)
+
         # For special extended data types, call their 'will_output' callback.
         if isinstance(self._obj, IOExtendedData):
             self._obj.will_output()
 
         return self._process_dataclass(type(self._obj), self._obj, '')
+
+    def soft_default_check(self, value: Any, anntype: Any,
+                           fieldpath: str) -> None:
+        """(internal)"""
+        self._process_value(type(value),
+                            fieldpath=fieldpath,
+                            anntype=anntype,
+                            value=value,
+                            ioattrs=None)
 
     def _process_dataclass(self, cls: type, obj: Any, fieldpath: str) -> Any:
         # pylint: disable=too-many-locals
@@ -67,19 +79,30 @@ class _Outputter:
             # If we're not storing default values for this fella,
             # we can skip all output processing if we've got a default value.
             if ioattrs is not None and not ioattrs.store_default:
+                # If both soft_defaults and regular field defaults
+                # are present we want to go with soft_defaults since
+                # those same values would be re-injected when reading
+                # the same data back in if we've omitted the field.
                 default_factory: Any = field.default_factory
-                if default_factory is not dataclasses.MISSING:
-                    if default_factory() == value:
+                if ioattrs.soft_default is not ioattrs.MISSING:
+                    if ioattrs.soft_default == value:
+                        continue
+                elif ioattrs.soft_default_factory is not ioattrs.MISSING:
+                    assert callable(ioattrs.soft_default_factory)
+                    if ioattrs.soft_default_factory() == value:
                         continue
                 elif field.default is not dataclasses.MISSING:
                     if field.default == value:
                         continue
+                elif default_factory is not dataclasses.MISSING:
+                    if default_factory() == value:
+                        continue
                 else:
                     raise RuntimeError(
                         f'Field {fieldname} of {cls.__name__} has'
-                        f' neither a default nor a default_factory;'
-                        f' store_default=False cannot be set for it.'
-                        f' (AND THIS SHOULD HAVE BEEN CAUGHT IN PREP!)')
+                        f' no source of default values; store_default=False'
+                        f' cannot be set for it. (AND THIS SHOULD HAVE BEEN'
+                        f' CAUGHT IN PREP!)')
 
             outvalue = self._process_value(cls, subfieldpath, anntype, value,
                                            ioattrs)
@@ -119,7 +142,7 @@ class _Outputter:
                     f' found \'{type(value).__name__}\' which is not.')
             return value if self._create else None
 
-        if origin is typing.Union:
+        if origin is typing.Union or origin is types.UnionType:
             # Currently, the only unions we support are None/Value
             # (translated from Optional), which we verified on prep.
             # So let's treat this as a simple optional case.

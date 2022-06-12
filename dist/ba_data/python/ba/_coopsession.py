@@ -132,7 +132,7 @@ class CoopSession(Session):
         # else:
         #     nextlevel = None
         nextlevel=levels[(level.index+1)%len(levels)]
-        
+
         if nextlevel:
             gametype = nextlevel.gametype
             settings = nextlevel.get_settings()
@@ -284,12 +284,12 @@ class CoopSession(Session):
 
         if outcome=="victory" or outcome=="restart" or outcome=="defeat":
             outcome = 'next_level'
-        
+
 
 
         if (isinstance(activity,
                        (JoinActivity, CoopScoreScreen, TransitionActivity))) or True:
-            
+
             from features import team_balancer
             team_balancer.checkToExitCoop()
 
@@ -355,7 +355,7 @@ class CoopSession(Session):
         else:
             pass
         if False:
-            
+
 
             playerinfos: list[ba.PlayerInfo]
 

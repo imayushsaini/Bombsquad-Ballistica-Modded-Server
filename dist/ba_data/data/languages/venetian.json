@@ -27,6 +27,8 @@
     "signInWithGooglePlayText": "Conétate co Google Play",
     "signInWithTestAccountInfoText": "(account de proa vecio: in fuduro dòpara i account de’l dispozitivo)",
     "signInWithTestAccountText": "Conétate co un account de proa",
+    "signInWithV2InfoText": "(un account che fusiona so tute łe piataforme)",
+    "signInWithV2Text": "Acedi co un account BombSquad",
     "signOutText": "Sortisi da l'account",
     "signingInText": "Conesion in corso...",
     "signingOutText": "Sortìa in corso...",
@@ -34,6 +36,7 @@
     "titleText": "Account",
     "unlinkAccountsInstructionsText": "Sełesiona un account da descołegar",
     "unlinkAccountsText": "Descołega account",
+    "v2LinkInstructionsText": "Acedi o dòpara 'sto link par crear un account.",
     "viaAccount": "(doparando ${NAME})",
     "youAreSignedInAsText": "A te zugarè cofà:"
   },
@@ -492,6 +495,7 @@
     "yourPowerRankingText": "Ła to pozision:"
   },
   "copyOfText": "Copia de ${NAME}",
+  "copyText": "Copia",
   "createEditPlayerText": "<Crea/Muda zugador>",
   "createText": "Crea",
   "creditsWindow": {
@@ -1492,6 +1496,7 @@
       "Dutch": "Ołandeze",
       "English": "Ingleze",
       "Esperanto": "Esperanto",
+      "Filipino": "Fiłipin",
       "Finnish": "Fiłandeze",
       "French": "Franseze",
       "German": "Todesco",
@@ -1512,6 +1517,7 @@
       "Slovak": "Zlovaco",
       "Spanish": "Spagnoło",
       "Swedish": "Zvedeze",
+      "Tamil": "Tamil",
       "Thai": "Thailandeze",
       "Turkish": "Turco",
       "Ukrainian": "Ucrain",

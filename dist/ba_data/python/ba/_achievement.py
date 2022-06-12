@@ -65,7 +65,7 @@ ACH_LEVEL_NAMES = {
 class AchievementSubsystem:
     """Subsystem for achievement handling.
 
-    Category: App Classes
+    Category: **App Classes**
 
     Access the single shared instance of this class at 'ba.app.ach'.
     """
@@ -409,9 +409,9 @@ def _get_ach_mult(include_pro_bonus: bool = False) -> int:
 
     (just for display; changing this here won't affect actual rewards)
     """
-    val: int = _ba.get_account_misc_read_val('achAwardMult', 5)
+    val: int = _ba.get_v1_account_misc_read_val('achAwardMult', 5)
     assert isinstance(val, int)
-    if include_pro_bonus and _ba.app.accounts.have_pro():
+    if include_pro_bonus and _ba.app.accounts_v1.have_pro():
         val *= 2
     return val
 
@@ -436,7 +436,7 @@ def _display_next_achievement() -> None:
 class Achievement:
     """Represents attributes and state for an individual achievement.
 
-    Category: App Classes
+    Category: **App Classes**
     """
 
     def __init__(self,
@@ -496,7 +496,7 @@ class Achievement:
         # signed in, lets not show them (otherwise we tend to get
         # confusing 'controller connected' achievements popping up while
         # waiting to log in which can be confusing).
-        if _ba.get_account_state() != 'signed_in':
+        if _ba.get_v1_account_state() != 'signed_in':
             return
 
         # If we're being freshly complete, display/report it and whatnot.
@@ -592,8 +592,8 @@ class Achievement:
 
     def get_award_ticket_value(self, include_pro_bonus: bool = False) -> int:
         """Get the ticket award value for this achievement."""
-        val: int = (_ba.get_account_misc_read_val('achAward.' + self._name,
-                                                  self._award) *
+        val: int = (_ba.get_v1_account_misc_read_val('achAward.' + self._name,
+                                                     self._award) *
                     _get_ach_mult(include_pro_bonus))
         assert isinstance(val, int)
         return val
@@ -601,7 +601,7 @@ class Achievement:
     @property
     def power_ranking_value(self) -> int:
         """Get the power-ranking award value for this achievement."""
-        val: int = _ba.get_account_misc_read_val(
+        val: int = _ba.get_v1_account_misc_read_val(
             'achLeaguePoints.' + self._name, self._award)
         assert isinstance(val, int)
         return val
@@ -916,7 +916,6 @@ class Achievement:
 
     def show_completion_banner(self, sound: bool = True) -> None:
         """Create the banner/sound for an acquired achievement announcement."""
-        from ba import _account
         from ba import _gameutils
         from bastd.actor.text import Text
         from bastd.actor.image import Image
@@ -1177,7 +1176,7 @@ class Achievement:
         objt.node.host_only = True
 
         # Add the 'x 2' if we've got pro.
-        if app.accounts.have_pro():
+        if app.accounts_v1.have_pro():
             objt = Text('x 2',
                         position=(-120 - 180 + 45, 80 + y_offs - 50),
                         v_attach=Text.VAttach.BOTTOM,

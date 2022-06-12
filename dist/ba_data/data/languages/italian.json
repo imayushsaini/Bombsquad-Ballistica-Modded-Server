@@ -15,11 +15,11 @@
     "linkAccountsInstructionsNewText": "Per collegare due account, genera un codice nel primo dispositivo\ned inserisci il codice nel secondo. I dati del secondo account\nverranno condivisi in entrambi gli account.\n(I dati del primo account andranno persi)\n\nPuoi collegare fino a ${COUNT} account.\n\nIMPORTANTE: collega solo account che ti appartengono;\nSe colleghi account di amici non sarete in grado di\ngiocare online allo stesso momento.",
     "linkAccountsInstructionsText": "Per collegare due account, crea un codice su uno\ndei dispositivi e inserisci quel codice negli altri. \nProgressi e inventario verranno combinati.\nPuoi collegare fino a ${COUNT} account.\n\nIMPORTANTE: Collega solo account che possiedi!\nSe colleghi un account con un tuo amico non potrete\ngiocare allo stesso momento!\n \nInoltre: questa operazione non può essere annullata, quindi stai attento!",
     "linkAccountsText": "Collega account",
-    "linkedAccountsText": "Account Connessi:",
+    "linkedAccountsText": "Account Collegati:",
     "nameChangeConfirm": "Confermi di voler modificare il tuo nome in ${NAME}?",
     "notLoggedInText": "<accesso non effettuato>",
-    "resetProgressConfirmNoAchievementsText": "Stai per cancellare i tuoi progressi in\nmodalità cooperativa e i tuoi punteggi\nlocali (ma non i tuoi ticket). L'opera-\nzione è irreversibile: continuare?",
-    "resetProgressConfirmText": "Stai per cancellare i tuoi progressi in\nmodalità cooperativa, i tuoi punteggi\nlocali e i trofei (ma non i tuoi ticket).\nL'operazione è irreversibile: continuare?",
+    "resetProgressConfirmNoAchievementsText": "Stai per cancellare i tuoi progressi in\nmodalità cooperativa, i tuoi obbiettivi, i tuoi punteggi\nlocali (ma non i tuoi biglietti). \n\nL'operazione è irreversibile: continuare?",
+    "resetProgressConfirmText": "Stai per cancellare i tuoi progressi in\nmodalità cooperativa, i tuoi punteggi\nlocali e i tuoi obiettivi (ma non i tuoi biglietti).\nL'operazione è irreversibile: continuare?",
     "resetProgressText": "Cancella Progressi",
     "setAccountName": "Inserisci un nome utente",
     "setAccountNameDesc": "Seleziona quale nome visualizzare per il tuo account.\nPuoi usare quel nome per uno dei tuoi account collegati,\noppure creare un unico nome personalizzato.",
@@ -31,6 +31,8 @@
     "signInWithGooglePlayText": "Accedi con Google Play",
     "signInWithTestAccountInfoText": "(tipo di account obsoleto; usa gli account dispositivo d'ora in poi)",
     "signInWithTestAccountText": "Accedi con un account di prova",
+    "signInWithV2InfoText": "(un account che funziona su tutte le piattaforme)",
+    "signInWithV2Text": "Effettua l'accesso con un account di BombSquad",
     "signOutText": "Esci",
     "signingInText": "Accesso in corso...",
     "signingOutText": "Uscita in corso...",
@@ -41,18 +43,19 @@
     "titleText": "Account",
     "unlinkAccountsInstructionsText": "Seleziona un account da scollegare",
     "unlinkAccountsText": "Scollega Account",
+    "v2LinkInstructionsText": "Usa questo link per creare un account o accedere.",
     "viaAccount": "(tramite ${NAME})",
     "youAreLoggedInAsText": "Accesso effettuato come:",
-    "youAreSignedInAsText": "Hai effettuato l'accesso come:"
+    "youAreSignedInAsText": "Hai effettuato l'accesso con:"
   },
   "achievementChallengesText": "Sfide trofeo",
-  "achievementText": "Trofeo",
+  "achievementText": "Obiettivo",
   "achievements": {
     "Boom Goes the Dynamite": {
       "description": "Uccidi 3 cattivoni con la TNT",
-      "descriptionComplete": "Uccisi 3 cattivoni con la TNT",
+      "descriptionComplete": "Hai Ucciso 3 cattivoni con la TNT",
       "descriptionFull": "Uccidi 3 cattivoni con la TNT in ${LEVEL}",
-      "descriptionFullComplete": "Uccisi 3 cattivoni con la TNT in ${LEVEL}",
+      "descriptionFullComplete": "Hai Ucciso 3 cattivoni con la TNT in ${LEVEL}",
       "name": "E la dinamite fa Boom!"
     },
     "Boxer": {
@@ -72,7 +75,7 @@
       "descriptionComplete": "Hai vinto senza essere colpito",
       "descriptionFull": "Vinci ${LEVEL} senza essere colpito",
       "descriptionFullComplete": "Hai vinto ${LEVEL} senza essere colpito",
-      "name": "Vittoria schiacciante"
+      "name": "Vittoria Impeccabile"
     },
     "Free Loader": {
       "descriptionFull": "Avvia una partita Tutti Contro Tutti con 2 o più giocatori",
@@ -84,7 +87,7 @@
       "descriptionComplete": "Hai ucciso 6 cattivoni con le mine antiuomo",
       "descriptionFull": "Uccidi 6 cattivoni con le mine in ${LEVEL}",
       "descriptionFullComplete": "Hai ucciso 6 cattivoni con le mine antiuomo in ${LEVEL}",
-      "name": "Minatore"
+      "name": "Minatore D'Oro"
     },
     "Got the Moves": {
       "description": "Vinci senza tirare pugni né bombe",
@@ -114,7 +117,7 @@
     },
     "Last Stand Wizard": {
       "description": "Fai 500 punti",
-      "descriptionComplete": "Hai fatto 500 punti",
+      "descriptionComplete": "Hai totalizzato 500 punti",
       "descriptionFull": "Totalizza 500 punti in ${LEVEL}",
       "descriptionFullComplete": "Hai totalizzato 500 punti in ${LEVEL}",
       "name": "Mago di ${LEVEL}"
@@ -248,7 +251,7 @@
     "Sharing is Caring": {
       "descriptionFull": "Condividi con successo il gioco con un amico",
       "descriptionFullComplete": "Gioco condiviso con successo con un amico",
-      "name": "Condividere significa tenerci"
+      "name": "La Condivisione E' La Cura"
     },
     "Stayin' Alive": {
       "description": "Vinci senza morire",
@@ -276,7 +279,7 @@
       "descriptionComplete": "Hai ucciso 6 cattivoni con la TNT",
       "descriptionFull": "Uccidi 6 cattivoni con la TNT su ${LEVEL}",
       "descriptionFullComplete": "Hai ucciso 6 cattivoni con la TNT su ${LEVEL}",
-      "name": "Il dinamitardo"
+      "name": "Terrore Del Tritolo"
     },
     "Team Player": {
       "descriptionFull": "Avvia una partita Squadre con 4+ giocatori",
@@ -319,7 +322,7 @@
       "name": "Vittoria in ${LEVEL}"
     },
     "Uber Runaround Victory": {
-      "description": "Comleta tutte le ondate",
+      "description": "Completa tutte le ondate",
       "descriptionComplete": "Hai completato tutte le ondate",
       "descriptionFull": "Completa tutte le ondate in ${LEVEL}",
       "descriptionFullComplete": "Completa tutte le ondate in ${LEVEL}",
@@ -331,7 +334,7 @@
   "achievementsUnavailableForOldSeasonsText": "Mi dispiace, ma gli obbiettivi non sono disponibili per le stagioni vecchie.",
   "addGameWindow": {
     "getMoreGamesText": "Ottieni Giochi...",
-    "titleText": "Aggiunga Partita"
+    "titleText": "Aggiungi Partita"
   },
   "allowText": "Consenti",
   "alreadySignedInText": "Il tuo account è collegato da un altro dispositivo;\ncambia account o chiudi il gioco nel tuo altro\ndispositivo e riprova.",
@@ -351,7 +354,7 @@
   "bestOfFinalText": "Finale Al-meglio-di-${COUNT}",
   "bestOfSeriesText": "Serie al meglio di ${COUNT}:",
   "bestRankText": "Il tuo miglior piazzamento: N.${RANK}",
-  "bestRatingText": "La tua valutazione massima è ${RATING}",
+  "bestRatingText": "La tua valutazione migliore è ${RATING}",
   "betaErrorText": "Questa versione non è più attiva; per favore, cercane una più recente.",
   "betaValidateErrorText": "Impossibile convalidare la beta. (nessuna connessione internet?)",
   "betaValidatedText": "Versione beta convalidata; Divertiti!",
@@ -445,9 +448,9 @@
     "movementControlScaleText": "Dimensione controlli movimento",
     "movementText": "Movimento",
     "resetText": "Reset",
-    "swipeControlsHiddenText": "Nascondi icone scivolati",
-    "swipeInfoText": "Ci vuole un po' per abituarsi ai comandi in stile 'Attacco',\nma rendono più facile giocare senza guardare i comandi.",
-    "swipeText": "Attacco",
+    "swipeControlsHiddenText": "Nascondi icone a scivolo",
+    "swipeInfoText": "Ci vuole un po' per abituarsi ai comandi a scivolo,\nma rendono più facile giocare senza guardare i tasti o lo stick.",
+    "swipeText": "Scivolo",
     "titleText": "Configura il Touchscreen",
     "touchControlsScaleText": "Scala dei Comandi Touch"
   },
@@ -501,7 +504,7 @@
     "titleText": "Cooperativi",
     "toRankedText": "Al prossimo livello",
     "totalText": "Totale",
-    "tournamentInfoText": "Competi per punteggi alti con\naltri giocatori della tua lega.\n\nI premi sono dati ai giocatori con\ni punteggi più alti quando il tempo del torneo scade.",
+    "tournamentInfoText": "Competi per punteggi alti con\naltri giocatori della tua lega.\n\nI premi sono assegnati ai giocatori con\ni punteggi più alti quando il tempo del torneo scade.",
     "welcome1Text": "Benvenuto in ${LEAGUE}. Puoi migliorare il tuo\n livello lega guadagnando stelle, completando\n obbiettivi, e vincendo i trofei.",
     "welcome2Text": "Puoi anche guadagnare biglietti con molte attività simili.\nI biglietti possono essere usato per sbloccare nuovi capitoli, mappe e\nmini-giochi, per entrare nei tornei ed altro.",
     "yourPowerRankingText": "La tua posizione assoluta"
@@ -598,7 +601,7 @@
     "globalProfileText": "(profilo globale)",
     "highlightText": "colore principale",
     "iconText": "icona",
-    "localProfileInfoText": "I profili giocatori locali non hanno icone e i loro nomi\nnon sono garantiti che siano unici. Aggiorna a un profilo\nglobale per riservare un nome unico e per aggiungere un'icona personalizzata",
+    "localProfileInfoText": "I profili giocatori locali non hanno icone e non è\n garantito che siano unici. Aggiorna a un profilo\nglobale per riservare un nome unico e per aggiungere un'icona personalizzata",
     "localProfileText": "(profilo locale)",
     "nameDescriptionText": "Nome del giocatore",
     "nameText": "Nome",
@@ -669,7 +672,7 @@
   "firstToFinalText": "Finale First-to-${COUNT}",
   "firstToSeriesText": "Serie First-to-${COUNT}",
   "fiveKillText": "CINQUE UCCISIONI!!!",
-  "flawlessWaveText": "Ondata schiacciante",
+  "flawlessWaveText": "Ondata Impeccabile!",
   "fourKillText": "QUATTRO UCCISIONI!!!",
   "freeForAllText": "Tutti Contro Tutti",
   "friendScoresUnavailableText": "Punteggi degli amici non disponibili.",
@@ -698,7 +701,7 @@
   "gamesToText": "${WINCOUNT} - ${LOSECOUNT}",
   "gatherWindow": {
     "aboutDescriptionLocalMultiplayerExtraText": "Ricorda: qualunque dispositivo in un gruppo può ospitare \npiù di un giocatore se si hanno abbastanza controller.",
-    "aboutDescriptionText": "Usa queste schede per creare un gruppo-\n\nI gruppi ti permettono di partecipare a giochi e\ntornei con i tuoi amici usando diversi dispositivi.\n\nUsa il tasto ${PARTY} in alto a destra per chattare\ne interagire con il tuo gruppo.\n(su un controller, premi ${BUTTON} in un menu)",
+    "aboutDescriptionText": "Usa queste schede per assemblare un party.\n\nI party ti permettono di partecipare a giochi e\ntornei con i tuoi amici usando diversi dispositivi.\n\nUsa il tasto ${PARTY} in alto a destra per chattare\ne interagire con il tuo gruppo.\n(su un controller, premi ${BUTTON} in un menu)",
     "aboutText": "Informazioni",
     "addressFetchErrorText": "<errore nel recuperare gli indirizzi>",
     "appInviteInfoText": "Invita i tuoi amici a provare BonvSquad e loro \nriceveranno ${COUNT} biglietti gratis. Tu guadagnerai\n${YOU_COUNT} per ogni amico che lo farà.",
@@ -706,7 +709,7 @@
     "appInviteSendACodeText": "Inviagli un codice",
     "appInviteTitleText": "Invito per l'app di ${APP_NAME}",
     "bluetoothAndroidSupportText": "(funziona su dispositivi Android dotati di Bluetooth)",
-    "bluetoothDescriptionText": "Ospita/unisciti a un gruppo via Bluetooth:",
+    "bluetoothDescriptionText": "Ospita/unisciti a un party via Bluetooth:",
     "bluetoothHostText": "Ospita via Bluetooth",
     "bluetoothJoinText": "Unisciti via Bluetooth",
     "bluetoothText": "Bluetooth",
@@ -718,8 +721,8 @@
     "earnTicketsForRecommendingAmountText": "I tuoi amici riceveranno ${COUNT} biglietti se proveranno il gioco\n(anche tu riceverai ${YOU_COUNT} biglietti per ogni amico che lo farà)",
     "earnTicketsForRecommendingText": "Condividi il gioco\nper biglietti gratis...",
     "emailItText": "Manda Email",
-    "favoritesSaveText": "enregistrer comme favori",
-    "favoritesText": "Favoris",
+    "favoritesSaveText": "Salva nei preferiti",
+    "favoritesText": "Preferiti",
     "freeCloudServerAvailableMinutesText": "Il prossimo server gratuito sarà disponibile tra ${MINUTES} minuti!",
     "freeCloudServerAvailableNowText": "Server gratuito disponibile!",
     "freeCloudServerNotAvailableText": "Nessun server gratuito disponibile",
@@ -746,12 +749,12 @@
     "joinPublicPartyDescriptionText": "Unisciti a un party pubblico",
     "localNetworkDescriptionText": "Unisciti ad un Party vicino (LAN, Bluetooth, etc.)",
     "localNetworkText": "Rete locale",
-    "makePartyPrivateText": "Rendi privato il mio gruppo",
-    "makePartyPublicText": "Rendi pubblico il mio gruppo",
+    "makePartyPrivateText": "Rendi privato il mio party",
+    "makePartyPublicText": "Rendi pubblico il mio party",
     "manualAddressText": "Indirizzi",
     "manualConnectText": "Connettiti",
     "manualDescriptionText": "Unisciti a un gruppo all'indirizzo:",
-    "manualJoinSectionText": "se joindre à la direction",
+    "manualJoinSectionText": "Unisciti con l'indirizzo",
     "manualJoinableFromInternetText": "Sei raggiungibile da internet?",
     "manualJoinableNoWithAsteriskText": "NO*",
     "manualJoinableYesText": "SÌ",
@@ -762,26 +765,26 @@
     "nearbyText": "Locale",
     "noConnectionText": "<nessuna connessione>",
     "otherVersionsText": "(altre versioni)",
-    "partyCodeText": "Code du parti",
+    "partyCodeText": "Codice del Party",
     "partyInviteAcceptText": "Accetta",
     "partyInviteDeclineText": "Rifiuta",
     "partyInviteGooglePlayExtraText": "(vedi la scheda 'Google Play' nella finestra 'Raduna')",
     "partyInviteIgnoreText": "Ignora",
-    "partyInviteText": "${NAME} ti ha invitato\nad unirsi al suo gruppo!",
-    "partyNameText": "Nome gruppo",
-    "partyServerRunningText": "votre serveur de groupe est en cours d'exécution",
-    "partySizeText": "dimensione gruppo",
+    "partyInviteText": "${NAME} ti ha invitato\nad unirsi al suo party!",
+    "partyNameText": "Nome Party",
+    "partyServerRunningText": "Il tuo party è in esecuzione.",
+    "partySizeText": "dimensione party",
     "partyStatusCheckingText": "controllo status in corso...",
-    "partyStatusJoinableText": "il tuo gruppo è ora raggiungibile da internet",
+    "partyStatusJoinableText": "il tuo party è ora raggiungibile da internet",
     "partyStatusNoConnectionText": "impossibile connettersi al server",
-    "partyStatusNotJoinableText": "il tuo gruppo non è raggiungibile da internet",
-    "partyStatusNotPublicText": "il tuo gruppo non è pubblico",
+    "partyStatusNotJoinableText": "il tuo party non è raggiungibile da internet",
+    "partyStatusNotPublicText": "il tuo party non è pubblico",
     "pingText": "ping",
     "portText": "Porta",
-    "privatePartyCloudDescriptionText": "les parties privées s'exécutent sur des serveurs cloud dédiés; aucune configuration de routeur requise",
+    "privatePartyCloudDescriptionText": "I party privati prendono posto su dei cloud server fatti apposta; non c'è bisogno di una configurazione del router.",
     "privatePartyHostText": "Ospita un Party privato",
     "privatePartyJoinText": "Entra in un Party privato",
-    "privateText": "Privé",
+    "privateText": "Privato",
     "publicHostRouterConfigText": "Questa opzione richiede la configurazione di port-forwarding sul tuo router. Per comodità, utilizza la funzionalità di hosting su server",
     "publicText": "Pubblico",
     "requestingAPromoCodeText": "Richiesta codice in corso...",
@@ -1579,6 +1582,7 @@
       "Dutch": "Olandese",
       "English": "Inglese",
       "Esperanto": "Esperanto",
+      "Filipino": "Filippino",
       "Finnish": "Finlandese",
       "French": "Francese",
       "German": "Tedesco",
@@ -1599,6 +1603,7 @@
       "Slovak": "Slovacco",
       "Spanish": "Spagnolo",
       "Swedish": "Svedese",
+      "Tamil": "Tamil",
       "Thai": "Tailandese",
       "Turkish": "Turco",
       "Ukrainian": "Ucraino",
@@ -1814,7 +1819,7 @@
       "You can judge when a bomb is going to explode based on the\ncolor of sparks from its fuse:  yellow..orange..red..BOOM.": "Puoi capire quando una bomba sta per esplodere basandoti\nsul colore della miccia: giallo... arancione... rosso... BOOOM.",
       "You can throw bombs higher if you jump just before throwing.": "Se salti appena prima di lanciarle, le bombe arrivano più in alto.",
       "You don't need to edit your profile to change characters; Just press the top\nbutton (pick-up) when joining a game to override your default.": "Non c'è bisogno di creare un profilo per cambiare personaggio; basta premere \nil pulsante superiore (afferra) quando prendi parte ad un gioco.",
-      "You take damage when you whack your head on things,\nso try to not whack your head on things.": "Vieni danneggiato quando sbatti la testa contro le cose.\nQuini? Quindi cerca di non sbattere la testa contro le cose.",
+      "You take damage when you whack your head on things,\nso try to not whack your head on things.": "Subisci danno quando sbatti la testa contro le cose,\nquindi cerca di non farlo.",
       "Your punches do much more damage if you are running or spinning.": "I pugni fanno molti più danni se stai correndo o roteando."
     }
   },
@@ -1845,7 +1850,7 @@
     "phrase19Text": "Saltare aiuta a lanciare più in alto.",
     "phrase20Text": "Fai girare la tua bomba per lanci ancora più lunghi.",
     "phrase21Text": "Capire quando lanciare può essere difficile.",
-    "phrase22Text": "Uff...",
+    "phrase22Text": "Accipicchia.",
     "phrase23Text": "Prova a far consumare la miccia per un secondo o due.",
     "phrase24Text": "Così si fa! Cotto a puntino.",
     "phrase25Text": "Be', questo è tutto.",
