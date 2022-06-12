@@ -336,6 +336,8 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
 
     return chooks.filter_chat_message(msg,client_id)
 
+def on_client_request(ip):
+    print("player requesting to join from ip = " + ip)
 def kick_vote_started(by:str,to:str) -> None:
     """
       get account ids of who started kick vote for whom ,
