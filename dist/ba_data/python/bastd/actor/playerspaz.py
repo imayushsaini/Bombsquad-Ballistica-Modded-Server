@@ -72,7 +72,8 @@ class PlayerSpaz(Spaz):
         self._player = player
         self._drive_player_position()
 
-        modifyspaz.main(self, self.node, self._player)
+        import custom_hooks
+        custom_hooks.playerspaz_init(self, self.node, self._player)
 
     # Overloads to tell the type system our return type based on doraise val.
 
