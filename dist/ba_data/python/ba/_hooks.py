@@ -337,30 +337,29 @@ def filter_chat_message(msg: str, client_id: int) -> Optional[str]:
     return chooks.filter_chat_message(msg,client_id)
 
 def on_client_request(ip):
-    print("player requesting to join from ip = " + ip)
+    chooks.on_join_request(ip)
+
 def kick_vote_started(by:str,to:str) -> None:
     """
       get account ids of who started kick vote for whom ,
       do what ever u want logging to files , whatever.
     """
-    print(by+">"+to)
+    chooks.kick_vote_started(by,to)
 
 def on_kicked(account_id:str) -> None:
-    pass
-    # print(account_id+" kicked ...sad")
+    chooks.on_kicked(account_id)
 
 def on_kick_vote_end() -> None:
-    pass
-    # print("kick vote end")
+    chooks.on_kick_vote_end()
 
 def on_player_join(pb_id:str)-> None:
+    # not integrated yet
     pass
-    # print(pb_id+" joined  python layer")
 
 def on_player_leave(pb_id:str)-> None:
+    # not integrated yet
     pass
-    #
-    print(pb_id+" left python layer")
+
 
 def local_chat_message(msg: str) -> None:
     if (_ba.app.ui.party_window is not None
