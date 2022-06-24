@@ -94,7 +94,7 @@ class BsDataThread(object):
                             }
             for player in team.players:
                 teamplayer={'name':player.getname(),
-                            'device_id':player.inputdevice.get_account_name(True),
+                            'device_id':player.inputdevice.get_v1_account_name(True),
                             'inGame':player.in_game,
                             'character':player.character,
                             'account_id':player.get_v1_account_id()
