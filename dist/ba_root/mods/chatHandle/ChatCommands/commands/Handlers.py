@@ -23,6 +23,8 @@ def clientid_to_myself(clientid):
 			return int(session.sessionplayers[i].id)
 
 
+def chattmsg(msg):
+	_ba.chatmessage(str(msg))
 
 
 
