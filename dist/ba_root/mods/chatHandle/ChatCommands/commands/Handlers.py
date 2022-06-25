@@ -9,7 +9,8 @@ def send(msg, clientid):
 	_ba.chatmessage(str(msg), clients=[clientid])
 	_ba.screenmessage(str(msg), transient=True, clients=[clientid])
 
-
+def chattmsg(msg):
+	_ba.chatmessage(str(msg))
 
 
 
