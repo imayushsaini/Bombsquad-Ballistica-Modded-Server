@@ -1,4 +1,4 @@
-from .Handlers import handlemsg, handlemsg_all,send,chattmsg
+from .Handlers import handlemsg, handlemsg_all,send
 from playersData import pdata
 # from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
@@ -37,10 +37,10 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		kikvote(arguments, clientid)
 	
 	elif command == 'lm':
-		last_msgs(arguments)
+		last_msgs(clientid)
 
 	elif command == 'gp':
-		get_profiles(arguments)
+		get_profiles(arguments, clientid)
 
 	elif command == 'party':
 		party_toggle(arguments)
@@ -130,7 +130,7 @@ def kick(arguments):
 	_ba.disconnect_client(int(arguments[0]))
 	return
 def kikvote(arguments, clientid):
-	if arguments == [] or arguments == ['']:
+	if arguments == [] or arguments == [''] or len(arguments) < 2:
 		return 
 
 	elif arguments[0] == 'enable':
@@ -139,13 +139,11 @@ def kikvote(arguments, clientid):
 		else:
 			try:
 				cl_id=int(arguments[1])
-				ac_id=""
 				for ros in _ba.get_game_roster():
 					if ros["client_id"]==cl_id:
-						_thread.start_new_thread(pdata.kikvot,(ros['account_id'],))
-						send("Upon server restart, Kick-vote will be enabled for this person", clientid)
-				if ac_id in serverdata.clients:
-					serverdata.clients[ac_id]["canStartKickVote"]=True
+						if ros["account_id"] in serverdata.clients:
+							serverdata.clients[ros["account_id"]]["canStartKickVote"]=True
+							send("Upon server restart, Kick-vote will be enabled for this person", clientid)
 				return
 			except:
 				return
@@ -156,31 +154,29 @@ def kikvote(arguments, clientid):
 		else:
 			try:
 				cl_id=int(arguments[1])
-				ac_id=""
 				for ros in _ba.get_game_roster():
 					if ros["client_id"]==cl_id:
-						_thread.start_new_thread(pdata.kikvott,(ros['account_id'],))
-						send("Upon server restart, Kick-vote will be disabled for this person", clientid)
-				if ac_id in serverdata.clients:
-					serverdata.clients[ac_id]["canStartKickVote"]=False
+						_ba.disable_kickvote(ros["account_id"])
+						send("Kick-vote disabled for this person", clientid)
+						if ros["account_id"] in serverdata.clients:
+							serverdata.clients[ros["account_id"]]["canStartKickVote"]=False
 				return
 			except:
 				return
 	else:
 		return					
 
-def last_msgs(arguments):
-	if arguments == [] or arguments == ['']:
-		for i in _ba.get_chat_messages():
-			chattmsg(i)
+def last_msgs(clientid):
+	for i in _ba.get_chat_messages():
+		send(i,clientid)
 
-def get_profiles(arguments):
+def get_profiles(arguments,clientid):
 	try:
 		playerID = int(arguments[0])
 		num = 1
 		for i in _ba.get_foreground_host_session().sessionplayers[playerID].inputdevice.get_player_profiles():
 			try:
-				chattmsg(f"{num})-  {i}")
+				send(f"{num})-  {i}",clientid)
 				num += 1
 			except:
 				pass
@@ -188,20 +184,18 @@ def get_profiles(arguments):
 		pass
 
 def party_toggle(arguments):
-	
 	if arguments == ['public']:
 		_ba.set_public_party_enabled(True)
+		_ba.chatmessage("party is public now")
 	elif arguments == ['private']:
 		_ba.set_public_party_enabled(False)
-		chattmsg("Remember, party will be Public upon restart")
+		_ba.chatmessage("party is private now")
 	else:
 		pass
 
 
 def end(arguments):
-	
 	if arguments == [] or arguments == ['']:
-		
 		try:
 			with _ba.Context(_ba.get_foreground_host_activity()):
 				_ba.get_foreground_host_activity().end_game()
