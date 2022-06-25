@@ -1,11 +1,11 @@
-from .Handlers import handlemsg, handlemsg_all,send
+from .Handlers import handlemsg, handlemsg_all,send,chattmsg
 from playersData import pdata
 # from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
 import ba, _ba, time, setting
 import _thread
 from tools import playlist
-Commands = ['maxplayers','playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+Commands = ['lm', 'gp', 'party', 'quit', 'kickvote','maxplayers','playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
 CommandAliases = ['max','rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera','effect']
 
 
@@ -33,6 +33,17 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		ban(arguments)
 	elif command in ['end', 'next']:
 		end(arguments)
+	elif command == 'kickvote':
+		kikvote(arguments, clientid)
+	
+	elif command == 'lm':
+		last_msgs(arguments)
+
+	elif command == 'gp':
+		get_profiles(arguments)
+
+	elif command == 'party':
+		party_toggle(arguments)
 	
 	elif command in ['quit', 'restart']:
 		quit(arguments)
@@ -118,7 +129,73 @@ def changeplaylist(arguments):
 def kick(arguments):
 	_ba.disconnect_client(int(arguments[0]))
 	return
+def kikvote(arguments, clientid):
+	if arguments == [] or arguments == ['']:
+		return 
 
+	elif arguments[0] == 'enable':
+		if arguments[1] == 'all':
+			_ba.set_enable_default_kick_voting(True)
+		else:
+			try:
+				cl_id=int(arguments[1])
+				ac_id=""
+				for ros in _ba.get_game_roster():
+					if ros["client_id"]==cl_id:
+						_thread.start_new_thread(pdata.kikvot,(ros['account_id'],))
+						send("Upon server restart, Kick-vote will be enabled for this person", clientid)
+				if ac_id in serverdata.clients:
+					serverdata.clients[ac_id]["canStartKickVote"]=True
+				return
+			except:
+				return
+
+	elif arguments[0] == 'disable':
+		if arguments[1] == 'all':
+			_ba.set_enable_default_kick_voting(False)
+		else:
+			try:
+				cl_id=int(arguments[1])
+				ac_id=""
+				for ros in _ba.get_game_roster():
+					if ros["client_id"]==cl_id:
+						_thread.start_new_thread(pdata.kikvott,(ros['account_id'],))
+						send("Upon server restart, Kick-vote will be disabled for this person", clientid)
+				if ac_id in serverdata.clients:
+					serverdata.clients[ac_id]["canStartKickVote"]=False
+				return
+			except:
+				return
+	else:
+		return					
+
+def last_msgs(arguments):
+	if arguments == [] or arguments == ['']:
+		for i in _ba.get_chat_messages():
+			chattmsg(i)
+
+def get_profiles(arguments):
+	try:
+		playerID = int(arguments[0])
+		num = 1
+		for i in _ba.get_foreground_host_session().sessionplayers[playerID].inputdevice.get_player_profiles():
+			try:
+				chattmsg(f"{num})-  {i}")
+				num += 1
+			except:
+				pass
+	except:
+		pass
+
+def party_toggle(arguments):
+	
+	if arguments == ['public']:
+		_ba.set_public_party_enabled(True)
+	elif arguments == ['private']:
+		_ba.set_public_party_enabled(False)
+		chattmsg("Remember, party will be Public upon restart")
+	else:
+		pass
 
 
 def end(arguments):
