@@ -213,5 +213,5 @@ def on_kick_vote_end():
     logger.log("Kick vote End")
 
 
-_hooks.kick_vote_started = kick_vote_started
-_hooks.on_kicked = on_kicked
+def on_join_request(ip):
+    servercheck.on_join_request(ip)
