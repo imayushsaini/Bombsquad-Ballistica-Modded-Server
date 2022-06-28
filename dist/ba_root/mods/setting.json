@@ -110,5 +110,6 @@
     "enablestats": true,
     "enableHitTexts": true,
     "enableeffects": true,
-    "enableTop5effects": true
+    "enableTop5effects": true,
+    "enableTagAnimation":true
 }
