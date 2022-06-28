@@ -41,6 +41,7 @@ def addhp(node):
 class Tag(object):
 	def __init__(self,owner=None,tag="somthing",col=(1,1,1)):
 		self.node=owner
+		sett = setting.get_settings_data()
 		mnode = ba.newnode('math',
                                owner=self.node,
                                attrs={
@@ -79,7 +80,16 @@ class Tag(object):
                                               'h_align': 'center'
                                           })
 		mnode.connectattr('output', self.tag_text, 'position')
-
+		if sett["enableTagAnimation"]:
+			ba.animate_array(node=self.tag_text, attr='color', size=3, keys={
+				0.2: (2,0,2),
+				0.4: (2,2,0),
+				0.6: (0,2,2),
+				0.8: (2,0,2),
+				1.0: (1,1,0),
+				1.2: (0,1,1),
+				1.4: (1,0,1)
+			}, loop=True)
 class Rank(object):
 	def __init__(self,owner=None,rank=99):
 		self.node=owner
