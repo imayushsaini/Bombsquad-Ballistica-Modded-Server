@@ -6,16 +6,17 @@
     },
     "textonmap": {
         "top watermark": "Welcome to server \nip 192.168.0.1",
-        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.3.3",
+        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7",
         "center highlights":{
             "color":[1,0,0],
             "randomColor":true,
             "msg":[
-                "message 1",
-                "message 2",
-                "message 3"
+                "type end to start end vote",
+                "start msg with prefix .(dot) to send in game popup msg",
+                "start msg with prefix ,(comma) to send msg to teammates",
+                "BombSquad Community Server - BCS"
                 ]
-        } 
+        }
     },
     "statsResetAfterDays":31,
     "leaderboard":{
@@ -29,6 +30,7 @@
         "fireflies":true,
         "fireflies_random_color":false
     },
+    "colorfullMap":true,
     "playlists":{
         "default":12345,
         "team":12345,
@@ -44,7 +46,7 @@
         "enable":true
     },
     "colorful_explosions":{
-        "enable":false
+        "enable":true
     },
     "ballistica_web": {
         "enable":false

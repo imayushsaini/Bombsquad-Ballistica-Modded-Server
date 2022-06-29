@@ -2,7 +2,7 @@
 #
 """Defines a bomb-dodging mini-game."""
 
-# ba_meta require api 6
+# ba_meta require api 7
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from bastd.actor.bomb import Bomb
 from bastd.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional
+    from typing import Any, Sequence
 
 
 class Player(ba.Player['Team']):
@@ -23,7 +23,7 @@ class Player(ba.Player['Team']):
 
     def __init__(self) -> None:
         super().__init__()
-        self.death_time: Optional[float] = None
+        self.death_time: float | None = None
 
 
 class Team(ba.Team[Player]):
@@ -64,9 +64,9 @@ class MeteorShowerGame(ba.TeamGameActivity[Player, Team]):
         super().__init__(settings)
 
         self._epic_mode = settings.get('Epic Mode', False)
-        self._last_player_death_time: Optional[float] = None
+        self._last_player_death_time: float | None = None
         self._meteor_time = 2.0
-        self._timer: Optional[OnScreenTimer] = None
+        self._timer: OnScreenTimer | None = None
 
         # Some base class overrides:
         self.default_music = (ba.MusicType.EPIC
@@ -188,9 +188,10 @@ class MeteorShowerGame(ba.TeamGameActivity[Player, Team]):
             # Drop them somewhere within our bounds with velocity pointing
             # toward the opposite side.
             pos = (-7.3 + 15.3 * random.random(), 11,
-                   -5.5 + 2.1 * random.random())
+                   -5.57 + 2.1 * random.random())
             dropdir = (-1.0 if pos[0] > 0 else 1.0)
-            vel = ((-5.0 + random.random() * 30.0) * dropdir, -4.0, 0)
+            vel = ((-5.0 + random.random() * 30.0) * dropdir,
+                   random.uniform(-3.066, -4.12), 0)
             ba.timer(delay, ba.Call(self._drop_bomb, pos, vel))
             delay += 0.1
         self._set_meteor_timer()

@@ -1,6 +1,6 @@
 """Define a simple example plugin."""
 
-# ba_meta require api 6
+# ba_meta require api 7
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# ba_meta require api 6
+# ba_meta require api 7
 
 # Thanks to Rikko  for playlist fetch by code
 
@@ -43,18 +43,18 @@ def set_playlist_inline(playlist,newPLaylistType):
         _thread.start_new_thread(withDelay,(DualTeamSession,playlist,))
     else:
         updatePlaylist(playlist)
-    
+
 def withDelay(session,playlist):
-    
+
     time.sleep(1)
-    
+
     _ba.pushcall(Call(updateSession,session,playlist),from_other_thread=True)
 
 def updateSession(session,playlist):
     _ba.new_host_session(session)
     if playlist:
         updatePlaylist(playlist)
-       
+
 
 def updatePlaylist(playlist):
 

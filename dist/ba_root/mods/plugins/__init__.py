@@ -6,7 +6,7 @@ tests since they are widely used in live client and server code.
 license : MIT, see LICENSE for more details.
 """
 
-# ba_meta require api 6
+# ba_meta require api 7
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations

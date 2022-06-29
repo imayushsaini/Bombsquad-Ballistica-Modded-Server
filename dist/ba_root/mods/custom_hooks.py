@@ -1,6 +1,6 @@
 """Custom hooks to pull of the in-game functions."""
 
-# ba_meta require api 6
+# ba_meta require api 7
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 # pylint: disable=import-error
@@ -31,7 +31,8 @@ from spazmod import modifyspaz
 from tools import servercheck, ServerUpdate, logger
 from playersData import pdata
 from features import EndVote
-
+from features import text_on_map
+from features import map_fun
 if TYPE_CHECKING:
     from typing import Optional, Any
 
@@ -43,7 +44,7 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     return handlechat.filter_chat_message(msg, client_id)
 
 
-def on_app_launch() -> None:
+def on_app_running() -> None:
     """Runs when app is launched."""
     bootstraping()
     servercheck.checkserver().start()
@@ -97,6 +98,8 @@ def bootstraping():
         importcustomcharacters.enable()
     if settings["StumbledScoreScreen"]:
         from features import StumbledScoreScreen
+    if settings["colorfullMap"]:
+        from plugins import colorfulmaps
 
     # import features
     if settings["whitelist"]:
@@ -149,6 +152,8 @@ def new_begin(self):
     """Runs when game is began."""
     org_begin(self)
     night_mode()
+    if settings["colorfullMap"]:
+        map_fun.decorate_map()
     EndVote.voters = []
     EndVote.game_started_on = time.time()
 
@@ -179,7 +184,6 @@ def on_player_join(self, player) -> None:
 
 ba._activity.Activity.on_player_join = on_player_join
 
-
 def night_mode() -> None:
     """Checks the time and enables night mode."""
 
@@ -195,7 +199,7 @@ def night_mode() -> None:
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
 
             if settings['autoNightMode']['fireflies']:
-                fire_flies.factory(settings['autoNightMode']["fireflies_random_color"])
+                activity.fireflies_generator(20,settings['autoNightMode']["fireflies_random_color"])
 
 
 def kick_vote_started(started_by: str, started_to: str) -> None:
@@ -215,3 +219,8 @@ def on_kick_vote_end():
 
 def on_join_request(ip):
     servercheck.on_join_request(ip)
+
+def on_map_init():
+    text_on_map.textonmap()
+
+

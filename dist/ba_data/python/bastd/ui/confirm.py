@@ -10,14 +10,14 @@ import _ba
 import ba
 
 if TYPE_CHECKING:
-    from typing import Any, Union, Callable, Optional
+    from typing import Any, Callable
 
 
 class ConfirmWindow:
     """Window for answering simple yes/no questions."""
 
     def __init__(self,
-                 text: Union[str, ba.Lstr] = 'Are you sure?',
+                 text: str | ba.Lstr = 'Are you sure?',
                  action: Callable[[], Any] = None,
                  width: float = 360.0,
                  height: float = 100.0,
@@ -25,8 +25,8 @@ class ConfirmWindow:
                  cancel_is_selected: bool = False,
                  color: tuple[float, float, float] = (1, 1, 1),
                  text_scale: float = 1.0,
-                 ok_text: Union[str, ba.Lstr] = None,
-                 cancel_text: Union[str, ba.Lstr] = None,
+                 ok_text: str | ba.Lstr | None = None,
+                 cancel_text: str | ba.Lstr | None = None,
                  origin_widget: ba.Widget = None):
         # pylint: disable=too-many-locals
         if ok_text is None:
@@ -38,8 +38,8 @@ class ConfirmWindow:
         self._action = action
 
         # if they provided an origin-widget, scale up from that
-        self._transition_out: Optional[str]
-        scale_origin: Optional[tuple[float, float]]
+        self._transition_out: str | None
+        scale_origin: tuple[float, float] | None
         if origin_widget is not None:
             self._transition_out = 'out_scale'
             scale_origin = origin_widget.get_screen_space_center()
@@ -70,7 +70,7 @@ class ConfirmWindow:
                       maxwidth=width * 0.9,
                       max_height=height - 75)
 
-        cbtn: Optional[ba.Widget]
+        cbtn: ba.Widget | None
         if cancel_button:
             cbtn = btn = ba.buttonwidget(parent=self.root_widget,
                                          autoselect=True,

@@ -1,6 +1,6 @@
 """Module to handle operations with file."""
 
-# ba_meta require api 6
+# ba_meta require api 7
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 
