@@ -120,7 +120,6 @@ def add_profile(
             "spamCount": 0,
             "lastSpam": time.time(),
             "totaltimeplayer": 0,
-            "lastseen": 0,
         }
     CacheData.profiles=profiles
     commit_profiles()
@@ -131,6 +130,16 @@ def add_profile(
     serverdata.clients[account_id]["verified"] = False
     serverdata.clients[account_id]["rejoincount"] = 1
     serverdata.clients[account_id]["lastJoin"] = time.time()
+    cid = 113
+    for ros in _ba.get_game_roster():
+        if ros['account_id'] == account_id:
+            cid = ros['client_id']
+    serverdata.clients[account_id]["lastIP"] = _ba.get_client_ip(cid)
+
+    device_id = _ba.get_client_public_device_uuid(cid)
+    if(device_id==None):
+        device_id = _ba.get_client_device_uuid(cid)
+    serverdata.clients[account_id]["deviceUUID"] = device_id
 
 
 def update_display_string(account_id: str, display_string: str) -> None:

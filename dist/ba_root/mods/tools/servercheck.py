@@ -147,6 +147,7 @@ def on_player_join_server(pbid, player_data):
             if(device_id==None):
                 device_id = _ba.get_client_device_uuid(cid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
+            logger.log("ip:"+serverdata.clients[pbid]["lastIP"]+",Device id"+device_id)
             _ba.screenmessage(settings["regularWelcomeMsg"] + " " + d_st,
                               color=(0.60, 0.8, 0.6), transient=True,
                               clients=[cid])
@@ -279,7 +280,7 @@ def my_acc_age(pb_id):
 
 
 def save_age(age, pb_id, display_string):
-    pdata.add_profile(pb_id, display_string, display_string, age)
+    _ba.pushcall(Call(pdata.add_profile,pb_id, display_string,display_string, age), from_other_thread=True)
     time.sleep(2)
     thread2 = FetchThread(
         target=get_device_accounts,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # coding: utf-8
 
-# ba_meta require api 6
+# ba_meta require api 7
 from typing import Optional, Any, Dict, List, Type, Sequence
 from ba._gameactivity import GameActivity
 import ba,_ba
@@ -19,9 +19,9 @@ top200={}
 
 class BsDataThread(object):
     def __init__(self):
-        self.Timer = ba.Timer( 8,ba.Call(self.refreshStats),timetype = ba.TimeType.REAL,repeat = True) 
+        self.Timer = ba.Timer( 8,ba.Call(self.refreshStats),timetype = ba.TimeType.REAL,repeat = True)
         self.Timerr = ba.Timer( 10,ba.Call(self.startThread),timetype = ba.TimeType.REAL,repeat = True)
-    
+
     def startThread(self):
         _thread.start_new_thread(self.refreshLeaderboard,())
 
@@ -29,7 +29,7 @@ class BsDataThread(object):
         global leaderboard
         global top200
         _t200={}
-        
+
         lboard=mystats.get_all_stats()
         leaderboard=lboard
         try:
@@ -46,26 +46,26 @@ class BsDataThread(object):
                 break
             _t200[entry[5]]={"rank":rank,"scores":int(entry[0]),"games":int(entry[3]),"kills":int(entry[1]),"deaths":int(entry[2]),"name_html":entry[4],"last_seen":entry[6]}
             top200=_t200
-            
+
     def refreshStats(self):
-        
+
         liveplayers={}
         nextMap=''
         currentMap=''
         global stats
         for i in _ba.get_game_roster():
-            
-            
+
+
             try:
                 liveplayers[i['account_id']]={'name':i['players'][0]['name_full'],'client_id':i['client_id'],'device_id':i['display_string']}
             except:
                 liveplayers[i['account_id']]={'name':"<in-lobby>",'clientid':i['client_id'],'device_id':i['display_string']}
-        try:    
+        try:
             nextMap=_ba.get_foreground_host_session().get_next_game_description().evaluate()
 
             current_game_spec=_ba.get_foreground_host_session()._current_game_spec
             gametype: Type[GameActivity] =current_game_spec['resolved_type']
-            
+
             currentMap=gametype.get_settings_display_string(current_game_spec).evaluate()
         except:
             pass
@@ -82,7 +82,7 @@ class BsDataThread(object):
 
     def getTeamInfo(self):
         data={}
-        
+
         session=_ba.get_foreground_host_session()
         data['sessionType']=type(session).__name__
         teams=session.sessionteams
@@ -104,7 +104,7 @@ class BsDataThread(object):
         return data
 
 
-        
+
 BsDataThread()
 
 
@@ -125,7 +125,7 @@ def home():
 @app.route('/getStats', methods=['GET'])
 def api_all():
     return json.dumps(stats)
-    
+
 @app.route('/getLeaderboard',methods=['GET'])
 def get_l():
     return json.dumps(leaderboard)

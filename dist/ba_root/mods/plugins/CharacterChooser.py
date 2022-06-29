@@ -1,4 +1,4 @@
-# ba_meta require api 6
+# ba_meta require api 7
 
 '''
 Character Chooser by Mr.Smoothy
@@ -8,17 +8,17 @@ This plugin will let you choose your character from lobby.
 Install this plugin on your Phone/PC  or on Server
 
 If installed on server :- this will also let players choose server specific custom characters . so no more sharing of character file with all players,
-just install this plugin on server ...and players can pick character from lobby . 
+just install this plugin on server ...and players can pick character from lobby .
 
 Use:-
 > select your profile (focus on color and name)
 > press ready (punch)
 > now use UP/DOWN buttons to scroll character list
-> Press ready again (punch) to join the game 
+> Press ready again (punch) to join the game
 > or press Bomb button to go back to profile choosing menu
-> END 
+> END
 
-Watch   : https://www.youtube.com/watch?v=hNmv2l-NahE   
+Watch   : https://www.youtube.com/watch?v=hNmv2l-NahE
 Join    : https://discord.gg/ucyaesh
 Contact : discord mr.smoothy#5824
 
@@ -202,7 +202,7 @@ def _set_ready(self, ready: bool) -> None:
                 (InputType.DOWN_PRESS),Call(self.handlemessage,ChangeMessage('characterchooser',1)))
             self._sessionplayer.assigninput(
                 (InputType.BOMB_PRESS),Call(self.handlemessage,ChangeMessage('ready',0)))
-            
+
             self._sessionplayer.assigninput(
                 (InputType.JUMP_PRESS,InputType.PICK_UP_PRESS, InputType.PUNCH_PRESS),
                 Call(self.handlemessage, ChangeMessage('ready', 2)))
@@ -236,7 +236,7 @@ def _set_ready(self, ready: bool) -> None:
             self._ready = True
             self._update_text()
         else:
-            
+
 
 
             # Inform the session that this player is ready.
@@ -343,12 +343,12 @@ def _update_text(self) -> None:
                 })
             else:
                 self._text_node.color = fin_color
-        
+
         self._text_node.text = text
 
 def enable() -> None:
     _lobby.Chooser.__init__=__init__
     _lobby.Chooser._set_ready=_set_ready
-    
+
     _lobby.Chooser._update_text=_update_text
     _lobby.Chooser.handlemessage=handlemessage
