@@ -23,7 +23,7 @@ from efro.dataclassio._base import (Codec, _parse_annotated, EXTRA_ATTRS_ATTR,
 from efro.dataclassio._prep import PrepSession
 
 if TYPE_CHECKING:
-    from typing import Any, Optional
+    from typing import Any
     from efro.dataclassio._base import IOAttrs
 
 
@@ -64,7 +64,7 @@ class _Outputter:
                                                           recursion_level=0)
         assert prep is not None
         fields = dataclasses.fields(obj)
-        out: Optional[dict[str, Any]] = {} if self._create else None
+        out: dict[str, Any] | None = {} if self._create else None
         for field in fields:
             fieldname = field.name
             if fieldpath:
@@ -118,15 +118,16 @@ class _Outputter:
         if isinstance(extra_attrs, dict):
             if not _is_valid_for_codec(extra_attrs, self._codec):
                 raise TypeError(
-                    f'Extra attrs on {fieldpath} contains data type(s)'
-                    f' not supported by json.')
+                    f'Extra attrs on \'{fieldpath}\' contains data type(s)'
+                    f' not supported by \'{self._codec.value}\' codec:'
+                    f' {extra_attrs}.')
             if self._create:
                 assert out is not None
                 out.update(extra_attrs)
         return out
 
     def _process_value(self, cls: type, fieldpath: str, anntype: Any,
-                       value: Any, ioattrs: Optional[IOAttrs]) -> Any:
+                       value: Any, ioattrs: IOAttrs | None) -> Any:
         # pylint: disable=too-many-return-statements
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
@@ -307,7 +308,7 @@ class _Outputter:
         return value
 
     def _process_dict(self, cls: type, fieldpath: str, anntype: Any,
-                      value: dict, ioattrs: Optional[IOAttrs]) -> Any:
+                      value: dict, ioattrs: IOAttrs | None) -> Any:
         # pylint: disable=too-many-branches
         if not isinstance(value, dict):
             raise TypeError(f'Expected a dict for {fieldpath};'
@@ -329,7 +330,7 @@ class _Outputter:
 
         # Ok; we've got a definite key type (which we verified as valid
         # during prep). Make sure all keys match it.
-        out: Optional[dict] = {} if self._create else None
+        out: dict | None = {} if self._create else None
         keyanntype, valanntype = childtypes
 
         # str keys we just export directly since that's supported by json.
