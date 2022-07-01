@@ -28,7 +28,7 @@ from chatHandle import handlechat
 from features import team_balancer, afk_check, fire_flies, dual_team_score as newdts
 from stats import mystats
 from spazmod import modifyspaz
-from tools import servercheck, ServerUpdate, logger
+from tools import servercheck, ServerUpdate, logger, playlist
 from playersData import pdata
 from features import EndVote
 from features import text_on_map
@@ -43,15 +43,19 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     """Returns all in game messages or None (ignore's message)."""
     return handlechat.filter_chat_message(msg, client_id)
 
+# ba_meta export plugin
+class modSetup(ba.Plugin):
+    def on_app_running(self):
+        """Runs when app is launched."""
+        bootstraping()
+        servercheck.checkserver().start()
+        ServerUpdate.check()
 
-def on_app_running() -> None:
-    """Runs when app is launched."""
-    bootstraping()
-    servercheck.checkserver().start()
-    ServerUpdate.check()
+        if settings["afk_remover"]['enable']:
+            afk_check.checkIdle().start()
+    def on_app_shutdown(self):
+        playlist.flush_playlists()
 
-    if settings["afk_remover"]['enable']:
-        afk_check.checkIdle().start()
 
 
 def score_screen_on_begin(_stats: ba.Stats) -> None:
@@ -67,6 +71,7 @@ def playerspaz_init(playerspaz: ba.Player, node: ba.Node, player: ba.Player):
 
 def bootstraping():
     """Bootstarps the server."""
+    print("Bootstraping mods..")
     # server related
     _ba.set_server_device_name(settings["HostDeviceName"])
     _ba.set_server_name(settings["HostName"])

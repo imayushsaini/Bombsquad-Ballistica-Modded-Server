@@ -101,3 +101,20 @@ def setPlaylist(para):
             _ba.chatmessage(play)
 
 
+def flush_playlists():
+    for playlist in _ba.app.config["Team Tournament Playlists"]:
+        _ba.add_transaction(
+        {
+            "type":"REMOVE_PLAYLIST",
+            "playlistType":"Team Tournament",
+            "playlistName":playlist
+        })
+    _ba.run_transactions()
+    for playlist in _ba.app.config["Free-for-All Playlists"]:
+        _ba.add_transaction(
+        {
+            "type":"REMOVE_PLAYLIST",
+            "playlistType":"Free-for-All",
+            "playlistName":playlist
+        })
+    _ba.run_transactions()
