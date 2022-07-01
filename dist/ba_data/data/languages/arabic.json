@@ -56,8 +56,8 @@
     "Boxer": {
       "description": "فز بدون استخدامك للقنابل",
       "descriptionComplete": "لقد فزت بدون استخدام القنابل",
-      "descriptionFull": "قم بإكمال ${LEVEL} بدون استخدام أية قنابل",
-      "descriptionFullComplete": "اكمل ${LEVEL} بدون استخدام أية قنابل",
+      "descriptionFull": "بدون استخدام اي قنابل${LEVEL} قم بإكمال",
+      "descriptionFullComplete": "دون استخدام اي قنابل${LEVEL} اكمل",
       "name": "مُلاكِمْ"
     },
     "Dual Wielding": {
@@ -66,10 +66,10 @@
       "name": "اللكمة المزدوجة"
     },
     "Flawless Victory": {
-      "description": "انتصر بدون تعرض للأذى",
+      "description": "انتصر بدون التعرض للأذى",
       "descriptionComplete": "لقد فزت بدون تعرضك للأذى",
-      "descriptionFull": "انتصر في ${LEVEL} بدون تعرضك للأذى",
-      "descriptionFullComplete": "لقد فزت في ${LEVEL} بدون تعرضك للأذى",
+      "descriptionFull": "دون تعرضك للأذى${LEVEL} فُزْ",
+      "descriptionFullComplete": "دون تعرضك للأذى ${LEVEL} لقد فُزتَ",
       "name": "الفوز المستحق"
     },
     "Free Loader": {
@@ -89,7 +89,7 @@
       "descriptionComplete": "لقد انتصرت بدون استخدامك للكمات او القنابل",
       "descriptionFull": "بدون استخدام اللكمات أو القنابل ${LEVEL} فز في",
       "descriptionFullComplete": "بدون استخدام اللكمات أو القنابل ${LEVEL} لقد ربحت في",
-      "name": "الأسلحة المخفية"
+      "name": "حصلت على الحركات"
     },
     "In Control": {
       "descriptionFull": "(قم بتوصيل جهاز تحكم (جهاز أو تطبيق",
@@ -136,7 +136,7 @@
       "descriptionComplete": "!لقد سجلت 5000 نقطة",
       "descriptionFull": "${LEVEL} سجِّل 5000 نقطة في",
       "descriptionFullComplete": "${LEVEL} لقد سجَّلتَ 5000 نقطة في",
-      "name": "إله ${LEVEL}"
+      "name": "زعيم ${LEVEL}"
     },
     "Onslaught Master": {
       "description": "سجل 500 نقطة",
@@ -160,10 +160,10 @@
       "name": "${LEVEL} ساحر"
     },
     "Precision Bombing": {
-      "description": "powerups فز بدون اي",
-      "descriptionComplete": "powerups لقد فزتَ بدون أي",
-      "descriptionFull": "power-ups بدون اي ${LEVEL} فز في",
-      "descriptionFullComplete": "power-ups بدون اي ${LEVEL} لقد فزتَ في",
+      "description": "فُزْ بدون اي قوى خارقة",
+      "descriptionComplete": "لقد فزتَ بدون أي قوى خارقة",
+      "descriptionFull": "بدون اي قوى خارقة${LEVEL} فز في",
+      "descriptionFullComplete": "بدون اي قوى خارقة${LEVEL} لقد فزتَ في",
       "name": "دقة القصف"
     },
     "Pro Boxer": {
@@ -218,7 +218,7 @@
     "Rookie Onslaught Victory": {
       "description": "هزيمة كل الجولات",
       "descriptionComplete": "هزم كل الجولات",
-      "descriptionFull": "${LEVEL}  اكسب كل الجولات في",
+      "descriptionFull": "${LEVEL}  اهزم كل الجولات في",
       "descriptionFullComplete": "${LEVEL} هزم كل الجولات في",
       "name": "${LEVEL} لقد انتصرت"
     },
@@ -250,9 +250,9 @@
     },
     "Stayin' Alive": {
       "description": "فز بدون أن تموت",
-      "descriptionComplete": "فاز بدون أن يموت",
+      "descriptionComplete": "لقد فُزت بدون ان تموت",
       "descriptionFull": "بدون أن تموت ${LEVEL} فز",
-      "descriptionFullComplete": "بدون أن يموت ${LEVEL} فاز",
+      "descriptionFullComplete": "بدون أن يموت ${LEVEL} لقد فزت",
       "name": "البقاء  حيا"
     },
     "Super Mega Punch": {
@@ -265,8 +265,8 @@
     "Super Punch": {
       "description": "إلحاق الضرر 50٪ بلكمة واحدة",
       "descriptionComplete": "ألحق الضرر 50٪ بلكمة واحدة",
-      "descriptionFull": "${LEVEL} إلحاق الضرر 50٪ بلكمة واحدة",
-      "descriptionFullComplete": "${LEVEL} ألحق الضرر 50٪ بلكمة واحدة",
+      "descriptionFull": "${LEVEL} إلحاق الضرر 50٪ بلكمة واحدة في",
+      "descriptionFullComplete": "${LEVEL} ألحق الضرر 50٪ بلكمة واحدة في",
       "name": "لكمة خارقة"
     },
     "TNT Terror": {

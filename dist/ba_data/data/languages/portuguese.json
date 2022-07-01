@@ -1183,7 +1183,7 @@
   "playlistsText": "Playlists",
   "pleaseRateText": "Se você está curtindo ${APP_NAME}, por favor, dê um tempinho\npara avaliar e comentar.  Isso nos dá uma opinião útil\ne ajuda no desenvolvimento do jogo.\n\nobrigado!\n-eric",
   "pleaseWaitText": "Por favor, aguarde...",
-  "pluginsDetectedText": "Novo(s) plugin(s) detected. Ative-os/configure-os em configurações.",
+  "pluginsDetectedText": "Novo(s) plugin(s) detetados. Reinicie o jogo para ativá-los ou configure-os nas configurações.",
   "pluginsText": "Plugins",
   "practiceText": "Praticar",
   "pressAnyButtonPlayAgainText": "Aperte qualquer botão para jogar novamente...",

@@ -1122,7 +1122,7 @@
   "playlistsText": "列表",
   "pleaseRateText": "如果你喜欢 ${APP_NAME}，请考虑花一点时间\n来评价一下它或为它写一篇评论。这将为我们提供\n有用的反馈建议，为游戏的未来开发给予支持。\n\n感谢您！\n-eric",
   "pleaseWaitText": "请稍等...",
-  "pluginsDetectedText": "新的插件已经加载.请在设置中启用它们.",
+  "pluginsDetectedText": "新插件安装成功，请重启游戏或在设置中设置它们~",
   "pluginsText": "插件",
   "practiceText": "练习",
   "pressAnyButtonPlayAgainText": "按任意按钮再玩一次...",

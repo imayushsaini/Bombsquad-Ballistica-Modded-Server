@@ -1162,7 +1162,7 @@
   "playlistsText": "Scalette",
   "pleaseRateText": "Se ti sta piacendo ${APP_NAME}, prenditi\nun momento per valutarlo o scriverci su una recensione.\nQuesto aiuterà a supportare futuri sviluppi.\n\nGrazie!\n-eric",
   "pleaseWaitText": "Attendi...",
-  "pluginsDetectedText": "Nuovo/i Plugin rilevato/i. Abilitali/configurali nelle impostazioni.",
+  "pluginsDetectedText": "nuovo/i plugin rilevato. Riavvia per attivarli, o configurali nelle impostazioni.",
   "pluginsText": "Plugin",
   "practiceText": "Allenamento",
   "pressAnyButtonPlayAgainText": "Premi un pulsante qualunque per rigiocare...",

@@ -211,14 +211,14 @@
       "descriptionComplete": "Naipanalo ang laro",
       "descriptionFull": "Panalunin ang laro sa ${LEVEL}",
       "descriptionFullComplete": "Pinanalo ang laro sa ${LEVEL}",
-      "name": "${LEVEL} Panalo"
+      "name": "Nanalo sa ${LEVEL}"
     },
     "Rookie Onslaught Victory": {
       "description": "Italo lahat ang mga kaway",
       "descriptionComplete": "Natalo lahat ang mga kaway",
       "descriptionFull": "Italo lahat ang mga kaway sa ${LEVEL}",
       "descriptionFullComplete": "Natalo lahat ng mga kaway sa ${LEVEL}",
-      "name": "${LEVEL} Panalo"
+      "name": "Nanalo sa ${LEVEL}"
     },
     "Runaround God": {
       "description": "Maka-iskor ng 2000 na Puntos",
@@ -312,7 +312,7 @@
       "descriptionComplete": "Natalo ang lahat na mga kaway",
       "descriptionFull": "Talunin ang lahat na mga kaway sa ${LEVEL}",
       "descriptionFullComplete": "Natalo ang lahat na mga kaway sa ${LEVEL}",
-      "name": "${LEVEL} Panalo"
+      "name": "Nanalo sa ${LEVEL}"
     },
     "Uber Runaround Victory": {
       "description": "Tapusin ang lahat na kaway",
@@ -1110,7 +1110,7 @@
   "playlistsText": "Mga Playlist",
   "pleaseRateText": "Kung nae-enjoy mo ang ${APP_NAME}, mangyaring isaalang-alang ang \npagkuha na sandali lang at i-rate ito o pagsulat ng isang pagsusuri. Nagbibigay ito ngkapaki-pakinabang na feedback at \ntumutulong sa pagsuporta sa pag-unlad sa hinaharap.\n\nsalamat!\n-eric",
   "pleaseWaitText": "Hintay lang…",
-  "pluginsDetectedText": "May nakitang bagong (mga) plugin. Paganahin/i-configure ang mga ito sa mga setting.",
+  "pluginsDetectedText": "May nakitang bagong (mga) plugin. I-restart para i-activate ang mga ito, o i-configure ang mga ito sa mga setting.",
   "pluginsText": "Mga Plugin",
   "practiceText": "Pagsasagawa",
   "pressAnyButtonPlayAgainText": "Pindutin ang anumang button para maglaro muli...",
@@ -1801,13 +1801,13 @@
   "votedAlreadyText": "Nakaboto ka na",
   "votesNeededText": "Kailangan ng ${NUMBER} (na) boto",
   "vsText": "vs.",
-  "waitingForHostText": "(naghihintay para sa ${HOST} na magpatuloy)",
+  "waitingForHostText": "(naghihintay para kay ${HOST} na magpatuloy)",
   "waitingForPlayersText": "naghihintay ng mga manlalaro na sumali...",
   "waitingInLineText": "Naghihintay sa pila (puno ang party)...",
   "watchAVideoText": "Manood ng Isang video",
   "watchAnAdText": "Manood ng Ad",
   "watchWindow": {
-    "deleteConfirmText": "Tangalin \"${REPLAY}\"?",
+    "deleteConfirmText": "Tangalin ang \"${REPLAY}\"?",
     "deleteReplayButtonText": "Itanggal ang \nReplay",
     "myReplaysText": "Ang Mga Replay Ko",
     "noReplaySelectedErrorText": "Walang Napiling Replay",
@@ -1825,7 +1825,7 @@
     "watchReplayButtonText": "Ipanood ang\nReplay"
   },
   "waveText": "Kaway",
-  "wellSureText": "Oo syempre",
+  "wellSureText": "Oo Syempre!",
   "wiimoteLicenseWindow": {
     "titleText": "Copyright ni DarwiinRemote"
   },
@@ -1839,10 +1839,10 @@
     "listenText": "Makinig",
     "macInstructionsText": "Tiyaking naka-off ang iyong Wii at naka-enable ang Bluetooth\nsa iyong Mac, pagkatapos ay pindutin ang 'Makinig'. Maaari ang suporta ng Wiimote\nmaging medyo patumpik-tumpik, kaya maaaring kailanganin mong subukan ng ilang beses\nbago ka magkaroon ng koneksyon.\n\nDapat hawakan ng Bluetooth ang hanggang 7 konektadong device,\nkahit na ang iyong mileage ay maaaring mag-iba.\n\nSinusuportahan ng BombSquad ang orihinal na Wiimotes, Nunchuks,\nat ang Klasikong Controller.\nGumagana na rin ang mas bagong Wii Remote Plus\nngunit hindi sa mga kalakip.",
     "thanksText": "Salamat sa DarwiinRemote team\nPara maging posible ito.",
-    "titleText": "Wiimote Setup"
+    "titleText": "Pag-setup ng Wiimote"
   },
-  "winsPlayerText": "${NAME} Nanalo!",
-  "winsTeamText": "${NAME} Nanalo!",
+  "winsPlayerText": "Nanalo si ${NAME}!",
+  "winsTeamText": "Nanalo ang ${NAME}!",
   "winsText": "${NAME} Nanalo!",
   "worldScoresUnavailableText": "Ang scores sa buong mundo ay hindi pa handa",
   "worldsBestScoresText": "Pinakamahusay na Iskor ng Mundo",

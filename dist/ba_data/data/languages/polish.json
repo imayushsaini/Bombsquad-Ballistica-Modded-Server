@@ -1161,7 +1161,7 @@
   "playlistsText": "Listy gier",
   "pleaseRateText": "Jeśli polubiłeś ${APP_NAME}, proszę o poddanie go ocenie\nlub napisanie krótkiej recenzji. Pozwoli to zebrać przydatne\ninformacje, które pomogą wesprzeć rozwój gry w przyszłości.\n\nDziękuję!\n-Eric",
   "pleaseWaitText": "Czekaj chwilkę...",
-  "pluginsDetectedText": "Nowe pluginy wykryte. Włącz/skonfiguruj je w ustawieniach.",
+  "pluginsDetectedText": "Wykryto nowe pluginy. Uruchom ponownie grę, aby je aktywować, lub skonfiguruje je w ustawieniach.",
   "pluginsText": "Pluginy",
   "practiceText": "Praktyka",
   "pressAnyButtonPlayAgainText": "Naciśnij dowolny przycisk aby zagrać ponownie...",

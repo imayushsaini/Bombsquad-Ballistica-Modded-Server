@@ -341,7 +341,6 @@ class App:
         from bastd import maps as stdmaps
         from bastd.actor import spazappearance
         from ba._generated.enums import TimeType
-        
 
         self._aioloop = _asyncio.setup_asyncio()
 
@@ -430,8 +429,6 @@ class App:
 
         self.meta.on_app_running()
         self.plugins.on_app_running()
-        import custom_hooks
-        custom_hooks.on_app_running()
 
         # from ba._dependency import test_depset
         # test_depset()
@@ -580,7 +577,7 @@ class App:
     def launch_coop_game(self,
                          game: str,
                          force: bool = False,
-                         args: dict = None) -> bool:
+                         args: dict | None = None) -> bool:
         """High level way to launch a local co-op session."""
         # pylint: disable=cyclic-import
         from ba._campaign import getcampaign

@@ -216,7 +216,7 @@
     },
     "Rookie Onslaught Victory": {
       "description": "Tüm dalgaları kazan",
-      "descriptionComplete": "Tüm dalgalar kazanıldı",
+      "descriptionComplete": "Tüm dalgaları kazan",
       "descriptionFull": "${LEVEL} da tüm dalgaları kazan",
       "descriptionFullComplete": "${LEVEL} da tüm dalgalar kazanıldı",
       "name": "${LEVEL} Galibiyeti"
@@ -226,7 +226,7 @@
       "descriptionComplete": "2000 puan kazanıldı",
       "descriptionFull": "${LEVEL} da 2000 puan kazan",
       "descriptionFullComplete": "${LEVEL} da 2000 puan kazanıldı",
-      "name": "${LEVEL} Tanrısı"
+      "name": "${LEVEL} Tanrı"
     },
     "Runaround Master": {
       "description": "500 puan kazan",
@@ -237,7 +237,7 @@
     },
     "Runaround Wizard": {
       "description": "1000 puan kazan",
-      "descriptionComplete": "1000 puan kazanıldı",
+      "descriptionComplete": "1000 puan kazan",
       "descriptionFull": "${LEVEL} da 1000 puan kazan",
       "descriptionFullComplete": "${LEVEL} da 1000 puan kazanıldı",
       "name": "${LEVEL} Büyücüsü"
@@ -249,7 +249,7 @@
     },
     "Stayin' Alive": {
       "description": "Hiç ölmeden Kazan",
-      "descriptionComplete": "Hiç ölmeden kazanıldı",
+      "descriptionComplete": "Hiç ölmeden kazan",
       "descriptionFull": "Hiç ölmeden ${LEVEL} da kazan",
       "descriptionFullComplete": "Hiç ölmeden ${LEVEL} da kazanıldı",
       "name": "Hayatta Kal"
@@ -259,7 +259,7 @@
       "descriptionComplete": "Tek yumruk ile %100 hasar verildi",
       "descriptionFull": "${LEVEL} da tek yumruk ile %100 hasar ver",
       "descriptionFullComplete": "${LEVEL} da tek yumruk ile %100 hasar verildi",
-      "name": "Super Mega Yumruk"
+      "name": "Süper Mega Yumruk"
     },
     "Super Punch": {
       "description": "Tek yumruk ile %50 hasar ver",
@@ -277,19 +277,19 @@
     },
     "Team Player": {
       "descriptionFull": "4+ oyuncu ile bir Takımlar oyunu başlat",
-      "descriptionFullComplete": "4+ oyuncu ile bir Takımlar oyunu başlatıldı",
+      "descriptionFullComplete": "4+ oyuncu ile bir Takım oyunu başlat",
       "name": "Takım Oyuncusu"
     },
     "The Great Wall": {
       "description": "Bütün haylazları durdur",
-      "descriptionComplete": "Bütün haylazlar durduruldu",
+      "descriptionComplete": "Bütün haylazları durdur",
       "descriptionFull": "${LEVEL} da bütün haylazları durdur",
       "descriptionFullComplete": "${LEVEL} da bütün haylazlar durduruldu",
       "name": "Muhteşem Bariyer"
     },
     "The Wall": {
       "description": "Bütün haylazları durdur",
-      "descriptionComplete": "Bütün haylazlar durduruldu",
+      "descriptionComplete": "Bütün haylazları durdur",
       "descriptionFull": "${LEVEL} da bütün haylazları durdur",
       "descriptionFullComplete": "${LEVEL} da bütün haylazlar durduruldu",
       "name": "Bariyer"
@@ -320,7 +320,7 @@
       "descriptionComplete": "Tüm dalgalar tamamlandı",
       "descriptionFull": "${LEVEL} da tüm dalgaları tamamla",
       "descriptionFullComplete": "${LEVEL} da tüm dalgalar tamamlandı",
-      "name": "${LEVEL} Galibiyeti"
+      "name": "${LEVEL} Galibiyet"
     }
   },
   "achievementsRemainingText": "Kalan Başarılar;",
@@ -353,14 +353,14 @@
   "bombBoldText": "BOMBA",
   "bombText": "Bomba",
   "boostText": "Öne Geç",
-  "bsRemoteConfigureInAppText": "${REMOTE_APP_NAME} Uygulaması kendisini yapılandırdı",
+  "bsRemoteConfigureInAppText": "${REMOTE_APP_NAME} Uygulamayı kendisine yapılandır",
   "buttonText": "buton",
   "canWeDebugText": "Oyun otomatik olarak hataları, çökmeleri ve basit \nkullanım istatistiklerini geliştiriciye gondersin mi?\n\nBu veri içeriği kişisel bilgilerinizi kullanmaz\noyunun daha iyi çalışmasına yardımcı olur.",
   "cancelText": "İptal",
   "cantConfigureDeviceText": "Üzgünüz, ${DEVICE} ayarlanabilir değil.",
   "challengeEndedText": "Bu mücadele sona erdi.",
   "chatMuteText": "Konuşmayı sustur",
-  "chatMutedText": "Konuşma Susturuldu",
+  "chatMutedText": "Sohbet Susturuldu",
   "chatUnMuteText": "Konuşmayı aç",
   "choosingPlayerText": "<oyuncu seçme>",
   "completeThisLevelToProceedText": "İlerlemek için bu \nseviyeyi tamamlamalısınız!",
@@ -438,7 +438,7 @@
     "movementControlScaleText": "Hareket Kontrolü Ölçeği",
     "movementText": "Hareket",
     "resetText": "Sıfırla",
-    "swipeControlsHiddenText": "Sürme Simgelerini Gizle",
+    "swipeControlsHiddenText": "Joystick'i gizle",
     "swipeInfoText": "\"Sürme\" kontrol stilleri kullanışlıdır fakat\nkontrollere bakmadan oynamak daha kolaydır.",
     "swipeText": "sürme",
     "titleText": "Dokunmatikleri Yapılandır"
@@ -1108,7 +1108,7 @@
   "playlistsText": "ÇalmaListesi",
   "pleaseRateText": "Eğer ${APP_NAME}'dan zevk aldıysan, lütfen oyunu değerlerdir\nve yorumunu yaz. Bu oyunun daha fazla geliştirilmesine\nyardımcı olur.\n\nteşekkürler!\n-eric",
   "pleaseWaitText": "Lütfen bekle...",
-  "pluginsDetectedText": "Yeni eklenti(ler) tespit edildi.  Bunları ayarlardan etkinleştirin / yapılandırın.",
+  "pluginsDetectedText": "Yeni eklentiler tespit edildi. Onları etkinleştirmek veya ayarlarda yapılandırmak için oyunu yeniden başlatın.",
   "pluginsText": "Eklentiler",
   "practiceText": "Alıştırma",
   "pressAnyButtonPlayAgainText": "Tekrar oynamak için bir tuşa basın...",
