@@ -102,6 +102,7 @@ def setPlaylist(para):
 
 
 def flush_playlists():
+    print("Clearing old playlists..")
     for playlist in _ba.app.config["Team Tournament Playlists"]:
         _ba.add_transaction(
         {

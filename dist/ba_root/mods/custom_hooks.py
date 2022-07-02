@@ -53,8 +53,9 @@ class modSetup(ba.Plugin):
 
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
-    def on_app_shutdown(self):
         playlist.flush_playlists()
+    def on_app_shutdown(self):
+        pass
 
 
 
