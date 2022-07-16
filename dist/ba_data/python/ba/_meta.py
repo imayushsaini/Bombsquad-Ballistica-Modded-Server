@@ -288,7 +288,7 @@ class DirectoryScan:
 
         # If we find a module requiring a different api version, warn
         # and ignore.
-        if required_api is not None and required_api <= CURRENT_API_VERSION:
+        if required_api is not None and required_api < CURRENT_API_VERSION:
             self.results.warnings += (
                 f'Warning: {subpath} requires api {required_api} but'
                 f' we are running {CURRENT_API_VERSION}; ignoring module.\n')
