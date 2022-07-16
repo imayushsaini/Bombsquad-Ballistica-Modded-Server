@@ -624,7 +624,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} In epic slow motion.",
   "epicNameFilterText": "Epic ${NAME}",
   "errorAccessDeniedText": "access denied",
+  "errorDeviceTimeIncorrectText": "Your device's time is off by ${HOURS} hours.\nThis is likely to cause problems.\nPlease check your time and time-zone settings.",
   "errorOutOfDiskSpaceText": "out of disk space",
+  "errorSecureConnectionFailText": "Unable to establish secure cloud connection; network functionality may fail.",
   "errorText": "Error",
   "errorUnknownText": "unknown error",
   "exitGameText": "Exit ${APP_NAME}?",
@@ -787,7 +789,7 @@
     "ticketPack4Text": "Jumbo Ticket Pack",
     "ticketPack5Text": "Mammoth Ticket Pack",
     "ticketPack6Text": "Ultimate Ticket Pack",
-    "ticketsFromASponsorText": "Get ${COUNT} tickets\nfrom a sponsor",
+    "ticketsFromASponsorText": "Watch an ad\nfor ${COUNT} tickets",
     "ticketsText": "${COUNT} Tickets",
     "titleText": "Get Tickets",
     "unavailableLinkAccountText": "Sorry, purchases are not available on this platform.\nAs a workaround, you can link this account to an account on\nanother platform and make purchases there.",
@@ -798,6 +800,7 @@
     "youHaveText": "you have ${COUNT} tickets"
   },
   "googleMultiplayerDiscontinuedText": "Sorry, Google’s multiplayer service is no longer available.\nI am working on a replacement as fast as possible.\nUntil then, please try another connection method.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Google Play purchases are not available.\nYou may need to update your store app.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Always",

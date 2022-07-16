@@ -112,13 +112,15 @@ class PluginSubsystem:
         # or workspaces.
         if disappeared_plugs:
             _ba.playsound(_ba.getsound('shieldDown'))
-            _ba.screenmessage(Lstr(resource='pluginsRemovedText',
-                                   subs=[('${NUM}',
-                                          str(len(disappeared_plugs)))]),
-                              color=(1, 1, 0))
+            _ba.screenmessage(
+                Lstr(resource='pluginsRemovedText',
+                     subs=[('${NUM}', str(len(disappeared_plugs)))]),
+                color=(1, 1, 0),
+            )
+            plugnames = ', '.join(disappeared_plugs)
             _ba.log(
                 f'{len(disappeared_plugs)} plugin(s) no longer found:'
-                f' {disappeared_plugs}',
+                f' {plugnames}.',
                 to_server=False)
             for goneplug in disappeared_plugs:
                 del _ba.app.config['Plugins'][goneplug]

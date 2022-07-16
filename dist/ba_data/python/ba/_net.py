@@ -3,6 +3,7 @@
 """Networking related functionality."""
 from __future__ import annotations
 
+import ssl
 import copy
 import threading
 import weakref
@@ -29,14 +30,32 @@ class NetworkSubsystem:
         # as it is updated by a background thread.
         self.zone_pings_lock = threading.Lock()
 
-        # Region IDs mapped to average pings. This will remain empty
+        # Zone IDs mapped to average pings. This will remain empty
         # until enough pings have been run to be reasonably certain
         # that a nearby server has been pinged.
         self.zone_pings: dict[str, float] = {}
 
+        self._sslcontext: ssl.SSLContext | None = None
+
         # For debugging.
         self.v1_test_log: str = ''
         self.v1_ctest_results: dict[int, str] = {}
+        self.server_time_offset_hours: float | None = None
+
+    @property
+    def sslcontext(self) -> ssl.SSLContext:
+        """Create/return our shared SSLContext.
+
+        This can be reused for all standard urllib requests/etc.
+        """
+        # Note: I've run into older Android devices taking upwards of 1 second
+        # to put together a default SSLContext, so recycling one can definitely
+        # be a worthwhile optimization. This was suggested to me in this
+        # thread by one of Python's SSL maintainers:
+        # https://github.com/python/cpython/issues/94637
+        if self._sslcontext is None:
+            self._sslcontext = ssl.create_default_context()
+        return self._sslcontext
 
 
 def get_ip_address_type(addr: str) -> socket.AddressFamily:
@@ -108,30 +127,36 @@ class MasterServerCallThread(threading.Thread):
             self._callback(arg)
 
     def run(self) -> None:
-        # pylint: disable=too-many-branches, consider-using-with
+        # pylint: disable=consider-using-with
         import urllib.request
         import urllib.parse
+        import urllib.error
         import json
 
-        from efro.error import is_urllib_network_error
+        from efro.error import is_urllib_communication_error
         from ba import _general
+
+        response_data: Any = None
+        url: str | None = None
         try:
             self._data = _general.utf8_all(self._data)
             _ba.set_thread_name('BA_ServerCallThread')
             if self._request_type == 'get':
+                url = (_ba.get_master_server_address() + '/' + self._request +
+                       '?' + urllib.parse.urlencode(self._data))
                 response = urllib.request.urlopen(
                     urllib.request.Request(
-                        (_ba.get_master_server_address() + '/' +
-                         self._request + '?' +
-                         urllib.parse.urlencode(self._data)), None,
-                        {'User-Agent': _ba.app.user_agent_string}),
+                        url, None, {'User-Agent': _ba.app.user_agent_string}),
+                    context=_ba.app.net.sslcontext,
                     timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS)
             elif self._request_type == 'post':
+                url = _ba.get_master_server_address() + '/' + self._request
                 response = urllib.request.urlopen(
                     urllib.request.Request(
-                        _ba.get_master_server_address() + '/' + self._request,
+                        url,
                         urllib.parse.urlencode(self._data).encode(),
                         {'User-Agent': _ba.app.user_agent_string}),
+                    context=_ba.app.net.sslcontext,
                     timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS)
             else:
                 raise TypeError('Invalid request_type: ' + self._request_type)
@@ -151,28 +176,17 @@ class MasterServerCallThread(threading.Thread):
                 raise TypeError(f'invalid responsetype: {self._response_type}')
 
         except Exception as exc:
-            do_print = False
-            response_data = None
 
             # Ignore common network errors; note unexpected ones.
-            if is_urllib_network_error(exc):
-                pass
-            elif (self._response_type == MasterServerResponseType.JSON
-                  and isinstance(exc, json.decoder.JSONDecodeError)):
-                # FIXME: should handle this better; could mean either the
-                # server sent us bad data or it got corrupted along the way.
-                pass
-            else:
-                do_print = True
-
-            if do_print:
-                # Any other error here is unexpected,
-                # so let's make a note of it,
+            if not is_urllib_communication_error(exc, url=url):
                 print(f'Error in MasterServerCallThread'
-                      f' (response-type={self._response_type},'
+                      f' (url={url},'
+                      f' response-type={self._response_type},'
                       f' response-data={response_data}):')
                 import traceback
                 traceback.print_exc()
+
+            response_data = None
 
         if self._callback is not None:
             _ba.pushcall(_general.Call(self._run_callback, response_data),

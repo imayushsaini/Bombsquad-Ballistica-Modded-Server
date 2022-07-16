@@ -329,6 +329,7 @@
   "achievementsRemainingText": "Preostala Postignuća:",
   "achievementsText": "Postignuća",
   "achievementsUnavailableForOldSeasonsText": "Žao nam je,postignuća pojedinosti nisu dostupni za stare sezone.",
+  "activatedText": "${THING} uključeno.",
   "addGameWindow": {
     "getMoreGamesText": "Još igara...",
     "titleText": "Dodaj igru"
@@ -1117,7 +1118,10 @@
   "playlistsText": "Liste igara",
   "pleaseRateText": "Ako ti se sviđa ${APP_NAME}, molim te razmisli o tome\nda ga ocijeniš ili napišeš recenziju.\nOvako šalješ korisnu povratnu informaciju koja pomaže u daljnjem razvoju.\n\nHvala!\n-eric",
   "pleaseWaitText": "Molimo sačekajte...",
+  "pluginClassLoadErrorText": "Pogreška učitavanja dodatka klase '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Pogreška iniciranja dodatka '${PLUGIN}': ${ERROR}",
   "pluginsDetectedText": "Novi dodatak(ci) detektiran(i) Resetiraj da ih ukljućiš ili ih konfiguriraj u postavkima",
+  "pluginsRemovedText": "${NUM} dodatak/ci više nisu pronađeni.",
   "pluginsText": "Dodatci",
   "practiceText": "Vježba",
   "pressAnyButtonPlayAgainText": "Pritisni bilo koju tipku za ponovnu igru...",
@@ -1858,6 +1862,8 @@
   "winsPlayerText": "${NAME} pobjeđuje!",
   "winsTeamText": "${NAME} pobjeđuju!",
   "winsText": "${NAME} pobjeđuje!",
+  "workspaceSyncErrorText": "Pogreška sinkroniziranja ${WORKSPACE}. Pogledaj log za više detalja.",
+  "workspaceSyncReuseText": "Nemoguće sinkronizirati ${WORKSPACE}. Ponovno korištenje stare verzije",
   "worldScoresUnavailableText": "Svjetski rezultati nedostupni.",
   "worldsBestScoresText": "Najbolji svjetski rezultati",
   "worldsBestTimesText": "Najbolja svjetska prolazna vremena",
