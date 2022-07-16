@@ -53,7 +53,7 @@ class modSetup(ba.Plugin):
 
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
-        playlist.flush_playlists()
+        ba.timer(60,playlist.flush_playlists)
     def on_app_shutdown(self):
         pass
 
@@ -105,7 +105,7 @@ def bootstraping():
     if settings["StumbledScoreScreen"]:
         from features import StumbledScoreScreen
     if settings["colorfullMap"]:
-        from plugins import colorfulmaps
+        from plugins import colorfulmaps2
 
     # import features
     if settings["whitelist"]:

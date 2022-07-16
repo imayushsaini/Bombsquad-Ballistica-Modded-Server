@@ -3,6 +3,7 @@ import ba
 import _ba
 from bastd.gameutils import SharedObjects
 import random
+import weakref
 from ba._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
 on_begin_original = ba._activity.Activity.on_begin
 
@@ -65,6 +66,7 @@ class FireFly(ba.Actor):
             ))
         self.node = ba.newnode(
             'prop',
+            delegate=self,
             attrs={
                 'model': ba.getmodel('bomb'),
                 'position': (2,4,2),
@@ -124,10 +126,11 @@ class FireFly(ba.Actor):
     def handlemessage(self, msg):
         if isinstance(msg, ba.DieMessage):
             self.off()
-        elif isinstance(msg, OutOfBoundMessage):
-            self.handlemessage(ba.DieMessage(how=OutOfBoundMessage))
-        else:
-            return super().handlemessage(msg)
+            return None
+        elif isinstance(msg, OutOfBoundsMessage):
+            return self.handlemessage(ba.DieMessage(how=DeathType.OUT_OF_BOUNDS))
+
+        return super().handlemessage(msg)
 
     def generate_keys(self,m):
         keys = {}
