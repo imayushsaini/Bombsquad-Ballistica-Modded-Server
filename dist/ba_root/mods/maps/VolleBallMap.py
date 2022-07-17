@@ -1,8 +1,8 @@
 
 import ba,_ba
 from bastd.gameutils import SharedObjects
-if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, List, Dict, Type, Type , Union, Any, Literal
+
+from typing import Any, Sequence, Optional, List, Dict, Type, Type , Union, Any, Literal
 
 a=0.0
 class Pointzz:
@@ -49,7 +49,7 @@ class PointzzforH:
     points['tnt1'] = (-0.05791962398, 1.080990833, -4.765886164)
 
 class VolleyBallMap(ba.Map):
-    from VolleyBall import Pointzz as defs
+    defs = Pointzz
     name = "Open Field"
 
     @classmethod
@@ -166,7 +166,7 @@ class VolleyBallMap(ba.Map):
 class VolleyBallMapH(ba.Map):
     """Stadium map used for ice hockey games."""
 
-    from VolleyBall import PointzzforH as defs
+    defs = PointzzforH
     name = 'Closed Arena'
 
     @classmethod

@@ -1,7 +1,7 @@
 import ba
 from bastd.gameutils import SharedObjects
-if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, List, Dict, Type, Type , Union, Any, Literal
+
+from typing import Any, Sequence, Optional, List, Dict, Type, Type , Union, Any, Literal
 
 class MGdefs():
     points = {}

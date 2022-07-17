@@ -39,7 +39,7 @@ class mega_mine_defs:
 class MegaMine(ba.Map):
     """A giant mine!"""
 
-    from new_maps import mega_mine_defs as defs
+    defs = mega_mine_defs
 
     name = 'Mega Mine'
 
@@ -114,7 +114,7 @@ class powerups_defs:
 class PowerupMap(ba.Map):
     """A Powerups!"""
 
-    from new_maps import powerups_defs as defs
+    defs = powerups_defs
 
     name = 'Powerups'
 
@@ -224,7 +224,7 @@ class darkness_defs:
     points['powerup_spawn4'] = (3.5,2,3.5)
 
 class Dark(ba.Map):
-    from new_maps import darkness_defs as defs
+    defs = darkness_defs
     name = 'Dark world'
     
     
@@ -271,7 +271,7 @@ class Dark(ba.Map):
 class SuperTntMap(ba.Map):
     """A giant mine!"""
 
-    from new_maps import powerups_defs as defs
+    defs = powerups_defs
 
     name = 'Super TNT'
 
@@ -407,10 +407,5 @@ def register_maps():
     for new_map in MAPS:
         ba._map.register_map(new_map)
 
-# ba_meta export plugin
-class MoreMaps(ba.Plugin):
-    def __init__(self):
-        if _ba.env().get("build_number", 0) >= 20258:
-            register_maps()
-        else:
-            print("new_maps.py only runs with BombSquad versions higher than 1.5.29.")
+
+register_maps()

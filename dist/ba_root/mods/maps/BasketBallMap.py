@@ -3,8 +3,8 @@ from bastd.gameutils import SharedObjects
 from bastd.actor import playerspaz as ps
 from bastd import maps
 
-if TYPE_CHECKING:
-    from typing import Any, Sequence, Dict, Type, List, Optional, Union
+
+from typing import Any, Sequence, Dict, Type, List, Optional, Union
 
 class BasketMap(maps.FootballStadium):
     name = 'BasketBall Stadium'
