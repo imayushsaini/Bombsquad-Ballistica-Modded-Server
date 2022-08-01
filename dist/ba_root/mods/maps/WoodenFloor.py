@@ -11,7 +11,8 @@ if TYPE_CHECKING:
 
 class WoodenFloor(ba.Map):
     """Stadium map for football games."""
-    from bastd.mapdata import football_stadium as defs
+    from bastd.mapdata import football_stadium as defs_copy
+    defs = defs_copy
     defs.points['spawn1'] = (-12.03866341, 0.02275111462, 0.0) + (0.5, 1.0, 4.0)
     defs.points['spawn2'] = (12.823107149, 0.01092306765, 0.0) + (0.5, 1.0, 4.0)
     name = 'Wooden Floor'
