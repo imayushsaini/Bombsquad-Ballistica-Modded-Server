@@ -114,5 +114,5 @@
     "enableeffects": true,
     "enableTop5effects": true,
     "enableTagAnimation":true,
-    "mutetime(seconds)":10
+    "mutetime(seconds)":300
 }
