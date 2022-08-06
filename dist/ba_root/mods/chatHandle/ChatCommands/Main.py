@@ -85,7 +85,7 @@ def Command(msg, clientid):
 
     if accountid in serverdata.clients:
         if serverdata.clients[accountid]["isMuted"]:
-            _ba.screenmessage("You are on mute", transient=True, clients=[clientid])
+#            _ba.screenmessage("You are on mute", transient=True, clients=[clientid])
             return None
     if serverdata.muted:
         return None
