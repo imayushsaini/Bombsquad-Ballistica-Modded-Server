@@ -113,5 +113,6 @@
     "enableHitTexts": true,
     "enableeffects": true,
     "enableTop5effects": true,
-    "enableTagAnimation":true
+    "enableTagAnimation":true,
+    "mutetime(seconds)":10
 }
