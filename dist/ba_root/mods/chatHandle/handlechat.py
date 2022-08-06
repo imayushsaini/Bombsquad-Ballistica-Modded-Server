@@ -53,7 +53,7 @@ def filter_chat_message(msg, client_id):
             _ba.screenmessage("Server on mute", transient=True, clients=[client_id])
             return
 
-        elif time.time() < serverdata.clients[acid]["isMuted"]:
+        elif time.time() < serverdata.clients[acid]["isMuted"] or serverdata.clients[acid]["isMuted"]==True:
             timer = serverdata.clients[acid]["isMuted"] - time.time()
             _ba.screenmessage("You are on mute, " + str(round(timer)) + " seconds remaining" , transient=True, clients=[client_id])
             return None
