@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import time
 import os
 import _thread
+import setting
 
 from serverData import serverdata
 from tools.file_handle import OpenJson
@@ -18,6 +19,7 @@ import json
 if TYPE_CHECKING:
     pass
 
+our_settings = setting.get_settings_data()
 
 PLAYERS_DATA_PATH = os.path.join(
     _ba.env()["python_directory_user"], "playersData" + os.sep
@@ -223,8 +225,9 @@ def mute(account_id: str) -> None:
         acccount id of the player to be muted
     """
     profiles = get_profiles()
+    expired = time.time() + our_settings["mutetime(seconds)"]
     if account_id in profiles:
-        profiles[account_id]["isMuted"] = True
+        profiles[account_id]["isMuted"] = expired
         CacheData.profiles=profiles
         _thread.start_new_thread(commit_profiles, (profiles,))
 
@@ -239,7 +242,7 @@ def unmute(account_id: str) -> None:
     """
     profiles = get_profiles()
     if account_id in profiles:
-        profiles[account_id]["isMuted"] = False
+        profiles[account_id]["isMuted"] = time.time()
         CacheData.profiles=profiles
         _thread.start_new_thread(commit_profiles, (profiles,))
 
