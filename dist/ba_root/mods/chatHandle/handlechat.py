@@ -8,6 +8,7 @@ from chatHandle.chatFilter import ChatFilter
 from features import EndVote
 import ba, _ba
 import setting
+import time
 
 settings = setting.get_settings_data()
 
@@ -52,9 +53,11 @@ def filter_chat_message(msg, client_id):
             _ba.screenmessage("Server on mute", transient=True, clients=[client_id])
             return
 
-        elif serverdata.clients[acid]["isMuted"]:
-            _ba.screenmessage("You are on mute", transient=True, clients=[client_id])
+        elif time.time() < serverdata.clients[acid]["isMuted"]:
+            timer = serverdata.clients[acid]["isMuted"] - time.time()
+            _ba.screenmessage("You are on mute, " + str(round(timer)) + " seconds remaining" , transient=True, clients=[client_id])
             return None
+
         elif servercheck.get_account_age(serverdata.clients[acid]["accountAge"]) < settings['minAgeToChatInHours']:
             _ba.screenmessage("New accounts not allowed to chat here", transient=True, clients=[client_id])
             return None
