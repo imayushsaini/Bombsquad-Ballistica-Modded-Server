@@ -5,7 +5,7 @@
 # Uncomment any of these values to override defaults.
 
 # Name of our server in the public parties list.
-party_name: smoothy
+party_name: 🔥 Tamil 🔥
 
 # If true, your party will show up in the global public party list
 # Otherwise it will still be joinable via LAN or connecting by IP address.
@@ -37,7 +37,7 @@ port: 43210
 # multiple controllers. Also, this number currently includes the server so
 # generally make it 1 bigger than you need. Max-players is not currently
 # exposed but I'll try to add that soon.
-max_party_size: 6
+max_party_size: 8
 
 # Options here are 'ffa' (free-for-all), 'teams' and 'coop' (cooperative)
 # This value is ignored if you supply a playlist_code (see below).
@@ -80,7 +80,7 @@ playlist_code: 374313
 
 # Series length in teams mode (7 == 'best-of-7' series; a team must
 # get 4 wins)
-teams_series_length: 7
+teams_series_length: 9
 
 # Points to win in free-for-all mode (Points are awarded per game based on
 # performance)
@@ -120,11 +120,11 @@ stats_url: https://discord.gg/ucyaesh
 
 # Team names (teams mode only).
 team_names:
-- ladoo
-- barfi
+- Tamilans
+- vadakans
 
 # Team colors (teams mode only).
 team_colors:
-- [2, 0.25, 1.0]
-- [1.0, 0.25, 0.2]
+- [3, 0.25, 1.0]
+- [4.0, 0.25, 0.2]
 
