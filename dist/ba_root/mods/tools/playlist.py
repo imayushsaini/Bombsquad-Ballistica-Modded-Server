@@ -25,7 +25,7 @@ def set_playlist(content):
     _playlists_var = "{} Playlists".format(content["playlistType"])
     playlists = _ba.app.config[_playlists_var]
     playlist = playlists[content["playlistName"]]
-    _ba.chatmessage("Fetched playlist:"+content["playlistName"])
+    ba.internal.chatmessage("Fetched playlist:"+content["playlistName"])
     typename = (
             'teams' if content['playlistType'] == 'Team Tournament' else
             'ffa' if content['playlistType'] == 'Free-for-All' else '??')
@@ -75,14 +75,14 @@ def set_next_map(session, game_map):
 
 
 def playlist(code):
-    _ba.add_transaction(
+    ba.internal.add_transaction(
         {
             'type': 'IMPORT_PLAYLIST',
             'code': str(code),
             'overwrite': True
         },
         callback=set_playlist)
-    _ba.run_transactions()
+    ba.internal.run_transactions()
 
 
 
@@ -96,26 +96,26 @@ def setPlaylist(para):
     elif para in settings["playlists"]:
         playlist(settings["playlists"][para])
     else:
-        _ba.chatmessage("Available Playlist")
+        ba.internal.chatmessage("Available Playlist")
         for play in settings["playlists"]:
-            _ba.chatmessage(play)
+            ba.internal.chatmessage(play)
 
 
 def flush_playlists():
     print("Clearing old playlists..")
     for playlist in _ba.app.config["Team Tournament Playlists"]:
-        _ba.add_transaction(
+        ba.internal.add_transaction(
         {
             "type":"REMOVE_PLAYLIST",
             "playlistType":"Team Tournament",
             "playlistName":playlist
         })
-    _ba.run_transactions()
+    ba.internal.run_transactions()
     for playlist in _ba.app.config["Free-for-All Playlists"]:
-        _ba.add_transaction(
+        ba.internal.add_transaction(
         {
             "type":"REMOVE_PLAYLIST",
             "playlistType":"Free-for-All",
             "playlistName":playlist
         })
-    _ba.run_transactions()
+    ba.internal.run_transactions()

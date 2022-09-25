@@ -7,7 +7,7 @@ import ba.internal
 def send(msg, clientid):
 	"""Shortcut To Send Private Msg To Client"""
 	
-	_ba.chatmessage(str(msg), clients=[clientid])
+	ba.internal.chatmessage(str(msg), clients=[clientid])
 	_ba.screenmessage(str(msg), transient=True, clients=[clientid])
 
 
