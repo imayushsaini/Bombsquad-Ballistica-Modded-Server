@@ -2,12 +2,9 @@
 # Just edit Config before starting server
 # by: Lirik
 # Further edited/Fixed by:Freak
-# ba_meta require api 7
-
 import ba
 import random
 from random import choice
-
 CONFIGS = {
                 "Radius": 2.0,
                 "Blinking": False,
@@ -121,7 +118,5 @@ def Map___init__(func):
 
     return wrapper
 
-# ba_meta export plugin
-class MapColor(ba.Plugin):
-    def on_app_running(self):
-        ba.Map.__init__ = Map___init__(ba.Map.__init__)
+
+ba.Map.__init__ = Map___init__(ba.Map.__init__)

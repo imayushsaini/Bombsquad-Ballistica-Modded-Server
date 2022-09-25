@@ -67,7 +67,7 @@ class Spaz(ba.Actor):
                  color: Sequence[float] = (1.0, 1.0, 1.0),
                  highlight: Sequence[float] = (0.5, 0.5, 0.5),
                  character: str = 'Spaz',
-                 source_player: ba.Player = None,
+                 source_player: ba.Player | None = None,
                  start_invincible: bool = True,
                  can_accept_powerups: bool = True,
                  powerups_expire: bool = False,
@@ -177,6 +177,7 @@ class Spaz(ba.Actor):
         self._bomb_wear_off_timer: ba.Timer | None = None
         self._bomb_wear_off_flash_timer: ba.Timer | None = None
         self._multi_bomb_wear_off_timer: ba.Timer | None = None
+        self._multi_bomb_wear_off_flash_timer: ba.Timer | None = None
         self.bomb_count = self.default_bomb_count
         self._max_bomb_count = self.default_bomb_count
         self.bomb_type_default = self.default_bomb_type
@@ -605,6 +606,7 @@ class Spaz(ba.Actor):
         """
         assert self.node
         self.node.boxing_gloves = True
+        self._has_boxing_gloves = True
         if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.7
             self._punch_cooldown = 300
@@ -704,7 +706,7 @@ class Spaz(ba.Actor):
                     self.node.mini_billboard_1_start_time = t_ms
                     self.node.mini_billboard_1_end_time = (
                         t_ms + POWERUP_WEAR_OFF_TIME)
-                    self._multi_bomb_wear_off_timer = (ba.Timer(
+                    self._multi_bomb_wear_off_flash_timer = (ba.Timer(
                         (POWERUP_WEAR_OFF_TIME - 2000),
                         ba.WeakCall(self._multi_bomb_wear_off_flash),
                         timeformat=ba.TimeFormat.MILLISECONDS))
@@ -753,7 +755,6 @@ class Spaz(ba.Actor):
                         ba.WeakCall(self._bomb_wear_off),
                         timeformat=ba.TimeFormat.MILLISECONDS))
             elif msg.poweruptype == 'punch':
-                self._has_boxing_gloves = True
                 tex = PowerupBoxFactory.get().tex_punch
                 self._flash_billboard(tex)
                 self.equip_boxing_gloves()
@@ -1266,7 +1267,7 @@ class Spaz(ba.Actor):
             else:
                 self.node.counter_text = ''
 
-    def curse_explode(self, source_player: ba.Player = None) -> None:
+    def curse_explode(self, source_player: ba.Player | None = None) -> None:
         """Explode the poor spaz spectacularly."""
         if self._cursed and self.node:
             self.shatter(extreme=True)

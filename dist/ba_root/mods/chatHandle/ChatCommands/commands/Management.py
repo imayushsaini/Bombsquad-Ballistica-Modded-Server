@@ -3,9 +3,10 @@ from playersData import pdata
 # from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
 import ba, _ba, time, setting
+import ba.internal
 import _thread
 from tools import playlist
-Commands = ['maxplayers','playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
+Commands = ['lm', 'gp', 'party', 'quit', 'kickvote','maxplayers','playlist','ban','kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause', 'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand','getroles', 'removecmd', 'changetag','customtag','customeffect','add', 'spectators', 'lobbytime']
 CommandAliases = ['max','rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm', 'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera','effect']
 
 
@@ -33,6 +34,17 @@ def ExcelCommand(command, arguments, clientid, accountid):
 		ban(arguments)
 	elif command in ['end', 'next']:
 		end(arguments)
+	elif command == 'kickvote':
+		kikvote(arguments, clientid)
+	
+	elif command == 'lm':
+		last_msgs(clientid)
+
+	elif command == 'gp':
+		get_profiles(arguments, clientid)
+
+	elif command == 'party':
+		party_toggle(arguments)
 	
 	elif command in ['quit', 'restart']:
 		quit(arguments)
@@ -101,7 +113,7 @@ def changepartysize(arguments):
 	if len(arguments)==0:
 		_ba.chatmessage("enter number")
 	else:
-		_ba.set_public_party_max_size(int(arguments[0]))
+		ba.internal.set_public_party_max_size(int(arguments[0]))
 
 def changeplaylist(arguments):
 	if len(arguments)==0:
@@ -116,15 +128,75 @@ def changeplaylist(arguments):
 
 
 def kick(arguments):
-	_ba.disconnect_client(int(arguments[0]))
+	ba.internal.disconnect_client(int(arguments[0]))
 	return
+def kikvote(arguments, clientid):
+	if arguments == [] or arguments == [''] or len(arguments) < 2:
+		return 
 
+	elif arguments[0] == 'enable':
+		if arguments[1] == 'all':
+			_ba.set_enable_default_kick_voting(True)
+		else:
+			try:
+				cl_id=int(arguments[1])
+				for ros in ba.internal.get_game_roster():
+					if ros["client_id"]==cl_id:
+						if ros["account_id"] in serverdata.clients:
+							serverdata.clients[ros["account_id"]]["canStartKickVote"]=True
+							send("Upon server restart, Kick-vote will be enabled for this person", clientid)
+				return
+			except:
+				return
+
+	elif arguments[0] == 'disable':
+		if arguments[1] == 'all':
+			_ba.set_enable_default_kick_voting(False)
+		else:
+			try:
+				cl_id=int(arguments[1])
+				for ros in ba.internal.get_game_roster():
+					if ros["client_id"]==cl_id:
+						_ba.disable_kickvote(ros["account_id"])
+						send("Kick-vote disabled for this person", clientid)
+						if ros["account_id"] in serverdata.clients:
+							serverdata.clients[ros["account_id"]]["canStartKickVote"]=False
+				return
+			except:
+				return
+	else:
+		return					
+
+def last_msgs(clientid):
+	for i in ba.internal.get_chat_messages():
+		send(i,clientid)
+
+def get_profiles(arguments,clientid):
+	try:
+		playerID = int(arguments[0])
+		num = 1
+		for i in ba.internal.get_foreground_host_session().sessionplayers[playerID].inputdevice.get_player_profiles():
+			try:
+				send(f"{num})-  {i}",clientid)
+				num += 1
+			except:
+				pass
+	except:
+		pass
+
+def party_toggle(arguments):
+	if arguments == ['public']:
+		ba.internal.set_public_party_enabled(True)
+		_ba.chatmessage("party is public now")
+	elif arguments == ['private']:
+		ba.internal.set_public_party_enabled(False)
+		_ba.chatmessage("party is private now")
+	else:
+		pass
 
 
 def end(arguments):
-	
 	if arguments == [] or arguments == ['']:
-		
 		try:
 			with _ba.Context(_ba.get_foreground_host_activity()):
 				_ba.get_foreground_host_activity().end_game()
@@ -135,7 +207,7 @@ def ban(arguments):
 	try:
 		cl_id=int(arguments[0])
 		ac_id=""
-		for ros in _ba.get_game_roster():
+		for ros in ba.internal.get_game_roster():
 			if ros["client_id"]==cl_id:
 				_thread.start_new_thread(pdata.ban_player,(ros['account_id'],))
 				
@@ -161,7 +233,7 @@ def mute(arguments):
 	try:
 		cl_id=int(arguments[0])
 		ac_id=""
-		for ros in _ba.get_game_roster():
+		for ros in ba.internal.get_game_roster():
 			if ros["client_id"]==cl_id:
 				_thread.start_new_thread(pdata.mute,(ros['account_id'],))
 				
@@ -180,7 +252,7 @@ def un_mute(arguments):
 	try:
 		cl_id=int(arguments[0])
 		ac_id=""
-		for ros in _ba.get_game_roster():
+		for ros in ba.internal.get_game_roster():
 			if ros["client_id"]==cl_id:
 				pdata.unmute(ros['account_id'])
 				ac_id=ros['account_id']
@@ -198,13 +270,13 @@ def remove(arguments):
 		return 
 	
 	elif arguments[0] == 'all':
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		for i in session.sessionplayers:
 			i.remove_from_game()
 	
 	else:
 		try:
-			session = _ba.get_foreground_host_session()
+			session = ba.internal.get_foreground_host_session()
 			for i in session.sessionplayers:
 				if i.inputdevice.client_id== int(arguments[0]):
 					i.remove_from_game()
@@ -298,7 +370,7 @@ def create_role(arguments):
 def add_role_to_player(arguments):
 	try:
 		
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
 				roles=pdata.add_player_role(arguments[0],i.get_v1_account_id())
@@ -309,7 +381,7 @@ def add_role_to_player(arguments):
 
 def remove_role_from_player(arguments):
 	try:
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
 				roles=pdata.remove_player_role(arguments[0],i.get_v1_account_id())
@@ -318,7 +390,7 @@ def remove_role_from_player(arguments):
 		return
 def get_roles_of_player(arguments,clientid):
 	try:
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		roles=[]
 		reply=""
 		for i in session.sessionplayers:
@@ -338,7 +410,7 @@ def change_role_tag(arguments):
 
 def set_custom_tag(arguments):
 	try:
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
 				roles=pdata.set_tag(arguments[0],i.get_v1_account_id())
@@ -346,7 +418,7 @@ def set_custom_tag(arguments):
 	    return
 def set_custom_effect(arguments):
 	try:
-		session = _ba.get_foreground_host_session()
+		session = ba.internal.get_foreground_host_session()
 		for i in session.sessionplayers:
 			if i.inputdevice.client_id== int(arguments[1]):
 				roles=pdata.set_effect(arguments[0],i.get_v1_account_id())
@@ -398,7 +470,7 @@ def remove_command_to_role(arguments):
 # 		return
 	
 	# else:
-	# 	rost = _ba.get_game_roster()
+	# 	rost = ba.internal.get_game_roster()
 		
 	# 	for i in rost:
 	# 		if i['client_id'] == int(arguments[0]):
@@ -428,11 +500,12 @@ def spectators(arguments):
 
 
 def change_lobby_check_time(arguments):
-	try:
-		argument = int(arguments[0])
-	except:
-		_ba.chatmessage("must type numbe to change lobby check time")
-	settings = setting.get_settings_data()
-	settings["white_list"]["lobbychecktime"] = argument
-	setting.commit(settings)
-	_ba.chatmessage(f"lobby check time is {arg} now")
+    try:
+        argument = int(arguments[0])
+    except:
+        _ba.chatmessage("must type number to change lobby check time")
+        return
+    settings = setting.get_settings_data()
+    settings["white_list"]["lobbychecktime"] = argument
+    setting.commit(settings)
+    _ba.chatmessage(f"lobby check time is {argument} now")

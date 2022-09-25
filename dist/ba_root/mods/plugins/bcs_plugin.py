@@ -5,6 +5,7 @@
 from typing import Optional, Any, Dict, List, Type, Sequence
 from ba._gameactivity import GameActivity
 import ba,_ba
+import ba.internal
 import json
 import os
 import _thread
@@ -53,7 +54,7 @@ class BsDataThread(object):
         nextMap=''
         currentMap=''
         global stats
-        for i in _ba.get_game_roster():
+        for i in ba.internal.get_game_roster():
 
 
             try:
@@ -61,9 +62,9 @@ class BsDataThread(object):
             except:
                 liveplayers[i['account_id']]={'name':"<in-lobby>",'clientid':i['client_id'],'device_id':i['display_string']}
         try:
-            nextMap=_ba.get_foreground_host_session().get_next_game_description().evaluate()
+            nextMap=ba.internal.get_foreground_host_session().get_next_game_description().evaluate()
 
-            current_game_spec=_ba.get_foreground_host_session()._current_game_spec
+            current_game_spec=ba.internal.get_foreground_host_session()._current_game_spec
             gametype: Type[GameActivity] =current_game_spec['resolved_type']
 
             currentMap=gametype.get_settings_display_string(current_game_spec).evaluate()
@@ -74,7 +75,7 @@ class BsDataThread(object):
         system={'cpu':"null",'ram':'null'}
         stats['system']=system
         stats['roster']=liveplayers
-        stats['chats']=_ba.get_chat_messages()
+        stats['chats']=ba.internal.get_chat_messages()
         stats['playlist']=minigame
         stats['teamInfo']=self.getTeamInfo()
 
@@ -83,7 +84,7 @@ class BsDataThread(object):
     def getTeamInfo(self):
         data={}
 
-        session=_ba.get_foreground_host_session()
+        session=ba.internal.get_foreground_host_session()
         data['sessionType']=type(session).__name__
         teams=session.sessionteams
         for team in teams:
@@ -94,7 +95,7 @@ class BsDataThread(object):
                             }
             for player in team.players:
                 teamplayer={'name':player.getname(),
-                            'device_id':player.inputdevice.get_account_name(True),
+                            'device_id':player.inputdevice.get_v1_account_name(True),
                             'inGame':player.in_game,
                             'character':player.character,
                             'account_id':player.get_v1_account_id()

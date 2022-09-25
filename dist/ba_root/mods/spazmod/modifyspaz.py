@@ -4,13 +4,14 @@ import setting
 from random import randint
 
 import _ba,ba
+import ba.internal
 _setting=setting.get_settings_data()
 
 def update_name():
-	import _ba
+	import ba.internal
 	from stats import mystats
 	stat = mystats.get_all_stats()
-	ros = _ba.get_game_roster()
+	ros = ba.internal.get_game_roster()
 	for i in ros:
 		if i['account_id']:
 			name = i['display_string']
@@ -60,7 +61,7 @@ def setTeamCharacter():
 	if not _setting["sameCharacterForTeam"]:
 		return
 	used=[]
-	teams=_ba.get_foreground_host_session().sessionteams
+	teams=ba.internal.get_foreground_host_session().sessionteams
 	if len(teams) < 10:
 		for team in teams:
 			character=getRandomCharacter(used)

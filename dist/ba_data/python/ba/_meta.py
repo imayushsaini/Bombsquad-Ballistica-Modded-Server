@@ -44,7 +44,7 @@ class MetadataSubsystem:
     """
 
     def __init__(self) -> None:
-        self.metascan: ScanResults | None = None
+        self.scanresults: ScanResults | None = None
         self.extra_scan_dirs: list[str] = []
 
     def on_app_running(self) -> None:
@@ -58,7 +58,7 @@ class MetadataSubsystem:
 
         Should be called only once at launch."""
         app = _ba.app
-        if self.metascan is not None:
+        if self.scanresults is not None:
             print('WARNING: meta scan run more than once.')
         pythondirs = ([app.python_directory_app, app.python_directory_user] +
                       self.extra_scan_dirs)
@@ -133,7 +133,7 @@ class MetadataSubsystem:
 
     def get_scan_results(self) -> ScanResults:
         """Return meta scan results; block if the scan is not yet complete."""
-        if self.metascan is None:
+        if self.scanresults is None:
             print('WARNING: ba.meta.get_scan_results()'
                   ' called before scan completed.'
                   ' This can cause hitches.')
@@ -141,12 +141,12 @@ class MetadataSubsystem:
             # Now wait a bit for the scan to complete.
             # Eventually error though if it doesn't.
             starttime = time.time()
-            while self.metascan is None:
+            while self.scanresults is None:
                 time.sleep(0.05)
                 if time.time() - starttime > 10.0:
                     raise TimeoutError(
                         'timeout waiting for meta scan to complete.')
-        return self.metascan
+        return self.scanresults
 
     def get_game_types(self) -> list[type[ba.GameActivity]]:
         """Return available game types."""
@@ -206,7 +206,7 @@ class ScanThread(threading.Thread):
         # We also, however, immediately make results available.
         # This is because the game thread may be blocked waiting
         # for them so we can't push a call or we'd get deadlock.
-        _ba.app.meta.metascan = results
+        _ba.app.meta.scanresults = results
 
 
 class DirectoryScan:
@@ -288,7 +288,7 @@ class DirectoryScan:
 
         # If we find a module requiring a different api version, warn
         # and ignore.
-        if required_api is not None and required_api <= CURRENT_API_VERSION:
+        if required_api is not None and required_api < CURRENT_API_VERSION:
             self.results.warnings += (
                 f'Warning: {subpath} requires api {required_api} but'
                 f' we are running {CURRENT_API_VERSION}; ignoring module.\n')
@@ -403,13 +403,13 @@ class DirectoryScan:
         if len(lines) > 1:
             self.results.warnings += (
                 'Warning: ' + str(subpath) +
-                ': multiple "# ba_meta api require <NUM>" lines found;'
+                ': multiple "# ba_meta require api <NUM>" lines found;'
                 ' ignoring module.\n')
         elif not lines and toplevel and meta_lines:
             # If we're a top-level module containing meta lines but
-            # no valid api require, complain.
+            # no valid "require api" line found, complain.
             self.results.warnings += (
                 'Warning: ' + str(subpath) +
-                ': no valid "# ba_meta api require <NUM>" line found;'
+                ': no valid "# ba_meta require api <NUM>" line found;'
                 ' ignoring module.\n')
         return None

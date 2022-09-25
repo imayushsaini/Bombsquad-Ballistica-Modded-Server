@@ -5,6 +5,9 @@
 # Yes this is a long one..
 # pylint: disable=too-many-lines
 
+# ba_meta require api 7
+# (see https://ballistica.net/wiki/meta-tag-system)
+
 from __future__ import annotations
 
 import math
@@ -690,7 +693,9 @@ class OnslaughtGame(ba.CoopGameActivity[Player, Team]):
         del player, bomb  # Unused.
         self._player_has_dropped_bomb = True
 
-    def _drop_powerup(self, index: int, poweruptype: str = None) -> None:
+    def _drop_powerup(self,
+                      index: int,
+                      poweruptype: str | None = None) -> None:
         poweruptype = (PowerupBoxFactory.get().get_random_powerup_type(
             forcetype=poweruptype, excludetypes=self._excluded_powerups))
         PowerupBox(position=self.map.powerup_spawn_points[index],
@@ -703,7 +708,7 @@ class OnslaughtGame(ba.CoopGameActivity[Player, Team]):
 
     def _drop_powerups(self,
                        standard_points: bool = False,
-                       poweruptype: str = None) -> None:
+                       poweruptype: str | None = None) -> None:
         """Generic powerup drop."""
         if standard_points:
             points = self.map.powerup_spawn_points

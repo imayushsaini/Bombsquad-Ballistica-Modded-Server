@@ -1,5 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 import ba, _ba
+import ba.internal
 from serverData import serverdata
 from features import profanity
 from tools import servercheck
@@ -52,7 +53,7 @@ def filter(msg,pb_id,client_id):
 					smsgcount+=1
 					if smsgcount>=3:
 						logger.log(pb_id+" | kicked for chat spam")
-						_ba.disconnect_client(client_id)
+						ba.internal.disconnect_client(client_id)
 						smsgcount=0
 				_ba.screenmessage("Don\'t SPAM!", color=(1,0,0), transient=True, clients=[client_id])
 				if not check_permissions(pb_id):
@@ -88,7 +89,7 @@ def addWarn(pb_id,client_id):
 		if warn > settings["maxWarnCount"]:
 			_ba.screenmessage(settings["afterWarnKickMsg"],color=(1,0,0),transient=True,clients=[client_id])
 			logger.log(pb_id+" | kicked for chat spam")
-			_ba.disconnect_client(client_id)
+			ba.internal.disconnect_client(client_id)
 			_thread.start_new_thread(servercheck.reportSpam,(pb_id,))
 			
 		else:

@@ -13,8 +13,9 @@ from dataclasses import dataclass
 from threading import current_thread
 from typing import TYPE_CHECKING, Annotated
 
-from efro.error import CommunicationError, is_asyncio_streams_network_error
 from efro.util import assert_never
+from efro.error import (CommunicationError,
+                        is_asyncio_streams_communication_error)
 from efro.dataclassio import (dataclass_to_json, dataclass_from_json,
                               ioprepped, IOAttrs)
 
@@ -115,7 +116,7 @@ class RPCEndpoint:
                  label: str,
                  debug_print: bool = False,
                  debug_print_io: bool = False,
-                 debug_print_call: Callable[[str], None] = None,
+                 debug_print_call: Callable[[str], None] | None = None,
                  keepalive_interval: float = DEFAULT_KEEPALIVE_INTERVAL,
                  keepalive_timeout: float = DEFAULT_KEEPALIVE_TIMEOUT) -> None:
         self._handle_raw_message_call = handle_raw_message_call
@@ -596,7 +597,7 @@ class RPCEndpoint:
         if isinstance(exc, _KeepaliveTimeoutError):
             return True
 
-        return is_asyncio_streams_network_error(exc)
+        return is_asyncio_streams_communication_error(exc)
 
     def _check_env(self) -> None:
         # I was seeing that asyncio stuff wasn't working as expected if

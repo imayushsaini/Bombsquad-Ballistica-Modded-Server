@@ -19,7 +19,7 @@ class AdvancedSettingsWindow(ba.Window):
 
     def __init__(self,
                  transition: str = 'in_right',
-                 origin_widget: ba.Widget = None):
+                 origin_widget: ba.Widget | None = None):
         # pylint: disable=too-many-statements
         from ba.internal import master_server_get
         import threading
@@ -56,6 +56,7 @@ class AdvancedSettingsWindow(ba.Window):
             scale=(2.06 if uiscale is ba.UIScale.SMALL else
                    1.4 if uiscale is ba.UIScale.MEDIUM else 1.0),
             stack_offset=(0, -25) if uiscale is ba.UIScale.SMALL else (0, 0)))
+
         self._prev_lang = ''
         self._prev_lang_list: list[str] = []
         self._complete_langs_list: list | None = None
@@ -423,29 +424,6 @@ class AdvancedSettingsWindow(ba.Window):
         v -= self._spacing * 2.1
 
         this_button_width = 410
-        self._show_user_mods_button = ba.buttonwidget(
-            parent=self._subcontainer,
-            position=(self._sub_width / 2 - this_button_width / 2, v - 10),
-            size=(this_button_width, 60),
-            autoselect=True,
-            label=ba.Lstr(resource=self._r + '.showUserModsText'),
-            text_scale=1.0,
-            on_activate_call=show_user_scripts)
-        if self._show_always_use_internal_keyboard:
-            assert self._always_use_internal_keyboard_check_box is not None
-            ba.widget(edit=self._always_use_internal_keyboard_check_box.widget,
-                      down_widget=self._show_user_mods_button)
-            ba.widget(
-                edit=self._show_user_mods_button,
-                up_widget=self._always_use_internal_keyboard_check_box.widget)
-        else:
-            ba.widget(edit=self._show_user_mods_button,
-                      up_widget=self._kick_idle_players_check_box.widget)
-            ba.widget(edit=self._kick_idle_players_check_box.widget,
-                      down_widget=self._show_user_mods_button)
-
-        v -= self._spacing * 2.0
-
         self._modding_guide_button = ba.buttonwidget(
             parent=self._subcontainer,
             position=(self._sub_width / 2 - this_button_width / 2, v - 10),
@@ -454,8 +432,30 @@ class AdvancedSettingsWindow(ba.Window):
             label=ba.Lstr(resource=self._r + '.moddingGuideText'),
             text_scale=1.0,
             on_activate_call=ba.Call(
-                ba.open_url,
-                'http://www.froemling.net/docs/bombsquad-modding-guide'))
+                ba.open_url, 'http://ballistica.net/wiki/modding-guide'))
+        if self._show_always_use_internal_keyboard:
+            assert self._always_use_internal_keyboard_check_box is not None
+            ba.widget(edit=self._always_use_internal_keyboard_check_box.widget,
+                      down_widget=self._modding_guide_button)
+            ba.widget(
+                edit=self._modding_guide_button,
+                up_widget=self._always_use_internal_keyboard_check_box.widget)
+        else:
+            ba.widget(edit=self._modding_guide_button,
+                      up_widget=self._kick_idle_players_check_box.widget)
+            ba.widget(edit=self._kick_idle_players_check_box.widget,
+                      down_widget=self._modding_guide_button)
+
+        v -= self._spacing * 2.0
+
+        self._show_user_mods_button = ba.buttonwidget(
+            parent=self._subcontainer,
+            position=(self._sub_width / 2 - this_button_width / 2, v - 10),
+            size=(this_button_width, 60),
+            autoselect=True,
+            label=ba.Lstr(resource=self._r + '.showUserModsText'),
+            text_scale=1.0,
+            on_activate_call=show_user_scripts)
 
         v -= self._spacing * 2.0
 
@@ -542,6 +542,14 @@ class AdvancedSettingsWindow(ba.Window):
 
     def _on_net_test_press(self) -> None:
         from bastd.ui.settings.nettesting import NetTestingWindow
+
+        # Net-testing requires a signed in v1 account.
+        if _ba.get_v1_account_state() != 'signed_in':
+            ba.screenmessage(ba.Lstr(resource='notSignedInErrorText'),
+                             color=(1, 0, 0))
+            ba.playsound(ba.getsound('error'))
+            return
+
         self._save_state()
         ba.containerwidget(edit=self._root_widget, transition='out_left')
         ba.app.ui.set_main_menu_window(

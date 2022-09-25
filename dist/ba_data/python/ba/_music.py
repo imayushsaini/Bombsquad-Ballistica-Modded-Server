@@ -211,7 +211,7 @@ class MusicSubsystem:
             return 'Mac' in uas
         if entry_type in ('musicFile', 'musicFolder'):
             return ('android' in uas
-                    and _ba.android_get_external_storage_path() is not None)
+                    and _ba.android_get_external_files_dir() is not None)
         if entry_type == 'default':
             return True
         return False
@@ -273,7 +273,7 @@ class MusicSubsystem:
                       musictype: MusicType | str | None,
                       continuous: bool = False,
                       mode: MusicPlayMode = MusicPlayMode.REGULAR,
-                      testsoundtrack: dict[str, Any] = None) -> None:
+                      testsoundtrack: dict[str, Any] | None = None) -> None:
         """Plays the requested music type/mode.
 
         For most cases, setmusic() is the proper call to use, which itself

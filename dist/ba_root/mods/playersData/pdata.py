@@ -12,7 +12,9 @@ import _thread
 
 from serverData import serverdata
 from tools.file_handle import OpenJson
-import _ba  # pylint: disable=import-error
+# pylint: disable=import-error
+import _ba
+import ba.internal
 import json
 
 if TYPE_CHECKING:
@@ -131,7 +133,7 @@ def add_profile(
     serverdata.clients[account_id]["rejoincount"] = 1
     serverdata.clients[account_id]["lastJoin"] = time.time()
     cid = 113
-    for ros in _ba.get_game_roster():
+    for ros in ba.internal.get_game_roster():
         if ros['account_id'] == account_id:
             cid = ros['client_id']
     serverdata.clients[account_id]["lastIP"] = _ba.get_client_ip(cid)

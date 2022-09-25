@@ -1,5 +1,6 @@
 """ Some useful handlers to reduce lot of code """
 import _ba, ba
+import ba.internal
 
 
 
@@ -16,7 +17,7 @@ def send(msg, clientid):
 def clientid_to_myself(clientid):
 	"""Return Player Index Of Self Player"""
 	
-	session = _ba.get_foreground_host_session()
+	session = ba.internal.get_foreground_host_session()
 	
 	for i in range(len(session.sessionplayers)):
 		if session.sessionplayers[i].inputdevice.client_id == clientid:

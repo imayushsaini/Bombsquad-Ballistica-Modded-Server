@@ -332,6 +332,7 @@
   "achievementsRemainingText": "Trofei rimasti:",
   "achievementsText": "Trofei",
   "achievementsUnavailableForOldSeasonsText": "Mi dispiace, ma gli obbiettivi non sono disponibili per le stagioni vecchie.",
+  "activatedText": "${THING} attivato.",
   "addGameWindow": {
     "getMoreGamesText": "Ottieni Giochi...",
     "titleText": "Aggiungi Partita"
@@ -1162,7 +1163,10 @@
   "playlistsText": "Scalette",
   "pleaseRateText": "Se ti sta piacendo ${APP_NAME}, prenditi\nun momento per valutarlo o scriverci su una recensione.\nQuesto aiuterà a supportare futuri sviluppi.\n\nGrazie!\n-eric",
   "pleaseWaitText": "Attendi...",
-  "pluginsDetectedText": "Nuovo/i Plugin rilevato/i. Abilitali/configurali nelle impostazioni.",
+  "pluginClassLoadErrorText": "Errore nel caricamento di plugin classe '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Errore inizializzazione plugin '${PLUGIN}': ${ERROR}",
+  "pluginsDetectedText": "nuovo/i plugin rilevato. Riavvia per attivarli, o configurali nelle impostazioni.",
+  "pluginsRemovedText": "${NUM} plugin non trovati.",
   "pluginsText": "Plugin",
   "practiceText": "Allenamento",
   "pressAnyButtonPlayAgainText": "Premi un pulsante qualunque per rigiocare...",
@@ -1943,6 +1947,8 @@
   "winsPlayerText": "${NAME} Ha Vinto!",
   "winsTeamText": "${NAME} Ha Vinto!",
   "winsText": "${NAME} vince!",
+  "workspaceSyncErrorText": "Errore nella sincronizzazione di ${WORKSPACE}. Controlla il registro per dettagli.",
+  "workspaceSyncReuseText": "Impossibile sincronizzare ${WORKSPACE}. Riutilizzo della versione sincronizzata precedente.",
   "worldScoresUnavailableText": "Punteggi mondiali non disponibili.",
   "worldsBestScoresText": "I punteggi migliori del mondo",
   "worldsBestTimesText": "I tempi migliori del mondo",

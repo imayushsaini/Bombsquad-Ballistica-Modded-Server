@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from ba._cloud import CloudSubsystem
     from bastd.actor import spazappearance
     from ba._accountv2 import AccountV2Subsystem
+    from ba._level import Level
 
 
 class App:
@@ -274,6 +275,7 @@ class App:
 
         # Co-op Campaigns.
         self.campaigns: dict[str, ba.Campaign] = {}
+        self.custom_coop_practice_games: list[str] = []
 
         # Server Mode.
         self.server: ba.ServerController | None = None
@@ -341,7 +343,7 @@ class App:
         from bastd import maps as stdmaps
         from bastd.actor import spazappearance
         from ba._generated.enums import TimeType
-        
+
 
         self._aioloop = _asyncio.setup_asyncio()
 
@@ -430,13 +432,9 @@ class App:
 
         self.meta.on_app_running()
         self.plugins.on_app_running()
-        import custom_hooks
-        custom_hooks.on_app_running()
 
         # from ba._dependency import test_depset
         # test_depset()
-        if bool(False):
-            self._test_https()
 
     def _update_state(self) -> None:
         if self._app_paused:
@@ -530,6 +528,15 @@ class App:
                     # FIXME: This should not be an actor attr.
                     activity.paused_text = None
 
+    def add_coop_practice_level(self, level: Level) -> None:
+        """Adds an individual level to the 'practice' section in Co-op."""
+
+        # Assign this level to our catch-all campaign.
+        self.campaigns['Challenges'].addlevel(level)
+
+        # Make note to add it to our challenges UI.
+        self.custom_coop_practice_games.append(f'Challenges:{level.name}')
+
     def return_to_main_menu_session_gracefully(self,
                                                reset_ui: bool = True) -> None:
         """Attempt to cleanly get back to the main menu."""
@@ -580,7 +587,7 @@ class App:
     def launch_coop_game(self,
                          game: str,
                          force: bool = False,
-                         args: dict = None) -> bool:
+                         args: dict | None = None) -> bool:
         """High level way to launch a local co-op session."""
         # pylint: disable=cyclic-import
         from ba._campaign import getcampaign
@@ -646,19 +653,3 @@ class App:
         """
         self._initial_login_completed = True
         self._update_state()
-
-    def _test_https(self) -> None:
-        """Testing https support.
-
-        (would be nice to get this working on our custom Python builds; need
-        to wrangle certificates somehow).
-        """
-        import urllib.request
-        try:
-            with urllib.request.urlopen('https://example.com') as url:
-                val = url.read()
-            _ba.screenmessage('HTTPS SUCCESS!')
-            print('HTTPS TEST SUCCESS', len(val))
-        except Exception as exc:
-            _ba.screenmessage('HTTPS FAIL.')
-            print('HTTPS TEST FAIL:', exc)

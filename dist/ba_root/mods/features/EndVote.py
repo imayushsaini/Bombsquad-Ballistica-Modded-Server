@@ -1,6 +1,7 @@
 #  EndVote by -mr.smoothy
 
 import _ba, ba
+import ba.internal
 import time
 
 last_end_vote_start_time = 0
@@ -27,7 +28,7 @@ def vote_end(pb_id, client_id):
 
     # clean up voters list
     active_players = []
-    for player in _ba.get_game_roster():
+    for player in ba.internal.get_game_roster():
         active_players.append(player['account_id'])
     for voter in voters:
         if voter not in active_players:

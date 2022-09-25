@@ -7,6 +7,7 @@ from tools import logger, servercheck
 from chatHandle.chatFilter import ChatFilter
 from features import EndVote
 import ba, _ba
+import ba.internal
 import setting
 
 settings = setting.get_settings_data()
@@ -22,7 +23,7 @@ def filter_chat_message(msg, client_id):
     displaystring = ""
     currentname = ""
 
-    for i in _ba.get_game_roster():
+    for i in ba.internal.get_game_roster():
         if i['client_id'] == client_id:
             acid = i['account_id']
             try:

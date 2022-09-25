@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class CreditsListWindow(ba.Window):
     """Window for displaying game credits."""
 
-    def __init__(self, origin_widget: ba.Widget = None):
+    def __init__(self, origin_widget: ba.Widget | None = None):
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
         import json
@@ -207,10 +207,15 @@ class CreditsListWindow(ba.Window):
             '\n' + '\n'.join(translation_names.splitlines()[:146]) +
             '\n'.join(translation_names.splitlines()[146:]) + '\n'
             '\n'
-            '  Shout Out to Awesome Mods / Modders:\n\n'
+            '  Shout Out to Awesome Mods / Modders / Contributors:\n\n'
             '     BombDash ModPack\n'
             '     TheMikirog & SoK - BombSquad Joyride Modpack\n'
             '     Mrmaxmeier - BombSquad-Community-Mod-Manager\n'
+            '     Ritiek Malhotra \n'
+            '     Dliwk\n'
+            '     vishal332008\n'
+            '     itsre3\n'
+            '     Drooopyyy\n'
             '\n'
             '  Holiday theme vector art designed by Freepik\n'
             '\n'
