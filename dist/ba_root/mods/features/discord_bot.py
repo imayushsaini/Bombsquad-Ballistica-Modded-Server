@@ -6,6 +6,7 @@ from discord.ext.commands import Bot
 import ba
 from ba._general import Call
 import _ba
+import ba.internal
 import json
 import os
 import _thread
@@ -168,15 +169,15 @@ class BsDataThread(object):
         currentMap=''
         global stats
         
-        for i in _ba.get_game_roster():
+        for i in ba.internal.get_game_roster():
             try:
                 liveplayers[i['account_id']]={'name':i['players'][0]['name_full'],'client_id':i['client_id'],'device_id':i['display_string']}
             except:
                 liveplayers[i['account_id']]={'name':"<in-lobby>",'clientid':i['client_id'],'device_id':i['display_string']}
         try:    
-            nextMap=_ba.get_foreground_host_session().get_next_game_description().evaluate()
+            nextMap=ba.internal.get_foreground_host_session().get_next_game_description().evaluate()
 
-            current_game_spec=_ba.get_foreground_host_session()._current_game_spec
+            current_game_spec=ba.internal.get_foreground_host_session()._current_game_spec
             gametype: Type[GameActivity] =current_game_spec['resolved_type']
             
             currentMap=gametype.get_settings_display_string(current_game_spec).evaluate()

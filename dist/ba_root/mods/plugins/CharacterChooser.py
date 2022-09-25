@@ -35,6 +35,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import ba,_ba
+import ba.internal
 from bastd.actor.playerspaz import PlayerSpaz
 
 
@@ -163,7 +164,7 @@ def _set_ready(self, ready: bool) -> None:
 
                 # Give their input-device UI ownership too
                 # (prevent someone else from snatching it in crowded games)
-                _ba.set_ui_input_device(self._sessionplayer.inputdevice)
+                ba.internal.set_ui_input_device(self._sessionplayer.inputdevice)
             return
 
         if ready==False:

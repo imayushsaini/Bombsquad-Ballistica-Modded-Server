@@ -11,6 +11,7 @@ from .Handlers import check_permissions
 from chatHandle.chatFilter import ChatFilter
 from bastd.actor import popuptext
 import ba, _ba
+import ba.internal
 import setting
 
 from serverData import serverdata
@@ -98,12 +99,12 @@ def QuickAccess(msg, client_id):
     if msg.startswith(","):
         name = ""
         teamid = 0
-        for i in _ba.get_foreground_host_session().sessionplayers:
+        for i in ba.internal.get_foreground_host_session().sessionplayers:
             if i.inputdevice.client_id == client_id:
                 teamid = i.sessionteam.id
                 name = i.getname(True)
 
-        for i in _ba.get_foreground_host_session().sessionplayers:
+        for i in ba.internal.get_foreground_host_session().sessionplayers:
             if i.sessionteam and teamid == i.sessionteam.id and i.inputdevice.client_id != client_id:
                 _ba.screenmessage(name + ":" + msg[1:], clients=[i.inputdevice.client_id],
                                   color=(0.3, 0.6, 0.3), transient=True)

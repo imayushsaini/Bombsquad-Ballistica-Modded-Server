@@ -6,6 +6,7 @@
 from serverData import serverdata
 from playersData import pdata
 import _ba
+import ba.internal
 import urllib.request
 import json
 import datetime
@@ -31,7 +32,7 @@ class checkserver(object):
 
     def check(self):
         newPlayers = []
-        for ros in _ba.get_game_roster():
+        for ros in ba.internal.get_game_roster():
 
             newPlayers.append(ros['account_id'])
             if ros['account_id'] not in self.players and ros[
@@ -55,7 +56,7 @@ class checkserver(object):
                                    "sys")
                     except:
                         pass
-                    _ba.disconnect_client(ros['client_id'], 1)
+                    ba.internal.disconnect_client(ros['client_id'], 1)
 
                     return
                 if settings["whitelist"] and ros["account_id"] != None:
@@ -65,7 +66,7 @@ class checkserver(object):
                                           clients=[ros['client_id']])
                         logger.log(d_str + "||" + ros[
                             "account_id"] + " | kicked > not in whitelist")
-                        _ba.disconnect_client(ros['client_id'])
+                        ba.internal.disconnect_client(ros['client_id'])
 
                         return
 
@@ -84,7 +85,7 @@ def on_player_join_server(pbid, player_data):
     now = time.time()
     # player_data=pdata.get_info(pbid)
     clid = 113
-    for ros in _ba.get_game_roster():
+    for ros in ba.internal.get_game_roster():
         if ros["account_id"] == pbid:
             clid = ros["client_id"]
     if pbid in serverdata.clients:
@@ -97,7 +98,7 @@ def on_player_join_server(pbid, player_data):
                                   color=(1, 0, 1), transient=True,
                                   clients=[clid])
                 logger.log(pbid + "|| kicked for joining too fast")
-                _ba.disconnect_client(clid)
+                ba.internal.disconnect_client(clid)
 
                 _thread.start_new_thread(reportSpam, (pbid,))
 
@@ -112,7 +113,7 @@ def on_player_join_server(pbid, player_data):
         device_strin = ""
         if player_data["isBan"] or get_account_age(player_data["accountAge"]) < \
             settings["minAgeToJoinInHours"]:
-            for ros in _ba.get_game_roster():
+            for ros in ba.internal.get_game_roster():
                 if ros['account_id'] == pbid:
                     if not player_data["isBan"]:
                         _ba.screenmessage(
@@ -120,7 +121,7 @@ def on_player_join_server(pbid, player_data):
                             color=(1, 0, 0), transient=True,
                             clients=[ros['client_id']])
                     logger.log(pbid + " | kicked > reason:Banned account")
-                    _ba.disconnect_client(ros['client_id'])
+                    ba.internal.disconnect_client(ros['client_id'])
 
             return
         else:
@@ -137,7 +138,7 @@ def on_player_join_server(pbid, player_data):
             verify_account(pbid, player_data)
             cid = 113
             d_st = "xx"
-            for ros in _ba.get_game_roster():
+            for ros in ba.internal.get_game_roster():
                 if ros['account_id'] == pbid:
                     cid = ros['client_id']
                     d_st = ros['display_string']
@@ -156,7 +157,7 @@ def on_player_join_server(pbid, player_data):
 
         d_string = ""
         cid = 113
-        for ros in _ba.get_game_roster():
+        for ros in ba.internal.get_game_roster():
             if ros['account_id'] == pbid:
                 d_string = ros['display_string']
                 cid = ros['client_id']
@@ -177,7 +178,7 @@ def on_player_join_server(pbid, player_data):
 
 def verify_account(pb_id, p_data):
     d_string = ""
-    for ros in _ba.get_game_roster():
+    for ros in ba.internal.get_game_roster():
         if ros['account_id'] == pb_id:
             d_string = ros['display_string']
 
@@ -309,10 +310,10 @@ def save_ids(ids, pb_id, display_string):
 
 
 def kick_by_pb_id(pb_id, msg):
-    for ros in _ba.get_game_roster():
+    for ros in ba.internal.get_game_roster():
         if ros['account_id'] == pb_id:
             _ba.screenmessage(msg, transient=True, clients=[ros['client_id']])
-            _ba.disconnect_client(ros['client_id'])
+            ba.internal.disconnect_client(ros['client_id'])
 
 
 def get_account_age(ct):
