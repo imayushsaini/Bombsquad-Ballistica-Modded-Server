@@ -111,13 +111,13 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 def changepartysize(arguments):
 	if len(arguments)==0:
-		_ba.chatmessage("enter number")
+		ba.internal.chatmessage("enter number")
 	else:
 		ba.internal.set_public_party_max_size(int(arguments[0]))
 
 def changeplaylist(arguments):
 	if len(arguments)==0:
-		_ba.chatmessage("enter list code or name")
+		ba.internal.chatmessage("enter list code or name")
 	else:
 		if arguments[0]=='coop':
 			serverdata.coopmode=True
@@ -187,10 +187,10 @@ def get_profiles(arguments,clientid):
 def party_toggle(arguments):
 	if arguments == ['public']:
 		ba.internal.set_public_party_enabled(True)
-		_ba.chatmessage("party is public now")
+		ba.internal.chatmessage("party is public now")
 	elif arguments == ['private']:
 		ba.internal.set_public_party_enabled(False)
-		_ba.chatmessage("party is private now")
+		ba.internal.chatmessage("party is private now")
 	else:
 		pass
 
@@ -454,11 +454,11 @@ def remove_command_to_role(arguments):
 	
 # 	if arguments[0] == 'on':
 # 		if settings["white_list"]["whitelist_on"]:
-# 			_ba.chatmessage("Already on")
+# 			ba.internal.chatmessage("Already on")
 # 		else:
 # 			settings["white_list"]["whitelist_on"] = True
 # 			setting.commit(settings)
-# 			_ba.chatmessage("whitelist on")
+# 			ba.internal.chatmessage("whitelist on")
 # 			from tools import whitelist
 # 			whitelist.Whitelist() 
 # 		return
@@ -466,7 +466,7 @@ def remove_command_to_role(arguments):
 # 	elif arguments[0] == 'off':
 # 		settings["white_list"]["whitelist_on"] = False
 # 		setting.commit(settings)
-# 		_ba.chatmessage("whitelist off")
+# 		ba.internal.chatmessage("whitelist off")
 # 		return
 	
 	# else:
@@ -475,7 +475,7 @@ def remove_command_to_role(arguments):
 	# 	for i in rost:
 	# 		if i['client_id'] == int(arguments[0]):
 	# 			add_to_white_list(i['account_id'], i['display_string'])
-	# 			_ba.chatmessage(str(i['display_string'])+" whitelisted")
+	# 			ba.internal.chatmessage(str(i['display_string'])+" whitelisted")
 	# 			add_commit_to_logs(accountid+" added "+i['account_id'])
 
 
@@ -489,12 +489,12 @@ def spectators(arguments):
 		if arguments[0] == 'on':
 			settings["white_list"]["spectators"] = True
 			setting.commit(settings)
-			_ba.chatmessage("spectators on")
+			ba.internal.chatmessage("spectators on")
 		
 		elif arguments[0] == 'off':
 			settings["white_list"]["spectators"] = False
 			setting.commit(settings)
-			_ba.chatmessage("spectators off")
+			ba.internal.chatmessage("spectators off")
 
 
 
@@ -503,9 +503,9 @@ def change_lobby_check_time(arguments):
     try:
         argument = int(arguments[0])
     except:
-        _ba.chatmessage("must type number to change lobby check time")
+        ba.internal.chatmessage("must type number to change lobby check time")
         return
     settings = setting.get_settings_data()
     settings["white_list"]["lobbychecktime"] = argument
     setting.commit(settings)
-    _ba.chatmessage(f"lobby check time is {argument} now")
+    ba.internal.chatmessage(f"lobby check time is {argument} now")

@@ -48,7 +48,7 @@ async def on_message(message):
     channel=message.channel
     
     if message.channel.id==logsChannelID:
-        _ba.pushcall(Call(_ba.chatmessage,message.content),from_other_thread=True)
+        _ba.pushcall(Call(ba.internal.chatmessage,message.content),from_other_thread=True)
 
 
 @client.event
@@ -188,7 +188,7 @@ class BsDataThread(object):
         #system={'cpu':80,'ram':34}
         # stats['system']=system
         stats['roster']=liveplayers
-        stats['chats']=_ba.get_chat_messages()
+        stats['chats']=ba.internal.get_chat_messages()
         stats['playlist']=minigame
 
         
