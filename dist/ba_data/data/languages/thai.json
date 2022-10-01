@@ -325,6 +325,7 @@
   "achievementsRemainingText": "ความสำเร็จที่ยังเหลืออยู่:",
   "achievementsText": "ความสำเร็จ",
   "achievementsUnavailableForOldSeasonsText": "ขออภัย, ความสำเร็จนี้ไม่ได้มีอยู่ในฤดูกาลเก่า",
+  "activatedText": "เปิดใช้งาน ${THING} แล้ว",
   "addGameWindow": {
     "getMoreGamesText": "รับเกมเพิ่มเติม",
     "titleText": "เพิ่มเกม"
@@ -622,7 +623,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} ในการเคลื่อนไหวที่ช้ามากๆ",
   "epicNameFilterText": "${NAME} แบบช้ามหากาฬ",
   "errorAccessDeniedText": "การเข้าถึงถูกปฏิเสธ",
+  "errorDeviceTimeIncorrectText": "เวลาของอุปกรณ์ของคุณปิดลง ${HOURS} ชั่วโมง\nมีแนวโน้มที่จะทำให้เกิดปัญหา\nโปรดตรวจสอบการตั้งค่าเวลาและเขตเวลาของคุณ",
   "errorOutOfDiskSpaceText": "พื้นที่ว่างในเครื่องหมด",
+  "errorSecureConnectionFailText": "ไม่สามารถสร้างการเชื่อมต่อระบบคลาวด์ที่ปลอดภัยได้ การทำงานของเครือข่ายอาจล้มเหลว",
   "errorText": "ข้อผิดพลาด",
   "errorUnknownText": "ข้อผิดพลาดที่ไม่รู้จัก",
   "exitGameText": "จะออกจาก ${APP_NAME} หรือไม่?",
@@ -785,7 +788,7 @@
     "ticketPack4Text": "แพ็กตั๋วจัมโบ้",
     "ticketPack5Text": "แพ็กตั๋วแมมมอธ",
     "ticketPack6Text": "แพ็กตั๋วสูงสุด",
-    "ticketsFromASponsorText": "รับตั๋ว ${COUNT} ใบ\nจากสปอนเซอร์",
+    "ticketsFromASponsorText": "ดูโฆษณา\nเพื่อรับตั๋ว ${COUNT} ใบ",
     "ticketsText": "ตั๋ว ${COUNT} ใบ",
     "titleText": "รับตั๋ว",
     "unavailableLinkAccountText": "ขออภัย ไม่สามารถซื้อได้บนแพลตฟอร์มนี้\nวิธีแก้ปัญหา คุณสามารถเชื่อมโยงบัญชีนี้กับบัญชีบน\nแพลตฟอร์มอื่นและทำการซื้อที่นั่น",
@@ -796,6 +799,7 @@
     "youHaveText": "คุณมีตั๋ว ${COUNT} ใบ"
   },
   "googleMultiplayerDiscontinuedText": "ขออภัย บริการผู้เล่นหลายคนของ Google ไม่มีให้บริการอีกต่อไป\nฉันกำลังดำเนินการเปลี่ยนให้เร็วที่สุด\nในระหว่างนี้ โปรดลองวิธีการเชื่อมต่ออื่น\n-เอริค",
+  "googlePlayPurchasesNotAvailableText": "ไม่สามารถซื้อด้วย Google Play ได้\nคุณอาจต้องอัปเดตแอปร้านค้าของคุณ",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "ตลอด",
@@ -1106,7 +1110,10 @@
   "playlistsText": "เพลย์ลิส",
   "pleaseRateText": "หากคุณชอบ ${APP_NAME} โปรดพิจารณาใช้ a\nและให้คะแนนหรือเขียนรีวิว นี้ให้\nข้อเสนอแนะที่เป็นประโยชน์และช่วยสนับสนุนการพัฒนาในอนาคต\n\nขอบใจ!\n-eric",
   "pleaseWaitText": "โปรดรอ...",
-  "pluginsDetectedText": "ตรวจพบปลั๊กอินใหม่ เปิด/กำหนดค่าได้ในการตั้งค่า",
+  "pluginClassLoadErrorText": "เกิดข้อผิดพลาดในการโหลดคลาสปลั๊กอิน '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "เกิดข้อผิดพลาดในการเริ่มต้นปลั๊กอิน '${PLUGIN}': ${ERROR}",
+  "pluginsDetectedText": "ตรวจพบปลั๊กอินใหม่ รีสตาร์ทเกมเพื่อเปิดใช้งาน หรือกำหนดค่าได้ในการตั้งค่า",
+  "pluginsRemovedText": "ไม่พบปลั๊กอิน ${NUM} รายการอีกต่อไป",
   "pluginsText": "ปลั๊กอิน",
   "practiceText": "ฝึกฝน",
   "pressAnyButtonPlayAgainText": "กดปุ่มใดก็ได้เพื่อเล่นอีกครั้ง...",
@@ -1357,6 +1364,7 @@
   "tournamentStandingsText": "อันดับการแข่งขัน",
   "tournamentText": "การแข่งขัน",
   "tournamentTimeExpiredText": "เวลาการแข่งขันหมดอายุ",
+  "tournamentsDisabledWorkspaceText": "การแข่งขันจะถูกปิดการใช้งานเมื่อมีการใช้งานพื้นที่ทำงาน \nหากต้องการเปิดใช้งานการแข่งขันอีกครั้ง ให้ปิดใช้งานพื้นที่ทำงานของคุณแล้วเริ่มใหม่",
   "tournamentsText": "การแข่งขัน",
   "translations": {
     "characterNames": {
@@ -1840,6 +1848,8 @@
   "winsPlayerText": "${NAME} ชนะ!",
   "winsTeamText": "${NAME} ชนะ!",
   "winsText": "${NAME} ชนะ!",
+  "workspaceSyncErrorText": "เกิดข้อผิดพลาดในการซิงค์ ${WORKSPACE} เปิดlogเพื่อดูรายละเอียด",
+  "workspaceSyncReuseText": "ไม่สามารถซิงค์ ${WORKSPACE} ได้ จึงนำเวอร์ชันที่ซิงค์ก่อนหน้านี้มาใช้",
   "worldScoresUnavailableText": "ไม่มีคะแนนโลก",
   "worldsBestScoresText": "คะแนนที่ดีที่สุดในโลก",
   "worldsBestTimesText": "เวลาที่ดีที่สุดในโลก",

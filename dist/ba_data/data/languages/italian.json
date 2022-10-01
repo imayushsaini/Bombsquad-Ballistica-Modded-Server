@@ -510,6 +510,7 @@
     "welcome2Text": "Puoi anche guadagnare biglietti con molte attività simili.\nI biglietti possono essere usato per sbloccare nuovi capitoli, mappe e\nmini-giochi, per entrare nei tornei ed altro.",
     "yourPowerRankingText": "La tua posizione assoluta"
   },
+  "copyConfirmText": "Copiato negli appunti.",
   "copyOfText": "${NAME} - Copia",
   "copyText": "Copia",
   "copyrightText": "© 2013 Eric Froemling",
@@ -650,7 +651,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} a rallentatore leggendario.",
   "epicNameFilterText": "${NAME} Leggendario",
   "errorAccessDeniedText": "accesso negato",
+  "errorDeviceTimeIncorrectText": "L'orario del tuo dispositivo è incorretto di ${HOURS} ore.\nCiò può causare problemi.\nControlla il tuo orario e fuso orario impostato.",
   "errorOutOfDiskSpaceText": "spazio su disco esaurito",
+  "errorSecureConnectionFailText": "Impossibile stabilire una connessione sicura con il cloud; le funzionalità online possono interrompersi.",
   "errorText": "Errore",
   "errorUnknownText": "errore sconosciuto",
   "exitGameText": "Uscire da ${APP_NAME}?",
@@ -826,7 +829,7 @@
     "ticketPack4Text": "Pacchetto Biglietti Jumbo",
     "ticketPack5Text": "Pacchetto Biglietti Mammuth",
     "ticketPack6Text": "Pacchetto Biglietti Ultimate",
-    "ticketsFromASponsorText": "Ottieni ${COUNT} biglietti\nda uno sponsor",
+    "ticketsFromASponsorText": "Guarda una pubblicità\nper ${COUNT} biglietti",
     "ticketsText": "${COUNT} Biglietti",
     "titleText": "Ottieni Biglietti",
     "unavailableLinkAccountText": "Scusa, gli acquisti non sono disponibili su questa piattaforma.\nCome soluzione, puoi collegare questo account ad un'altra \npiattaforma e fare l'acquisto lì.",
@@ -837,6 +840,7 @@
     "youHaveText": "Hai ${COUNT} biglietti"
   },
   "googleMultiplayerDiscontinuedText": "Mi dispiace, il servizio multiplayer di Google non è più disponibile.\nSto lavorando per sostituirlo il più velocemente possibile.\nFino a quando non troverò una soluzione, prova un altro metodo per connetterti.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Gli acquisti Google Play non sono disponibili.\nPotresti dover aggiornare lo store.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Sempre",
@@ -1427,6 +1431,7 @@
   "tournamentStandingsText": "Classifica del torneo",
   "tournamentText": "Torneo",
   "tournamentTimeExpiredText": "Tempo del torneo esaurito",
+  "tournamentsDisabledWorkspaceText": "I tornei sono disabilitati quando una o più mod sono attive.\nPer riattivare i tornei, disabilita tutte le mod e riavvia il gioco.",
   "tournamentsText": "Tornei",
   "translations": {
     "characterNames": {

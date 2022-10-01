@@ -20,11 +20,13 @@ from ba._meta import MetadataSubsystem
 from ba._ads import AdsSubsystem
 from ba._net import NetworkSubsystem
 from ba._workspace import WorkspaceSubsystem
+from ba import _internal
 
 if TYPE_CHECKING:
     import asyncio
     from typing import Any, Callable
 
+    import efro.log
     import ba
     from ba._cloud import CloudSubsystem
     from bastd.actor import spazappearance
@@ -48,6 +50,7 @@ class App:
     # Implementations for these will be filled in by internal libs.
     accounts_v2: AccountV2Subsystem
     cloud: CloudSubsystem
+    log_handler: efro.log.LogHandler
 
     class State(Enum):
         """High level state the app can be in."""
@@ -90,6 +93,12 @@ class App:
         """
         assert isinstance(self._env['build_number'], int)
         return self._env['build_number']
+
+    @property
+    def device_name(self) -> str:
+        """Name of the device running the game."""
+        assert isinstance(self._env['device_name'], str)
+        return self._env['device_name']
 
     @property
     def config_file_path(self) -> str:
@@ -223,6 +232,7 @@ class App:
 
         self._launch_completed = False
         self._initial_login_completed = False
+        self._meta_scan_completed = False
         self._called_on_app_running = False
         self._app_paused = False
 
@@ -344,6 +354,7 @@ class App:
         from bastd.actor import spazappearance
         from ba._generated.enums import TimeType
 
+        assert _ba.in_logic_thread()
 
         self._aioloop = _asyncio.setup_asyncio()
 
@@ -370,12 +381,12 @@ class App:
         # Non-test, non-debug builds should generally be blessed; warn if not.
         # (so I don't accidentally release a build that can't play tourneys)
         if (not self.debug_build and not self.test_build
-                and not _ba.is_blessed()):
+                and not _internal.is_blessed()):
             _ba.screenmessage('WARNING: NON-BLESSED BUILD', color=(1, 0, 0))
 
         # If there's a leftover log file, attempt to upload it to the
         # master-server and/or get rid of it.
-        _apputils.handle_leftover_log_file()
+        _apputils.handle_leftover_v1_cloud_log_file()
 
         # Only do this stuff if our config file is healthy so we don't
         # overwrite a broken one or whatnot and wipe out data.
@@ -408,13 +419,17 @@ class App:
         def check_special_offer() -> None:
             from bastd.ui.specialoffer import show_offer
             config = self.config
-            if ('pendingSpecialOffer' in config and _ba.get_public_login_id()
+            if ('pendingSpecialOffer' in config
+                    and _internal.get_public_login_id()
                     == config['pendingSpecialOffer']['a']):
                 self.special_offer = config['pendingSpecialOffer']['o']
                 show_offer()
 
         if not self.headless_mode:
             _ba.timer(3.0, check_special_offer, timetype=TimeType.REAL)
+
+        # Get meta-system scanning built-in stuff in the bg.
+        self.meta.start_scan(scan_complete_cb=self.on_meta_scan_complete)
 
         self.accounts_v2.on_app_launch()
         self.accounts_v1.on_app_launch()
@@ -430,17 +445,27 @@ class App:
     def on_app_running(self) -> None:
         """Called when initially entering the running state."""
 
-        self.meta.on_app_running()
         self.plugins.on_app_running()
 
         # from ba._dependency import test_depset
         # test_depset()
 
+    def on_meta_scan_complete(self) -> None:
+        """Called by meta-scan when it is done doing its thing."""
+        assert _ba.in_logic_thread()
+        self.plugins.on_meta_scan_complete()
+
+        assert not self._meta_scan_completed
+        self._meta_scan_completed = True
+        self._update_state()
+
     def _update_state(self) -> None:
+        assert _ba.in_logic_thread()
+
         if self._app_paused:
             self.state = self.State.PAUSED
         else:
-            if self._initial_login_completed:
+            if self._initial_login_completed and self._meta_scan_completed:
                 self.state = self.State.RUNNING
                 if not self._called_on_app_running:
                     self._called_on_app_running = True
@@ -562,11 +587,11 @@ class App:
 
             # Kick off a little transaction so we'll hopefully have all the
             # latest account state when we get back to the menu.
-            _ba.add_transaction({
+            _internal.add_transaction({
                 'type': 'END_SESSION',
                 'sType': str(type(host_session))
             })
-            _ba.run_transactions()
+            _internal.run_transactions()
 
             host_session.end()
 
@@ -651,5 +676,9 @@ class App:
         This should also run after a short amount of time if no login
         has occurred.
         """
+        # Tell meta it can start scanning extra stuff that just showed up
+        # (account workspaces).
+        self.meta.start_extra_scan()
+
         self._initial_login_completed = True
         self._update_state()

@@ -8,8 +8,8 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 from bastd.actor.text import Text
 from bastd.actor.zoomtext import ZoomText
 
@@ -52,9 +52,9 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
             ba.app.ach.achievements_for_coop_level(self._campaign.name + ':' +
                                                    settings['level']))
 
-        self._account_type = (_ba.get_v1_account_type()
-                              if _ba.get_v1_account_state() == 'signed_in' else
-                              None)
+        self._account_type = (ba.internal.get_v1_account_type()
+                              if ba.internal.get_v1_account_state()
+                              == 'signed_in' else None)
 
         self._game_service_icon_color: Sequence[float] | None
         self._game_service_achievements_texture: ba.Texture | None
@@ -167,7 +167,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
 
         # If game-center/etc scores are available we show our friends'
         # scores. Otherwise we show our local high scores.
-        self._show_friend_scores = _ba.game_service_has_leaderboard(
+        self._show_friend_scores = ba.internal.game_service_has_leaderboard(
             self._game_name_str, self._game_config_str)
 
         try:
@@ -264,12 +264,12 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
             self.end({'outcome': 'next_level'})
 
     def _ui_gc(self) -> None:
-        _ba.show_online_score_ui('leaderboard',
-                                 game=self._game_name_str,
-                                 game_version=self._game_config_str)
+        ba.internal.show_online_score_ui('leaderboard',
+                                         game=self._game_name_str,
+                                         game_version=self._game_config_str)
 
     def _ui_show_achievements(self) -> None:
-        _ba.show_online_score_ui('achievements')
+        ba.internal.show_online_score_ui('achievements')
 
     def _ui_worlds_best(self) -> None:
         if self._score_link is None:
@@ -331,7 +331,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
         # to the game (like on mac).
         can_select_extra_buttons = ba.app.platform == 'android'
 
-        _ba.set_ui_input_device(None)  # Menu is up for grabs.
+        ba.internal.set_ui_input_device(None)  # Menu is up for grabs.
 
         if self._show_friend_scores:
             ba.buttonwidget(parent=rootc,
@@ -483,7 +483,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
             timetype=ba.TimeType.REAL)
 
     def _update_corner_button_positions(self) -> None:
-        offs = -55 if _ba.is_party_icon_visible() else 0
+        offs = -55 if ba.internal.is_party_icon_visible() else 0
         assert self._corner_button_offs is not None
         pos_x = self._corner_button_offs[0] + offs
         pos_y = self._corner_button_offs[1]
@@ -497,9 +497,9 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
 
         # If this activity is a good 'end point', ask server-mode just once if
         # it wants to do anything special like switch sessions or kill the app.
-        if (self._allow_server_transition and _ba.app.server is not None
+        if (self._allow_server_transition and ba.app.server is not None
                 and self._server_transitioning is None):
-            self._server_transitioning = _ba.app.server.handle_transition()
+            self._server_transitioning = ba.app.server.handle_transition()
             assert isinstance(self._server_transitioning, bool)
 
         # If server-mode is handling this, don't do anything ourself.
@@ -528,7 +528,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
         if ba.app.server is not None:
             # Host can't press retry button, so anyone can do it instead.
             time_till_assign = max(
-                0, self._birth_time + self._min_view_time - _ba.time())
+                0, self._birth_time + self._min_view_time - ba.time())
 
             ba.timer(time_till_assign, ba.WeakCall(self._safe_assign, player))
 
@@ -552,7 +552,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
 
         # Any time we complete a level, set the next one as unlocked.
         if self._is_complete and self._is_more_levels:
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type': 'COMPLETE_LEVEL',
                 'campaign': self._campaign.name,
                 'level': self._level_name
@@ -632,7 +632,7 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
         if ba.app.server is None:
             # If we're running in normal non-headless build, show this text
             # because only host can continue the game.
-            adisp = _ba.get_v1_account_display_string()
+            adisp = ba.internal.get_v1_account_display_string()
             txt = Text(ba.Lstr(resource='waitingForHostText',
                                subs=[('${HOST}', adisp)]),
                        maxwidth=300,
@@ -726,14 +726,14 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
         if self._score is not None:
             sver = (self._campaign.getlevel(
                 self._level_name).get_score_version_string())
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type': 'SET_LEVEL_LOCAL_HIGH_SCORES',
                 'campaign': self._campaign.name,
                 'level': self._level_name,
                 'scoreVersion': sver,
                 'scores': our_high_scores_all
             })
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             # We expect this only in kiosk mode; complain otherwise.
             if not (ba.app.demo_mode or ba.app.arcade_mode):
                 print('got not-signed-in at score-submit; unexpected')
@@ -743,21 +743,22 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
         else:
             assert self._game_name_str is not None
             assert self._game_config_str is not None
-            _ba.submit_score(self._game_name_str,
-                             self._game_config_str,
-                             name_str,
-                             self._score,
-                             ba.WeakCall(self._got_score_results),
-                             ba.WeakCall(self._got_friend_score_results)
-                             if self._show_friend_scores else None,
-                             order=self._score_order,
-                             tournament_id=self.session.tournament_id,
-                             score_type=self._score_type,
-                             campaign=self._campaign.name,
-                             level=self._level_name)
+            ba.internal.submit_score(
+                self._game_name_str,
+                self._game_config_str,
+                name_str,
+                self._score,
+                ba.WeakCall(self._got_score_results),
+                ba.WeakCall(self._got_friend_score_results)
+                if self._show_friend_scores else None,
+                order=self._score_order,
+                tournament_id=self.session.tournament_id,
+                score_type=self._score_type,
+                campaign=self._campaign.name,
+                level=self._level_name)
 
         # Apply the transactions we've been adding locally.
-        _ba.run_transactions()
+        ba.internal.run_transactions()
 
         # If we're not doing the world's-best button, just show a title
         # instead.
@@ -1074,9 +1075,12 @@ class CoopScoreScreen(ba.Activity[ba.Player, ba.Team]):
             else:
                 self._score_link = results['link']
                 assert self._score_link is not None
-                if not self._score_link.startswith('http://'):
-                    self._score_link = (_ba.get_master_server_address() + '/' +
-                                        self._score_link)
+                # Prepend our master-server addr if its a relative addr.
+                if (not self._score_link.startswith('http://')
+                        and not self._score_link.startswith('https://')):
+                    self._score_link = (
+                        ba.internal.get_master_server_address() + '/' +
+                        self._score_link)
                 self._score_loading_status = None
                 if 'tournamentSecondsRemaining' in results:
                     secs_remaining = results['tournamentSecondsRemaining']

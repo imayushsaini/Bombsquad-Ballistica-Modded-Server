@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import ba
-import _ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -21,8 +21,8 @@ class MainMenuWindow(ba.Window):
         # pylint: disable=cyclic-import
         import threading
         from bastd.mainmenu import MainMenuSession
-        self._in_game = not isinstance(_ba.get_foreground_host_session(),
-                                       MainMenuSession)
+        self._in_game = not isinstance(
+            ba.internal.get_foreground_host_session(), MainMenuSession)
 
         # Preload some modules we use in a background thread so we won't
         # have a visual hitch when the user taps them.
@@ -67,9 +67,9 @@ class MainMenuWindow(ba.Window):
         self._restore_state()
 
         # Keep an eye on a few things and refresh if they change.
-        self._account_state = _ba.get_v1_account_state()
-        self._account_state_num = _ba.get_v1_account_state_num()
-        self._account_type = (_ba.get_v1_account_type()
+        self._account_state = ba.internal.get_v1_account_state()
+        self._account_state_num = ba.internal.get_v1_account_state_num()
+        self._account_type = (ba.internal.get_v1_account_type()
                               if self._account_state == 'signed_in' else None)
         self._refresh_timer = ba.Timer(1.0,
                                        ba.WeakCall(self._check_refresh),
@@ -101,7 +101,7 @@ class MainMenuWindow(ba.Window):
             try:
                 app = ba.app
                 force_test = False
-                _ba.get_local_active_input_devices_count()
+                ba.internal.get_local_active_input_devices_count()
                 if (((app.on_tv or app.platform == 'mac')
                      and ba.app.config.get('launchCount', 0) <= 1)
                         or force_test):
@@ -122,10 +122,11 @@ class MainMenuWindow(ba.Window):
                 ba.print_exception('Error showing get-remote-app info')
 
     def _get_store_char_tex(self) -> str:
-        return ('storeCharacterXmas' if _ba.get_v1_account_misc_read_val(
-            'xmas', False) else
-                'storeCharacterEaster' if _ba.get_v1_account_misc_read_val(
-                    'easter', False) else 'storeCharacter')
+        return (
+            'storeCharacterXmas' if ba.internal.get_v1_account_misc_read_val(
+                'xmas', False) else
+            'storeCharacterEaster' if ba.internal.get_v1_account_misc_read_val(
+                'easter', False) else 'storeCharacter')
 
     def _check_refresh(self) -> None:
         if not self._root_widget:
@@ -138,13 +139,14 @@ class MainMenuWindow(ba.Window):
             return
 
         store_char_tex = self._get_store_char_tex()
-        account_state_num = _ba.get_v1_account_state_num()
+        account_state_num = ba.internal.get_v1_account_state_num()
         if (account_state_num != self._account_state_num
                 or store_char_tex != self._store_char_tex):
             self._store_char_tex = store_char_tex
             self._account_state_num = account_state_num
-            account_state = self._account_state = (_ba.get_v1_account_state())
-            self._account_type = (_ba.get_v1_account_type()
+            account_state = self._account_state = (
+                ba.internal.get_v1_account_state())
+            self._account_type = (ba.internal.get_v1_account_type()
                                   if account_state == 'signed_in' else None)
             self._save_state()
             self._refresh()
@@ -185,7 +187,7 @@ class MainMenuWindow(ba.Window):
             (not self._in_game or not app.toolbar_test)
             and not (self._is_demo or self._is_arcade or self._is_iircade))
 
-        self._input_device = input_device = _ba.get_ui_input_device()
+        self._input_device = input_device = ba.internal.get_ui_input_device()
         self._input_player = input_device.player if input_device else None
         self._connected_to_remote_player = (
             input_device.is_connected_to_remote_player()
@@ -213,8 +215,8 @@ class MainMenuWindow(ba.Window):
                 on_activate_call=self._settings)
 
         # Scattered eggs on easter.
-        if _ba.get_v1_account_misc_read_val('easter',
-                                            False) and not self._in_game:
+        if ba.internal.get_v1_account_misc_read_val(
+                'easter', False) and not self._in_game:
             icon_size = 34
             ba.imagewidget(parent=self._root_widget,
                            position=(h - icon_size * 0.5 - 15,
@@ -232,7 +234,7 @@ class MainMenuWindow(ba.Window):
             self._p_index += 1
 
             # If we're in a replay, we have a 'Leave Replay' button.
-            if _ba.is_in_replay():
+            if ba.internal.is_in_replay():
                 ba.buttonwidget(parent=self._root_widget,
                                 position=(h - self._button_width * 0.5 * scale,
                                           v),
@@ -241,7 +243,7 @@ class MainMenuWindow(ba.Window):
                                 autoselect=self._use_autoselect,
                                 label=ba.Lstr(resource='replayEndText'),
                                 on_activate_call=self._confirm_end_replay)
-            elif _ba.get_foreground_host_session() is not None:
+            elif ba.internal.get_foreground_host_session() is not None:
                 ba.buttonwidget(
                     parent=self._root_widget,
                     position=(h - self._button_width * 0.5 * scale, v),
@@ -310,7 +312,7 @@ class MainMenuWindow(ba.Window):
                 transition_delay=self._tdelay)
 
             # Scattered eggs on easter.
-            if _ba.get_v1_account_misc_read_val('easter', False):
+            if ba.internal.get_v1_account_misc_read_val('easter', False):
                 icon_size = 30
                 ba.imagewidget(parent=self._root_widget,
                                position=(h - icon_size * 0.5 + 25,
@@ -341,7 +343,7 @@ class MainMenuWindow(ba.Window):
         # Add speed-up/slow-down buttons for replays.
         # (ideally this should be part of a fading-out playback bar like most
         # media players but this works for now).
-        if _ba.is_in_replay():
+        if ba.internal.is_in_replay():
             b_size = 50.0
             b_buffer = 10.0
             t_scale = 0.75
@@ -427,8 +429,8 @@ class MainMenuWindow(ba.Window):
         self._height = 200.0
         enable_account_button = True
         account_type_name: str | ba.Lstr
-        if _ba.get_v1_account_state() == 'signed_in':
-            account_type_name = _ba.get_v1_account_display_string()
+        if ba.internal.get_v1_account_state() == 'signed_in':
+            account_type_name = ba.internal.get_v1_account_display_string()
             account_type_icon = None
             account_textcolor = (1.0, 1.0, 1.0)
         else:
@@ -618,8 +620,8 @@ class MainMenuWindow(ba.Window):
                 enable_sound=account_type_enable_button_sound)
 
             # Scattered eggs on easter.
-            if _ba.get_v1_account_misc_read_val('easter',
-                                                False) and not self._in_game:
+            if ba.internal.get_v1_account_misc_read_val(
+                    'easter', False) and not self._in_game:
                 icon_size = 32
                 ba.imagewidget(parent=self._root_widget,
                                position=(h - icon_size * 0.5 + 35,
@@ -648,8 +650,8 @@ class MainMenuWindow(ba.Window):
         self._how_to_play_button = btn
 
         # Scattered eggs on easter.
-        if _ba.get_v1_account_misc_read_val('easter',
-                                            False) and not self._in_game:
+        if ba.internal.get_v1_account_misc_read_val(
+                'easter', False) and not self._in_game:
             icon_size = 28
             ba.imagewidget(parent=self._root_widget,
                            position=(h - icon_size * 0.5 + 30,
@@ -682,7 +684,7 @@ class MainMenuWindow(ba.Window):
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
         custom_menu_entries: list[dict[str, Any]] = []
-        session = _ba.get_foreground_host_session()
+        session = ba.internal.get_foreground_host_session()
         if session is not None:
             try:
                 custom_menu_entries = session.get_custom_menu_entries()
@@ -819,8 +821,9 @@ class MainMenuWindow(ba.Window):
             if ba.do_once():
                 print('_change_replay_speed called without widget')
             return
-        _ba.set_replay_speed_exponent(_ba.get_replay_speed_exponent() + offs)
-        actual_speed = pow(2.0, _ba.get_replay_speed_exponent())
+        ba.internal.set_replay_speed_exponent(
+            ba.internal.get_replay_speed_exponent() + offs)
+        actual_speed = pow(2.0, ba.internal.get_replay_speed_exponent())
         ba.textwidget(edit=self._replay_speed_text,
                       text=ba.Lstr(resource='watchWindow.playbackSpeedText',
                                    subs=[('${SPEED}', str(actual_speed))]))
@@ -851,7 +854,7 @@ class MainMenuWindow(ba.Window):
         # pylint: disable=cyclic-import
         from bastd.ui.store.browser import StoreBrowserWindow
         from bastd.ui.account import show_sign_in_prompt
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             show_sign_in_prompt()
             return
         self._save_state()
@@ -892,7 +895,7 @@ class MainMenuWindow(ba.Window):
                       cancel_is_selected=True)
 
     def _leave_party(self) -> None:
-        _ba.disconnect_from_host()
+        ba.internal.disconnect_from_host()
 
     def _end_game(self) -> None:
         if not self._root_widget:
@@ -942,7 +945,7 @@ class MainMenuWindow(ba.Window):
 
     def _do_game_service_press(self) -> None:
         self._save_state()
-        _ba.show_online_score_ui()
+        ba.internal.show_online_score_ui()
 
     def _save_state(self) -> None:
 

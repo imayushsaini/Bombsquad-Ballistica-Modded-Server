@@ -1,10 +1,10 @@
 {
   "accountSettingsWindow": {
-    "accountNameRules": "Ime računa nemože satržavati emotikone ili ostale posebne znakove",
+    "accountNameRules": "Korisničko ime ne može sadržavati emotikone ili druge posebne znakove",
     "accountProfileText": "(korisnički račun)",
-    "accountsText": "Profili",
+    "accountsText": "Korisnički računi",
     "achievementProgressText": "Postignuća: ${COUNT} od ${TOTAL}",
-    "campaignProgressText": "Napredak u kampanji [Teško]: ${PROGRESS}",
+    "campaignProgressText": "Napredak kampanje[Teško]: ${PROGRESS}",
     "changeOncePerSeason": "Ovo možeš promjeniti samo jednom po sezoni.",
     "changeOncePerSeasonError": "Moraš pričekati sljedeču sezonu da promjeniš ovo(${NUM} days)",
     "customName": "Prilagođeno ime",
@@ -14,7 +14,7 @@
     "linkAccountsInstructionsNewText": "Za povezivanje dva računa, generiraj kod sa prvog\ni unesi taj kod na drugi. Podaci s drugog računa\nće biti podjeljeni između oba.\n(Podaci s prvog računa će biti izgubljeni)\n\nMožeš povezati do ${COUNT} računa.\n\nVAŽNO: povezuj samo vlastite račune;\nAko povežeš prijateljev račun onda nećete moći\nzajedno igrati u isto vrijeme.",
     "linkAccountsInstructionsText": "Da povežeš dva profila, stvori kod na \njednomod njih i unesi ga na drugom.\nNapredak i sve kupljeno bit će kombinirano.\nMožeš povezati najviše ${COUNT} profila.",
     "linkAccountsText": "Poveži profile",
-    "linkedAccountsText": "Povezani profili:",
+    "linkedAccountsText": "Povezani računi:",
     "nameChangeConfirm": "Promjeni svoje ime u ${NAME}?",
     "resetProgressConfirmNoAchievementsText": "Ovo će poništiti tvoj napredak u timskom modu i\ntvoje najbolje rezultate (ali ne i tvoje kupone).\nNemaš mogućnost povratka. Jesi li siguran?",
     "resetProgressConfirmText": "Ovo će poništiti tvoj napredak u timskom modu,\npostignuća, i vaše najbolje rezultate\n(ali ne i tvoje kupone). Nemaš mogućnost\npovratka. Jesi li siguran?",

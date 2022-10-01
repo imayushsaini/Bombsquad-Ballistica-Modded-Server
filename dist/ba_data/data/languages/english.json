@@ -497,6 +497,7 @@
     "welcome2Text": "You can also earn tickets from many of the same activities.\nTickets can be used to unlock new characters, maps, and\nmini-games, to enter tournaments, and more.",
     "yourPowerRankingText": "Your Power Ranking:"
   },
+  "copyConfirmText": "Copied to clipboard.",
   "copyOfText": "${NAME} Copy",
   "copyText": "Copy",
   "createEditPlayerText": "<Create/Edit Player>",
@@ -624,7 +625,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} In epic slow motion.",
   "epicNameFilterText": "Epic ${NAME}",
   "errorAccessDeniedText": "access denied",
-  "errorDeviceTimeIncorrectText": "Your device's time is off by ${HOURS} hours.\nThis is likely to cause problems.\nPlease check your time and time-zone settings.",
+  "errorDeviceTimeIncorrectText": "Your device's time is incorrect by ${HOURS} hours.\nThis is likely to cause problems.\nPlease check your time and time-zone settings.",
   "errorOutOfDiskSpaceText": "out of disk space",
   "errorSecureConnectionFailText": "Unable to establish secure cloud connection; network functionality may fail.",
   "errorText": "Error",
@@ -1074,7 +1075,6 @@
   "otherText": "Other...",
   "outOfText": "(#${RANK} out of ${ALL})",
   "ownFlagAtYourBaseWarning": "Your own flag must be\nat your base to score!",
-  "packageModsEnabledErrorText": "Network-play is not allowed while local-package-mods are enabled (see Settings->Advanced)",
   "partyWindow": {
     "chatMessageText": "Chat Message",
     "emptyText": "Your party is empty",
@@ -1245,8 +1245,6 @@
     "disableCameraGyroscopeMotionText": "Disable Camera Gyroscope Motion",
     "disableCameraShakeText": "Disable Camera Shake",
     "disableThisNotice": "(you can disable this notice in advanced settings)",
-    "enablePackageModsDescriptionText": "(enables extra modding capabilities but disables net-play)",
-    "enablePackageModsText": "Enable Local Package Mods",
     "enterPromoCodeText": "Enter Code",
     "forTestingText": "Note: these values are only for testing and will be lost when the app exits.",
     "helpTranslateText": "${APP_NAME}'s non-English translations are a community\nsupported effort.  If you'd like to contribute or correct\na translation, follow the link below. Thanks in advance!",
@@ -1375,6 +1373,7 @@
   "tournamentStandingsText": "Tournament Standings",
   "tournamentText": "Tournament",
   "tournamentTimeExpiredText": "Tournament Time Expired",
+  "tournamentsDisabledWorkspaceText": "Tournaments are disabled when workspaces are active.\nTo re-enable tournaments, disable your workspace and restart.",
   "tournamentsText": "Tournaments",
   "translations": {
     "characterNames": {

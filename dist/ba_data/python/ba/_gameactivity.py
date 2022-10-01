@@ -9,6 +9,7 @@ import random
 from typing import TYPE_CHECKING, TypeVar
 
 import _ba
+from ba import _internal
 from ba._activity import Activity
 from ba._score import ScoreConfig
 from ba._language import Lstr
@@ -17,6 +18,7 @@ from ba._error import NotFoundError, print_error, print_exception
 from ba._general import Call, WeakCall
 from ba._player import PlayerInfo
 from ba import _map
+from ba import _store
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -239,11 +241,11 @@ class GameActivity(Activity[PlayerType, TeamType]):
         self._zoom_message_times: dict[int, float] = {}
         self._is_waiting_for_continue = False
 
-        self._continue_cost = _ba.get_v1_account_misc_read_val(
+        self._continue_cost = _internal.get_v1_account_misc_read_val(
             'continueStartCost', 25)
-        self._continue_cost_mult = _ba.get_v1_account_misc_read_val(
+        self._continue_cost_mult = _internal.get_v1_account_misc_read_val(
             'continuesMult', 2)
-        self._continue_cost_offset = _ba.get_v1_account_misc_read_val(
+        self._continue_cost_offset = _internal.get_v1_account_misc_read_val(
             'continuesOffset', 0)
 
     @property
@@ -363,11 +365,11 @@ class GameActivity(Activity[PlayerType, TeamType]):
             if do_continue:
                 _ba.playsound(_ba.getsound('shieldUp'))
                 _ba.playsound(_ba.getsound('cashRegister'))
-                _ba.add_transaction({
+                _internal.add_transaction({
                     'type': 'CONTINUE',
                     'cost': self._continue_cost
                 })
-                _ba.run_transactions()
+                _internal.run_transactions()
                 self._continue_cost = (
                     self._continue_cost * self._continue_cost_mult +
                     self._continue_cost_offset)
@@ -390,7 +392,8 @@ class GameActivity(Activity[PlayerType, TeamType]):
         from ba._generated.enums import TimeType
 
         try:
-            if _ba.get_v1_account_misc_read_val('enableContinues', False):
+            if _internal.get_v1_account_misc_read_val('enableContinues',
+                                                      False):
                 session = self.session
 
                 # We only support continuing in non-tournament games.
@@ -453,7 +456,7 @@ class GameActivity(Activity[PlayerType, TeamType]):
         # time is left.
         tournament_id = self.session.tournament_id
         if tournament_id is not None:
-            _ba.tournament_query(
+            _internal.tournament_query(
                 args={
                     'tournamentIDs': [tournament_id],
                     'source': 'in-game time remaining query'
@@ -1159,7 +1162,7 @@ class GameActivity(Activity[PlayerType, TeamType]):
         else:
             # If settings doesn't specify a map, pick a random one from the
             # list of supported ones.
-            unowned_maps = _map.get_unowned_maps()
+            unowned_maps = _store.get_unowned_maps()
             valid_maps: list[str] = [
                 m for m in self.get_supported_maps(type(self.session))
                 if m not in unowned_maps

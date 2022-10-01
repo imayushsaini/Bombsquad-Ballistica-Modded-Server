@@ -499,6 +499,7 @@
     "welcome2Text": "يمكنك أيضا الحصول على تذاكر من العديد من الأنشطة نفسها.\nتذاكر يمكن استخدامها لفتح شخصيات جديدة، والخرائط، و\nالألعاب المصغرة، للدخول البطولات، وأكثر من ذلك.",
     "yourPowerRankingText": "تصنيف الطاقة:"
   },
+  "copyConfirmText": "نسخ إلى اللوحة",
   "copyOfText": "${NAME} نسخ",
   "copyText": "ينسخ",
   "createEditPlayerText": "<اصنع او عدل حساب>",
@@ -626,7 +627,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} بحركة ملحمية بطيئة",
   "epicNameFilterText": "الملحمي ${NAME}",
   "errorAccessDeniedText": "تم الرفض",
-  "errorDeviceTimeIncorrectText": "توقف وقت جهازك بمقدار ${HOURS} ساعة.\nهذا قد يتسبب بمشاكل.\nمن فضلك قم بالتحقق من اعدادات الوقت.",
+  "errorDeviceTimeIncorrectText": ".من الساعات ${HOURS} وقت جهازك غير صحيح بمقدار\n.هذا سوف يتسبب بمشاكل\nمن فضلك قم بالتحقق من اعدادات الوقت.",
   "errorOutOfDiskSpaceText": "انتهت مساحة التخزين",
   "errorSecureConnectionFailText": "تعذر انشاء اتصال سحابي أمن; قد تفشل وظائف الشبكة.",
   "errorText": "خطا",
@@ -1367,6 +1368,7 @@
   "tournamentStandingsText": "ترتيب البطولة",
   "tournamentText": "المسابقة",
   "tournamentTimeExpiredText": "انتهت مدة البطولة",
+  "tournamentsDisabledWorkspaceText": "البطولات لا تعمل عندما تكون فضائات العمل تعمل.\nلتشغيل البطولات مجددا، قم بإلغاء تشغيل فضاء العمل الخاص بك و اعادة تشغيل اللعبة.",
   "tournamentsText": "البطولات",
   "translations": {
     "characterNames": {

@@ -329,6 +329,7 @@
   "achievementsRemainingText": "Các thành tựu tiếp theo:",
   "achievementsText": "Các thành tựu",
   "achievementsUnavailableForOldSeasonsText": "Xin lỗi , huy hiệu này không có ở mùa trước",
+  "activatedText": "${THING} đã được kích hoạt.",
   "addGameWindow": {
     "getMoreGamesText": "Thêm các thể loại chơi",
     "titleText": "Thêm trận đấu"
@@ -627,7 +628,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} trong chế độ quay chậm.",
   "epicNameFilterText": "${NAME} Quay Chậm",
   "errorAccessDeniedText": "từ chối kết nối",
+  "errorDeviceTimeIncorrectText": "Thời gian thiết bị của bạn tắt ${HOURS} giờ.\nĐiều này có thể gây ra vấn đề.\nVui lòng kiểm tra cài đặt múi giờ và múi giờ của bạn.",
   "errorOutOfDiskSpaceText": "hết bộ nhớ",
+  "errorSecureConnectionFailText": "Không thể thiết lập kết nối đám mây an toàn; chức năng mạng có thể bị lỗi.",
   "errorText": "Lỗi",
   "errorUnknownText": "Không rõ lỗi",
   "exitGameText": "Thoát ${APP_NAME}?",
@@ -790,7 +793,7 @@
     "ticketPack4Text": "Gói vé siêu lớn",
     "ticketPack5Text": "Gói vé khổng lồ",
     "ticketPack6Text": "Gói vé siêu khổng lồ",
-    "ticketsFromASponsorText": "Lấy ${COUNT} vé \ntừ một nhà tài trợ",
+    "ticketsFromASponsorText": "Xem một quảng cáo\ncho ${COUNT} vé",
     "ticketsText": "${COUNT} Vé",
     "titleText": "Lấy vé",
     "unavailableLinkAccountText": "Xin lỗi, không thể mua hàng trên hệ điều hành này.\nBạn có thể, liên kết tài khoản này\ntới một tài khoản trên hệ điều hành khác và mua hàng ở đó.",
@@ -801,6 +804,7 @@
     "youHaveText": "Bạn có ${COUNT} vé"
   },
   "googleMultiplayerDiscontinuedText": "Xin lỗi, dịch vụ Google nhiều người chơi không còn nữa.\nTôi đang cố gắng thay thế nhanh nhất có thể.\nTrong lúc đó, vui lòng thử cách kết nối khác.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Các giao dịch mua trên Google Play không khả dụng.\nBạn có thể cần cập nhật ứng dụng cửa hàng của mình.",
   "googlePlayText": "Google Trò chơi",
   "graphicsSettingsWindow": {
     "alwaysText": "Luôn Luôn",
@@ -1111,7 +1115,10 @@
   "playlistsText": "Danh sách",
   "pleaseRateText": "Nếu bạn thấy ${APP_NAME} vui lòng \nđánh giá hoặc viết \ncảm nhận.\nĐiều này giúp hỗ trợ phát triển trong tương lai.\ncảm ơn!\n-eric",
   "pleaseWaitText": "Vui lòng chờ...",
-  "pluginsDetectedText": "Đã phát hiện plugin mới.  Kích hoạt / cấu hình chúng trong cài đặt.",
+  "pluginClassLoadErrorText": "Lỗi khi tải lớp plugin '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Lỗi khi nhập plugin '${PLUGIN}': ${ERROR}",
+  "pluginsDetectedText": "Đã phát hiện (các) plugin mới. Khởi động lại để kích hoạt chúng hoặc định cấu hình chúng trong cài đặt.",
+  "pluginsRemovedText": "Không còn tìm thấy ${NUM} plugin nào nữa.",
   "pluginsText": "Cắm",
   "practiceText": "Luyện tập",
   "pressAnyButtonPlayAgainText": "Nhấn nút bất kỳ để chơi lại...",
@@ -1362,6 +1369,7 @@
   "tournamentStandingsText": "Bảng xếp hạng giải đấu",
   "tournamentText": "Giải đấu",
   "tournamentTimeExpiredText": "Giải đấu đã hết thời gian.",
+  "tournamentsDisabledWorkspaceText": "Các giải đấu bị vô hiệu hóa khi không gian làm việc đang hoạt động.\nĐể bật lại các giải đấu, hãy tắt không gian làm việc của bạn và khởi động lại.",
   "tournamentsText": "Giải đấu",
   "translations": {
     "characterNames": {
@@ -1845,6 +1853,8 @@
   "winsPlayerText": "${NAME} Chiến thắng!",
   "winsTeamText": "${NAME} Chiến thắng!",
   "winsText": "${NAME} Chiến thắng!",
+  "workspaceSyncErrorText": "Lỗi đồng bộ hóa ${WORKSPACE}. Xem nhật ký để biết chi tiết.",
+  "workspaceSyncReuseText": "Không thể đồng bộ hóa ${WORKSPACE}. Sử dụng lại phiên bản đã đồng bộ hóa trước đó.",
   "worldScoresUnavailableText": "Điểm trên thế giới không có sẵn.",
   "worldsBestScoresText": "Điểm số thế giới cao nhất",
   "worldsBestTimesText": "Thời gian tốt nhất thế giới",

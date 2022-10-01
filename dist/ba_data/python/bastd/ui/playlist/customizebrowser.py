@@ -8,8 +8,8 @@ import copy
 import time
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any
@@ -225,7 +225,7 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
             ba.widget(edit=btn, right_widget=scrollwidget)
         ba.widget(edit=scrollwidget,
                   left_widget=new_button,
-                  right_widget=_ba.get_special_widget('party_button')
+                  right_widget=ba.internal.get_special_widget('party_button')
                   if ba.app.ui.use_toolbars else None)
 
         # make sure config exists
@@ -279,23 +279,23 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
 
     def _run_selected_playlist(self) -> None:
         # pylint: disable=cyclic-import
-        _ba.unlock_all_input()
+        ba.internal.unlock_all_input()
         try:
-            _ba.new_host_session(self._sessiontype)
+            ba.internal.new_host_session(self._sessiontype)
         except Exception:
             from bastd import mainmenu
             ba.print_exception(f'Error running session {self._sessiontype}.')
 
             # Drop back into a main menu session.
-            _ba.new_host_session(mainmenu.MainMenuSession)
+            ba.internal.new_host_session(mainmenu.MainMenuSession)
 
     def _choose_playlist(self) -> None:
         if self._selected_playlist_name is None:
             return
         self._save_playlist_selection()
         ba.containerwidget(edit=self._root_widget, transition='out_left')
-        _ba.fade_screen(False, endcall=self._run_selected_playlist)
-        _ba.lock_all_input()
+        ba.internal.fade_screen(False, endcall=self._run_selected_playlist)
+        ba.internal.lock_all_input()
 
     def _refresh(self, select_playlist: str | None = None) -> None:
         from efro.util import asserttype
@@ -424,12 +424,12 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
         ba.containerwidget(edit=self._root_widget, transition='out_left')
 
     def _do_delete_playlist(self) -> None:
-        _ba.add_transaction({
+        ba.internal.add_transaction({
             'type': 'REMOVE_PLAYLIST',
             'playlistType': self._pvars.config_name,
             'playlistName': self._selected_playlist_name
         })
-        _ba.run_transactions()
+        ba.internal.run_transactions()
         ba.playsound(ba.getsound('shieldDown'))
 
         # (we don't use len()-1 here because the default list adds one)
@@ -445,7 +445,7 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
         from bastd.ui.playlist import share
 
         # Gotta be signed in for this to work.
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             ba.screenmessage(ba.Lstr(resource='notSignedInErrorText'),
                              color=(1, 0, 0))
             ba.playsound(ba.getsound('error'))
@@ -477,7 +477,7 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
             return
 
         # Gotta be signed in for this to work.
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             ba.screenmessage(ba.Lstr(resource='notSignedInErrorText'),
                              color=(1, 0, 0))
             ba.playsound(ba.getsound('error'))
@@ -492,7 +492,7 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
         if self._selected_playlist_name is None:
             return
 
-        _ba.add_transaction(
+        ba.internal.add_transaction(
             {
                 'type': 'SHARE_PLAYLIST',
                 'expire_time': time.time() + 5,
@@ -501,7 +501,7 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
             },
             callback=ba.WeakCall(self._on_share_playlist_response,
                                  self._selected_playlist_name))
-        _ba.run_transactions()
+        ba.internal.run_transactions()
         ba.screenmessage(ba.Lstr(resource='sharingText'))
 
     def _delete_playlist(self) -> None:
@@ -582,13 +582,13 @@ class PlaylistCustomizeBrowserWindow(ba.Window):
                 break
             test_index += 1
 
-        _ba.add_transaction({
+        ba.internal.add_transaction({
             'type': 'ADD_PLAYLIST',
             'playlistType': self._pvars.config_name,
             'playlistName': test_name,
             'playlist': copy.deepcopy(plst)
         })
-        _ba.run_transactions()
+        ba.internal.run_transactions()
 
         ba.playsound(ba.getsound('gunCocking'))
         self._refresh(select_playlist=test_name)

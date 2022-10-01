@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import ba
-import _ba
+import ba.internal
 
 if TYPE_CHECKING:
     from bastd.ui.playlist.editcontroller import PlaylistEditController
@@ -58,8 +58,9 @@ class PlaylistEditWindow(ba.Window):
             text_scale=1.2)
 
         if ba.app.ui.use_toolbars:
-            ba.widget(edit=btn,
-                      right_widget=_ba.get_special_widget('party_button'))
+            ba.widget(
+                edit=btn,
+                right_widget=ba.internal.get_special_widget('party_button'))
 
         ba.widget(edit=cancel_button,
                   left_widget=cancel_button,
@@ -283,7 +284,7 @@ class PlaylistEditWindow(ba.Window):
 
         # If we had an old one, delete it.
         if self._editcontroller.get_existing_playlist_name() is not None:
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type':
                     'REMOVE_PLAYLIST',
                 'playlistType':
@@ -292,13 +293,13 @@ class PlaylistEditWindow(ba.Window):
                     self._editcontroller.get_existing_playlist_name()
             })
 
-        _ba.add_transaction({
+        ba.internal.add_transaction({
             'type': 'ADD_PLAYLIST',
             'playlistType': self._editcontroller.get_config_name(),
             'playlistName': new_name,
             'playlist': self._editcontroller.get_playlist()
         })
-        _ba.run_transactions()
+        ba.internal.run_transactions()
 
         ba.containerwidget(edit=self._root_widget, transition='out_right')
         ba.playsound(ba.getsound('gunCocking'))

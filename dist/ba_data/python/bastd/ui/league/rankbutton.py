@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -94,7 +94,7 @@ class LeagueRankButton:
         self._smooth_update_timer: ba.Timer | None = None
 
         # Take note of our account state; we'll refresh later if this changes.
-        self._account_state_num = _ba.get_v1_account_state_num()
+        self._account_state_num = ba.internal.get_v1_account_state_num()
         self._last_power_ranking_query_time: float | None = None
         self._doing_power_ranking_query = False
         self.set_position(position)
@@ -111,7 +111,7 @@ class LeagueRankButton:
             self._update_for_league_rank_data(data)
 
     def _on_activate(self) -> None:
-        _ba.increment_analytics_count('League rank button press')
+        ba.internal.increment_analytics_count('League rank button press')
         self._on_activate_call()
 
     def __del__(self) -> None:
@@ -224,7 +224,7 @@ class LeagueRankButton:
 
         in_top = data is not None and data['rank'] is not None
         do_percent = False
-        if data is None or _ba.get_v1_account_state() != 'signed_in':
+        if data is None or ba.internal.get_v1_account_state() != 'signed_in':
             self._percent = self._rank = None
             status_text = '-'
         elif in_top:
@@ -335,7 +335,7 @@ class LeagueRankButton:
         cur_time = ba.time(ba.TimeType.REAL)
 
         # If our account state has changed, refresh our UI.
-        account_state_num = _ba.get_v1_account_state_num()
+        account_state_num = ba.internal.get_v1_account_state_num()
         if account_state_num != self._account_state_num:
             self._account_state_num = account_state_num
 
@@ -350,7 +350,7 @@ class LeagueRankButton:
                 or cur_time - self._last_power_ranking_query_time > 30.0):
             self._last_power_ranking_query_time = cur_time
             self._doing_power_ranking_query = True
-            _ba.power_ranking_query(
+            ba.internal.power_ranking_query(
                 callback=ba.WeakCall(self._on_power_ranking_query_response))
 
     def _default_on_activate_call(self) -> None:

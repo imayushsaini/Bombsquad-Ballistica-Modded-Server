@@ -520,6 +520,7 @@
     "welcome2Text": "Yz cm alfj fcojwfowiejfo wiejo wfoinoaicoiwefoiwef.\nTickef woioiweofiw efoiauoicoiwefjoaieofaefa\nminf-fizoj , and itner ouacohao,a nd fmofz.",
     "yourPowerRankingText": "Yrrlz Powe Rnkkffz:"
   },
+  "copyConfirmText": "Cpoew cow owes oC.",
   "copyOfText": "Copzyz du ${NAME}",
   "copyText": "Czópy",
   "copyrightText": "© 2013 Eric Froemling",
@@ -661,7 +662,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} Ín ípic slúw mztíon.",
   "epicNameFilterText": "${NAME} Epícz",
   "errorAccessDeniedText": "acczlr dnfflz",
-  "errorDeviceTimeIncorrectText": "Yowruc cowier oowefjwoefj ${HOURS} horewif.\noitwocweojowerjiowejjjfwoef.\nPefjwe wehapeocjjgwghwe w e weofwoefjwe.",
+  "errorDeviceTimeIncorrectText": "Yowruc cowier ij incorwjeof ${HOURS} horewif.\noitwocweojowerjiowejjjfwoef.\nPefjwe wehapeocjjgwghwe w e weofwoefjwe.",
   "errorOutOfDiskSpaceText": "orz of dkzk spzlfz",
   "errorSecureConnectionFailText": "Uweorcjwoef ojcowe werryyeoi nowe; jcnwoeroidfowdffdj.dfsdf.",
   "errorText": "Errórz",
@@ -730,6 +731,7 @@
     "checkingText": "chzckinggz..",
     "copyCodeConfirmText": "Cdf cpodf to clfjoifjz.",
     "copyCodeText": "Cpoef Cwfdf",
+    "copyConfirmText": "COpic for cowejwdf.",
     "dedicatedServerInfoText": "For code wocj woiejfowiejf, loci joweijf owiejfw. Se eocwj efowiejo wcoweijf woeifowoco er.",
     "disconnectClientsText": "Thz wlzl dicntjf thz ${COUNT} pljflaf (s)\ninc yrrz prthra.  Arz yrz fsrru?",
     "earnTicketsForRecommendingAmountText": "Fofofj oicow  ${COUNT} ocwjoe f cow ef woefje\n(aocweo fwjoefi jo${YOU_COUNT} cowiejfowi oie)",
@@ -1475,6 +1477,7 @@
   "tournamentStandingsText": "Tzewfjwoij Stndfalfjz",
   "tournamentText": "Tanfowijfowef",
   "tournamentTimeExpiredText": "Tmcoef Tm Epzoiejfefz",
+  "tournamentsDisabledWorkspaceText": "Towejowc we wrjw f;aoweahwe aowwej fwoeij woicjwerwer.\nTow c we rapowi f cjqo qpwpi hgpwiejf. nowe wooer wieje wclcoiwjer.",
   "tournamentsText": "Trzzmfnmflfzzs",
   "translations": {
     "characterNames": {

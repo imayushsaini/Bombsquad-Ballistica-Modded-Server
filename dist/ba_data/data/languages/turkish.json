@@ -498,6 +498,7 @@
     "welcome2Text": "Ayrıca benzer aktivitelerden biletler kazanabilirsin.\nBiletler yeni karakterler, haritalar, mini-oyunlar\nve turnuvalara katılmak için kulanılabilir.",
     "yourPowerRankingText": "Oyuncu Sıralaman:"
   },
+  "copyConfirmText": "Panoya kopyalandı.",
   "copyOfText": "Kopya ${NAME}",
   "copyText": "Kopyala",
   "createEditPlayerText": "<Oyuncu Oluştur/Düzenle>",
@@ -625,7 +626,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} epik ağırçekim.",
   "epicNameFilterText": "Epik ${NAME}",
   "errorAccessDeniedText": "erişim reddedildi",
-  "errorDeviceTimeIncorrectText": "Eyvah! Cihazın ile sunucu arasındaki zaman farkı ${HOURS} saat.\nBu bazı sorunlara yol açabilir.\nLütfen saat ve saat dilimi ayarlarını kontrol et.",
+  "errorDeviceTimeIncorrectText": "Cihazın ile sunucu arasındaki zaman farkı ${HOURS} saat.\nBu bazı sorunlara yol açabilir.\nLütfen saat ve saat dilimi ayarlarını kontrol et.",
   "errorOutOfDiskSpaceText": "disk alanı doldu",
   "errorSecureConnectionFailText": "Güvenli bulut bağlantısı kurulamadı; ağ işlevi başarısız olabilir.",
   "errorText": "Hata",
@@ -1367,6 +1368,7 @@
   "tournamentStandingsText": "Turnuva Kazananları",
   "tournamentText": "Turnuva",
   "tournamentTimeExpiredText": "Turnuva Sona Erdi",
+  "tournamentsDisabledWorkspaceText": "Çalışma alanları aktif olduğunda turnuvalar devre dışı bırakılır.\nTurnuvaları yeniden etkinleştirmek için çalışma alanınızı devre dışı bırakın ve yeniden başlatın.",
   "tournamentsText": "Turnuvalar",
   "translations": {
     "characterNames": {

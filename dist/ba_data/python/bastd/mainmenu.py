@@ -10,7 +10,7 @@ import weakref
 from typing import TYPE_CHECKING
 
 import ba
-import _ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any
@@ -67,7 +67,8 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
         # host is navigating menus while they're just staring at an
         # empty-ish screen.
         tval = ba.Lstr(resource='hostIsNavigatingMenusText',
-                       subs=[('${HOST}', _ba.get_v1_account_display_string())])
+                       subs=[('${HOST}',
+                              ba.internal.get_v1_account_display_string())])
         self._host_is_navigating_text = ba.NodeActor(
             ba.newnode('text',
                        attrs={
@@ -251,7 +252,7 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
         self._update()
 
         # Hopefully this won't hitch but lets space these out anyway.
-        _ba.add_clean_frame_callback(ba.WeakCall(self._start_preloads))
+        ba.internal.add_clean_frame_callback(ba.WeakCall(self._start_preloads))
 
         random.seed()
 
@@ -274,7 +275,7 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
 
             # We now want to wait until we're signed in before fetching news.
             def _try_fetching_news(self) -> None:
-                if _ba.get_v1_account_state() == 'signed_in':
+                if ba.internal.get_v1_account_state() == 'signed_in':
                     self._fetch_news()
                     self._fetch_timer = None
 
@@ -282,7 +283,7 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
                 ba.app.main_menu_last_news_fetch_time = time.time()
 
                 # UPDATE - We now just pull news from MRVs.
-                news = _ba.get_v1_account_misc_read_val('n', None)
+                news = ba.internal.get_v1_account_misc_read_val('n', None)
                 if news is not None:
                     self._got_news(news)
 
@@ -453,6 +454,11 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
                         ba.app.ui.set_main_menu_window(
                             CoopBrowserWindow(
                                 transition=None).get_root_widget())
+                    elif main_menu_location == 'Benchmarks & Stress Tests':
+                        # pylint: disable=cyclic-import
+                        from bastd.ui.debug import DebugWindow
+                        ba.app.ui.set_main_menu_window(
+                            DebugWindow(transition=None).get_root_widget())
                     else:
                         # pylint: disable=cyclic-import
                         from bastd.ui.mainmenu import MainMenuWindow
@@ -757,7 +763,7 @@ class MainMenuActivity(ba.Activity[ba.Player, ba.Team]):
             })
 
     def _get_custom_logo_tex_name(self) -> str | None:
-        if _ba.get_v1_account_misc_read_val('easter', False):
+        if ba.internal.get_v1_account_misc_read_val('easter', False):
             return 'logoEaster'
         return None
 
@@ -930,7 +936,7 @@ class MainMenuSession(ba.Session):
 
     def on_activity_end(self, activity: ba.Activity, results: Any) -> None:
         if self._locked:
-            _ba.unlock_all_input()
+            ba.internal.unlock_all_input()
 
         # Any ending activity leads us into the main menu one.
         self.setactivity(ba.newactivity(MainMenuActivity))
