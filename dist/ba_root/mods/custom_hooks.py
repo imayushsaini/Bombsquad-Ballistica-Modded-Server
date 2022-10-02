@@ -53,6 +53,17 @@ class modSetup(ba.Plugin):
 
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
+        if(settings["useV2Account"]):
+            from tools import account
+            if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
+                logging.debug("Account V2 is active")
+            else:
+                logging.warning("Account V2 login require ....stay tuned.")
+                ba.timer(3, ba.Call(logging.debug,"Starting Account V2 login process...."))
+                ba.timer(6,account.AccountUtil)
+        else:
+            ba.app.accounts_v2.set_primary_credentials(None)
+            ba.internal.sign_in_v1('Local')
         ba.timer(60,playlist.flush_playlists)
     def on_app_shutdown(self):
         pass
@@ -83,17 +94,7 @@ def bootstraping():
     _thread.start_new_thread(mystats.refreshStats, ())
     pdata.load_cache()
     _thread.start_new_thread(pdata.dump_cache, ())
-    if(settings["useV2Account"]):
-        from tools import account
-        if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
-            logging.debug("Account V2 is active")
-        else:
-            ba.internal.sign_out_v1()
-            logging.warning("Account V2 login started ...wait")
-            account.AccountUtil()
-    else:
-        ba.app.accounts_v2.set_primary_credentials(None)
-        ba.internal.sign_in_v1('Local')
+
     # import plugins
     if settings["elPatronPowerups"]["enable"]:
         from plugins import elPatronPowerups

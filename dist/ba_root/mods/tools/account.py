@@ -14,11 +14,10 @@ class AccountUtil:
     def __init__(self):
         self._proxyid: str | None = None
         self._proxykey: str | None = None
-        if(ba.internal.get_v1_account_state() == 'signed_out'):
-            ba.app.cloud.send_message_cb(bacommon.cloud.LoginProxyRequestMessage(),
+        ba.internal.sign_out_v1()
+        ba.app.cloud.send_message_cb(bacommon.cloud.LoginProxyRequestMessage(),
                 on_response=ba.Call(self._on_proxy_request_response))
-        else:
-            logging.error("Signout old account first")
+
     def _on_proxy_request_response(self, response: bacommon.cloud.LoginProxyRequestResponse | Exception) -> None:
         if isinstance(response, Exception):
             logging.error("error occured")
@@ -27,7 +26,7 @@ class AccountUtil:
             return
         address = ba.internal.get_master_server_address(
             version=2) + response.url
-        logging.debug("copy this url to your browser : " +address)
+        logging.debug("Copy this URL to your browser : " +address)
         self._proxyid = response.proxyid
         self._proxykey = response.proxykey
         ba.timer(STATUS_CHECK_INTERVAL_SECONDS,
@@ -57,21 +56,9 @@ class AccountUtil:
                 and response.state is response.State.SUCCESS):
             assert response.credentials is not None
             ba.app.accounts_v2.set_primary_credentials(response.credentials)
-            logging.info("Logged in as: "+ba.internal.get_v1_account_display_string())
-            # As a courtesy, tell the server we're done with this proxy
-            # so it can clean up (not a huge deal if this fails)
-            assert self._proxyid is not None
-            try:
-                ba.app.cloud.send_message_cb(
-                    bacommon.cloud.LoginProxyCompleteMessage(
-                        proxyid=self._proxyid),
-                    on_response=ba.Call(self._proxy_complete_response))
-            except CommunicationError:
-                pass
-            except Exception:
-                logging.warning(
-                    'Unexpected error sending login-proxy-complete message',
-                    exc_info=True)
+
+            ba.timer(3,self._logged_in)
+
             return
 
         # If we're still waiting, ask again soon.
@@ -79,13 +66,15 @@ class AccountUtil:
                 or response.state is response.State.WAITING):
             ba.timer(STATUS_CHECK_INTERVAL_SECONDS,
                      ba.Call(self._ask_for_status))
+    def _logged_in(self):
+         logging.info("Logged in as: "+ba.internal.get_v1_account_display_string())
 
-# ba_meta export plugin
+# #ba_meta export plugin
 # class AccountV2(ba.Plugin):
 #     def __init__(self):
 #         if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
-#             logging.debug("Account V2 is active")
+#                 logging.debug("Account V2 is active")
 #         else:
-#             ba.internal.sign_out_v1()
-#             logging.warning("Account V2 login started ...wait")
-#             AccountUtil()
+#             logging.warning("Account V2 login require ....stay tuned.")
+#             ba.timer(3, ba.Call(logging.debug,"Starting Account V2 login process...."))
+#             ba.timer(6,AccountUtil)
