@@ -12,8 +12,8 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
-import _ba
 import ba
+import ba.internal
 from bastd.ui.gather import GatherTab
 
 if TYPE_CHECKING:
@@ -88,8 +88,8 @@ class UIRow:
         if party.clean_display_index == index:
             return
 
-        ping_good = _ba.get_v1_account_misc_read_val('pingGood', 100)
-        ping_med = _ba.get_v1_account_misc_read_val('pingMed', 500)
+        ping_good = ba.internal.get_v1_account_misc_read_val('pingGood', 100)
+        ping_med = ba.internal.get_v1_account_misc_read_val('pingMed', 500)
 
         self._clear()
         hpos = 20
@@ -122,8 +122,8 @@ class UIRow:
         if party.stats_addr:
             url = party.stats_addr.replace(
                 '${ACCOUNT}',
-                _ba.get_v1_account_misc_read_val_2('resolvedAccountID',
-                                                   'UNKNOWN'))
+                ba.internal.get_v1_account_misc_read_val_2(
+                    'resolvedAccountID', 'UNKNOWN'))
             self._stats_button = ba.buttonwidget(
                 color=(0.3, 0.6, 0.94),
                 textcolor=(1.0, 1.0, 1.0),
@@ -582,7 +582,7 @@ class PublicGatherTab(GatherTab):
         c_height = region_height - 20
         v = c_height - 35
         v -= 25
-        is_public_enabled = _ba.get_public_party_enabled()
+        is_public_enabled = ba.internal.get_public_party_enabled()
         v -= 30
 
         ba.textwidget(
@@ -643,7 +643,7 @@ class PublicGatherTab(GatherTab):
             scale=1.2,
             color=(1, 1, 1),
             position=(240, v - 9),
-            text=str(_ba.get_public_party_max_size()))
+            text=str(ba.internal.get_public_party_max_size()))
         btn1 = self._host_max_party_size_minus_button = (ba.buttonwidget(
             parent=self._container,
             size=(40, 40),
@@ -711,7 +711,7 @@ class PublicGatherTab(GatherTab):
 
         # If public sharing is already on,
         # launch a status-check immediately.
-        if _ba.get_public_party_enabled():
+        if ba.internal.get_public_party_enabled():
             self._do_status_check()
 
     def _on_public_party_query_result(self,
@@ -793,7 +793,7 @@ class PublicGatherTab(GatherTab):
         self._process_pending_party_infos()
 
         # Anytime we sign in/out, make sure we refresh our list.
-        signed_in = _ba.get_v1_account_state() == 'signed_in'
+        signed_in = ba.internal.get_v1_account_state() == 'signed_in'
         if self._signed_in != signed_in:
             self._signed_in = signed_in
             self._party_lists_dirty = True
@@ -806,7 +806,7 @@ class PublicGatherTab(GatherTab):
         text = self._host_name_text
         if text:
             name = cast(str, ba.textwidget(query=self._host_name_text))
-            _ba.set_public_party_name(name)
+            ba.internal.set_public_party_name(name)
 
         # Update status text.
         status_text = self._join_status_text
@@ -986,7 +986,7 @@ class PublicGatherTab(GatherTab):
             p[1].index))
 
         # If signed out or errored, show no parties.
-        if (_ba.get_v1_account_state() != 'signed_in'
+        if (ba.internal.get_v1_account_state() != 'signed_in'
                 or not self._have_valid_server_list):
             self._parties_displayed = {}
         else:
@@ -1022,20 +1022,21 @@ class PublicGatherTab(GatherTab):
 
         # Fire off a new public-party query periodically.
         if (self._last_server_list_query_time is None
-                or now - self._last_server_list_query_time > 0.001 *
-                _ba.get_v1_account_misc_read_val('pubPartyRefreshMS', 10000)):
+                or now - self._last_server_list_query_time >
+                0.001 * ba.internal.get_v1_account_misc_read_val(
+                    'pubPartyRefreshMS', 10000)):
             self._last_server_list_query_time = now
             if DEBUG_SERVER_COMMUNICATION:
                 print('REQUESTING SERVER LIST')
-            if _ba.get_v1_account_state() == 'signed_in':
-                _ba.add_transaction(
+            if ba.internal.get_v1_account_state() == 'signed_in':
+                ba.internal.add_transaction(
                     {
                         'type': 'PUBLIC_PARTY_QUERY',
                         'proto': ba.app.protocol_version,
                         'lang': ba.app.lang.language
                     },
                     callback=ba.WeakCall(self._on_public_party_query_result))
-                _ba.run_transactions()
+                ba.internal.run_transactions()
             else:
                 self._on_public_party_query_result(None)
 
@@ -1128,15 +1129,18 @@ class PublicGatherTab(GatherTab):
                         edit=text,
                         text=ba.Lstr(
                             value='${A}\n${B}${C}',
-                            subs=[('${A}',
-                                   ba.Lstr(resource='gatherWindow.'
-                                           'partyStatusNotJoinableText')),
-                                  ('${B}',
-                                   ba.Lstr(resource='gatherWindow.'
-                                           'manualRouterForwardingText',
-                                           subs=[('${PORT}',
-                                                  str(_ba.get_game_port()))])),
-                                  ('${C}', ex_line)]),
+                            subs=[
+                                ('${A}',
+                                 ba.Lstr(resource='gatherWindow.'
+                                         'partyStatusNotJoinableText')),
+                                ('${B}',
+                                 ba.Lstr(resource='gatherWindow.'
+                                         'manualRouterForwardingText',
+                                         subs=[
+                                             ('${PORT}',
+                                              str(ba.internal.get_game_port()))
+                                         ])), ('${C}', ex_line)
+                            ]),
                         color=(1, 0, 0))
                 else:
                     ba.textwidget(edit=text,
@@ -1156,7 +1160,7 @@ class PublicGatherTab(GatherTab):
 
     def _on_start_advertizing_press(self) -> None:
         from bastd.ui.account import show_sign_in_prompt
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             show_sign_in_prompt()
             return
 
@@ -1166,16 +1170,16 @@ class PublicGatherTab(GatherTab):
                              color=(1, 0, 0))
             ba.playsound(ba.getsound('error'))
             return
-        _ba.set_public_party_name(name)
+        ba.internal.set_public_party_name(name)
         cfg = ba.app.config
         cfg['Public Party Name'] = name
         cfg.commit()
         ba.playsound(ba.getsound('shieldUp'))
-        _ba.set_public_party_enabled(True)
+        ba.internal.set_public_party_enabled(True)
 
         # In GUI builds we want to authenticate clients only when hosting
         # public parties.
-        _ba.set_authenticate_clients(True)
+        ba.internal.set_authenticate_clients(True)
 
         self._do_status_check()
         ba.buttonwidget(
@@ -1186,11 +1190,11 @@ class PublicGatherTab(GatherTab):
             on_activate_call=self._on_stop_advertising_press)
 
     def _on_stop_advertising_press(self) -> None:
-        _ba.set_public_party_enabled(False)
+        ba.internal.set_public_party_enabled(False)
 
         # In GUI builds we want to authenticate clients only when hosting
         # public parties.
-        _ba.set_authenticate_clients(False)
+        ba.internal.set_authenticate_clients(False)
         ba.playsound(ba.getsound('shieldDown'))
         text = self._host_status_text
         if text:
@@ -1222,7 +1226,7 @@ class PublicGatherTab(GatherTab):
             now = time.time()
             last_connect_time = self._last_connect_attempt_time
             if last_connect_time is None or now - last_connect_time > 2.0:
-                _ba.connect_to_party(address, port=port)
+                ba.internal.connect_to_party(address, port=port)
                 self._last_connect_attempt_time = now
 
     def set_public_party_selection(self, sel: Selection) -> None:
@@ -1233,12 +1237,12 @@ class PublicGatherTab(GatherTab):
         self._have_user_selected_row = True
 
     def _on_max_public_party_size_minus_press(self) -> None:
-        val = max(1, _ba.get_public_party_max_size() - 1)
-        _ba.set_public_party_max_size(val)
+        val = max(1, ba.internal.get_public_party_max_size() - 1)
+        ba.internal.set_public_party_max_size(val)
         ba.textwidget(edit=self._host_max_party_size_value, text=str(val))
 
     def _on_max_public_party_size_plus_press(self) -> None:
-        val = _ba.get_public_party_max_size()
+        val = ba.internal.get_public_party_max_size()
         val += 1
-        _ba.set_public_party_max_size(val)
+        ba.internal.set_public_party_max_size(val)
         ba.textwidget(edit=self._host_max_party_size_value, text=str(val))

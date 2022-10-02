@@ -441,8 +441,9 @@ class RPCEndpoint:
             weakref.ref(
                 asyncio.create_task(
                     self._handle_raw_message(message_id=msgid, message=msg))))
-        self._debug_print_call(
-            f'{self._label}: done handling message at {self._tm()}.')
+        if self._debug_print:
+            self._debug_print_call(
+                f'{self._label}: done handling message at {self._tm()}.')
 
     async def _handle_response_packet(self, big: bool) -> None:
         assert self._peer_info is not None
@@ -558,7 +559,7 @@ class RPCEndpoint:
             # If that doesn't happen, make a fuss so we know to fix it.
             # The other end will simply never get a response to this
             # message.
-            logging.exception('Error handling message')
+            logging.exception('Error handling raw rpc message')
             return
 
         assert self._peer_info is not None

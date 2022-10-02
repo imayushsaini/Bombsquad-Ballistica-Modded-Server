@@ -8,7 +8,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import ba
-import _ba
+import ba.internal
 
 from efro.error import CommunicationError
 import bacommon.cloud
@@ -81,7 +81,8 @@ class V2SignInWindow(ba.Window):
             return
 
         # Show link(s) the user can use to log in.
-        address = _ba.get_master_server_address(version=2) + response.url
+        address = ba.internal.get_master_server_address(
+            version=2) + response.url
         address_pretty = address.removeprefix('https://')
 
         ba.textwidget(
@@ -123,7 +124,7 @@ class V2SignInWindow(ba.Window):
                        position=(self._width * 0.5 - qr_size * 0.5,
                                  self._height * 0.36 + qroffs - qr_size * 0.5),
                        size=(qr_size, qr_size),
-                       texture=_ba.get_qrcode_texture(address))
+                       texture=ba.internal.get_qrcode_texture(address))
 
         # Start querying for results.
         self._proxyid = response.proxyid

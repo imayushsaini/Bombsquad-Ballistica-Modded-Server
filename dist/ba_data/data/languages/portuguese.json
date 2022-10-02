@@ -658,7 +658,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} em câmera lenta épica.",
   "epicNameFilterText": "${NAME} épico(a)",
   "errorAccessDeniedText": "acesso negado",
-  "errorDeviceTimeIncorrectText": "A hora do seu dispositivo está atrasada/adiantada em ${HOURS} horas.\nIsso poderá causar problemas.\nPor favor cheque as suas configurações de hora e fuso horário.",
+  "errorDeviceTimeIncorrectText": "A hora do seu dispositivo está incorreta por ${HOURS} horas.\nIsso causará problemas. \nPor-Favor cheque suas configurações de hora e fuso horário.",
   "errorOutOfDiskSpaceText": "pouco espaço em disco",
   "errorSecureConnectionFailText": "Não foi possível estabelecer uma conexão segura à nuvem; a funcionalidade da rede pode falhar.",
   "errorText": "Erro",
@@ -1458,6 +1458,7 @@
   "tournamentStandingsText": "Classificação do torneio",
   "tournamentText": "Torneio",
   "tournamentTimeExpiredText": "O tempo do torneio expirou.",
+  "tournamentsDisabledWorkspaceText": "Os torneios são desabilitados quando os espaços de trabalho estão ativos.\nPara reativar os torneios, desative seu espaço de trabalho e reinicie.",
   "tournamentsText": "Torneios",
   "translations": {
     "characterNames": {

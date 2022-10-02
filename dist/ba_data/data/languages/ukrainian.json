@@ -328,6 +328,7 @@
   "achievementsRemainingText": "Досягнень залишилось:",
   "achievementsText": "Досягнення",
   "achievementsUnavailableForOldSeasonsText": "На жаль, специфіка досягнення недоступна для старих сезонів.",
+  "activatedText": "${THING} активовано",
   "addGameWindow": {
     "getMoreGamesText": "Ще ігри...",
     "titleText": "Додати гру"
@@ -625,7 +626,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} в епічному сповільненій дії.",
   "epicNameFilterText": "${NAME} в епічному режимі",
   "errorAccessDeniedText": "доступ заборонено",
+  "errorDeviceTimeIncorrectText": "Час вашого пристрою зміщено на${HOURS} год.\nЦе може спричинити проблеми.\nБудь ласка, перевірте свій час і налаштування часового поясу.",
   "errorOutOfDiskSpaceText": "немає місця на диску",
+  "errorSecureConnectionFailText": "Неможливо встановити безпечне хмарне з’єднання;  мережеві функції можуть не працювати.",
   "errorText": "Помилка",
   "errorUnknownText": "невідома помилка",
   "exitGameText": "Вийти з ${APP_NAME}?",
@@ -788,7 +791,7 @@
     "ticketPack4Text": "Величезна пачка квитків",
     "ticketPack5Text": "Слонова пачка квитків",
     "ticketPack6Text": "Максимальна пачка квитків",
-    "ticketsFromASponsorText": "Отримати ${COUNT} квитків\nвід спонсора",
+    "ticketsFromASponsorText": "Перегляньте рекламу\nза ${COUNT} квитків",
     "ticketsText": "Квитків: ${COUNT}",
     "titleText": "Отримати квитки",
     "unavailableLinkAccountText": "Вибачте, але на цій платформі покупки недоступні.\nВ якості вирішення, ви можете прив'язати цей акаунт\nдо акаунту на іншій платформі, і здійснювати покупки там.",
@@ -799,6 +802,7 @@
     "youHaveText": "У вас ${COUNT} квитків"
   },
   "googleMultiplayerDiscontinuedText": "Пробачте, але сервіс мультіплеєра від Google тепер не доступний.\nЯ працюю над зміною сервіса як можно скоріше.\nДо цього, будь ласка, подивіться інакші способи гри в мультіплеєр. \n-Ерік",
+  "googlePlayPurchasesNotAvailableText": "Покупки в Google Play недоступні.\nМожливо, вам знадобиться оновити програму магазину.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Завжди",
@@ -1109,7 +1113,10 @@
   "playlistsText": "Плейлисти",
   "pleaseRateText": "Якщо вам подобається гра ${APP_NAME}, будь ласка, подумайте про те,\nщоб оцінити її або написати рецензію. Це забезпечує корисну\nзворотний зв'язок і допомагає підтримати подальшу розробку.\n\nДякуємо!\n-Ерік",
   "pleaseWaitText": "Будь ласка зачекайте...",
-  "pluginsDetectedText": "Новий плагін(и) виявлені.Ввімкніть/підтвердіть це в налаштуваннях.",
+  "pluginClassLoadErrorText": "Помилка завантаження класу плагіна \"${PLUGIN}\": ${ERROR}",
+  "pluginInitErrorText": "Помилка запуску плагіна \"${PLUGIN}\": ${ERROR}",
+  "pluginsDetectedText": "Виявлено нові плагіни.  Перезапустіть, щоб активувати їх, або налаштуйте їх у налаштуваннях",
+  "pluginsRemovedText": "${NUM} плагін(ів) більше не знайдено.",
   "pluginsText": "Плагіни",
   "practiceText": "Тренування",
   "pressAnyButtonPlayAgainText": "Натисніть будь-яку кнопку щоб грати знову...",
@@ -1360,6 +1367,7 @@
   "tournamentStandingsText": "Позиції в турнірі",
   "tournamentText": "Турнір",
   "tournamentTimeExpiredText": "Час турніру минув",
+  "tournamentsDisabledWorkspaceText": "Турніри вимкнені, коли робочі області активні.\n Щоб знову ввімкнути турніри, вимкніть робочу область і перезапустіть.",
   "tournamentsText": "Турніри",
   "translations": {
     "characterNames": {
@@ -1845,6 +1853,8 @@
   "winsPlayerText": "Переміг ${NAME}!",
   "winsTeamText": "Перемогли ${NAME}!",
   "winsText": "${NAME} виграв!",
+  "workspaceSyncErrorText": "Помилка синхронізації ${WORKSPACE}.  Подробиці дивіться в журналі.",
+  "workspaceSyncReuseText": "Не вдається синхронізувати ${WORKSPACE}. Повторне використання попередньої синхронізованої версії.",
   "worldScoresUnavailableText": "Світові результати недоступні.",
   "worldsBestScoresText": "Кращі в світі результати",
   "worldsBestTimesText": "Кращий світовий час",

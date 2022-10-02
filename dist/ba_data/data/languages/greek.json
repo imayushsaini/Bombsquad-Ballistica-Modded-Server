@@ -325,6 +325,7 @@
   "achievementsRemainingText": "Υπολειπόμενα Επιτεύγματα:",
   "achievementsText": "Επιτεύγματα",
   "achievementsUnavailableForOldSeasonsText": "Συγνώμη, ακριβείς λεπτομέρειες σχετικές με τα επιτεύγματα είναι μη διαθέσιμες για παλαιότερες σεζόν.",
+  "activatedText": "Το ${THING} ενεργοποιήθηκε.",
   "addGameWindow": {
     "getMoreGamesText": "Περισσότερα Παιχνίδια...",
     "titleText": "Προσθήκη Παιχνιδιού"
@@ -496,6 +497,7 @@
     "welcome2Text": "Μπορείτε ακόμα να κερδίσετε εισιτήρια με πολλές παρόμοιες δραστηριότητες.\nΤα εισιτήρια μπορούν να χρησιμοποιηθούν για να ξεκλειδώσετε νέους\nχαρακτήρες, χάρτες και μικροπαιχνίδια, να συμμετάσχετε σε τουρνουά, κ.α.",
     "yourPowerRankingText": "Η Κατάταξη Δύναμής Σας:"
   },
+  "copyConfirmText": "Αντιγράφτηκε στο πρόχειρο.",
   "copyOfText": "${NAME} Αντίγραφο",
   "copyText": "αντίγραφο",
   "createEditPlayerText": "<Δημιουργία/Επεξεργασία Παίκτη>",
@@ -623,7 +625,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} Σε επικά αργή κίνηση.",
   "epicNameFilterText": "${NAME} Επικό",
   "errorAccessDeniedText": "η πρόσβαση απορρίφθηκε",
+  "errorDeviceTimeIncorrectText": "Η ώρα της συσκευής σας είναι λάθος ${HOURS} ώρες.\nΑυτο είναι πιθανό να πεοκλέσει προβλήματα.\nΠαρακαλούμε ελέξτε τις ρυθμίσεις ώρας σας.",
   "errorOutOfDiskSpaceText": "έλλειψη αποθηκευτικού χώρου",
+  "errorSecureConnectionFailText": "Αδύνατο να δημιουργηθεί ασφαλής σύνδεση cloud, η χρήση του διαδικτύου μπορεί να αποτύχει.",
   "errorText": "Σφάλμα",
   "errorUnknownText": "άγνωστο σφάλμα",
   "exitGameText": "Έξοδος από το ${APP_NAME};",
@@ -786,7 +790,7 @@
     "ticketPack4Text": "Πακέτο Εισιτηρίων Jumbo",
     "ticketPack5Text": "Πακέτο Εισιτηρίων Μαμούθ",
     "ticketPack6Text": "Υπέρτατο Πακέτο Εισιτηρίων",
-    "ticketsFromASponsorText": "Αποκτήστε ${COUNT} εισιτήρια\nαπό χορηγία",
+    "ticketsFromASponsorText": "Παρακολουθήστε μια διαφήμηση\nγια ${COUNT} εισιτήρια",
     "ticketsText": "${COUNT} Εισιτήρια",
     "titleText": "Αποκτήστε Εισιτήρια",
     "unavailableLinkAccountText": "Συγνώμη, οι αγορές δεν είναι διαθέσιμες σε αυτή την πλατφόρμα.\nΩς λύση, μπορείτε να δεσμεύσετε αυτόν τον λογαριασμό με έναν\nλογαριασμό από άλλη πλατφόρμα και να αγοράσετε από εκεί.",
@@ -797,6 +801,7 @@
     "youHaveText": "έχετε ${COUNT} εισιτήρια"
   },
   "googleMultiplayerDiscontinuedText": "Συγνώμη, φαίνεται πως η υπηρεσία πολλών παικτών της Google δεν είναι πλέον διαθέσιμη.\nΠροσπαθώ να βρω αντικατάσταση όσο πιο γρήγορα γίνεται.\nΜέχρι τότε, παρακαλώ δοκιμάστε άλλο τρόπο σύνδεσης.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Οι αγορές Google Play δεν είναι διαθέσιμες.\nΜπορεί να χρειάζεται να ενημερώσετε την εφαρμογή σας.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Πάντα",
@@ -1111,7 +1116,10 @@
   "playlistsText": "Λίστες Παιχνιδιών",
   "pleaseRateText": "Εάν απολαμβάνετε το ${APP_NAME}, παρακαλώ σκεφτείτε να αφιερώσετε μιά στιγμή\nγια να το βαθμολογήσετε ή να γράψετε μιά κριτική. Αυτό θα προσφέρει χρήσιμη\nανατροφοδότηση και θα βοηθήσει για την υποστήριξη της μέλλουσας ανάπτυξης.\n\nευχαριστώ!\n-eric",
   "pleaseWaitText": "Παρακαλώ περιμένετε...",
-  "pluginsDetectedText": "Νέα πρόσθετο/α εντοπίστηκαν. Ενεργοποίηστε/Διαμορφώστε τα από τις ρυθμίσεις.",
+  "pluginClassLoadErrorText": "Σφάλμα φορτώνοντας πρόσθετο '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Σφάλμα επερξεγάζοντας πρόσθετο '${PLUGIN}': ${ERROR}",
+  "pluginsDetectedText": "Νέα πρόσθετο/α εντοπίστηκαν. Επανεκκινήστε την εφαρμογή για να τα ενεργοποιήσετε, ή διαμορφώστε τα στις ρυθμίσεις.",
+  "pluginsRemovedText": "${NUM} πρόσθετο/α δεν εντοπίζονται πια.",
   "pluginsText": "Πρόσθετα",
   "practiceText": "Πρακτική",
   "pressAnyButtonPlayAgainText": "Πατήστε οποιοδήποτε κουμπί για να ξαναπαίξετε...",
@@ -1364,6 +1372,7 @@
   "tournamentStandingsText": "Πίνακας Κατάταξης Τουρνουά",
   "tournamentText": "Τουρνουά",
   "tournamentTimeExpiredText": "Ο Χρόνος του Τουρνουά Έληξε",
+  "tournamentsDisabledWorkspaceText": "Τα τουρνουά είναι απενεργοποιημένα όταν χόροι εργασίας είναι ενεργοί.\nΓια να το ενεργοποιήσετε, κλείστε τον χώρο εργασίας σας και επανεκκινήστε την εφαρμογή.",
   "tournamentsText": "Τουρνουά",
   "translations": {
     "characterNames": {
@@ -1847,6 +1856,8 @@
   "winsPlayerText": "Ο Παίκτης ${NAME} Νίκησε!",
   "winsTeamText": "Η Ομάδα ${NAME} Νίκησε!",
   "winsText": "${NAME} Νίκησε!",
+  "workspaceSyncErrorText": "Σφάλμα συνγχρονήζοντας ${WORKSPACE}. Δείτε την καταγραφή για λεπτομέρειες.",
+  "workspaceSyncReuseText": "Ο χώρος εργασίας ${WORKSPACE} δεν μπορεί να συγχρονιστεί. Η προηγούμενη συγχρονισμένη έκδοση θα χρησιμοποιηθεί.",
   "worldScoresUnavailableText": "Παγκόσμιες βαθμολογίες μη διαθέσιμες.",
   "worldsBestScoresText": "Καλύτερες Βαθμολογίες Παγκοσμίως",
   "worldsBestTimesText": "Καλύτεροι Χρόνοι Παγκοσμίως",

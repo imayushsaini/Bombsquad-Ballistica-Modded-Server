@@ -16,6 +16,7 @@ from bastd.actor import spaz,spazappearance
 from bastd.actor import bomb as stdbomb
 from bastd.actor.powerupbox import PowerupBoxFactory
 import ba,_ba,bastd,weakref,random,math,time,base64,os,json,setting
+import ba.internal
 from playersData import pdata
 from stats import mystats
 PlayerType = TypeVar('PlayerType', bound=ba.Player)
@@ -156,7 +157,7 @@ class Effect(ba.Actor):
         node_id = self.source_player.node.playerID
         cl_str = None
         clID = None
-        for c in _ba.get_foreground_host_session().sessionplayers:
+        for c in ba.internal.get_foreground_host_session().sessionplayers:
             if (c.activityplayer) and (c.activityplayer.node.playerID == node_id):
                 profiles = c.inputdevice.get_player_profiles()
                 clID = c.inputdevice.client_id
@@ -247,7 +248,8 @@ class Effect(ba.Actor):
             ba.animate_array(self.scorchNode,"color",3,{0:self.scorchNode.color,500:color}, timetype=tt, timeformat=tf)
         else:
             self.scorchTimer = None
-            self.scorchNode.delete()
+            if hasattr(self,"scorchNode"):
+                self.scorchNode.delete()
             self.handlemessage(ba.DieMessage())
 
     def neonLightSwitch(self,shine,Highlight,NameColor):

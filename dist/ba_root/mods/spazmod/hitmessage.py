@@ -2,6 +2,7 @@
 # Released under the MIT License. See LICENSE for details.
 
 import ba, _ba, setting
+import ba.internal
 from stats.mystats import damage_data
 from bastd.actor.popuptext import PopupText
 
@@ -18,7 +19,7 @@ def handle_hit(msg, hp, dmg, hit_by, msg_pos):
         hit_by_id = hit_by.node.playerID
         if hit_by_id is not None:
             hit_by_account_id = None
-            for c in _ba.get_foreground_host_session().sessionplayers:
+            for c in ba.internal.get_foreground_host_session().sessionplayers:
                 if (c.activityplayer) and (c.activityplayer.node.playerID == hit_by_id):
                     hit_by_account_id = c.get_v1_account_id()
                     if hit_by_account_id in damage_data: damage_data[hit_by_account_id] += float(dmg)

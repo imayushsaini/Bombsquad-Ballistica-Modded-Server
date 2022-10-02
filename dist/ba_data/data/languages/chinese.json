@@ -501,6 +501,7 @@
     "welcome2Text": "你还可参加很多相同活动来赢取点券。\n点券可用于解锁新的角色、地图和\n迷你游戏，或进入锦标赛，或更多用途",
     "yourPowerRankingText": "你的能力排位："
   },
+  "copyConfirmText": "复制到剪贴板",
   "copyOfText": "${NAME} 复制",
   "copyText": "copy",
   "createEditPlayerText": "<创建/编辑玩家>",
@@ -630,7 +631,7 @@
   "epicDescriptionFilterText": "史诗级慢动作 ${DESCRIPTION}。",
   "epicNameFilterText": "史诗级${NAME}",
   "errorAccessDeniedText": "访问被拒绝",
-  "errorDeviceTimeIncorrectText": "您的系统时间与服务器时间相差了${HOURS}小时\n这可能会出现一些问题\n请检查您的系统时间或时区",
+  "errorDeviceTimeIncorrectText": "您设备的时间有 ${HOURS} 小时的误差。\n这会导致游戏出现问题。\n请检查您设备的时间和时区设置。",
   "errorOutOfDiskSpaceText": "磁盘空间不足",
   "errorSecureConnectionFailText": "无法建立安全的云链接，网络可能会连接失败",
   "errorText": "错误",
@@ -1385,6 +1386,7 @@
   "tournamentStandingsText": "锦标赛积分榜",
   "tournamentText": "锦标赛",
   "tournamentTimeExpiredText": "锦标赛时间结束",
+  "tournamentsDisabledWorkspaceText": "工作区启用时无法参加锦标赛!\n关闭工作区，才能进入锦标赛。",
   "tournamentsText": "锦标赛",
   "translations": {
     "characterNames": {

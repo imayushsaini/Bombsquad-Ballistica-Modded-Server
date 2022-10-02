@@ -1245,7 +1245,7 @@
     "disableCameraShakeText": "Kamera rázást Kikapcsolni",
     "disableThisNotice": "(kikapcsolhatod ezt a beállítások menüben)",
     "enablePackageModsDescriptionText": "(engedélyez a plusz helyeket a modoknak, viszont letiltja a hálózati játékot)",
-    "enablePackageModsText": "Helyi Modok Engedélyezése",
+    "enablePackageModsText": "Helyi Modok Engedélyezése ",
     "enterPromoCodeText": "Kód beírása",
     "forTestingText": "Megj.:ezek az értékek csak tesztek és az alkalmazás bezárásával együtt törlődnek.",
     "helpTranslateText": "A ${APP_NAME} nem Angol fordításait a közösség végzi.\nHa szeretnél fordítani vagy hibát javítani akkor \nhasználd ezt a linket. Előre is köszönöm!",

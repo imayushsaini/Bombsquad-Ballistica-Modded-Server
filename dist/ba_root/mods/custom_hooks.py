@@ -18,7 +18,7 @@ import time
 import os
 import ba
 import _ba
-
+import logging
 from ba import _hooks
 from bastd.activity import dualteamscore, multiteamscore, drawscore
 from bastd.activity.coopscore import CoopScoreScreen
@@ -53,6 +53,17 @@ class modSetup(ba.Plugin):
 
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
+        if(settings["useV2Account"]):
+            from tools import account
+            if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
+                logging.debug("Account V2 is active")
+            else:
+                logging.warning("Account V2 login require ....stay tuned.")
+                ba.timer(3, ba.Call(logging.debug,"Starting Account V2 login process...."))
+                ba.timer(6,account.AccountUtil)
+        else:
+            ba.app.accounts_v2.set_primary_credentials(None)
+            ba.internal.sign_in_v1('Local')
         ba.timer(60,playlist.flush_playlists)
     def on_app_shutdown(self):
         pass
@@ -72,7 +83,7 @@ def playerspaz_init(playerspaz: ba.Player, node: ba.Node, player: ba.Player):
 
 def bootstraping():
     """Bootstarps the server."""
-    print("Bootstraping mods..")
+    logging.warning("Bootstraping mods...")
     # server related
     _ba.set_server_device_name(settings["HostDeviceName"])
     _ba.set_server_name(settings["HostName"])

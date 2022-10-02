@@ -331,6 +331,7 @@
   "achievementsRemainingText": "Fehlende Erfolge:",
   "achievementsText": "Erfolge",
   "achievementsUnavailableForOldSeasonsText": "Leider Leistung Besonderheiten nicht für alte Jahreszeiten zur Verfügung.",
+  "activatedText": "${THING} aktiviert.",
   "addGameWindow": {
     "getMoreGamesText": "Hol dir mehr Spiele...",
     "titleText": "Spiel hinzufügen",
@@ -517,6 +518,7 @@
     "welcome2Text": "Sie können auch Tickets zu verdienen aus viele der Aktivitäten.\nKarten können verwendet werden, um neue Charaktere, Karten freizuschalten , und\nMini-Spiele , Turniere und mehr geben .",
     "yourPowerRankingText": "Dein Power Rang:"
   },
+  "copyConfirmText": "In die Zwischenablage kopiert.",
   "copyOfText": "${NAME} Kopieren",
   "copyText": "Kopieren",
   "copyrightText": "© 2013 Eric Froemling",
@@ -658,7 +660,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} In epischer Zeitlupe.",
   "epicNameFilterText": "Episch ${NAME}",
   "errorAccessDeniedText": "Zugriff verweigert",
+  "errorDeviceTimeIncorrectText": "Die Zeit deines Gerätes ist um ${HOURS} Stunden verschoben.\nDas kann Probleme verursachen.\nBitte überprüfe deine Zeit und Zeit-Zonen Einstellungen.",
   "errorOutOfDiskSpaceText": "Nicht genug Speicherplatz",
+  "errorSecureConnectionFailText": "Nicht möglich, eine sichere Cloud-Verbindung herzustellen; Netzwerk funktionalität kann versagen.",
   "errorText": "Fehler",
   "errorUnknownText": "unbekannter Fehler",
   "exitGameText": "${APP_NAME} verlassen?",
@@ -836,7 +840,7 @@
     "ticketPack4Text": "Riesiges Ticketpack",
     "ticketPack5Text": "Kolossales Ticketpack",
     "ticketPack6Text": "Ultimatives Ticketpack",
-    "ticketsFromASponsorText": "Bekomme ${COUNT} Tickets\ndurch Werbung",
+    "ticketsFromASponsorText": "Sehen Sie sich eine Anzeige an\nfür ${COUNT} Tickets",
     "ticketsText": "${COUNT} Tickets",
     "titleText": "Hol dir Tickets",
     "unavailableLinkAccountText": "Sorry, Einkäufe sind auf dieser Plattform nicht verfügbar.\nUm das zu umgehen verlinke deinen Account mit einem Account auf\neiner anderen Plattform, um dort Einkäufe zu machen.",
@@ -847,6 +851,7 @@
     "youHaveText": "Du hast ${COUNT} Tickets"
   },
   "googleMultiplayerDiscontinuedText": "Sorry, Googles Multiplayerservice ist nicht länger verfügbar.\nIch arbeite so schnell wie möglich an einem Ersatz.\nBis dahin, versuche bitte eine andere Verbindungsmethode.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Google Play-Käufe sind nicht verfügbar.\nMöglicherweise müssen Sie Ihre Store-App aktualisieren.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Immer",
@@ -1191,7 +1196,10 @@
   "playlistsText": "Playlists",
   "pleaseRateText": "Wenn dir ${APP_NAME} Spaß macht, nimm dir kurz die Zeit\nund bewerte es oder schreib ein Review. Durch das Feedback\nwird zukünftige Arbeit an dem Spiel unterstützt.\n\nVielen Dank!\n-eric",
   "pleaseWaitText": "Bitte warte...",
+  "pluginClassLoadErrorText": "Fehler beim laden der plugin class '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Fehler beim einleiten des plugins '${PLUGIN}': ${ERROR}",
   "pluginsDetectedText": "Neue Plugins erkannt. Neustarten, um sie zu aktivieren oder in den Einstellungen konfigurieren.",
+  "pluginsRemovedText": "${NUM} plugin(s) wurden nicht mehr gefunden.",
   "pluginsText": "Plugins",
   "practiceText": "Übung",
   "pressAnyButtonPlayAgainText": "Drücke einen Knopf um nochmal zu spielen...",
@@ -1459,6 +1467,7 @@
   "tournamentStandingsText": "Tournier Tabelle",
   "tournamentText": "Turnier",
   "tournamentTimeExpiredText": "Turnierzeit abgelaufen",
+  "tournamentsDisabledWorkspaceText": "Turniere sind deaktiviert, wenn Arbeitsbereiche aktiv sind.\nUm Turniere wieder zu aktivieren, deaktivieren Sie Ihren Workspace und starten Sie neu.",
   "tournamentsText": "Turniere",
   "translations": {
     "characterNames": {
@@ -1979,6 +1988,8 @@
   "winsPlayerText": "${NAME} Gewinnt!",
   "winsTeamText": "${NAME} Gewinnt!",
   "winsText": "${NAME} gewinnt!",
+  "workspaceSyncErrorText": "Fehler beim synchronisieren von ${WORKSPACE}. Sieh im log für details.",
+  "workspaceSyncReuseText": "Kann ${WORKSPACE} nicht synchronisieren. Benutze vorher synchronisierte Version.",
   "worldScoresUnavailableText": "Weltrangliste ist nicht verfügbar",
   "worldsBestScoresText": "Beste Punktzahl weltweit",
   "worldsBestTimesText": "Beste Zeit weltweit",

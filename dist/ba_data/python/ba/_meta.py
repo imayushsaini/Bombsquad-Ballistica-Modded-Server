@@ -6,33 +6,50 @@ from __future__ import annotations
 
 import os
 import time
-import threading
+import logging
+from threading import Thread
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 from dataclasses import dataclass, field
 
+from efro.call import tpartial
 import _ba
 
 if TYPE_CHECKING:
-    import ba
+    from typing import Callable
 
 # The meta api version of this build of the game.
 # Only packages and modules requiring this exact api version
 # will be considered when scanning directories.
+
 # See: https://ballistica.net/wiki/Meta-Tags
 CURRENT_API_VERSION = 6  #TODO update it to latest
 # current API version is 7 , im downgrading it to 6 to support mini games which i cant update to 7 bcoz of encryption
 # shouldn't be a issue , I manually updated all plugin on_app_launch to on_app_running and that was the only change btw API 6 and 7
 
 
+# Meta export lines can use these names to represent these classes.
+# This is purely a convenience; it is possible to use full class paths
+# instead of these or to make the meta system aware of arbitrary classes.
+EXPORT_CLASS_NAME_SHORTCUTS: dict[str, str] = {
+    'plugin': 'ba.Plugin',
+    'keyboard': 'ba.Keyboard',
+    'game': 'ba.GameActivity',
+}
+
+T = TypeVar('T')
+
+
 @dataclass
 class ScanResults:
-    """Final results from a metadata scan."""
-    games: list[str] = field(default_factory=list)
-    plugins: list[str] = field(default_factory=list)
-    keyboards: list[str] = field(default_factory=list)
-    errors: str = ''
-    warnings: str = ''
+    """Final results from a meta-scan."""
+    exports: dict[str, list[str]] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    def exports_of_class(self, cls: type) -> list[str]:
+        """Return exports of a given class."""
+        return self.exports.get(f'{cls.__module__}.{cls.__qualname__}', [])
 
 
 class MetadataSubsystem:
@@ -44,99 +61,98 @@ class MetadataSubsystem:
     """
 
     def __init__(self) -> None:
-        self.scanresults: ScanResults | None = None
+
+        self._scan: DirectoryScan | None = None
+
+        # Can be populated before starting the scan.
         self.extra_scan_dirs: list[str] = []
 
-    def on_app_running(self) -> None:
-        """Should be called when the app enters the running state."""
+        # Results populated once scan is complete.
+        self.scanresults: ScanResults | None = None
 
-        # Start scanning for things exposed via ba_meta.
-        self.start_scan()
+        self._scan_complete_cb: Callable[[], None] | None = None
 
-    def start_scan(self) -> None:
-        """Begin scanning script directories for scripts containing metadata.
+    def start_scan(self, scan_complete_cb: Callable[[], None]) -> None:
+        """Begin the overall scan.
 
-        Should be called only once at launch."""
-        app = _ba.app
-        if self.scanresults is not None:
-            print('WARNING: meta scan run more than once.')
-        pythondirs = ([app.python_directory_app, app.python_directory_user] +
-                      self.extra_scan_dirs)
-        thread = ScanThread(pythondirs)
-        thread.start()
+        This will start scanning built in directories (which for vanilla
+        installs should be the vast majority of the work). This should only
+        be called once.
+        """
+        assert self._scan_complete_cb is None
+        assert self._scan is None
 
-    def handle_scan_results(self, results: ScanResults) -> None:
-        """Called in the game thread with results of a completed scan."""
+        self._scan_complete_cb = scan_complete_cb
+        self._scan = DirectoryScan(
+            [_ba.app.python_directory_app, _ba.app.python_directory_user])
 
-        from ba._language import Lstr
-        from ba._plugin import PotentialPlugin
+        Thread(target=self._run_scan_in_bg, daemon=True).start()
 
-        # Warnings generally only get printed locally for users' benefit
-        # (things like out-of-date scripts being ignored, etc.)
-        # Errors are more serious and will get included in the regular log
-        # warnings = results.get('warnings', '')
-        # errors = results.get('errors', '')
-        if results.warnings != '' or results.errors != '':
-            import textwrap
-            _ba.screenmessage(Lstr(resource='scanScriptsErrorText'),
-                              color=(1, 0, 0))
-            _ba.playsound(_ba.getsound('error'))
-            if results.warnings != '':
-                _ba.log(textwrap.indent(results.warnings,
-                                        'Warning (meta-scan): '),
-                        to_server=False)
-            if results.errors != '':
-                _ba.log(textwrap.indent(results.errors, 'Error (meta-scan): '))
+    def start_extra_scan(self) -> None:
+        """Proceed to the extra_scan_dirs portion of the scan.
 
-        # Handle plugins.
-        plugs = _ba.app.plugins
-        config_changed = False
-        found_new = False
-        plugstates: dict[str, dict] = _ba.app.config.setdefault('Plugins', {})
-        assert isinstance(plugstates, dict)
+        This is for parts of the scan that must be delayed until
+        workspace sync completion or other such events. This must be
+        called exactly once.
+        """
+        assert self._scan is not None
+        self._scan.set_extras(self.extra_scan_dirs)
 
-        # Create a potential-plugin for each class we found in the scan.
-        for class_path in results.plugins:
-            plugs.potential_plugins.append(
-                PotentialPlugin(display_name=Lstr(value=class_path),
-                                class_path=class_path,
-                                available=True))
-            if class_path not in plugstates:
-                # Go ahead and enable new plugins by default, but we'll
-                # inform the user that they need to restart to pick them up.
-                # they can also disable them in settings so they never load.
-                plugstates[class_path] = {'enabled': True}
-                config_changed = True
-                found_new = True
+    def load_exported_classes(
+        self,
+        cls: type[T],
+        completion_cb: Callable[[list[type[T]]], None],
+        completion_cb_in_bg_thread: bool = False,
+    ) -> None:
+        """High level function to load meta-exported classes.
 
-        # Also add a special one for any plugins set to load but *not* found
-        # in the scan (this way they will show up in the UI so we can disable
-        # them)
-        for class_path, plugstate in plugstates.items():
-            enabled = plugstate.get('enabled', False)
-            assert isinstance(enabled, bool)
-            if enabled and class_path not in results.plugins:
-                plugs.potential_plugins.append(
-                    PotentialPlugin(display_name=Lstr(value=class_path),
-                                    class_path=class_path,
-                                    available=False))
+        Will wait for scanning to complete if necessary, and will load all
+        registered classes of a particular type in a background thread before
+        calling the passed callback in the logic thread. Errors may be logged
+        to messaged to the user in some way but the callback will be called
+        regardless.
+        To run the completion callback directly in the bg thread where the
+        loading work happens, pass completion_cb_in_bg_thread=True.
+        """
+        Thread(
+            target=tpartial(self._load_exported_classes, cls, completion_cb,
+                            completion_cb_in_bg_thread),
+            daemon=True,
+        ).start()
 
-        plugs.potential_plugins.sort(key=lambda p: p.class_path)
+    def _load_exported_classes(
+        self,
+        cls: type[T],
+        completion_cb: Callable[[list[type[T]]], None],
+        completion_cb_in_bg_thread: bool,
+    ) -> None:
+        from ba._general import getclass
+        classes: list[type[T]] = []
+        try:
+            classnames = self._wait_for_scan_results().exports_of_class(cls)
+            for classname in classnames:
+                try:
+                    classes.append(getclass(classname, cls))
+                except Exception:
+                    logging.exception('error importing %s', classname)
 
-        if found_new:
-            _ba.screenmessage(Lstr(resource='pluginsDetectedText'),
-                              color=(0, 1, 0))
-            _ba.playsound(_ba.getsound('ding'))
+        except Exception:
+            logging.exception('Error loading exported classes.')
 
-        if config_changed:
-            _ba.app.config.commit()
+        completion_call = tpartial(completion_cb, classes)
+        if completion_cb_in_bg_thread:
+            completion_call()
+        else:
+            _ba.pushcall(completion_call, from_other_thread=True)
 
-    def get_scan_results(self) -> ScanResults:
-        """Return meta scan results; block if the scan is not yet complete."""
+    def _wait_for_scan_results(self) -> ScanResults:
+        """Return scan results, blocking if the scan is not yet complete."""
         if self.scanresults is None:
-            print('WARNING: ba.meta.get_scan_results()'
-                  ' called before scan completed.'
-                  ' This can cause hitches.')
+            if _ba.in_logic_thread():
+                logging.warning(
+                    'ba.meta._wait_for_scan_results()'
+                    ' called in logic thread before scan completed;'
+                    ' this can cause hitches.')
 
             # Now wait a bit for the scan to complete.
             # Eventually error though if it doesn't.
@@ -148,69 +164,53 @@ class MetadataSubsystem:
                         'timeout waiting for meta scan to complete.')
         return self.scanresults
 
-    def get_game_types(self) -> list[type[ba.GameActivity]]:
-        """Return available game types."""
-        from ba._general import getclass
-        from ba._gameactivity import GameActivity
-        gameclassnames = self.get_scan_results().games
-        gameclasses = []
-        for gameclassname in gameclassnames:
-            try:
-                cls = getclass(gameclassname, GameActivity)
-                gameclasses.append(cls)
-            except Exception:
-                from ba import _error
-                _error.print_exception('error importing ' + str(gameclassname))
-        unowned = self.get_unowned_game_types()
-        return [cls for cls in gameclasses if cls not in unowned]
-
-    def get_unowned_game_types(self) -> set[type[ba.GameActivity]]:
-        """Return present game types not owned by the current account."""
+    def _run_scan_in_bg(self) -> None:
+        """Runs a scan (for use in background thread)."""
         try:
-            from ba import _store
-            unowned_games: set[type[ba.GameActivity]] = set()
-            if not _ba.app.headless_mode:
-                for section in _store.get_store_layout()['minigames']:
-                    for mname in section['items']:
-                        if not _ba.get_purchased(mname):
-                            m_info = _store.get_store_item(mname)
-                            unowned_games.add(m_info['gametype'])
-            return unowned_games
-        except Exception:
-            from ba import _error
-            _error.print_exception('error calcing un-owned games')
-            return set()
-
-
-class ScanThread(threading.Thread):
-    """Thread to scan script dirs for metadata."""
-
-    def __init__(self, dirs: list[str]):
-        super().__init__()
-        self._dirs = dirs
-
-    def run(self) -> None:
-        from ba._general import Call
-        try:
-            scan = DirectoryScan(self._dirs)
-            scan.scan()
-            results = scan.results
+            assert self._scan is not None
+            self._scan.run()
+            results = self._scan.results
+            self._scan = None
         except Exception as exc:
-            results = ScanResults(errors=f'Scan exception: {exc}')
+            results = ScanResults(errors=[f'Scan exception: {exc}'])
 
-        # Push a call to the game thread to print warnings/errors
-        # or otherwise deal with scan results.
-        _ba.pushcall(Call(_ba.app.meta.handle_scan_results, results),
-                     from_other_thread=True)
+        # Place results and tell the logic thread they're ready.
+        self.scanresults = results
+        _ba.pushcall(self._handle_scan_results, from_other_thread=True)
 
-        # We also, however, immediately make results available.
-        # This is because the game thread may be blocked waiting
-        # for them so we can't push a call or we'd get deadlock.
-        _ba.app.meta.scanresults = results
+    def _handle_scan_results(self) -> None:
+        """Called in the logic thread with results of a completed scan."""
+        from ba._language import Lstr
+        assert _ba.in_logic_thread()
+
+        results = self.scanresults
+        assert results is not None
+
+        # Spit out any warnings/errors that happened.
+        # Warnings generally only get printed locally for users' benefit
+        # (things like out-of-date scripts being ignored, etc.)
+        # Errors are more serious and will get included in the regular log.
+        if results.warnings or results.errors:
+            import textwrap
+            _ba.screenmessage(Lstr(resource='scanScriptsErrorText'),
+                              color=(1, 0, 0))
+            _ba.playsound(_ba.getsound('error'))
+            if results.warnings:
+                allwarnings = textwrap.indent('\n'.join(results.warnings),
+                                              'Warning (meta-scan): ')
+                logging.warning(allwarnings)
+            if results.errors:
+                allerrors = textwrap.indent('\n'.join(results.errors),
+                                            'Error (meta-scan): ')
+                logging.error(allerrors)
+
+        # Let the game know we're done.
+        assert self._scan_complete_cb is not None
+        self._scan_complete_cb()
 
 
 class DirectoryScan:
-    """Handles scanning directories for metadata."""
+    """Scans directories for metadata."""
 
     def __init__(self, paths: list[str]):
         """Given one or more paths, parses available meta information.
@@ -220,8 +220,41 @@ class DirectoryScan:
         """
 
         # Skip non-existent paths completely.
-        self.paths = [Path(p) for p in paths if os.path.isdir(p)]
+        self.base_paths = [Path(p) for p in paths if os.path.isdir(p)]
+        self.extra_paths: list[Path] = []
+        self.extra_paths_set = False
         self.results = ScanResults()
+
+    def set_extras(self, paths: list[str]) -> None:
+        """Set extra portion."""
+        # Skip non-existent paths completely.
+        self.extra_paths += [Path(p) for p in paths if os.path.isdir(p)]
+        self.extra_paths_set = True
+
+    def run(self) -> None:
+        """Do the thing."""
+        for pathlist in [self.base_paths, self.extra_paths]:
+
+            # Spin and wait until extra paths are provided before doing them.
+            if pathlist is self.extra_paths:
+                while not self.extra_paths_set:
+                    time.sleep(0.001)
+
+            modules: list[tuple[Path, Path]] = []
+            for path in pathlist:
+                self._get_path_module_entries(path, '', modules)
+            for moduledir, subpath in modules:
+                try:
+                    self._scan_module(moduledir, subpath)
+                except Exception:
+                    import traceback
+                    self.results.warnings.append(
+                        f"Error scanning '{subpath}': " +
+                        traceback.format_exc())
+
+        # Sort our results
+        for exportlist in self.results.exports.values():
+            exportlist.sort()
 
     def _get_path_module_entries(self, path: Path, subpath: str | Path,
                                  modules: list[tuple[Path, Path]]) -> None:
@@ -237,7 +270,7 @@ class DirectoryScan:
             entries = []
         except Exception as exc:
             # Unexpected; report this.
-            self.results.errors += f'{exc}\n'
+            self.results.errors.append(str(exc))
             entries = []
 
         # Now identify python packages/modules out of what we found.
@@ -248,24 +281,7 @@ class DirectoryScan:
                   and Path(entry[0], entry[1], '__init__.py').is_file()):
                 modules.append(entry)
 
-    def scan(self) -> None:
-        """Scan provided paths."""
-        modules: list[tuple[Path, Path]] = []
-        for path in self.paths:
-            self._get_path_module_entries(path, '', modules)
-        for moduledir, subpath in modules:
-            try:
-                self.scan_module(moduledir, subpath)
-            except Exception:
-                import traceback
-                self.results.warnings += ("Error scanning '" + str(subpath) +
-                                          "': " + traceback.format_exc() +
-                                          '\n')
-        # Sort our results
-        self.results.games.sort()
-        self.results.plugins.sort()
-
-    def scan_module(self, moduledir: Path, subpath: Path) -> None:
+    def _scan_module(self, moduledir: Path, subpath: Path) -> None:
         """Scan an individual module and add the findings to results."""
         if subpath.name.endswith('.py'):
             fpath = Path(moduledir, subpath)
@@ -279,11 +295,12 @@ class DirectoryScan:
             lnum: l[1:].split()
             for lnum, l in enumerate(flines) if '# ba_meta ' in l
         }
-        toplevel = len(subpath.parts) <= 1
-        required_api = self.get_api_requirement(subpath, meta_lines, toplevel)
+        is_top_level = len(subpath.parts) <= 1
+        required_api = self._get_api_requirement(subpath, meta_lines,
+                                                 is_top_level)
 
         # Top level modules with no discernible api version get ignored.
-        if toplevel and required_api is None:
+        if is_top_level and required_api is None:
             return
 
         # If we find a module requiring a different api version, warn
@@ -291,7 +308,7 @@ class DirectoryScan:
         if required_api is not None and required_api < CURRENT_API_VERSION:
             self.results.warnings += (
                 f'Warning: {subpath} requires api {required_api} but'
-                f' we are running {CURRENT_API_VERSION}; ignoring module.\n')
+                f' we are running {CURRENT_API_VERSION}; ignoring module.')
             return
 
         # Ok; can proceed with a full scan of this module.
@@ -304,11 +321,11 @@ class DirectoryScan:
                 self._get_path_module_entries(moduledir, subpath, submodules)
                 for submodule in submodules:
                     if submodule[1].name != '__init__.py':
-                        self.scan_module(submodule[0], submodule[1])
+                        self._scan_module(submodule[0], submodule[1])
             except Exception:
                 import traceback
-                self.results.warnings += (
-                    f"Error scanning '{subpath}': {traceback.format_exc()}\n")
+                self.results.warnings.append(
+                    f"Error scanning '{subpath}': {traceback.format_exc()}")
 
     def _process_module_meta_tags(self, subpath: Path, flines: list[str],
                                   meta_lines: dict[int, list[str]]) -> None:
@@ -317,10 +334,9 @@ class DirectoryScan:
             # meta_lines is just anything containing '# ba_meta '; make sure
             # the ba_meta is in the right place.
             if mline[0] != 'ba_meta':
-                self.results.warnings += (
-                    'Warning: ' + str(subpath) +
-                    ': malformed ba_meta statement on line ' +
-                    str(lindex + 1) + '.\n')
+                self.results.warnings.append(
+                    f'Warning: {subpath}:'
+                    f' malformed ba_meta statement on line {lindex + 1}.')
             elif (len(mline) == 4 and mline[1] == 'require'
                   and mline[2] == 'api'):
                 # Ignore 'require api X' lines in this pass.
@@ -328,31 +344,28 @@ class DirectoryScan:
             elif len(mline) != 3 or mline[1] != 'export':
                 # Currently we only support 'ba_meta export FOO';
                 # complain for anything else we see.
-                self.results.warnings += (
-                    'Warning: ' + str(subpath) +
-                    ': unrecognized ba_meta statement on line ' +
-                    str(lindex + 1) + '.\n')
+                self.results.warnings.append(
+                    f'Warning: {subpath}'
+                    f': unrecognized ba_meta statement on line {lindex + 1}.')
             else:
                 # Looks like we've got a valid export line!
                 modulename = '.'.join(subpath.parts)
                 if subpath.name.endswith('.py'):
                     modulename = modulename[:-3]
-                exporttype = mline[2]
+                exporttypestr = mline[2]
                 export_class_name = self._get_export_class_name(
                     subpath, flines, lindex)
                 if export_class_name is not None:
                     classname = modulename + '.' + export_class_name
-                    if exporttype == 'game':
-                        self.results.games.append(classname)
-                    elif exporttype == 'plugin':
-                        self.results.plugins.append(classname)
-                    elif exporttype == 'keyboard':
-                        self.results.keyboards.append(classname)
-                    else:
-                        self.results.warnings += (
-                            'Warning: ' + str(subpath) +
-                            ': unrecognized export type "' + exporttype +
-                            '" on line ' + str(lindex + 1) + '.\n')
+
+                    # If export type is one of our shortcuts, sub in the
+                    # actual class path. Otherwise assume its a classpath
+                    # itself.
+                    exporttype = EXPORT_CLASS_NAME_SHORTCUTS.get(exporttypestr)
+                    if exporttype is None:
+                        exporttype = exporttypestr
+                    self.results.exports.setdefault(exporttype,
+                                                    []).append(classname)
 
     def _get_export_class_name(self, subpath: Path, lines: list[str],
                                lindex: int) -> str | None:
@@ -374,13 +387,12 @@ class DirectoryScan:
                     classname = cbits[0]
                     break  # Success!
         if classname is None:
-            self.results.warnings += (
-                'Warning: ' + str(subpath) + ': class definition not found'
-                ' below "ba_meta export" statement on line ' +
-                str(lindexorig + 1) + '.\n')
+            self.results.warnings.append(
+                f'Warning: {subpath}: class definition not found below'
+                f' "ba_meta export" statement on line {lindexorig + 1}.')
         return classname
 
-    def get_api_requirement(
+    def _get_api_requirement(
         self,
         subpath: Path,
         meta_lines: dict[int, list[str]],
@@ -401,15 +413,15 @@ class DirectoryScan:
 
         # Ok; not successful. lets issue warnings for a few error cases.
         if len(lines) > 1:
-            self.results.warnings += (
-                'Warning: ' + str(subpath) +
-                ': multiple "# ba_meta require api <NUM>" lines found;'
-                ' ignoring module.\n')
+            self.results.warnings.append(
+                f'Warning: {subpath}: multiple'
+                ' "# ba_meta require api <NUM>" lines found;'
+                ' ignoring module.')
         elif not lines and toplevel and meta_lines:
             # If we're a top-level module containing meta lines but
             # no valid "require api" line found, complain.
-            self.results.warnings += (
-                'Warning: ' + str(subpath) +
-                ': no valid "# ba_meta require api <NUM>" line found;'
-                ' ignoring module.\n')
+            self.results.warnings.append(
+                f'Warning: {subpath}:'
+                ' no valid "# ba_meta require api <NUM>" line found;'
+                ' ignoring module.')
         return None

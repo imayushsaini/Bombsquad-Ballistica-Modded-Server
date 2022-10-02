@@ -1,28 +1,28 @@
 {
   "accountSettingsWindow": {
-    "accountNameRules": "Имена учетных записей не могут содержать эмодзи или другие специальные символы",
+    "accountNameRules": "Имена аккаунтов не могут содержать эмодзи или другие специальные символы",
     "accountProfileText": "(профиль)",
     "accountsText": "Аккаунты",
     "achievementProgressText": "Достижения: ${COUNT} из ${TOTAL}",
     "campaignProgressText": "Прогресс кампании [Сложный режим]: ${PROGRESS}",
     "changeOncePerSeason": "Вы можете изменить это только раз в сезон.",
     "changeOncePerSeasonError": "Вы должны подождать до следующего сезона, чтобы изменить это снова (${NUM} дней)",
-    "customName": "Имя учётной записи",
+    "customName": "Имя аккаунта",
     "deviceSpecificAccountText": "Сейчас используется аккаунт имениустройства: ${NAME}",
     "linkAccountsEnterCodeText": "Введите код",
     "linkAccountsGenerateCodeText": "Сгенерировать код",
     "linkAccountsInfoText": "(делиться достижениями с другими платформами)",
-    "linkAccountsInstructionsNewText": "Чтобы связать две учетные записи, сгенерируйте код на первом\nи введите этот код на втором. Данные из\nвторой учетной записи будут распределены между ними.\n(Данные с первой учетной записи будут потеряны)\n\nВы можете связать ${COUNT} аккаунтов.\n\nВАЖНО: связывайте только собственные учетные записи;\nЕсли вы свяжетесь с аккаунтами друзей, вы не сможете\nодновременно играть онлайн.",
+    "linkAccountsInstructionsNewText": "Чтобы связать два аккаунта, сгенерируйте код на первом\nи введите этот код на втором. Данные из\nвторого аккаунта будут распределены между ними.\n(Данные из первого будут потеряны)\n\nВы можете связать ${COUNT} аккаунтов.\n\nВАЖНО: связывайте только собственные аккаунты;\nЕсли вы свяжетесь с аккаунтами друзей, вы не сможете\nодновременно играть онлайн.",
     "linkAccountsInstructionsText": "Для связки двух аккаунтов, создайте код на одном\nиз них и введите код на другом.\nПрогресс и инвентарь будут объединены.\nВы можете связать до ${COUNT} аккаунтов.",
     "linkAccountsText": "Связать акаунты",
     "linkedAccountsText": "Привязанные аккаунты:",
     "nameChangeConfirm": "Вы уверены, что хотите сменить имя аккаунта на ${NAME}?",
     "notLoggedInText": "<не авторизован>",
-    "resetProgressConfirmNoAchievementsText": "Это сбросит весь ваш кооперативный прогресс\nи локальные лучшие результаты (кроме билетов).\nЭтот процесс необратим. Вы уверены?",
-    "resetProgressConfirmText": "Это сбросит весь ваш кооперативный\nпрогресс, достижения и локальные результаты\n(кроме билетов). Этот процесс необратим.\nВы уверены?",
+    "resetProgressConfirmNoAchievementsText": "Это сбросит весь ваш кооперативный прогресс\nи локальные рекорды (но не билеты).\nЭтот процесс необратим. Вы уверены?",
+    "resetProgressConfirmText": "Это сбросит весь ваш кооперативный\nпрогресс, достижения и локальные рекорды\n(кроме билетов). Этот процесс необратим.\nВы уверены?",
     "resetProgressText": "Сбросить прогресс",
     "setAccountName": "Задать имя аккаунта",
-    "setAccountNameDesc": "Выберите имя для отображения своей учетной записи.\nВы можете использовать имя одной из ваших связанных\nучетных записей или создать уникальное имя учётной записи.",
+    "setAccountNameDesc": "Выберите имя для отображения своего аккаунта.\nВы можете использовать имя одного из ваших связанных аккаунтов или создать уникальное имя аккаунта.",
     "signInInfoText": "Войдите в аккаунт, чтобы собирать билеты, \nсоревноваться онлайн и делиться успехами.",
     "signInText": "Войти",
     "signInWithDeviceInfoText": "(стандартный аккаунт только для этого устройства)",
@@ -52,11 +52,11 @@
   "achievementText": "Достижение",
   "achievements": {
     "Boom Goes the Dynamite": {
-      "description": "Убейте 3 плохих парней с помощью TNT",
-      "descriptionComplete": "С помощью TNT убито 3 плохих парней",
-      "descriptionFull": "Убейте 3 плохих парней с помощью TNT на уровне ${LEVEL}",
-      "descriptionFullComplete": "3 плохих парней убито с помощью TNT на уровне ${LEVEL}",
-      "name": "Динамит сейчас взорвётся!"
+      "description": "Убейте 3 негодяев с помощью TNT",
+      "descriptionComplete": "С помощью TNT убито 3 негодяев",
+      "descriptionFull": "Убейте 3 негодяев с помощью TNT на уровне ${LEVEL}",
+      "descriptionFullComplete": "3 негодяя убито с помощью TNT на уровне ${LEVEL}",
+      "name": "Динамит делает “БУМ”!"
     },
     "Boxer": {
       "description": "Победите без использования бомб",
@@ -68,26 +68,26 @@
     "Dual Wielding": {
       "descriptionFull": "Соединить 2 контроллера (аппарат или приложение)",
       "descriptionFullComplete": "Соединено 2 контроллера (аппарат или приложение)",
-      "name": "Двойное оружие"
+      "name": "Пáрное оружие"
     },
     "Flawless Victory": {
-      "description": "Победите не получив повреждений",
-      "descriptionComplete": "Победа без повреждений",
-      "descriptionFull": "Пройдите уровень ${LEVEL} не получив повреждений",
-      "descriptionFullComplete": "Уровень ${LEVEL} пройден без повреждений",
-      "name": "Безупречная победа"
+      "description": "Победите не получив урона",
+      "descriptionComplete": "Победа без получения урона",
+      "descriptionFull": "Пройдите уровень ${LEVEL} не получив урона",
+      "descriptionFullComplete": "Уровень ${LEVEL} пройден без урона",
+      "name": "Чистая победа"
     },
     "Free Loader": {
-      "descriptionFull": "Начать игру каждый сам за себя с 2 и более игроками",
-      "descriptionFullComplete": "Начата игра каждый сам за себя с 2 и более игроками",
+      "descriptionFull": "Начать игру “Каждый сам за себя” с 2 и более игроками",
+      "descriptionFullComplete": "Начата игра “Каждый сам за себя” с 2 и более игроками",
       "name": "Один в поле воин"
     },
     "Gold Miner": {
-      "description": "Убейте 6 плохих парней с помощью мин",
-      "descriptionComplete": "С помощью мин убито 6 плохих парней",
-      "descriptionFull": "Убейте 6 плохих парней с помощью мин на уровне ${LEVEL}",
-      "descriptionFullComplete": "6 плохих парней убито с помощью мин на уровне ${LEVEL}",
-      "name": "Золотой минёр"
+      "description": "Убейте 6 негодяев с помощью мин",
+      "descriptionComplete": "С помощью мин убито 6 негодяев",
+      "descriptionFull": "Убейте 6 негодяев с помощью мин на уровне ${LEVEL}",
+      "descriptionFullComplete": "6 негодяев убито с помощью мин на уровне ${LEVEL}",
+      "name": "Сапер-чемпион"
     },
     "Got the Moves": {
       "description": "Победите без ударов и бомб",
@@ -124,8 +124,8 @@
     },
     "Mine Games": {
       "description": "Убейте 3 плохих парней с помощью мин",
-      "descriptionComplete": "С помощью мин убито 3 злодея",
-      "descriptionFull": "Убейте 3 плохих парней с помощью мин на уровне ${LEVEL}",
+      "descriptionComplete": "С помощью мин убито 3 негодяя",
+      "descriptionFull": "Убейте 3 негодяев с помощью мин на уровне ${LEVEL}",
       "descriptionFullComplete": "С помощью мин убито 3 негодяя на уровне ${LEVEL}",
       "name": "Игры с минами"
     },
@@ -176,14 +176,14 @@
       "descriptionComplete": "Победа без использования бомб",
       "descriptionFull": "Пройдите уровень ${LEVEL} без использования бомб",
       "descriptionFullComplete": "Уровень ${LEVEL} пройден без использования бомб",
-      "name": "Боксёр профи"
+      "name": "Боксёр-профи"
     },
     "Pro Football Shutout": {
-      "description": "Победите в сухую",
-      "descriptionComplete": "Уровень был пройден в сухую",
-      "descriptionFull": "Выиграйте матч ${LEVEL} в сухую",
-      "descriptionFullComplete": "Победа в матче ${LEVEL} в сухую",
-      "name": "${LEVEL} в сухую"
+      "description": "Победите всухую",
+      "descriptionComplete": "Уровень был пройден всухую",
+      "descriptionFull": "Выиграйте матч ${LEVEL} всухую",
+      "descriptionFullComplete": "Победа в матче ${LEVEL} всухую",
+      "name": "${LEVEL} всухую"
     },
     "Pro Football Victory": {
       "description": "Выиграйте матч",
@@ -207,11 +207,11 @@
       "name": "Победа на уровне ${LEVEL}"
     },
     "Rookie Football Shutout": {
-      "description": "Выиграйте, не дав злодеям забить",
-      "descriptionComplete": "Победа в сухую",
-      "descriptionFull": "Выиграйте матч ${LEVEL}, не дав злодеям забить",
-      "descriptionFullComplete": "Победа в матче ${LEVEL} в сухую",
-      "name": "${LEVEL} в сухую"
+      "description": "Выиграйте всухую",
+      "descriptionComplete": "Победа всухую",
+      "descriptionFull": "Выиграйте матч ${LEVEL}, всухую",
+      "descriptionFullComplete": "Победа в матче ${LEVEL} всухую",
+      "name": "${LEVEL} всухую"
     },
     "Rookie Football Victory": {
       "description": "Выиграйте матч",
@@ -258,21 +258,21 @@
       "descriptionComplete": "Победа без смертей",
       "descriptionFull": "Выиграйте уровень ${LEVEL} не умирая",
       "descriptionFullComplete": "Победа на уровне ${LEVEL} без смертей",
-      "name": "Остаться в живых"
+      "name": "Поживем еще малец"
     },
     "Super Mega Punch": {
       "description": "Нанесите 100% урона одним ударом",
       "descriptionComplete": "Нанесено 100% урона одним ударом",
       "descriptionFull": "Нанесите 100% урона одним ударом на уровне ${LEVEL}",
       "descriptionFullComplete": "100% урона нанесено одним ударом на уровне ${LEVEL}",
-      "name": "Супер-мега-удар"
+      "name": "Супер-Мега-Удар"
     },
     "Super Punch": {
       "description": "Нанесите 50% урона одним ударом",
       "descriptionComplete": "Нанесено 50% урона одним ударом",
       "descriptionFull": "Нанесите 50% урона одним ударом на уровне ${LEVEL}",
       "descriptionFullComplete": "Нанесено 50% урона одним ударом на уровне ${LEVEL}",
-      "name": "Супер-удар"
+      "name": "Супер-Удар"
     },
     "TNT Terror": {
       "description": "Убейте 6 негодяев с помощью TNT",
@@ -287,17 +287,17 @@
       "name": "Командный игрок"
     },
     "The Great Wall": {
-      "description": "Остановите всех злодеев",
-      "descriptionComplete": "Остановлены все злодеи",
-      "descriptionFull": "Остановите всех злодеев до одного на уровне ${LEVEL}",
-      "descriptionFullComplete": "Остановлены все злодеи на уровне ${LEVEL}",
-      "name": "Великая стена"
+      "description": "Остановите всех негодяев",
+      "descriptionComplete": "Остановлены все негодяи",
+      "descriptionFull": "Остановите всех негодяев до одного на уровне ${LEVEL}",
+      "descriptionFullComplete": "Остановлены все негодяи на уровне ${LEVEL}",
+      "name": "Великая Стена"
     },
     "The Wall": {
-      "description": "Остановите всех злодеев",
-      "descriptionComplete": "Остановлены все злодеи",
-      "descriptionFull": "Остановите всех злодеев до одного на уровне ${LEVEL}",
-      "descriptionFullComplete": "Остановлены все злодеи на уровне ${LEVEL}",
+      "description": "Остановите всех негодяев",
+      "descriptionComplete": "Остановлены все негодяи",
+      "descriptionFull": "Остановите всех негодяев до одного на уровне ${LEVEL}",
+      "descriptionFullComplete": "Остановлены все негодяи на уровне ${LEVEL}",
       "name": "Стена"
     },
     "Uber Football Shutout": {
@@ -334,15 +334,15 @@
   "achievementsUnavailableForOldSeasonsText": "К сожалению, подробности достижений не доступны для старых сезонов.",
   "activatedText": "${THING} активировано.",
   "addGameWindow": {
-    "getMoreGamesText": "Еще игр...",
+    "getMoreGamesText": "Еще игры",
     "titleText": "Добавить игру"
   },
   "allowText": "Разрешить",
-  "alreadySignedInText": "На вашем аккаунте играют на другом устройстве;\nпожалуйста зайдите с другого аккаунта или закройте\nигру на другом устройстве и попытайтесь снова.",
+  "alreadySignedInText": "С вашего аккаунта играют на другом устройстве;\nпожалуйста зайдите с другого аккаунта или закройте\nигру на другом устройстве и попытайтесь снова.",
   "apiVersionErrorText": "Невозможно загрузить модуль ${NAME}; он предназначен для API версии ${VERSION_USED}; здесь требуется версия ${VERSION_REQUIRED}.",
   "audioSettingsWindow": {
     "headRelativeVRAudioInfoText": "(Режим \"Авто\" активируется только при подключении наушников)",
-    "headRelativeVRAudioText": "Позиционно-зависимое ВР-аудио",
+    "headRelativeVRAudioText": "Позиционно-зависимое VR-аудио",
     "musicVolumeText": "Громкость музыки",
     "soundVolumeText": "Громкость звука",
     "soundtrackButtonText": "Саундтреки",
@@ -369,7 +369,7 @@
   "cantConfigureDeviceText": "Извините, ${DEVICE} невозможно настроить.",
   "challengeEndedText": "Это состязание завершено.",
   "chatMuteText": "Заглушить чат",
-  "chatMutedText": "Чат отключен",
+  "chatMutedText": "Чат заглушен",
   "chatUnMuteText": "Включить чат",
   "choosingPlayerText": "<выбор игрока>",
   "completeThisLevelToProceedText": "Чтобы продолжить, нужно\nпройти этот уровень!",
@@ -377,13 +377,13 @@
   "configControllersWindow": {
     "configureControllersText": "Настройка геймпада",
     "configureGamepadsText": "Настройка контроллеров",
-    "configureKeyboard2Text": "Настройка клавиатуры P2",
+    "configureKeyboard2Text": "Настройка клавиатуры игрока 2",
     "configureKeyboardText": "Настройка клавиатуры",
     "configureMobileText": "Использовать мобильные устройства в качестве геймпадов",
     "configureTouchText": "Настройка сенсорного экрана",
     "ps3Text": "Геймпады PS3™",
     "titleText": "Геймпады",
-    "wiimotesText": "Пульт Wii™",
+    "wiimotesText": "Пульт Wiimote™",
     "xbox360Text": "Геймпады Xbox 360™"
   },
   "configGamepadSelectWindow": {
@@ -418,15 +418,15 @@
     "pressAnyButtonText": "Нажмите любую кнопку",
     "pressLeftRightText": "Нажмите вправо или влево...",
     "pressUpDownText": "Нажмите вверх или вниз...",
-    "runButton1Text": "Кнопка для бега 1",
-    "runButton2Text": "Кнопка для бега 2",
-    "runTrigger1Text": "Триггер для бега 1",
-    "runTrigger2Text": "Триггер для бега 2",
+    "runButton1Text": "Кнопка бега 1",
+    "runButton2Text": "Кнопка бега 2",
+    "runTrigger1Text": "Триггер бега 1",
+    "runTrigger2Text": "Триггер бега 2",
     "runTriggerDescriptionText": "(аналоговые триггеры позволяют бегать с разной скоростью)",
     "secondHalfText": "Используйте эту опцию для настройки второй\nполовины устройства \"два геймпада в одном\",\nдля использования в качестве одного геймпада.",
     "secondaryEnableText": "Включить",
     "secondaryText": "Второй геймпад",
-    "startButtonActivatesDefaultDescriptionText": "(выключить, если ваша кнопка \"старт\" работает больше в качестве кнопки \"меню\")",
+    "startButtonActivatesDefaultDescriptionText": "(выключить, если ваша кнопка \"старт\" работает в качестве кнопки \"меню\")",
     "startButtonActivatesDefaultText": "Кнопка Старт активирует стандартный виджет",
     "titleText": "Настройка геймпада",
     "twoInOneSetupText": "Настройка геймпада 2-в-1",
@@ -512,6 +512,7 @@
     "welcome2Text": "Вы также можете заработать билеты от многих из тех же видов деятельности.\nБилеты могут быть использованы , чтобы разблокировать новые персонажи , карты и\nмини -игры, чтобы войти турниры, и многое другое.",
     "yourPowerRankingText": "Ваш ранг:"
   },
+  "copyConfirmText": "Скопировано в буфер обмена",
   "copyOfText": "Копия ${NAME}",
   "copyText": "Копия",
   "copyrightText": "© 2013 Eric Froemling",
@@ -541,13 +542,13 @@
   "deathsText": "Смерти",
   "debugText": "отладка",
   "debugWindow": {
-    "reloadBenchmarkBestResultsText": "Внимание: для этого теста рекомендуется установить Настройки->Графика->Текстуры на 'Высок.'",
+    "reloadBenchmarkBestResultsText": "Внимание: для этого теста рекомендуется установить Настройки->Графика->Текстуры на 'Высокий'",
     "runCPUBenchmarkText": "Запустить тест производительности CPU",
     "runGPUBenchmarkText": "Запустить тест производительности GPU",
     "runMediaReloadBenchmarkText": "Запустить тест производительности загрузки медиа",
     "runStressTestText": "Выполнить тест-нагрузку",
     "stressTestPlayerCountText": "Количество игроков",
-    "stressTestPlaylistDescriptionText": "плей-лист нагрузочного испытания",
+    "stressTestPlaylistDescriptionText": "Плей-лист нагрузочного испытания",
     "stressTestPlaylistNameText": "Название плей-листа",
     "stressTestPlaylistTypeText": "Тип плей-листа",
     "stressTestRoundDurationText": "Продолжительность раунда",
@@ -563,7 +564,7 @@
   "defaultNewTeamGameListNameText": "Мои командные игры",
   "defaultTeamGameListNameText": "Стандартные командные игры",
   "deleteText": "Удалить",
-  "demoText": "демонстрация",
+  "demoText": "Демонстрация",
   "denyText": "Отклонить",
   "desktopResText": "Разреш. экрана",
   "difficultyEasyText": "Легкий",
@@ -652,7 +653,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} в эпическом замедленном действии.",
   "epicNameFilterText": "${NAME} в эпическом режиме",
   "errorAccessDeniedText": "доступ запрещен",
-  "errorDeviceTimeIncorrectText": "Время на устройстве отстает на ${HOURS} часов.\nЭто вызывает проблемы.\nПожалуйста, проверьте настройки времени и часового пояса.",
+  "errorDeviceTimeIncorrectText": "Время на устройстве отстает на ${HOURS} часов.\nЭто может вызывать проблемы.\nПожалуйста, проверьте настройки времени и часового пояса.",
   "errorOutOfDiskSpaceText": "нет места на диске",
   "errorSecureConnectionFailText": "Ошибка установки безопасного облачного соединения; сетевые функции могут дать сбой.",
   "errorText": "Ошибка",
@@ -751,7 +752,7 @@
     "internetText": "Интернет",
     "inviteAFriendText": "Друзья еще не играют? Пригласи их\nпопробовать и они получат ${COUNT} билетов.",
     "inviteFriendsText": "Пригласить друзей",
-    "joinPublicPartyDescriptionText": "Присоединитесь к публичной вечеринке",
+    "joinPublicPartyDescriptionText": "Присоединитесь к публичному лобби",
     "localNetworkDescriptionText": "Присоединяйтесь к ближайшему лобби (локальная сеть, Bluetooth, и т.д.)",
     "localNetworkText": "Локальная сеть",
     "makePartyPrivateText": "Сделать мое лобби приватным",
@@ -783,7 +784,7 @@
     "partyStatusJoinableText": "Ваша команда доступна через интернет",
     "partyStatusNoConnectionText": "Невозможно подключиться к серверу",
     "partyStatusNotJoinableText": "Ваше лобби недоступно через интернет",
-    "partyStatusNotPublicText": "Ваше лобби не для всех",
+    "partyStatusNotPublicText": "Ваше лобби не публично",
     "pingText": "пинг",
     "portText": "Порт",
     "privatePartyCloudDescriptionText": "Частные лобби работают на выделенных облачных серверах; настройка маршрутизатора не требуется.",
@@ -875,7 +876,7 @@
     "controllersText": "Контроллеры",
     "controlsSubtitleText": "У вашего дружелюбного персонажа из ${APP_NAME} есть несколько простых действий:",
     "controlsText": "Управление",
-    "devicesInfoText": "В ВР-версию ${APP_NAME} можно играть по сети с обычной версией,\nтак что вытаскивайте свои дополнительные телефоны, планшеты\nи компьютеры, и играйте на них. Можно даже подключить\nобычную версию игры к ВР-версии, чтобы позволить\nостальным наблюдать за действием.",
+    "devicesInfoText": "В VR-версию ${APP_NAME} можно играть по сети с обычной версией,\nтак что вытаскивайте свои дополнительные телефоны, планшеты\nи компьютеры, и играйте на них. Можно даже подключить\nобычную версию игры к VR-версии, чтобы позволить\nостальным наблюдать за действием.",
     "devicesText": "Устройства",
     "friendsGoodText": "Бывают полезны. В ${APP_NAME} веселее играть с несколькими игроками;\nподдерживается до 8 игроков одновременно, что приводит нас к:",
     "friendsText": "Друзья",
@@ -888,15 +889,15 @@
     "powerupCurseNameText": "Проклятие",
     "powerupHealthDescriptionText": "Ни за что не догадаетесь.\nВозвращает полное здоровье.",
     "powerupHealthNameText": "Аптечка",
-    "powerupIceBombsDescriptionText": "Слабее, чем обычные бомбы\nно делает врагов заморожеными\nи особенно хрупкими.",
+    "powerupIceBombsDescriptionText": "Слабее, чем обычные бомбы\nно оставляет врагов заморожеными\nи чрезвычайно хрупкими.",
     "powerupIceBombsNameText": "Ледяные бомбы",
     "powerupImpactBombsDescriptionText": "Чуть слабее обычных бомб,\nно взрываются при ударе.",
-    "powerupImpactBombsNameText": "Ударные бомбы",
+    "powerupImpactBombsNameText": "Моментальные бомбы",
     "powerupLandMinesDescriptionText": "Выдаются по 3 штуки.\nПолезны для защиты базы или\nусмирения быстроногих врагов.",
     "powerupLandMinesNameText": "Мины",
     "powerupPunchDescriptionText": "Делают ваши удары быстрее,\nлучше, сильнее.",
     "powerupPunchNameText": "Боксерские перчатки",
-    "powerupShieldDescriptionText": "Немного поглощает урон,\nчтобы вам не навредили.",
+    "powerupShieldDescriptionText": "Немного поглощает урон,\nвместо вас.",
     "powerupShieldNameText": "Энергетический щит",
     "powerupStickyBombsDescriptionText": "Липнут ко всему, чего касаются.\nИ начинается веселье.",
     "powerupStickyBombsNameText": "Бомбы-липучки",
@@ -921,7 +922,7 @@
   "internal": {
     "arrowsToExitListText": "чтобы выйти из списка нажмите ${LEFT} или ${RIGHT}",
     "buttonText": "кнопка",
-    "cantKickHostError": "Невозможно выгнать создателя.",
+    "cantKickHostError": "Невозможно кикнуть создателя.",
     "chatBlockedText": "${NAME} заблокирован на ${TIME} секунд.",
     "connectedToGameText": "Вошел в игру '${NAME}'",
     "connectedToPartyText": "Вошел в лобби ${NAME}!",
@@ -976,7 +977,7 @@
     "unableToResolveHostText": "Ошибка: невозможно достичь хоста.",
     "unavailableNoConnectionText": "Сейчас это недоступно (нет интернет соединения?)",
     "vrOrientationResetCardboardText": "Используйте это, чтобы сбросить ориентации VR.\nЧтобы играть в игру, вам понадобится внешний контроллер.",
-    "vrOrientationResetText": "Сброс ориентации ВР.",
+    "vrOrientationResetText": "Сброс ориентации VR.",
     "willTimeOutText": "(время выйдет при бездействии)"
   },
   "jumpBoldText": "ПРЫЖОК",
@@ -986,11 +987,11 @@
   "keyboardChangeInstructionsText": "Нажмите на пробел два раза, чтобы сменить раскладку.",
   "keyboardNoOthersAvailableText": "Нету других раскладок.",
   "keyboardSwitchText": "Раскладка изменена на \"${NAME}\".",
-  "kickOccurredText": "${NAME} изгнали.",
-  "kickQuestionText": "Изгнать ${NAME}?",
-  "kickText": "Изгнать",
-  "kickVoteCantKickAdminsText": "Администраторов нельзя выгнать.",
-  "kickVoteCantKickSelfText": "Вы не можете выгонять самого себя.",
+  "kickOccurredText": "${NAME} исключили.",
+  "kickQuestionText": "Исключить ${NAME}?",
+  "kickText": "Исключить",
+  "kickVoteCantKickAdminsText": "Администраторов нельзя исключить.",
+  "kickVoteCantKickSelfText": "Вы не можете исключить самого себя (но можете выйти).",
   "kickVoteFailedNotEnoughVotersText": "Недостаточно игроков для голосования.",
   "kickVoteFailedText": "Голосование на вылет не удалось.",
   "kickVoteStartedText": "Начато голосование за вылет ${NAME}.",
@@ -1046,7 +1047,7 @@
   "macControllerSubsystemTitleText": "Поддержка контроллера",
   "mainMenu": {
     "creditsText": "Благодарности",
-    "demoMenuText": "Меню примеров",
+    "demoMenuText": "Меню демо",
     "endGameText": "Закончить игру",
     "exitGameText": "Выйти из игры",
     "exitToMenuText": "Выйти в меню?",
@@ -1060,7 +1061,7 @@
     "resumeText": "Продолжить",
     "settingsText": "Настройки"
   },
-  "makeItSoText": "Поехали!",
+  "makeItSoText": "Да будет так",
   "mapSelectGetMoreMapsText": "Ещё карт...",
   "mapSelectText": "Выбрать...",
   "mapSelectTitleText": "Карты игры ${GAME}",
@@ -1083,7 +1084,7 @@
   "nameKilledText": "${NAME} убил ${VICTIM}.",
   "nameNotEmptyText": "Имя не может быть пустым!",
   "nameScoresText": "${NAME} ведет!",
-  "nameSuicideKidFriendlyText": "${NAME} убился.",
+  "nameSuicideKidFriendlyText": "${NAME} случайно убился.",
   "nameSuicideText": "${NAME} совершил суицид.",
   "nameText": "Имя",
   "nativeText": "Разрешение устройства",
@@ -1168,7 +1169,7 @@
   "playlistNotFoundText": "плей-лист не найден",
   "playlistText": "Плей-лист",
   "playlistsText": "Плей-листы",
-  "pleaseRateText": "Если вам нравится игра ${APP_NAME}, пожалуйста, подумайте о том,\nчтобы оценить ее или написать рецензию. Это обеспечивает полезную\nобратную связь и помогает поддержать дальнейшую разработку.\n\nСпасибо!\n- Эрик",
+  "pleaseRateText": "Если вам нравится ${APP_NAME}, пожалуйста, подумайте о том,\nчтобы оценить ее или написать рецензию. Это обеспечивает полезную\nобратную связь и помогает поддержать дальнейшую разработку.\n\nСпасибо!\n- Эрик",
   "pleaseWaitText": "Пожалуйста, подождите...",
   "pluginClassLoadErrorText": "Ошибка при попытке загрузить класс плагина '${PLUGIN}': ${ERROR}",
   "pluginInitErrorText": "Ошибка при инициализации плагина '${PLUGIN}': ${ERROR}",
@@ -1182,7 +1183,7 @@
   "pressAnyKeyButtonPlayAgainText": "Нажмите любую клавишу/кнопку чтобы играть снова...",
   "pressAnyKeyButtonText": "Нажмите любую клавишу/кнопку чтобы продолжить...",
   "pressAnyKeyText": "Нажмите любую клавишу...",
-  "pressJumpToFlyText": "** Чтобы лететь, продолжайте нажимать прыжок **",
+  "pressJumpToFlyText": "** Чтобы лететь, быстро нажимайте прыжок **",
   "pressPunchToJoinText": "нажмите УДАР чтобы присоединиться...",
   "pressToOverrideCharacterText": "нажмите ${BUTTONS} чтобы переопределить своего персонажа",
   "pressToSelectProfileText": "Нажмите ${BUTTONS} чтобы выбрать игрока",
@@ -1195,9 +1196,9 @@
   },
   "promoSubmitErrorText": "Ошибка отправки кода, проверьте своё интернете соединение",
   "ps3ControllersWindow": {
-    "macInstructionsText": "Выключите питание на задней панели PS3, убедитесь, что Bluetooth\nвключен на вашем компьютере, а затем подключите геймпад к Mac\nс помощью кабеля USB для синхронизации. Теперь можно использовать\nкнопку геймпад 'PS' чтобы подключить его к Mac\nв проводном (USB) или беспроводном (Bluetooth) режиме.\n\nНа некоторых системах Mac при синхронизации может потребоватьсякод доступа.\nВ этом случае обратитесь к следующей инструкции или к гуглу.\n\n\n\n\nГеймпады PS3, связанные по беспроводной сети, должны появиться\nв списке устройств в Настройках системы -> Bluetooth. Возможно, вам придется\nудалить их из этого списка, если вы хотите снова использовать их с PS3.\n\nТакже всегда отключайте их от Bluetooth, когда он не используется,\nиначе будут садиться батарейки.\n\nBluetooth должен обрабатывать до 7 подключенных устройств,\nхотя у вас может получиться по-другому.",
+    "macInstructionsText": "Выключите питание на задней панели PS3, убедитесь, что Bluetooth\nвключен на вашем компьютере, а затем подключите геймпад к Mac\nс помощью кабеля USB для синхронизации. Теперь можно использовать\nкнопку геймпад 'PS' чтобы подключить его к Mac\nв проводном (USB) или беспроводном (Bluetooth) режиме.\n\nНа некоторых системах Mac при синхронизации может потребоваться код доступа.\nВ этом случае обратитесь к следующей инструкции (или к Google).\n\n\n\n\nГеймпады PS3, связанные по беспроводной сети, должны появиться\nв списке устройств в Настройках системы -> Bluetooth. Возможно, вам придется\nудалить их из этого списка, если вы хотите снова использовать их с PS3.\n\nТакже всегда отключайте их от Bluetooth, когда он не используется,\nиначе будут садиться батарейки.\n\nBluetooth должен обрабатывать до 7 подключенных устройств,\nхотя у вас может получиться по-другому.",
     "ouyaInstructionsText": "Чтобы использовать геймпад PS3 с OUYA, просто подключите его один раз\nс помощью кабеля USB для синхронизации. Это может отключить другие\nгеймпады, тогда нужно перезагрузить OUYA и отсоединить кабель USB.\n\nПосле этого можно использовать кнопку 'PS' геймпада для беспроводного\nподключения. После игры нажмите и удерживайте кнопку 'PS' в течение\n10 секунд чтобы выключить геймпад, в противном случае он может\nостаться включенным и разрядит батарейки.",
-    "pairingTutorialText": "видео-тьюториал по синхронизации",
+    "pairingTutorialText": "видео по связыванию",
     "titleText": "Использование геймпада PS3 с ${APP_NAME}:"
   },
   "publicBetaText": "ОТКРЫТАЯ БЕТА-ВЕРСИЯ",
@@ -1218,8 +1219,8 @@
   "remainingInTrialText": "осталось в пробной версии",
   "remoteAppInfoShortText": "Играть в ${APP_NAME} с семьей или друзьями гораздо веселее.\nПодключите один или несколько джойстиков или установите\n${REMOTE_APP_NAME} на свои устройства, чтобы использовать\nих в качестве джойстиков.",
   "remote_app": {
-    "app_name": "ДУ BombSquad",
-    "app_name_short": "ДУBS",
+    "app_name": "Пульт BombSquad",
+    "app_name_short": "Пульт BS",
     "button_position": "Положение кнопки",
     "button_size": "Размер кнопки",
     "cant_resolve_host": "Сервер не найден.",
@@ -1434,6 +1435,7 @@
   "tournamentStandingsText": "Позиции в турнире",
   "tournamentText": "Турнир",
   "tournamentTimeExpiredText": "Время турнира истекло",
+  "tournamentsDisabledWorkspaceText": "Турниры заблокированы пока рабочие пространства включены.\nДля включения турниров, отключите рабочие места и перезапустите игру.",
   "tournamentsText": "Турниры",
   "translations": {
     "characterNames": {
@@ -1485,22 +1487,22 @@
       "${GAME} Training": "${GAME}: тренировка",
       "Infinite ${GAME}": "Бесконечный уровень ${GAME}",
       "Infinite Onslaught": "Бесконечная атака",
-      "Infinite Runaround": "Бесконечный манёвр",
+      "Infinite Runaround": "Бесконечная беготня",
       "Onslaught": "Бесконечная атака",
       "Onslaught Training": "Атака: тренировка",
       "Pro ${GAME}": "${GAME} профи",
       "Pro Football": "Регби профи",
       "Pro Onslaught": "Атака профи",
-      "Pro Runaround": "Манёвр профи",
+      "Pro Runaround": "Беготня профи",
       "Rookie ${GAME}": "${GAME} для новичков",
       "Rookie Football": "Регби для новичков",
       "Rookie Onslaught": "Атака для новичков",
       "Runaround": "Бесконечный манёвр",
       "The Last Stand": "Последний рубеж",
-      "Uber ${GAME}": "Убер ${GAME}",
-      "Uber Football": "Убер регби",
-      "Uber Onslaught": "Убер атака",
-      "Uber Runaround": "Убер манёвр"
+      "Uber ${GAME}": "Ӱбер ${GAME}",
+      "Uber Football": "Ӱбер регби",
+      "Uber Onslaught": "Ӱбер атака",
+      "Uber Runaround": "Ӱбер беготня"
     },
     "gameDescriptions": {
       "Be the chosen one for a length of time to win.\nKill the chosen one to become it.": "Чтобы победить, стань избранным на некоторое время.\nЧтобы стать избранным, убей избранного.",
@@ -1564,7 +1566,7 @@
       "Chosen One": "Избранный",
       "Conquest": "Завоевание",
       "Death Match": "Смертельный бой",
-      "Easter Egg Hunt": "Охота на пасхальные яйца",
+      "Easter Egg Hunt": "Сбор пасхальных яиц",
       "Elimination": "Ликвидация",
       "Football": "Регби",
       "Hockey": "Хоккей",
@@ -1580,14 +1582,14 @@
     },
     "inputDeviceNames": {
       "Keyboard": "Клавиатура",
-      "Keyboard P2": "Клавиатура P2"
+      "Keyboard P2": "Клавиатура игрока 2"
     },
     "languages": {
       "Arabic": "Арабский",
       "Belarussian": "Белорусский",
       "Chinese": "Китайский упрощенный",
       "ChineseTraditional": "Китайский традиционный",
-      "Croatian": "Харватский",
+      "Croatian": "Хорватский",
       "Czech": "Чешский",
       "Danish": "Датский",
       "Dutch": "Голландский",
@@ -1597,8 +1599,8 @@
       "Finnish": "Финский",
       "French": "Французский",
       "German": "Немецкий",
-      "Gibberish": "Абракадабра",
-      "Greek": "греческий",
+      "Gibberish": "Чепухейский",
+      "Greek": "Греческий",
       "Hindi": "Хинди",
       "Hungarian": "Венгерский",
       "Indonesian": "Индонезийский",
@@ -1663,7 +1665,7 @@
     },
     "serverResponses": {
       "A code has already been used on this account.": "Код уже был активирован на этом аккаунте.",
-      "A reward has already been given for that address.": "Эта награда уже была выдана на этот ip адрес",
+      "A reward has already been given for that address.": "Эта награда уже была выдана на этот IP-адрес",
       "Account linking successful!": "Аккаунт успешно привязан!",
       "Account unlinking successful!": "Аккаунт успешно отвязан!",
       "Accounts are already linked.": "Аккаунты уже привязаны.",
@@ -1777,9 +1779,9 @@
       "Warning to ${NAME}:  turbo / button-spamming knocks you out.": "Предупреждение для ${NAME}: за турбо / быстрое повторное нажатие кнопки можно вылететь."
     },
     "teamNames": {
-      "Bad Guys": "Плохие парни",
+      "Bad Guys": "Негодяи",
       "Blue": "Синие",
-      "Good Guys": "Хорошие парни",
+      "Good Guys": "Добряки",
       "Red": "Красные"
     },
     "tips": {
@@ -1793,14 +1795,14 @@
       "Don't spin for too long; you'll become dizzy and fall.": "Не крутись долго; у тебя закружится голова и ты упадёшь.",
       "Hold any button to run.  (Trigger buttons work well if you have them)": "Для бега нажмите и держите любую кнопку. (Для этого удобны триггеры, если они есть)",
       "Hold down any button to run. You'll get places faster\nbut won't turn very well, so watch out for cliffs.": "Для бега удерживайте любую кнопку. Бегать, конечно, быстрее,\nзато труднее поворачивать, так что не забывайте про обрывы.",
-      "Ice bombs are not very powerful, but they freeze\nwhoever they hit, leaving them vulnerable to shattering.": "Ледяные бомбы не очень мощные, но они замораживают\nвсех вокруг, делая их хрупкими и бьющимися.",
+      "Ice bombs are not very powerful, but they freeze\nwhoever they hit, leaving them vulnerable to shattering.": "Ледяные бомбы не очень мощные, но они замораживают\nвсех вокруг, оставляя их хрупкими и беззащитными.",
       "If someone picks you up, punch them and they'll let go.\nThis works in real life too.": "Если кто-то вас схатил, бейте, и вас отпустят.\nВ реальной жизни это тоже работает.",
       "If you are short on controllers, install the '${REMOTE_APP_NAME}' app\non your mobile devices to use them as controllers.": "Если вам не хватает контроллеров, установите приложение '${REMOTE_APP_NAME}' \nна ваши мобильные устройства, чтобы использовать их в качестве контроллеров.",
       "If you are short on controllers, install the 'BombSquad Remote' app\non your iOS or Android devices to use them as controllers.": "Если не хватает контроллеров, установите приложение 'BombSquad Remote' на\nустройства iOS или Android, чтобы использовать их в качестве контроллеров.",
       "If you get a sticky-bomb stuck to you, jump around and spin in circles. You might\nshake the bomb off, or if nothing else your last moments will be entertaining.": "Если к вам прилипла липкая бомба, прыгайте и крутитесь. Может повезет\nстряхнуть бомбу или, на худой конец, повеселить окружающих.",
       "If you kill an enemy in one hit you get double points for it.": "Если убиваешь врага с одного удара, то получаешь двойные очки.",
       "If you pick up a curse, your only hope for survival is to\nfind a health powerup in the next few seconds.": "Если подхватили проклятие, то единственная надежда на выживание\n- это найти аптечку в ближайшие несколько секунд.",
-      "If you stay in one place, you're toast. Run and dodge to survive..": "Не стой на месте - поджаришься. Беги и уворачивайся чтобы выжить..",
+      "If you stay in one place, you're toast. Run and dodge to survive..": "Не стой на месте – помрешь. Беги и уворачивайся чтобы выжить..",
       "If you've got lots of players coming and going, turn on 'auto-kick-idle-players'\nunder settings in case anyone forgets to leave the game.": "Если у вас много игроков, которые приходят и уходят, включите \"автоматически выкидывать\nбездействующих игроков\" в настройках на случай, если кто-то забудет выйти из игры.",
       "If your device gets too warm or you'd like to conserve battery power,\nturn down \"Visuals\" or \"Resolution\" in Settings->Graphics": "Если ваше устройство нагревается или вы хотите сохранить заряд батареи,\nуменьшите \"Визуальные эффекты\" или \"Разрешение\" в Настройки->Графика",
       "If your framerate is choppy, try turning down resolution\nor visuals in the game's graphics settings.": "Если картинка прерывистая, попробуйте уменьшить разрешение\nили визуальные эффекты в настройках графики в игре.",
@@ -1860,12 +1862,12 @@
     "phrase18Text": "В движении бросок получается дальше.",
     "phrase19Text": "В прыжке бросок выше.",
     "phrase20Text": "\"Подкрученные\" бомбы летят еще дальше.",
-    "phrase21Text": "\"Выжидать\" бомбы довольно сложно.",
-    "phrase22Text": "Черт.",
+    "phrase21Text": "\"Подогревать\" бомбы довольно сложно.",
+    "phrase22Text": "Блин нафиг!",
     "phrase23Text": "Попробуйте \"подогреть\" фитиль секунду или две.",
     "phrase24Text": "Ура! Хорошо подогрето.",
     "phrase25Text": "Ну на этом, пожалуй, всё.",
-    "phrase26Text": "Вперед, на мины!",
+    "phrase26Text": "Вперед, к победе!",
     "phrase27Text": "Не забывай эти советы, и ТОЧНО вернешься живым!",
     "phrase28Text": "...может быть...",
     "phrase29Text": "Удачи!",
@@ -1873,7 +1875,7 @@
     "randomName2Text": "Петя",
     "randomName3Text": "Иннокентий",
     "randomName4Text": "Шурик",
-    "randomName5Text": "Пушок",
+    "randomName5Text": "Виталий",
     "skipConfirmText": "Пропустить тьюториал? Коснитесь или нажмите кнопку для подтверждения.",
     "skipVoteCountText": "${COUNT}/${TOTAL} голосов за пропуск",
     "skippingText": "пропуск обучения...",

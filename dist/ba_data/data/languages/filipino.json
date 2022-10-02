@@ -176,7 +176,7 @@
       "descriptionComplete": "Nanalo ng walang puntos ang kalaban",
       "descriptionFull": "Manalo sa ${LEVEL} ng walang puntos ang kalaban",
       "descriptionFullComplete": "Nanalo sa ${LEVEL} ng walang puntos ang kalaban",
-      "name": "Buwaya sa ${LEVEL}"
+      "name": "Pagsarhan ng ${LEVEL}"
     },
     "Pro Football Victory": {
       "description": "Panalunin ang laro",
@@ -204,7 +204,7 @@
       "descriptionComplete": "Nanalo nang hindi hinahayaang makapuntos ang kalaban",
       "descriptionFull": "Manalo sa ${LEVEL} nang hindi hinahayaang makapuntos ang kalaban",
       "descriptionFullComplete": "Nanalo sa ${LEVEL} nang hindi hinahayaang makapuntos ang kalaban",
-      "name": "${LEVEL} Shutout"
+      "name": "Pagsarhan ng ${LEVEL}"
     },
     "Rookie Football Victory": {
       "description": "Ipanalo ang laro",
@@ -232,14 +232,14 @@
       "descriptionComplete": "Nakapuntos ng 500",
       "descriptionFull": "Pumuntos ng 500 sa ${LEVEL}",
       "descriptionFullComplete": "Nakakuha ng 500 puntos sa ${LEVEL}",
-      "name": "${LEVEL} Master"
+      "name": "Pinuno ng ${LEVEL}"
     },
     "Runaround Wizard": {
       "description": "Pumuntos ng 1000",
       "descriptionComplete": "Naka score ng 1000 points",
       "descriptionFull": "Mag score ng 1000 points sa ${LEVEL}",
       "descriptionFullComplete": "Naka score ng 1000 points sa ${LEVEL}",
-      "name": "${LEVEL} Wizard"
+      "name": "Salamangkero ng ${LEVEL}"
     },
     "Sharing is Caring": {
       "descriptionFull": "I-share ang game sa iyong kaibigan",
@@ -247,10 +247,10 @@
       "name": "Ang pagbigay ay pag-alaga"
     },
     "Stayin' Alive": {
-      "description": "Manalo nang hindi namamatay",
+      "description": "Manalo nang hindi namatay",
       "descriptionComplete": "Nanalo nang hindi namatay",
       "descriptionFull": "Nanalo ${LEVEL} nang hindi namatay",
-      "descriptionFullComplete": "Nanalo ${LEVEL} nang hindi namatay",
+      "descriptionFullComplete": "Nanalo sa ${LEVEL} nang hindi namatay",
       "name": "Manatiling Buhay"
     },
     "Super Mega Punch": {
@@ -298,7 +298,7 @@
       "descriptionComplete": "Manalo nang hindi maka puntos ang mga kalaban",
       "descriptionFull": "Manalo sa ${LEVEL} na hindi maka puntos ang mga kalaban",
       "descriptionFullComplete": "Manalo sa ${LEVEL} na hindi maka puntos ang mga kalaban",
-      "name": "${LEVEL} Pagsarhan"
+      "name": "Pagsarhan ng ${LEVEL}"
     },
     "Uber Football Victory": {
       "description": "Ipanalo ang laro",
@@ -357,10 +357,10 @@
   "buttonText": "pindutan",
   "canWeDebugText": "Gusto mo ba na ang BombSquad ay automatic na mag report ng\nbugs, crashes, at mga basic usage na info na i-sent sa developer?\n\nHindi ito naglalaman ng mga personal information at makatulong ito\npara ang laro ay gumagana at bug-free.",
   "cancelText": "Kanselahin",
-  "cantConfigureDeviceText": "Pasensya na, ang ${DEVICE} ay hindi ma-configure.",
+  "cantConfigureDeviceText": "Pasensya na, ang ${DEVICE} na ito ay hindi ma-configure.",
   "challengeEndedText": "Natapos na ang challenge na ito.",
   "chatMuteText": "I-mute ang Chat",
-  "chatMutedText": "Chat Muted",
+  "chatMutedText": "Na-mute ang Chat",
   "chatUnMuteText": "I-unmute ang Chat",
   "choosingPlayerText": "<pumipili ng manlalaro>",
   "completeThisLevelToProceedText": "I complete mo muna\nang level na ito bago ka mag-proceed!",
@@ -497,6 +497,7 @@
     "welcome2Text": "Maaari ka ring makakuha ng mga tiket mula sa marami sa parehong mga aktibidad.\nMaaaring gamitin ang mga tiket para i-unlock ang mga bagong character, mapa, at\nmini-games, para makapasok sa mga tournament, at higit pa.",
     "yourPowerRankingText": "Iyong Power Ranking:"
   },
+  "copyConfirmText": "Nakopya sa clipboard.",
   "copyOfText": "Kopya ng ${NAME}",
   "copyText": "I-kopya",
   "createEditPlayerText": "<Gumawa/I-Edit Ng Manlalaro>",
@@ -516,7 +517,7 @@
     "specialThanksText": "Espesyal Na Pasasalamat:",
     "thanksEspeciallyToText": "Salamat, lalo na kay ${NAME}",
     "titleText": "${APP_NAME} Mga Kredito",
-    "whoeverInventedCoffeeText": "Kung sino man nag-imbento ng kape"
+    "whoeverInventedCoffeeText": "At ang sino man na nag-imbento ng kape"
   },
   "currentStandingText": "Ang kasalukuyang tayo mo ay #${RANK}",
   "customizeText": "I-customize...",
@@ -624,7 +625,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} sa isang epic na slow motion.",
   "epicNameFilterText": "Epikong ${NAME}",
   "errorAccessDeniedText": "walang pahintulot",
-  "errorDeviceTimeIncorrectText": "Ang oras ng iyong device ay naka-off nang ${HOURS} na oras.\nIto ay malamang na magdulot ng mga iba’t ibang problema.\nPakisuri ang iyong mga setting ng oras at time-zone.",
+  "errorDeviceTimeIncorrectText": "Ang oras ng iyong device ay di tama nang ${HOURS} na oras.\nIto ay malamang na magdulot ng mga iba’t ibang problema.\nPakisuri ang mga setting ng iyong oras at time-zone.",
   "errorOutOfDiskSpaceText": "Wala sa puwang ng disk",
   "errorSecureConnectionFailText": "Hindi mapatunayan ng secure na “cloud connection”; maaaring mabigo ang pagpapagana ng network.",
   "errorText": "Error",
@@ -870,12 +871,12 @@
   "hostIsNavigatingMenusText": "- Ang ${HOST} ay nagna-navigate sa mga menu tulad ng isang boss -",
   "importPlaylistCodeInstructionsText": "Gamitin ang sumusunod na code upang i-import ang playlist na ito sa ibang lugar:",
   "importPlaylistSuccessText": "Na-import na ${TYPE} na playlist '${NAME}'",
-  "importText": "Iangkat",
-  "importingText": "Pag-Import…",
-  "inGameClippedNameText": "in-game ay naging\n\"${NAME}\"",
+  "importText": "I-Import",
+  "importingText": "Nag-Iimport…",
+  "inGameClippedNameText": "Sa in-game ay naging\n\"${NAME}\"",
   "installDiskSpaceErrorText": "ERROR: Hindi makumpleto ang pag-install.\nMaaaring wala ka nang espasyo sa iyong device.\nMag-clear ng ilang espasyo at subukang muli.",
   "internal": {
-    "arrowsToExitListText": "pindutin ang ${LEFT} o ${RIGHT} upang lumabas sa listahan",
+    "arrowsToExitListText": "pindutin ang ${LEFT} o ${RIGHT} upang mawala sa listahan",
     "buttonText": "pindutan",
     "cantKickHostError": "Hindi mo maaaring I-kick ang host.",
     "chatBlockedText": "Na-block si ${NAME} sa loob ng ${TIME} segundo.",
@@ -922,7 +923,7 @@
     "serverRestartingText": "Nagre-restart ang server. Mangyaring sumali muli sa isang saglit…",
     "serverShuttingDownText": "Nagsasara ang server...",
     "signInErrorText": "Error sa pag-sign in.",
-    "signInNoConnectionText": "Hindi makapag-sign in. (walang koneksyon sa internet?)",
+    "signInNoConnectionText": "Hindi makapag-sign in. (walang koneksyon ang Wi-Fi mo?)",
     "telnetAccessDeniedText": "ERROR: ang user ay hindi nagbigay ng access sa telnet.",
     "timeOutText": "(time out sa ${TIME} segundo)",
     "touchScreenJoinWarningText": "Sumali ka gamit ang touchscreen.\nKung ito ay isang pagkakamali, i-tap ang 'Menu->Umalis sa Laro' kasama nito.",
@@ -940,19 +941,19 @@
   "keyboardChangeInstructionsText": "I-double press space para mapalitan ang mga keyboard.",
   "keyboardNoOthersAvailableText": "Walang ibang mga keyboard na magagamit.",
   "keyboardSwitchText": "Nagpapalit ng keyboard sa \"${NAME}\".",
-  "kickOccurredText": "kicked na si ${NAME}",
+  "kickOccurredText": "na-kicked si ${NAME}",
   "kickQuestionText": "I-Kick si ${NAME}?",
-  "kickText": "",
+  "kickText": "I-Kick",
   "kickVoteCantKickAdminsText": "Hindi ma-kick ang mga admin.",
   "kickVoteCantKickSelfText": "Hindi mo ma-kick ng sarili mo.",
   "kickVoteFailedNotEnoughVotersText": "Hindi marami ang mga manlalaro para sa isang boto.",
   "kickVoteFailedText": "Nabigo ang kick-vote.",
   "kickVoteStartedText": "Sinimulan na ang isang kick vote para kay ${NAME}.",
-  "kickVoteText": "Bumoto sa Kick",
+  "kickVoteText": "Bumoto sa Pagki-kick",
   "kickVotingDisabledText": "Naka-disable ang kick voting.",
   "kickWithChatText": "I-type ang ${YES} sa chat para sa oo at ${NO} para sa hindi.",
-  "killsTallyText": "${COUNT} na ang pumapatay",
-  "killsText": "Pumapatay",
+  "killsTallyText": "${COUNT} ang pinatay",
+  "killsText": "Pinatay",
   "kioskWindow": {
     "easyText": "Madali",
     "epicModeText": "Mode na Epic",
@@ -962,22 +963,22 @@
     "singlePlayerExamplesText": "Mga Halimbawa ng Single Player / Co-op",
     "versusExamplesText": "Halimbawa ng mga Versus"
   },
-  "languageSetText": "Ang wika ay \"${LANGUAGE}\" na ngayon.",
+  "languageSetText": "Ang wika ay \"${LANGUAGE}\" sa ngayon.",
   "lapNumberText": "Ikot ${CURRENT}/${TOTAL}",
   "lastGamesText": "(huling ${COUNT} na laro)",
   "leaderboardsText": "Mga Leaderboard",
   "league": {
     "allTimeText": "Lahat Ng Oras",
     "currentSeasonText": "Kasalukuyang Season (${NUMBER})",
-    "leagueFullText": "Liga ng ${NAME}.",
+    "leagueFullText": "Ligang ${NAME}.",
     "leagueRankText": "Ranggo ng Liga",
     "leagueText": "Liga",
     "rankInLeagueText": "#${RANK}, ${NAME} ${SUFFIX} na Liga",
-    "seasonEndedDaysAgoText": "Natapos ang season ${NUMBER} araw ang nakalipas.",
+    "seasonEndedDaysAgoText": "Natapos ang season noing ${NUMBER} na araw.",
     "seasonEndsDaysText": "Matatapos ang season sa ${NUMBER} (na) araw.",
     "seasonEndsHoursText": "Matatapos ang season sa ${NUMBER} (na) oras.",
     "seasonEndsMinutesText": "Matatapos ang season sa ${NUMBER} (na) minuto.",
-    "seasonText": "Season ${NUMBER}",
+    "seasonText": "Ika-${NUMBER} na season",
     "tournamentLeagueText": "Dapat mong maabot ang liga ng ${NAME} upang makapasok sa paligsahan na ito.",
     "trophyCountsResetText": "Ire-reset ang mga bilang ng tropeo sa susunod na season."
   },
@@ -988,7 +989,7 @@
   "levelText": "Antas ${NUMBER}",
   "levelUnlockedText": "Unlocked ang Level na Ito!",
   "livesBonusText": "Bonus ng Buhay",
-  "loadingText": "Saglit lang...",
+  "loadingText": "saglit lang...",
   "loadingTryAgainText": "Naglo-load; subukan muli sa isang saglit…",
   "macControllerSubsystemBothText": "Pareho (hindi inirerekomenda)",
   "macControllerSubsystemClassicText": "Klasiko",
@@ -1002,9 +1003,9 @@
     "endGameText": "Itigil ang Laro",
     "exitGameText": "Umalis sa Laro",
     "exitToMenuText": "Balik sa menu?",
-    "howToPlayText": "Paano maglaro",
+    "howToPlayText": "Paano Maglaro",
     "justPlayerText": "(Si ${NAME} lang)",
-    "leaveGameText": "Ialis sa Laro",
+    "leaveGameText": "Umalis sa Laro",
     "leavePartyConfirmText": "Talagang aalis sa party na ito?",
     "leavePartyText": "Umalis sa Party",
     "quitText": "Umalis",
@@ -1368,6 +1369,7 @@
   "tournamentStandingsText": "Mga Paninindigan sa Paligsahan",
   "tournamentText": "Paligsahan",
   "tournamentTimeExpiredText": "Na-expire Na Ang Oras Ng Paligsahan",
+  "tournamentsDisabledWorkspaceText": "Naka-disable ang mga paligsahan kapag aktibo ang mga workspace. \nHuwag munang paganahin muli ang iyong workspace at i-restart upang makipaglaro sa paligsahan.",
   "tournamentsText": "Mga Paligsahan",
   "translations": {
     "characterNames": {
@@ -1599,12 +1601,12 @@
       "Invalid purchase.": "Di-wastong bilihin",
       "Invalid tournament entry; score will be ignored.": "Di-wastong entry sa paligsahan; hindi papansinin ang mga iskor.",
       "Item unlocked!": "Na-unlock ang aytem!",
-      "LINKING DENIED. ${ACCOUNT} contains\nsignificant data that would ALL BE LOST.\nYou can link in the opposite order if you'd like\n(and lose THIS account's data instead)": "TINANGGI ANG PAG-LINK. Naglalaman ang ${ACCOUNT}.\nmakabuluhang data na MAWAWALA LAHAT.\nMaaari kang mag-link sa kabaligtaran na pagkakasunud-sunod kung gusto mo\n(at sa halip ay mawala ang data ng account na ITO)",
+      "LINKING DENIED. ${ACCOUNT} contains\nsignificant data that would ALL BE LOST.\nYou can link in the opposite order if you'd like\n(and lose THIS account's data instead)": "TINANGGI ANG PAG-LINK. ang ${ACCOUNT} na ito\nay may makabuluhang data na maaaring MAWAWALA LAHAT.\nMaaari kang mag-link sa kabaligtaran na pagkakasunud-sunod kung gusto mo\n(at sa halip ay mawala ang data ng account na ITO)",
       "Link account ${ACCOUNT} to this account?\nAll existing data on ${ACCOUNT} will be lost.\nThis can not be undone.  Are you sure?": "I-link ang account na ${ACCOUNT} sa account na ito?\nMawawala ang lahat ng umiiral na data sa ${ACCOUNT}.\nHindi na ito maaaring bawiin. Sigurado ka ba?",
       "Max number of playlists reached.": "Naabot na ang maximum na bilang ng mga playlist.",
       "Max number of profiles reached.": "Naabot na ang maximum na bilang ng mga profile.",
       "Maximum friend code rewards reached.": "Naabot ang maximum na mga reward sa code ng kaibigan.",
-      "Message is too long.": "Ang mensahe ay napakataas.",
+      "Message is too long.": "Ang mensahe ay napakahaba.",
       "No servers are available. Please try again soon.": "Walang makakuha na mga server. Pakisubukang muli sa lalong madaling oras.",
       "Profile \"${NAME}\" upgraded successfully.": "Matagumpay na na-upgrade ang profile na \"${NAME}\".",
       "Profile could not be upgraded.": "Hindi ma-upgrade ang profile.",
@@ -1855,7 +1857,7 @@
   "workspaceSyncReuseText": "Hindi ma-sync ang ${WORKSPACE}. Muling paggamit ng nakaraang naka-sync na bersyon.",
   "worldScoresUnavailableText": "Ang scores sa buong mundo ay hindi pa handa",
   "worldsBestScoresText": "Pinakamahusay na Iskor ng Mundo",
-  "worldsBestTimesText": "Pinakamahusay na Oras sa Mundo",
+  "worldsBestTimesText": "Oras ng Pinakamahusay sa Mundo",
   "xbox360ControllersWindow": {
     "getDriverText": "Kunin ang Driver",
     "macInstructions2Text": "Upang gumamit ng mga controller nang wireless, kakailanganin mo rin ang receiver na iyon\nay kasama ang 'Xbox 360 Wireless Controller para sa Windows'.\nPinapayagan ka ng isang receiver na kumonekta hanggang sa 4 na controllers.\n\nMahalaga: Ang mga 3rd-party na receiver ay hindi gagana sa driver na ito;\ntiyaking 'Microsoft' ang nakasulat dito sa iyong receiver, hindi 'XBOX 360'.\nHindi na ibinebenta ng Microsoft ang mga ito nang hiwalay, kaya kakailanganin mong makuha\nyung naka-bundle sa controller or else search ebay.\n\nKung sa tingin mo ay kapaki-pakinabang ito, mangyaring isaalang-alang ang isang donasyon sa\ndeveloper ng driver sa kanilang site.",

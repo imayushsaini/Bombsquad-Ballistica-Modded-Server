@@ -1,6 +1,7 @@
 #  EndVote by -mr.smoothy
 
 import _ba, ba
+import ba.internal
 import time
 
 last_end_vote_start_time = 0
@@ -23,11 +24,11 @@ def vote_end(pb_id, client_id):
                           clients=[client_id])
         return
     if len(voters) == 0:
-        _ba.chatmessage("end vote started")
+        ba.internal.chatmessage("end vote started")
 
     # clean up voters list
     active_players = []
-    for player in _ba.get_game_roster():
+    for player in ba.internal.get_game_roster():
         active_players.append(player['account_id'])
     for voter in voters:
         if voter not in active_players:
@@ -39,10 +40,10 @@ def vote_end(pb_id, client_id):
         update_vote_text(required_votes(len(active_players)) - len(voters))
         if required_votes(len(active_players)) - len(
                 voters) == 3:  # lets dont spam chat/screen message with votes required , only give message when only 3 votes left
-            _ba.chatmessage("3 more end votes required")
+            ba.internal.chatmessage("3 more end votes required")
 
     if len(voters) >= required_votes(len(active_players)):
-        _ba.chatmessage("end vote succeed")
+        ba.internal.chatmessage("end vote succeed")
         try:
             with _ba.Context(_ba.get_foreground_host_activity()):
                 _ba.get_foreground_host_activity().end_game()

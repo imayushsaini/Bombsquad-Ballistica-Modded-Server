@@ -8,8 +8,8 @@ import copy
 import math
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     pass
@@ -140,8 +140,9 @@ class PlaylistBrowserWindow(ba.Window):
     def _ensure_standard_playlists_exist(self) -> None:
         # On new installations, go ahead and create a few playlists
         # besides the hard-coded default one:
-        if not _ba.get_v1_account_misc_val('madeStandardPlaylists', False):
-            _ba.add_transaction({
+        if not ba.internal.get_v1_account_misc_val('madeStandardPlaylists',
+                                                   False):
+            ba.internal.add_transaction({
                 'type':
                     'ADD_PLAYLIST',
                 'playlistType':
@@ -175,7 +176,7 @@ class PlaylistBrowserWindow(ba.Window):
                     },
                 ]
             })
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type':
                     'ADD_PLAYLIST',
                 'playlistType':
@@ -226,7 +227,7 @@ class PlaylistBrowserWindow(ba.Window):
                     },
                 ]
             })
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type':
                     'ADD_PLAYLIST',
                 'playlistType':
@@ -255,7 +256,7 @@ class PlaylistBrowserWindow(ba.Window):
                     },
                 ]
             })
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type':
                     'ADD_PLAYLIST',
                 'playlistType':
@@ -274,12 +275,12 @@ class PlaylistBrowserWindow(ba.Window):
                     }
                 }]
             })
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type': 'SET_MISC_VAL',
                 'name': 'madeStandardPlaylists',
                 'value': True
             })
-            _ba.run_transactions()
+            ba.internal.run_transactions()
 
     def _refresh(self) -> None:
         # FIXME: Should tidy this up.
@@ -367,14 +368,14 @@ class PlaylistBrowserWindow(ba.Window):
 
                 if (x == 0 and ba.app.ui.use_toolbars
                         and uiscale is ba.UIScale.SMALL):
-                    ba.widget(
-                        edit=btn,
-                        left_widget=_ba.get_special_widget('back_button'))
+                    ba.widget(edit=btn,
+                              left_widget=ba.internal.get_special_widget(
+                                  'back_button'))
                 if (x == columns - 1 and ba.app.ui.use_toolbars
                         and uiscale is ba.UIScale.SMALL):
-                    ba.widget(
-                        edit=btn,
-                        right_widget=_ba.get_special_widget('party_button'))
+                    ba.widget(edit=btn,
+                              right_widget=ba.internal.get_special_widget(
+                                  'party_button'))
                 ba.buttonwidget(
                     edit=btn,
                     on_activate_call=ba.Call(self._on_playlist_press, btn,
@@ -429,7 +430,8 @@ class PlaylistBrowserWindow(ba.Window):
                     playlist = filter_playlist(playlist,
                                                self._sessiontype,
                                                remove_unowned=False,
-                                               mark_unowned=True)
+                                               mark_unowned=True,
+                                               name=name)
                     for entry in playlist:
                         mapname = entry['settings']['map']
                         maptype: type[ba.Map] | None

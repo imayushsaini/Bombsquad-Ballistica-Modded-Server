@@ -331,6 +331,7 @@
   "achievementsRemainingText": "Pozostałe Osiągnięcia:",
   "achievementsText": "Osiągnięcia",
   "achievementsUnavailableForOldSeasonsText": "Wybacz, lecz szczegóły osiągnięć nie są dostępne dla starych sezonów.",
+  "activatedText": "${THING} aktywowane/a",
   "addGameWindow": {
     "getMoreGamesText": "Więcej rozgrywek...",
     "titleText": "Dodaj grę"
@@ -647,7 +648,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} Epickie zwolnione tempo.",
   "epicNameFilterText": "Epicki tryb - ${NAME}",
   "errorAccessDeniedText": "odmowa dostępu",
+  "errorDeviceTimeIncorrectText": "Czas na Twoim urządzeniu nie zgadza się o ${HOURS} godziny.\nTo może powodować problemy.\nSprawdź swoje ustawienia czasu i strefy czasowej.",
   "errorOutOfDiskSpaceText": "brak miejsca na dysku",
+  "errorSecureConnectionFailText": "Wystąpił błąd z ustanowieniem bezpiecznego połączenia z chmurą; funkcje sieciowe mogą nie działać.",
   "errorText": "Błąd",
   "errorUnknownText": "nieznany błąd",
   "exitGameText": "Wyjść z ${APP_NAME}?",
@@ -825,7 +828,7 @@
     "ticketPack4Text": "Paczka Kolos kuponów",
     "ticketPack5Text": "Mamucia paczka kuponów",
     "ticketPack6Text": "Paczka Ultimate kuponów",
-    "ticketsFromASponsorText": "Zdobądź ${COUNT} kuponów\nod sponsora",
+    "ticketsFromASponsorText": "Obejrzyj reklamę\ndla ${COUNT} kuponów",
     "ticketsText": "${COUNT} kuponów",
     "titleText": "Zdobądź kupony",
     "unavailableLinkAccountText": "Niestety, zakupy nie są możliwe na tej platformie. \nJeśli chcesz, możesz połączyć to konto z kontem na innej platformie\ni dokonać zakupu tam.",
@@ -836,6 +839,7 @@
     "youHaveText": "masz ${COUNT} kuponów"
   },
   "googleMultiplayerDiscontinuedText": "Przepraszam, usługa gry wieloosobowej Google nie jest już dostępna.\nPracuję nad zamiennikiem tak szybko jak potrafię.\nTymczasem proszę o wypróbowanie innej metody połączenia.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Zakupy Google Play niedostępne.\nSpróbuj zaktualizować aplikację Google Play.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Zawsze",
@@ -1161,7 +1165,10 @@
   "playlistsText": "Listy gier",
   "pleaseRateText": "Jeśli polubiłeś ${APP_NAME}, proszę o poddanie go ocenie\nlub napisanie krótkiej recenzji. Pozwoli to zebrać przydatne\ninformacje, które pomogą wesprzeć rozwój gry w przyszłości.\n\nDziękuję!\n-Eric",
   "pleaseWaitText": "Czekaj chwilkę...",
+  "pluginClassLoadErrorText": "Błąd ładowania klasy pluginu '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Błąd inicjowania pluginu '${PLUGIN}': ${ERROR}",
   "pluginsDetectedText": "Wykryto nowe pluginy. Uruchom ponownie grę, aby je aktywować, lub skonfiguruje je w ustawieniach.",
+  "pluginsRemovedText": "Usunięto ${NUM} pluginy(ów)",
   "pluginsText": "Pluginy",
   "practiceText": "Praktyka",
   "pressAnyButtonPlayAgainText": "Naciśnij dowolny przycisk aby zagrać ponownie...",
@@ -1425,6 +1432,7 @@
   "tournamentStandingsText": "Klasyfikacja Turnieju",
   "tournamentText": "Turniej",
   "tournamentTimeExpiredText": "Czas Turnieju wygasł",
+  "tournamentsDisabledWorkspaceText": "Turnieje są wyłączone gdy obszary robocze są aktywne.\nBy włączyć turnieje, wyłącz obszar roboczy i zrestartuj grę.",
   "tournamentsText": "Turnieje",
   "translations": {
     "characterNames": {
@@ -1937,6 +1945,8 @@
   "winsPlayerText": "${NAME} Wygrywa!",
   "winsTeamText": "${NAME} Wygrywają!",
   "winsText": "${NAME} Wygrywa!",
+  "workspaceSyncErrorText": "Błąd synchronizowania ${WORKSPACE}. Zobacz detale w logu.",
+  "workspaceSyncReuseText": "Nie można zsynchronizować ${WORKSPACE}. Ponowne użycie zsynchronizowanej wersji.",
   "worldScoresUnavailableText": "Ogólnoświatowe wyniki niedostępne.",
   "worldsBestScoresText": "Najlepsze ogólnoświatowe wyniki",
   "worldsBestTimesText": "Najlepsze ogólnoświatowe czasy",

@@ -787,7 +787,7 @@
     "ticketPack4Text": "局型點券包",
     "ticketPack5Text": "巨巨巨巨巨巨巨巨巨巨型點券包",
     "ticketPack6Text": "終極點券包",
-    "ticketsFromASponsorText": "從贊助商\n獲取${COUNT}點券",
+    "ticketsFromASponsorText": "看推廣影片\n獲取${COUNT}點券",
     "ticketsText": "${COUNT} 點券",
     "titleText": "獲得點券",
     "unavailableLinkAccountText": "對不起，該平台不可進行購買\n您可以將賬戶鏈接到另一個\n平台，以進行購買",
@@ -798,6 +798,7 @@
     "youHaveText": "你擁有 ${COUNT}點券"
   },
   "googleMultiplayerDiscontinuedText": "抱歉，Google的多人遊戲服務不再可用。\n我將盡快更換新的替代服務。\n在此之前，請嘗試其他連接方法。\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Google Play購買不可用\n你可能需要更新你的Google Play商店組件",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "總是",
@@ -1362,6 +1363,7 @@
   "tournamentStandingsText": "錦標賽積分榜",
   "tournamentText": "錦標賽",
   "tournamentTimeExpiredText": "錦標賽時間結束",
+  "tournamentsDisabledWorkspaceText": "儅工作區處於開啓狀態時講標賽將被禁用\n如果想解禁錦標賽，請關閉您的工作區並重啓游戲",
   "tournamentsText": "錦標賽",
   "translations": {
     "characterNames": {

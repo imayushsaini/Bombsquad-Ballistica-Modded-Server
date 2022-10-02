@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 from bastd.ui import popup as popup_ui
 
 if TYPE_CHECKING:
@@ -200,10 +200,10 @@ class AdvancedSettingsWindow(ba.Window):
         # menu based on the language so still need this. ...however we could
         # make this more limited to it only rebuilds that one menu instead
         # of everything.
-        if self._menu_open or (self._prev_lang == _ba.app.config.get(
+        if self._menu_open or (self._prev_lang == ba.app.config.get(
                 'Lang', None) and self._prev_lang_list == available_languages):
             return
-        self._prev_lang = _ba.app.config.get('Lang', None)
+        self._prev_lang = ba.app.config.get('Lang', None)
         self._prev_lang_list = available_languages
 
         # Clear out our sub-container.
@@ -251,8 +251,8 @@ class AdvancedSettingsWindow(ba.Window):
                       h_align='right',
                       v_align='center')
 
-        languages = _ba.app.lang.available_languages
-        cur_lang = _ba.app.config.get('Lang', None)
+        languages = ba.app.lang.available_languages
+        cur_lang = ba.app.config.get('Lang', None)
         if cur_lang is None:
             cur_lang = 'Auto'
 
@@ -340,7 +340,7 @@ class AdvancedSettingsWindow(ba.Window):
         self._update_lang_status()
         v -= 40
 
-        lang_inform = _ba.get_v1_account_misc_val('langInform', False)
+        lang_inform = ba.internal.get_v1_account_misc_val('langInform', False)
 
         self._language_inform_checkbox = cbw = ba.checkboxwidget(
             parent=self._subcontainer,
@@ -432,7 +432,7 @@ class AdvancedSettingsWindow(ba.Window):
             label=ba.Lstr(resource=self._r + '.moddingGuideText'),
             text_scale=1.0,
             on_activate_call=ba.Call(
-                ba.open_url, 'http://ballistica.net/wiki/modding-guide'))
+                ba.open_url, 'https://ballistica.net/wiki/modding-guide'))
         if self._show_always_use_internal_keyboard:
             assert self._always_use_internal_keyboard_check_box is not None
             ba.widget(edit=self._always_use_internal_keyboard_check_box.widget,
@@ -512,11 +512,12 @@ class AdvancedSettingsWindow(ba.Window):
             ba.widget(edit=child, show_buffer_bottom=30, show_buffer_top=20)
 
         if ba.app.ui.use_toolbars:
-            pbtn = _ba.get_special_widget('party_button')
+            pbtn = ba.internal.get_special_widget('party_button')
             ba.widget(edit=self._scrollwidget, right_widget=pbtn)
             if self._back_button is None:
-                ba.widget(edit=self._scrollwidget,
-                          left_widget=_ba.get_special_widget('back_button'))
+                ba.widget(
+                    edit=self._scrollwidget,
+                    left_widget=ba.internal.get_special_widget('back_button'))
 
         self._restore_state()
 
@@ -526,12 +527,12 @@ class AdvancedSettingsWindow(ba.Window):
                          color=(1, 1, 0))
 
     def _on_lang_inform_value_change(self, val: bool) -> None:
-        _ba.add_transaction({
+        ba.internal.add_transaction({
             'type': 'SET_MISC_VAL',
             'name': 'langInform',
             'value': val
         })
-        _ba.run_transactions()
+        ba.internal.run_transactions()
 
     def _on_vr_test_press(self) -> None:
         from bastd.ui.settings.vrtesting import VRTestingWindow
@@ -544,7 +545,7 @@ class AdvancedSettingsWindow(ba.Window):
         from bastd.ui.settings.nettesting import NetTestingWindow
 
         # Net-testing requires a signed in v1 account.
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             ba.screenmessage(ba.Lstr(resource='notSignedInErrorText'),
                              color=(1, 0, 0))
             ba.playsound(ba.getsound('error'))
@@ -558,7 +559,7 @@ class AdvancedSettingsWindow(ba.Window):
     def _on_friend_promo_code_press(self) -> None:
         from bastd.ui import appinvite
         from bastd.ui import account
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             account.show_sign_in_prompt()
             return
         appinvite.handle_app_invites_press()
@@ -576,7 +577,7 @@ class AdvancedSettingsWindow(ba.Window):
         from bastd.ui.account import show_sign_in_prompt
 
         # We have to be logged in for promo-codes to work.
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             show_sign_in_prompt()
             return
         self._save_state()

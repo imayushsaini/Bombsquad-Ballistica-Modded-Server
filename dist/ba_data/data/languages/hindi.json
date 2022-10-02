@@ -329,6 +329,7 @@
   "achievementsRemainingText": "उप्लाब्धियाँ बाकी:",
   "achievementsText": "उप्लाब्धियाँ",
   "achievementsUnavailableForOldSeasonsText": "माफ़ करें उपलब्धियों कि जानकारी पुराने सीजन से नहीं है",
+  "activatedText": "${THING} सक्रिय",
   "addGameWindow": {
     "getMoreGamesText": "और गेम्स कि जानकारी पायें",
     "titleText": "गेम जोड़ें"
@@ -499,6 +500,7 @@
     "welcome2Text": "आप टिकेट उन्ही गतिविधियाओं से भी कमा सकते हैं | \nटिकेट नए रूप, नक़्शे व छोटे गेम खोलने तथा  \nप्रतियोगिता में भाग लेने आदि में काम आ सकते हैं |",
     "yourPowerRankingText": "आपका सत्ता पद :"
   },
+  "copyConfirmText": "क्लिपबोर्ड पर कॉपी हुआ।",
   "copyOfText": "${NAME} दूसरा",
   "copyText": "नकल किजिए",
   "createEditPlayerText": "<प्लेयर बनाएँ / संपादित करें>",
@@ -627,7 +629,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} उत्कृष्ट धीमे गति में।",
   "epicNameFilterText": "उत्कृष्ट ${NAME}",
   "errorAccessDeniedText": "अभिगम वर्जित",
+  "errorDeviceTimeIncorrectText": "आपके उपकरण का समय ${HOURS} घंटे गलत है।\nइससे समस्याएं होने की संभावना है।\nकृपया अपना समय और समय-क्षेत्र सेटिंग की जाँच करें",
   "errorOutOfDiskSpaceText": "डिस्क पे जगह ख़तम",
+  "errorSecureConnectionFailText": "सुरक्षित क्लाउड कनेक्शन स्थापित करने में असमर्थ; नेटवर्क कार्यक्षमता विफल हो सकती है",
   "errorText": "त्रुटी",
   "errorUnknownText": "अज्ञात त्रुटी",
   "exitGameText": "${APP_NAME} से निकास करें ?",
@@ -792,7 +796,7 @@
     "ticketPack4Text": "बहुत बड़ा टिकेट का संग्रह",
     "ticketPack5Text": "महान टिकेट संग्रह",
     "ticketPack6Text": "महाकाय टिकेट संग्रह",
-    "ticketsFromASponsorText": "किसी प्रायोजक \nसे ${COUNT} पायें",
+    "ticketsFromASponsorText": "एक विज्ञापन देख के \n${COUNT} टिकट प्राप्त करें",
     "ticketsText": "${COUNT} टिकेट",
     "titleText": "टिकेट पायें",
     "unavailableLinkAccountText": "माफ़ करें इस प्लेटफार्म पर खरीदारी नहीं कि जा सकती है |\nएक वैकल्पिक हल के रूप में आप इस खाते को किसी \nऔर प्लेटफार्म के खाते से जोड़ कर खरीदारी कर सकते हैं |",
@@ -803,6 +807,7 @@
     "youHaveText": "आपके पास ${COUNT} टिकेट हैं"
   },
   "googleMultiplayerDiscontinuedText": "क्षमा करें, गूगल की एक साथ खेलने की सेवा अब उपलब्ध नहीं है। \nमैं जितनी जल्दी हो सके एक प्रतिस्थापन पर काम कर रहा हूं।\nतब तक, कृपया दूसरी जुडने की विधि आज़माएँ। \n-Eric",
+  "googlePlayPurchasesNotAvailableText": "गूगल प्ले से ख़रीदारी उपलब्ध नहीं हैं।\nआपको अपना स्टोर ऐप अपडेट करना पड़ सकता है।",
   "googlePlayText": "गूगल प्ले",
   "graphicsSettingsWindow": {
     "alwaysText": "हमेशा",
@@ -1116,7 +1121,10 @@
   "playlistsText": "प्लेलिस्ट",
   "pleaseRateText": "अगर आपको ${APP_NAME} में मज़ा आ रहा है, \nतो एक क्षण ले कर इसका मूल्यांकन करें | \nयह इस गेम के आगे के विकास का एक बहुत अहम् अंश है |  \n\nधन्यवाद !\n-एरिक",
   "pleaseWaitText": "कृपया प्रतीक्षा करें...",
-  "pluginsDetectedText": "नए प्लगइन्स पता चले। उन्हें सेटिंग्स में चालू / कॉन्फ़िगर करें।",
+  "pluginClassLoadErrorText": "प्लगइन क्लास '${PLUGIN}' लोड करने में त्रुटि: ${ERROR}",
+  "pluginInitErrorText": "प्लगइन '${PLUGIN}' शुरुआत करने में त्रुटि: ${ERROR}",
+  "pluginsDetectedText": "नए प्लगइन्स पता चले। उन्हें सक्रिय करने के लिए पुनरारंभ करें, या उन्हें सेटिंग्स में कॉन्फ़िगर करें।",
+  "pluginsRemovedText": "${NUM} प्लगइन्स अब नहीं मिले।",
   "pluginsText": "प्लगइन्स",
   "practiceText": "अभ्यास",
   "pressAnyButtonPlayAgainText": "दोबारा खेलने के लिए कोई भी बटन दबाएँ...",
@@ -1368,6 +1376,7 @@
   "tournamentStandingsText": "प्रतियोगिता स्टैंडिंग्स",
   "tournamentText": "प्रतियोगिता",
   "tournamentTimeExpiredText": "प्रतियोगिता समय समाप्त",
+  "tournamentsDisabledWorkspaceText": "कार्यस्थान सक्रिय होने पर टूर्नामेंट अक्षम हो जाते हैं।\nटूर्नामेंट को पुन: सक्षम करने के लिए, अपने कार्यक्षेत्र को अक्षम करें और पुनः आरंभ करें।",
   "tournamentsText": "प्रतियोगिता",
   "translations": {
     "characterNames": {
@@ -1851,6 +1860,8 @@
   "winsPlayerText": "${NAME} विजयी!",
   "winsTeamText": "${NAME} विजयी!",
   "winsText": "${NAME} विजयी!",
+  "workspaceSyncErrorText": "${WORKSPACE} सिंक में त्रुटि। विवरण के लिए लॉग देखें।",
+  "workspaceSyncReuseText": "${WORKSPACE} सिंक करने में असमर्थ। पिछले समन्वयित संस्करण का पुन: उपयोग होगा।",
   "worldScoresUnavailableText": "वैश्विक अंक उपलब्ध नहीं",
   "worldsBestScoresText": "जागतिक सर्वोत्तम स्कोर्स",
   "worldsBestTimesText": "विश्व का सबसे अधिक समय",

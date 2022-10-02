@@ -1,4 +1,5 @@
-import _ba,ba 
+import _ba,ba
+import ba.internal
 import setting
 from serverData import serverdata
 
@@ -9,7 +10,7 @@ from tools import playlist
 
 def balanceTeams():
 	
-	session = _ba.get_foreground_host_session()
+	session = ba.internal.get_foreground_host_session()
 	if settings["coopModeWithLessPlayers"]["enable"] and len(session.sessionplayers) < settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"]:
 		playlist.setPlaylist('coop')
 		return
@@ -37,7 +38,7 @@ def movePlayers(fromTeam,toTeam,count):
 	return  
 	# disabling team balance for now , until we found solution 
 	#  Error : on score screen when shifted player left the game on_player_leave unable to found player in activity team
-	session=_ba.get_foreground_host_session()
+	session=ba.internal.get_foreground_host_session()
 	fromTeam=session.sessionteams[fromTeam]
 	toTeam=session.sessionteams[toTeam]
 	for i in range(0,count):
@@ -50,12 +51,12 @@ def movePlayers(fromTeam,toTeam,count):
 		toTeam.players.append(player)
 
 def broadCastShiftMsg(pb_id):
-	for ros in _ba.get_game_roster():
+	for ros in ba.internal.get_game_roster():
 		if ros['account_id']==pb_id:
 			_ba.screenmessage("Shifted "+ros["display_string"]+" to balance team")
 
 def on_player_join():
-	session = _ba.get_foreground_host_session()
+	session = ba.internal.get_foreground_host_session()
 	if len(session.sessionplayers)>1:
 		return
 	if isinstance(session,DualTeamSession):
@@ -69,7 +70,7 @@ def on_player_join():
 
 
 def checkToExitCoop():
-	session = _ba.get_foreground_host_session()
+	session = ba.internal.get_foreground_host_session()
 	if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"] and not serverdata.coopmode:
 		playlist.setPlaylist('default')
 

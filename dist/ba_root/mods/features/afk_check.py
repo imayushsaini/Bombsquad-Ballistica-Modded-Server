@@ -3,6 +3,7 @@ import time
 import ba
 from ba._general import Call
 import _ba
+import ba.internal
 import setting
 settings = setting.get_settings_data()
 INGAME_TIME=settings["afk_remover"]["ingame_idle_time_in_secs"]
@@ -14,7 +15,7 @@ class checkIdle(object):
         self.lobbies={}
     def check(self):
         current=ba.time(ba.TimeType.REAL,timeformat=ba.TimeFormat.MILLISECONDS)
-        for player in _ba.get_foreground_host_session().sessionplayers:
+        for player in ba.internal.get_foreground_host_session().sessionplayers:
             last_input=int(player.inputdevice.get_last_input_time())
             afk_time=int((current-last_input)/1000)
             if afk_time in range(INGAME_TIME,INGAME_TIME+20):
@@ -23,7 +24,7 @@ class checkIdle(object):
                 player.remove_from_game()
         if LOBBY_KICK:
             current_players=[]
-            for player in _ba.get_game_roster():
+            for player in ba.internal.get_game_roster():
                 if player['client_id'] !=-1 and len(player['players']) ==0:
                     current_players.append(player['client_id'])
                     if player['client_id'] not in self.lobbies:
@@ -32,14 +33,14 @@ class checkIdle(object):
                     if lobby_afk in range(INLOBBY_TIME,INLOBBY_TIME+10):
                         _ba.screenmessage("Join game within "+str(INLOBBY_TIME+10-lobby_afk)+" secs",color=(1,0,0),transient=True,clients=[player['client_id']])
                     if lobby_afk > INLOBBY_TIME+ 10:
-                        _ba.disconnect_client(player['client_id'],0)
+                        ba.internal.disconnect_client(player['client_id'],0)
             # clean the lobbies dict
             temp=self.lobbies.copy()
             for clid in temp:
                 if clid not in current_players:
                     del self.lobbies[clid]
     def warn_player(self,pbid,msg):
-        for player in _ba.get_game_roster():
+        for player in ba.internal.get_game_roster():
             if player["account_id"]==pbid:
                 _ba.screenmessage(msg,color=(1,0,0),transient=True,clients=[player['client_id']])
 

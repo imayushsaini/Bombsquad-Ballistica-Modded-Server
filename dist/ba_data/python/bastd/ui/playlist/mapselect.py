@@ -7,8 +7,8 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -165,9 +165,9 @@ class PlaylistMapSelectWindow(ba.Window):
                 if y == 0:
                     ba.widget(edit=btn, up_widget=self._cancel_button)
                 if x == columns - 1 and ba.app.ui.use_toolbars:
-                    ba.widget(
-                        edit=btn,
-                        right_widget=_ba.get_special_widget('party_button'))
+                    ba.widget(edit=btn,
+                              right_widget=ba.internal.get_special_widget(
+                                  'party_button'))
 
                 ba.widget(edit=btn, show_buffer_top=60, show_buffer_bottom=60)
                 if self._maps[index][0] == self._previous_map:
@@ -210,7 +210,7 @@ class PlaylistMapSelectWindow(ba.Window):
     def _on_store_press(self) -> None:
         from bastd.ui import account
         from bastd.ui.store.browser import StoreBrowserWindow
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             account.show_sign_in_prompt()
             return
         StoreBrowserWindow(modal=True,
@@ -236,8 +236,8 @@ class PlaylistMapSelectWindow(ba.Window):
                 edit_info=self._edit_info).get_root_widget())
 
     def _select_with_delay(self, map_name: str) -> None:
-        _ba.lock_all_input()
-        ba.timer(0.1, _ba.unlock_all_input, timetype=ba.TimeType.REAL)
+        ba.internal.lock_all_input()
+        ba.timer(0.1, ba.internal.unlock_all_input, timetype=ba.TimeType.REAL)
         ba.timer(0.1,
                  ba.WeakCall(self._select, map_name),
                  timetype=ba.TimeType.REAL)

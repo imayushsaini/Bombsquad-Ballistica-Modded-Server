@@ -801,7 +801,7 @@
     "ticketPack4Text": "Sloní Balíček Kupónů",
     "ticketPack5Text": "Mamutí Balíček Kupónů!",
     "ticketPack6Text": "Ultimátní Balíček Kupónů",
-    "ticketsFromASponsorText": "Získat ${COUNT} kupónů\nod sponzora",
+    "ticketsFromASponsorText": "Zhlédni reklamu \nza ${COUNT} tiketů",
     "ticketsText": "${COUNT} Kupónů",
     "titleText": "Získat Kupóny",
     "unavailableLinkAccountText": "Omlouváme se, ale nákupy nejsou na této platformě možné.\nJako řešení je, že můžete si tento účet propojit s jiným\nna jiné platformě a uskutečnit nákup tam.",
@@ -812,6 +812,7 @@
     "youHaveText": "Máte ${COUNT} kupónů"
   },
   "googleMultiplayerDiscontinuedText": "Litujeme, služba pro více hráčů Google již není k dispozici.\n Pracuji na výměně co nejrychleji.\n Do té doby zkuste jiný způsob připojení.\n -Eric",
+  "googlePlayPurchasesNotAvailableText": "Nákupy na Google Play nejsou k dispozici.\nMožná budete muset aktualizovat obchod play.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Vždy",
@@ -1385,6 +1386,7 @@
   "tournamentStandingsText": "Pořadí v turnaji",
   "tournamentText": "Turnaj",
   "tournamentTimeExpiredText": "Čas turnaje vypršel",
+  "tournamentsDisabledWorkspaceText": "Turnaje jsou zakázány, když jsou aktivní pracovní prostory.\nChcete-li znovu povolit turnaje, deaktivujte svůj pracovní prostor a restartujte.",
   "tournamentsText": "Turnaje",
   "translations": {
     "characterNames": {

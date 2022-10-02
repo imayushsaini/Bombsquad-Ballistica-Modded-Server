@@ -6,10 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-import _ba
 import ba
-from ba import charstr
-from ba import SpecialChar as SpCh
+import ba.internal
 
 if TYPE_CHECKING:
     pass
@@ -25,7 +23,7 @@ class OnScreenKeyboardWindow(ba.Window):
         uiscale = ba.app.ui.uiscale
         top_extra = 20 if uiscale is ba.UIScale.SMALL else 0
         super().__init__(root_widget=ba.containerwidget(
-            parent=_ba.get_special_widget('overlay_stack'),
+            parent=ba.internal.get_special_widget('overlay_stack'),
             size=(self._width, self._height + top_extra),
             transition='in_scale',
             scale_origin_stack_offset=self._target_text.
@@ -129,7 +127,7 @@ class OnScreenKeyboardWindow(ba.Window):
                     autoselect=True,
                     textcolor=key_textcolor,
                     color=key_color_dark,
-                    label=charstr(SpCh.SHIFT),
+                    label=ba.charstr(ba.SpecialChar.SHIFT),
                     enable_sound=False,
                     extra_touch_border_scale=0.3,
                     button_type='square',
@@ -165,7 +163,7 @@ class OnScreenKeyboardWindow(ba.Window):
                     repeat=True,
                     textcolor=key_textcolor,
                     color=key_color_dark,
-                    label=charstr(SpCh.DELETE),
+                    label=ba.charstr(ba.SpecialChar.DELETE),
                     button_type='square',
                     on_activate_call=self._del)
             v -= (key_height + 9)
@@ -193,7 +191,7 @@ class OnScreenKeyboardWindow(ba.Window):
                         enable_sound=False,
                         textcolor=key_textcolor,
                         color=key_color_dark,
-                        label=charstr(SpCh.LOGO_FLAT),
+                        label=ba.charstr(ba.SpecialChar.LOGO_FLAT),
                         extra_touch_border_scale=0.3,
                         button_type='square',
                     )
@@ -213,8 +211,10 @@ class OnScreenKeyboardWindow(ba.Window):
 
                     # Show change instructions only if we have more than one
                     # keyboard option.
-                    if (ba.app.meta.scanresults is not None
-                            and len(ba.app.meta.scanresults.keyboards) > 1):
+                    keyboards = (ba.app.meta.scanresults.exports_of_class(
+                        ba.Keyboard) if ba.app.meta.scanresults is not None
+                                 else [])
+                    if len(keyboards) > 1:
                         ba.textwidget(
                             parent=self._root_widget,
                             h_align='center',
@@ -239,7 +239,8 @@ class OnScreenKeyboardWindow(ba.Window):
 
     def _get_keyboard(self) -> ba.Keyboard:
         assert ba.app.meta.scanresults is not None
-        classname = ba.app.meta.scanresults.keyboards[self._keyboard_index]
+        classname = ba.app.meta.scanresults.exports_of_class(
+            ba.Keyboard)[self._keyboard_index]
         kbclass = ba.getclass(classname, ba.Keyboard)
         return kbclass()
 
@@ -252,14 +253,14 @@ class OnScreenKeyboardWindow(ba.Window):
             ba.buttonwidget(edit=self._shift_button,
                             color=self._key_color_lit
                             if self._mode == 'caps' else self._key_color_dark,
-                            label=charstr(SpCh.SHIFT),
+                            label=ba.charstr(ba.SpecialChar.SHIFT),
                             on_activate_call=self._shift)
             ba.buttonwidget(edit=self._num_mode_button,
                             label='123#&*',
                             on_activate_call=self._num_mode)
             ba.buttonwidget(edit=self._emoji_button,
                             color=self._key_color_dark,
-                            label=charstr(SpCh.LOGO_FLAT),
+                            label=ba.charstr(ba.SpecialChar.LOGO_FLAT),
                             on_activate_call=self._next_mode)
         else:
             if self._mode == 'num':
@@ -275,7 +276,7 @@ class OnScreenKeyboardWindow(ba.Window):
                             on_activate_call=self._abc_mode)
             ba.buttonwidget(edit=self._emoji_button,
                             color=self._key_color_dark,
-                            label=charstr(SpCh.LOGO_FLAT),
+                            label=ba.charstr(ba.SpecialChar.LOGO_FLAT),
                             on_activate_call=self._next_mode)
 
         for i, btn in enumerate(self._char_keys):
@@ -318,10 +319,11 @@ class OnScreenKeyboardWindow(ba.Window):
 
     def _next_keyboard(self) -> None:
         assert ba.app.meta.scanresults is not None
-        self._keyboard_index = (self._keyboard_index + 1) % len(
-            ba.app.meta.scanresults.keyboards)
+        kbexports = ba.app.meta.scanresults.exports_of_class(ba.Keyboard)
+        self._keyboard_index = (self._keyboard_index + 1) % len(kbexports)
+
         self._load_keyboard()
-        if len(ba.app.meta.scanresults.keyboards) < 2:
+        if len(kbexports) < 2:
             ba.playsound(ba.getsound('error'))
             ba.screenmessage(ba.Lstr(resource='keyboardNoOthersAvailableText'),
                              color=(1, 0, 0))

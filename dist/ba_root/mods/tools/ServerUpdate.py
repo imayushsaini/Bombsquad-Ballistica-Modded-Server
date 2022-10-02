@@ -4,7 +4,7 @@ import _thread
 import urllib.request
 from efro.terminal import Clr
 import json
-VERSION=69
+VERSION=71
 
 def check():
 	_thread.start_new_thread(updateProfilesJson,())
@@ -25,7 +25,7 @@ def updateProfilesJson():
 
 def fetchChangelogs():
 	url="https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/dist/ba_root/mods/changelogs.json"
-	
+
 	if 2*2==4:
 		try:
 			data=urllib.request.urlopen(url)
@@ -58,7 +58,7 @@ def checkChangelog():
 					msg=changelog[log]["log"]
 					print(f'{Clr.MAG} {msg} {Clr.RST}',flush=True)
 
-			
+
 
 
 

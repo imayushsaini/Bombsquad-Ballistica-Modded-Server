@@ -18,7 +18,7 @@ import os
 if TYPE_CHECKING:
     import ba
 
-# Our timer and event loop for the ballistica game thread.
+# Our timer and event loop for the ballistica logic thread.
 _asyncio_timer: ba.Timer | None = None
 _asyncio_event_loop: asyncio.AbstractEventLoop | None = None
 
@@ -33,7 +33,7 @@ def setup_asyncio() -> asyncio.AbstractEventLoop:
     import ba
     from ba._generated.enums import TimeType
 
-    assert _ba.in_game_thread()
+    assert _ba.in_logic_thread()
 
     # Create our event-loop. We don't expect there to be one
     # running on this thread before we do.

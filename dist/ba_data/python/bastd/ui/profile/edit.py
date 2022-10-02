@@ -7,8 +7,8 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, cast
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from bastd.ui.colorpicker import ColorPicker
@@ -144,7 +144,7 @@ class EditProfileWindow(ba.Window):
 
         # Assign a random name if they had none.
         if self._name == '':
-            names = _ba.get_random_names()
+            names = ba.internal.get_random_names()
             self._name = names[random.randrange(len(names))]
 
         self._clipped_name_text = ba.textwidget(parent=self._root_widget,
@@ -172,8 +172,8 @@ class EditProfileWindow(ba.Window):
 
         self._upgrade_button = None
         if self._is_account_profile:
-            if _ba.get_v1_account_state() == 'signed_in':
-                sval = _ba.get_v1_account_display_string()
+            if ba.internal.get_v1_account_state() == 'signed_in':
+                sval = ba.internal.get_v1_account_display_string()
             else:
                 sval = '??'
             ba.textwidget(parent=self._root_widget,
@@ -188,7 +188,8 @@ class EditProfileWindow(ba.Window):
                 resource='editProfileWindow.accountProfileText').evaluate()
             b_width = min(
                 270.0,
-                _ba.get_string_width(txtl, suppress_warning=True) * 0.6)
+                ba.internal.get_string_width(txtl, suppress_warning=True) *
+                0.6)
             ba.textwidget(parent=self._root_widget,
                           position=(self._width * 0.5, v - 39),
                           size=(0, 0),
@@ -258,7 +259,8 @@ class EditProfileWindow(ba.Window):
                 resource='editProfileWindow.globalProfileText').evaluate()
             b_width = min(
                 240.0,
-                _ba.get_string_width(txtl, suppress_warning=True) * 0.6)
+                ba.internal.get_string_width(txtl, suppress_warning=True) *
+                0.6)
             ba.textwidget(parent=self._root_widget,
                           position=(self._width * 0.5, v - 39),
                           size=(0, 0),
@@ -299,7 +301,8 @@ class EditProfileWindow(ba.Window):
                 resource='editProfileWindow.localProfileText').evaluate()
             b_width = min(
                 270.0,
-                _ba.get_string_width(txtl, suppress_warning=True) * 0.6)
+                ba.internal.get_string_width(txtl, suppress_warning=True) *
+                0.6)
             ba.textwidget(parent=self._root_widget,
                           position=(self._width * 0.5, v - 43),
                           size=(0, 0),
@@ -426,7 +429,7 @@ class EditProfileWindow(ba.Window):
         """Attempt to ugrade the profile to global."""
         from bastd.ui import account
         from bastd.ui.profile import upgrade as pupgrade
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             account.show_sign_in_prompt()
             return
 
@@ -592,8 +595,9 @@ class EditProfileWindow(ba.Window):
             return
         name = self.getname()
         if name == '__account__':
-            name = (_ba.get_v1_account_name()
-                    if _ba.get_v1_account_state() == 'signed_in' else '???')
+            name = (ba.internal.get_v1_account_name()
+                    if ba.internal.get_v1_account_state() == 'signed_in' else
+                    '???')
         if len(name) > 10 and not (self._global or self._is_account_profile):
             ba.textwidget(edit=self._clipped_name_text,
                           text=ba.Lstr(resource='inGameClippedNameText',
@@ -640,7 +644,7 @@ class EditProfileWindow(ba.Window):
 
         # Delete old in case we're renaming.
         if self._existing_profile and self._existing_profile != new_name:
-            _ba.add_transaction({
+            ba.internal.add_transaction({
                 'type': 'REMOVE_PLAYER_PROFILE',
                 'name': self._existing_profile
             })
@@ -649,7 +653,7 @@ class EditProfileWindow(ba.Window):
             # new name (will need to re-request it).
             self._global = False
 
-        _ba.add_transaction({
+        ba.internal.add_transaction({
             'type': 'ADD_PLAYER_PROFILE',
             'name': new_name,
             'profile': {
@@ -662,7 +666,7 @@ class EditProfileWindow(ba.Window):
         })
 
         if transition_out:
-            _ba.run_transactions()
+            ba.internal.run_transactions()
             ba.containerwidget(edit=self._root_widget, transition='out_right')
             ba.app.ui.set_main_menu_window(
                 ProfileBrowserWindow(

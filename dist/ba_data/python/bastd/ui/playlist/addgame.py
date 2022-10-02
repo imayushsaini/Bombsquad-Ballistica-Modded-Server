@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from bastd.ui.playlist.editcontroller import PlaylistEditController
@@ -57,8 +57,9 @@ class PlaylistAddGameWindow(ba.Window):
             on_activate_call=self._add)
 
         if ba.app.ui.use_toolbars:
-            ba.widget(edit=select_button,
-                      right_widget=_ba.get_special_widget('party_button'))
+            ba.widget(
+                edit=select_button,
+                right_widget=ba.internal.get_special_widget('party_button'))
 
         ba.textwidget(parent=self._root_widget,
                       position=(self._width * 0.5, self._height - 28),
@@ -116,9 +117,39 @@ class PlaylistAddGameWindow(ba.Window):
         ba.containerwidget(edit=self._root_widget,
                            selected_child=self._scrollwidget)
 
+        self._game_types: list[type[ba.GameActivity]] = []
+
+        # Get actual games loading in the bg.
+        ba.app.meta.load_exported_classes(ba.GameActivity,
+                                          self._on_game_types_loaded,
+                                          completion_cb_in_bg_thread=True)
+
+        # Refresh with our initial empty list. We'll refresh again once
+        # game loading is complete.
         self._refresh()
 
+    def _on_game_types_loaded(self,
+                              gametypes: list[type[ba.GameActivity]]) -> None:
+        from ba.internal import get_unowned_game_types
+
+        # We asked for a bg thread completion cb so we can do some
+        # filtering here in the bg thread where its not gonna cause hitches.
+        assert not ba.in_logic_thread()
+        sessiontype = self._editcontroller.get_session_type()
+        unowned = get_unowned_game_types()
+        self._game_types = [
+            gt for gt in gametypes
+            if gt not in unowned and gt.supports_session_type(sessiontype)
+        ]
+
+        # Sort in the current language.
+        self._game_types.sort(key=lambda g: g.get_display_string().evaluate())
+
+        # Tell ourself to refresh back in the logic thread.
+        ba.pushcall(self._refresh, from_other_thread=True)
+
     def _refresh(self, select_get_more_games_button: bool = False) -> None:
+        # from ba.internal import get_game_types
 
         if self._column is not None:
             self._column.delete()
@@ -127,15 +158,7 @@ class PlaylistAddGameWindow(ba.Window):
                                        border=2,
                                        margin=0)
 
-        gametypes = [
-            gt for gt in ba.app.meta.get_game_types() if
-            gt.supports_session_type(self._editcontroller.get_session_type())
-        ]
-
-        # Sort in the current language.
-        gametypes.sort(key=lambda g: g.get_display_string().evaluate())
-
-        for i, gametype in enumerate(gametypes):
+        for i, gametype in enumerate(self._game_types):
 
             def _doit() -> None:
                 if self._select_button:
@@ -175,7 +198,7 @@ class PlaylistAddGameWindow(ba.Window):
     def _on_get_more_games_press(self) -> None:
         from bastd.ui.account import show_sign_in_prompt
         from bastd.ui.store.browser import StoreBrowserWindow
-        if _ba.get_v1_account_state() != 'signed_in':
+        if ba.internal.get_v1_account_state() != 'signed_in':
             show_sign_in_prompt()
             return
         StoreBrowserWindow(modal=True,
@@ -187,8 +210,8 @@ class PlaylistAddGameWindow(ba.Window):
         self._refresh(select_get_more_games_button=True)
 
     def _add(self) -> None:
-        _ba.lock_all_input()  # Make sure no more commands happen.
-        ba.timer(0.1, _ba.unlock_all_input, timetype=ba.TimeType.REAL)
+        ba.internal.lock_all_input()  # Make sure no more commands happen.
+        ba.timer(0.1, ba.internal.unlock_all_input, timetype=ba.TimeType.REAL)
         assert self._selected_game_type is not None
         self._editcontroller.add_game_type_selected(self._selected_game_type)
 

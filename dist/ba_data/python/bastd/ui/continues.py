@@ -7,8 +7,8 @@ from __future__ import annotations
 import weakref
 from typing import TYPE_CHECKING
 
-import _ba
 import ba
+import ba.internal
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -37,11 +37,14 @@ class ContinuesWindow(ba.Window):
         txt = (ba.Lstr(
             resource='continuePurchaseText').evaluate().split('${PRICE}'))
         t_left = txt[0]
-        t_left_width = _ba.get_string_width(t_left, suppress_warning=True)
+        t_left_width = ba.internal.get_string_width(t_left,
+                                                    suppress_warning=True)
         t_price = ba.charstr(ba.SpecialChar.TICKET) + str(self._cost)
-        t_price_width = _ba.get_string_width(t_price, suppress_warning=True)
+        t_price_width = ba.internal.get_string_width(t_price,
+                                                     suppress_warning=True)
         t_right = txt[-1]
-        t_right_width = _ba.get_string_width(t_right, suppress_warning=True)
+        t_right_width = ba.internal.get_string_width(t_right,
+                                                     suppress_warning=True)
         width_total_half = (t_left_width + t_price_width + t_right_width) * 0.5
 
         ba.textwidget(parent=self._root_widget,
@@ -133,7 +136,14 @@ class ContinuesWindow(ba.Window):
                                          ba.WeakCall(self._tick),
                                          repeat=True,
                                          timetype=ba.TimeType.REAL)
+
+        # If there is foreground activity, suspend it.
+        ba.app.pause()
         self._tick()
+
+    def __del__(self) -> None:
+        # If there is suspended foreground activity, resume it.
+        ba.app.resume()
 
     def _tick(self) -> None:
         # if our target activity is gone or has ended, go away
@@ -142,9 +152,9 @@ class ContinuesWindow(ba.Window):
             self._on_cancel()
             return
 
-        if _ba.get_v1_account_state() == 'signed_in':
+        if ba.internal.get_v1_account_state() == 'signed_in':
             sval = (ba.charstr(ba.SpecialChar.TICKET) +
-                    str(_ba.get_v1_account_ticket_count()))
+                    str(ba.internal.get_v1_account_ticket_count()))
         else:
             sval = '?'
         if self._tickets_text is not None:
@@ -176,14 +186,14 @@ class ContinuesWindow(ba.Window):
             ba.playsound(ba.getsound('error'))
         else:
             # If somehow we got signed out...
-            if _ba.get_v1_account_state() != 'signed_in':
+            if ba.internal.get_v1_account_state() != 'signed_in':
                 ba.screenmessage(ba.Lstr(resource='notSignedInText'),
                                  color=(1, 0, 0))
                 ba.playsound(ba.getsound('error'))
                 return
 
             # If it appears we don't have enough tickets, offer to buy more.
-            tickets = _ba.get_v1_account_ticket_count()
+            tickets = ba.internal.get_v1_account_ticket_count()
             if tickets < self._cost:
                 # FIXME: Should we start the timer back up again after?
                 self._counting_down = False

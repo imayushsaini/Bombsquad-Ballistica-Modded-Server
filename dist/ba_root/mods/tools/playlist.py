@@ -4,6 +4,7 @@
 
 import ba
 import _ba
+import ba.internal
 #session change by smoothy
 from ba._freeforallsession import FreeForAllSession
 from ba._dualteamsession import DualTeamSession
@@ -24,7 +25,7 @@ def set_playlist(content):
     _playlists_var = "{} Playlists".format(content["playlistType"])
     playlists = _ba.app.config[_playlists_var]
     playlist = playlists[content["playlistName"]]
-    _ba.chatmessage("Fetched playlist:"+content["playlistName"])
+    ba.internal.chatmessage("Fetched playlist:"+content["playlistName"])
     typename = (
             'teams' if content['playlistType'] == 'Team Tournament' else
             'ffa' if content['playlistType'] == 'Free-for-All' else '??')
@@ -32,14 +33,13 @@ def set_playlist(content):
 
 
 def set_playlist_inline(playlist,newPLaylistType):
-    session = _ba.get_foreground_host_session()
+    session = ba.internal.get_foreground_host_session()
 
     if (isinstance(session,DualTeamSession) or isinstance(session,CoopSession)) and newPLaylistType=='ffa':
-        #_ba.get_foreground_host_activity().end_game()
-        _ba.get_foreground_host_session().end()
+        ba.internal.get_foreground_host_session().end()
         _thread.start_new_thread(withDelay,(FreeForAllSession,playlist,))
     elif (isinstance(session,FreeForAllSession) or isinstance(session,CoopSession))and newPLaylistType=="teams":
-        _ba.get_foreground_host_session().end()
+        ba.internal.get_foreground_host_session().end()
         _thread.start_new_thread(withDelay,(DualTeamSession,playlist,))
     else:
         updatePlaylist(playlist)
@@ -51,14 +51,14 @@ def withDelay(session,playlist):
     _ba.pushcall(Call(updateSession,session,playlist),from_other_thread=True)
 
 def updateSession(session,playlist):
-    _ba.new_host_session(session)
+    ba.internal.new_host_session(session)
     if playlist:
         updatePlaylist(playlist)
 
 
 def updatePlaylist(playlist):
 
-    session = _ba.get_foreground_host_session()
+    session = ba.internal.get_foreground_host_session()
     content = ba._playlist.filter_playlist(
             playlist,
             sessiontype=type(session),
@@ -75,14 +75,14 @@ def set_next_map(session, game_map):
 
 
 def playlist(code):
-    _ba.add_transaction(
+    ba.internal.add_transaction(
         {
             'type': 'IMPORT_PLAYLIST',
             'code': str(code),
             'overwrite': True
         },
         callback=set_playlist)
-    _ba.run_transactions()
+    ba.internal.run_transactions()
 
 
 
@@ -96,26 +96,26 @@ def setPlaylist(para):
     elif para in settings["playlists"]:
         playlist(settings["playlists"][para])
     else:
-        _ba.chatmessage("Available Playlist")
+        ba.internal.chatmessage("Available Playlist")
         for play in settings["playlists"]:
-            _ba.chatmessage(play)
+            ba.internal.chatmessage(play)
 
 
 def flush_playlists():
     print("Clearing old playlists..")
     for playlist in _ba.app.config["Team Tournament Playlists"]:
-        _ba.add_transaction(
+        ba.internal.add_transaction(
         {
             "type":"REMOVE_PLAYLIST",
             "playlistType":"Team Tournament",
             "playlistName":playlist
         })
-    _ba.run_transactions()
+    ba.internal.run_transactions()
     for playlist in _ba.app.config["Free-for-All Playlists"]:
-        _ba.add_transaction(
+        ba.internal.add_transaction(
         {
             "type":"REMOVE_PLAYLIST",
             "playlistType":"Free-for-All",
             "playlistName":playlist
         })
-    _ba.run_transactions()
+    ba.internal.run_transactions()

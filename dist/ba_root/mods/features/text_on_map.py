@@ -4,6 +4,7 @@
 
 from ba._generated.enums import TimeType
 import ba, _ba
+import ba.internal
 import setting
 from stats import mystats
 from datetime import datetime
@@ -23,7 +24,7 @@ class textonmap:
 		nextMap=""
 		try:
 
-			nextMap=_ba.get_foreground_host_session().get_next_game_description().evaluate()
+			nextMap=ba.internal.get_foreground_host_session().get_next_game_description().evaluate()
 		except:
 			pass
 		self.index = 0

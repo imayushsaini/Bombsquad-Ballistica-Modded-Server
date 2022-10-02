@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import ba
+import ba.internal
 from bastd.gameutils import SharedObjects
-import _ba
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -37,6 +37,9 @@ class SpazFactory:
     single_player_death_sound: ba.Sound
     """The sound that plays for an 'important' spaz death such as in
        co-op games."""
+
+    punch_sound_weak: ba.Sound
+    """A weak punch ba.Sound."""
 
     punch_sound: ba.Sound
     """A standard punch ba.Sound."""
@@ -98,6 +101,7 @@ class SpazFactory:
         self.impact_sounds_harder = (ba.getsound('bigImpact'),
                                      ba.getsound('bigImpact2'))
         self.single_player_death_sound = ba.getsound('playerDeath')
+        self.punch_sound_weak = ba.getsound('punchWeak01')
         self.punch_sound = ba.getsound('punch01')
         self.punch_sound_strong = (ba.getsound('punchStrong01'),
                                    ba.getsound('punchStrong02'))
@@ -208,15 +212,18 @@ class SpazFactory:
 
         # Lets load some basic rules.
         # (allows them to be tweaked from the master server)
-        self.shield_decay_rate = _ba.get_v1_account_misc_read_val('rsdr', 10.0)
-        self.punch_cooldown = _ba.get_v1_account_misc_read_val('rpc', 400)
-        self.punch_cooldown_gloves = (_ba.get_v1_account_misc_read_val(
+        self.shield_decay_rate = ba.internal.get_v1_account_misc_read_val(
+            'rsdr', 10.0)
+        self.punch_cooldown = ba.internal.get_v1_account_misc_read_val(
+            'rpc', 400)
+        self.punch_cooldown_gloves = (ba.internal.get_v1_account_misc_read_val(
             'rpcg', 300))
-        self.punch_power_scale = _ba.get_v1_account_misc_read_val('rpp', 1.2)
-        self.punch_power_scale_gloves = (_ba.get_v1_account_misc_read_val(
-            'rppg', 1.4))
-        self.max_shield_spillover_damage = (_ba.get_v1_account_misc_read_val(
-            'rsms', 500))
+        self.punch_power_scale = ba.internal.get_v1_account_misc_read_val(
+            'rpp', 1.2)
+        self.punch_power_scale_gloves = (
+            ba.internal.get_v1_account_misc_read_val('rppg', 1.4))
+        self.max_shield_spillover_damage = (
+            ba.internal.get_v1_account_misc_read_val('rsms', 500))
 
     def get_style(self, character: str) -> str:
         """Return the named style for this character.

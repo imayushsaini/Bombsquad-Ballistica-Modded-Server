@@ -1,5 +1,6 @@
 from .Handlers import send
 import ba, _ba
+import ba.internal
 from stats import mystats
 from ba._general import Call
 import _thread
@@ -56,7 +57,7 @@ def list(clientid):
 	
 	
 	list = p.format('Name', 'Client ID' , 'Player ID')+seprator
-	session = _ba.get_foreground_host_session()
+	session = ba.internal.get_foreground_host_session()
 	
 	
 	for index, player in enumerate(session.sessionplayers):
@@ -76,7 +77,7 @@ def accountid_request(arguments, clientid, accountid):
 		
 	else:
 		try:
-			session = _ba.get_foreground_host_session()
+			session = ba.internal.get_foreground_host_session()
 			player = session.sessionplayers[int(arguments[0])]
 			
 			name = player.getname(full=True, icon=True)
