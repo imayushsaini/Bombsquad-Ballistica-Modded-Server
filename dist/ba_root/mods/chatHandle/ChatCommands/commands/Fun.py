@@ -10,42 +10,42 @@ CommandAliases = ['inv', 'hl', 'creep', 'celeb', 'flo']
 
 def ExcelCommand(command, arguments, clientid, accountid):
 	"""
-	Checks The Command And Run Function 
-	
+	Checks The Command And Run Function
+
 	Parameters:
-		command : str 
-		arguments : str 
-		clientid : int 
-		accountid : int 
-	
+		command : str
+		arguments : str
+		clientid : int
+		accountid : int
+
 	Returns:
-		None 
+		None
 	"""
 
 	if command=='speed':
 		speed(arguments)
-	
+
 	elif command == 'fly':
 		fly(arguments)
-		
+
 	elif command in ['inv', 'invisible']:
 		invi(arguments)
-		
+
 	elif command in ['hl', 'headless']:
 		headless(arguments)
-		
+
 	elif command in ['creepy', 'creep']:
 		creep(arguments)
-		
+
 	elif command in ['celebrate', 'celeb']:
 		celeb(arguments)
-		
+
 	elif command == 'spaz':
 		spaz(arguments)
-		
+
 	elif command in ['floater','flo']:
 		floater(arguments,clientid)
-		
+
 
 def floater(arguments,clientid):
 	try:
@@ -62,35 +62,35 @@ def speed(arguments):
 		return
 	else:
 		corelib.set_speed(float(arguments[0]))
-		
+
 
 def fly(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-	
-		
+
+
 	elif arguments[0] == 'all':
-		
+
 		activity = _ba.get_foreground_host_activity()
-		
+
 		for players in activity.players:
 			if players.actor.node.fly != True:
-				players.actor.node.fly = True 
+				players.actor.node.fly = True
 			else:
-				players.actor.node.fly = False 
-				
+				players.actor.node.fly = False
+
 	else:
 		try:
-			
+
 			activity = _ba.get_foreground_host_activity()
 			player = int(arguments[0])
-			
+
 			if activity.players[player].actor.node.fly != True:
-				activity.players[player].actor.node.fly = True 
+				activity.players[player].actor.node.fly = True
 			else:
-				activity.players[player].actor.node.fly = False 
-				
+				activity.players[player].actor.node.fly = False
+
 		except:
 			return
 
@@ -98,17 +98,17 @@ def fly(arguments):
 
 
 def invi(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-	
+
 	elif arguments[0] == 'all':
-		
+
 		activity = _ba.get_foreground_host_activity()
-		
+
 		for i in activity.players:
-			body = i.actor.node
-			if body.torso_model != None:
+			if i.actor.exists() and i.actor.node.torso_model != None:
+				body = i.actor.node
 				body.head_model = None
 				body.torso_model = None
 				body.upper_arm_model = None
@@ -120,12 +120,12 @@ def invi(arguments):
 				body.lower_leg_model = None
 				body.style = 'cyborg'
 	else:
-		
+
 		player = int(arguments[0])
 		activity = _ba.get_foreground_host_activity()
-		
+
 		body = activity.players[player].actor.node
-		
+
 		if body.torso_model != None:
 			body.head_model = None
 			body.torso_model = None
@@ -142,28 +142,28 @@ def invi(arguments):
 
 
 def headless(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-		
+
 	elif arguments[0] == 'all':
-		
+
 		activity = _ba.get_foreground_host_activity()
-		
+
 		for players in activity.players:
-			
-			node = players.actor.node 
+
+			node = players.actor.node
 			if node.head_model != None:
 				node.head_model = None
 				node.style='cyborg'
-	
+
 	else:
 		try:
 			player = int(arguments[0])
 			activity = _ba.get_foreground_host_activity()
-			
+
 			node = activity.players[player].actor.node
-			
+
 			if node.head_model != None:
 				node.head_model = None
 				node.style='cyborg'
@@ -173,29 +173,29 @@ def headless(arguments):
 
 
 def creep(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-		
+
 	elif arguments[0] == 'all':
-		
+
 		activity = _ba.get_foreground_host_activity()
-		
+
 		for players in activity.players:
-			node = players.actor.node 
-			
+			node = players.actor.node
+
 			if node.head_model != None:
-				node.head_model = None 
+				node.head_model = None
 				node.handlemessage(ba.PowerupMessage(poweruptype='punch'))
 				node.handlemessage(ba.PowerupMessage(poweruptype='shield'))
-				
+
 	else:
 		try:
 			player = int(arguments[0])
 			activity = _ba.get_foreground_host_activity()
-			
+
 			node = activity.players[player].actor.node
-			
+
 			if node.head_model != None:
 				node.head_model = None
 				node.handlemessage(ba.PowerupMessage(poweruptype='punch'))
@@ -206,27 +206,27 @@ def creep(arguments):
 
 
 def celeb(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-		
+
 	elif arguments[0] == 'all':
 		handlemsg_all(ba.CelebrateMessage())
-		
+
 	else:
 		try:
 			player = int(arguments[0])
 			handlemsg(player, ba.CelebrateMessage())
 		except:
 			return
-		
+
 
 
 
 
 def spaz(arguments):
-	
+
 	if arguments == [] or arguments == ['']:
 		return
-	
+
 	return

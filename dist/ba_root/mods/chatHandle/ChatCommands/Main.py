@@ -105,7 +105,7 @@ def QuickAccess(msg, client_id):
                 name = i.getname(True)
 
         for i in ba.internal.get_foreground_host_session().sessionplayers:
-            if i.sessionteam and teamid == i.sessionteam.id and i.inputdevice.client_id != client_id:
+            if hasattr(i, 'sessionteam') and  i.sessionteam and teamid == i.sessionteam.id and i.inputdevice.client_id != client_id:
                 _ba.screenmessage(name + ":" + msg[1:], clients=[i.inputdevice.client_id],
                                   color=(0.3, 0.6, 0.3), transient=True)
 
@@ -118,7 +118,7 @@ def QuickAccess(msg, client_id):
             return None
         msgAr.insert(int(len(msgAr) / 2), "\n")
         for player in _ba.get_foreground_host_activity().players:
-            if player.sessionplayer.inputdevice.client_id == client_id:
+            if player.sessionplayer.inputdevice.client_id == client_id and player.actor.exists() and hasattr(player.actor.node,"position"):
                 pos = player.actor.node.position
                 with _ba.Context(_ba.get_foreground_host_activity()):
                     popuptext.PopupText(" ".join(msgAr), (pos[0], pos[1] + 1, pos[2])).autoretain()

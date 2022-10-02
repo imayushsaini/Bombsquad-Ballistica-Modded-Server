@@ -248,7 +248,8 @@ class Effect(ba.Actor):
             ba.animate_array(self.scorchNode,"color",3,{0:self.scorchNode.color,500:color}, timetype=tt, timeformat=tf)
         else:
             self.scorchTimer = None
-            self.scorchNode.delete()
+            if hasattr(self,"scorchNode"):
+                self.scorchNode.delete()
             self.handlemessage(ba.DieMessage())
 
     def neonLightSwitch(self,shine,Highlight,NameColor):

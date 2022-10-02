@@ -1,12 +1,12 @@
 {
     "whitelist": false,
-
+    "useV2Account": false,
     "ChatCommands": {
   	  "BrodcastCommand": true
     },
     "textonmap": {
         "top watermark": "Welcome to server \nip 192.168.0.1",
-        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7",
+        "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7.10",
         "center highlights":{
             "color":[1,0,0],
             "randomColor":true,
