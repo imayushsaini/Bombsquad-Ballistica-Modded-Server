@@ -26,6 +26,14 @@
        "69":{
               "log":"added StumbledScoreScreen, End Vote System , in-game pop chat,error logging , other bug fix",
               "time":"1st June 2022"
+       },
+       "70":{
+              "log":"BS 1.7.5 update , more games and maps",
+              "time":"17 July 2022"
+       },
+       "71":{
+              "log":"BS 1.7.10 update , bug fix , V2 account support, prop rotation",
+              "time":"2 Oct 2022"
        }
-      
+
 }

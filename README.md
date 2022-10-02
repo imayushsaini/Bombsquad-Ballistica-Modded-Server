@@ -1,9 +1,9 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.2.
+Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.10.
 
 ## Requirements
-- Ubuntu 20
+- Ubuntu 20 and above
 - python3.10
 
 ## Getting Started
@@ -33,6 +33,7 @@ Here you can ban player , mute them , disable their kick votes
 ## Features
 - Rank System.
 - Chat commands.
+- V2 Account with cloud console for server.
 - Easy role management , create 1000 of roles as you wish add specific chat command to the role , give tag to role ..many more.
 - Rejoin cooldown.
 - Leaderboard , top 3 rank players name on top right corner.
@@ -62,6 +63,9 @@ Here you can ban player , mute them , disable their kick votes
 - Integrated ElPatronPowerups.
 - Auto switch to coop mode when players are less then threshold.
 - Change playlist on fly with playlist code or name , i.e /playlist teams , /playlist coop , /playlist 34532
+- rotate prop nodes with node.changerotation(x,y,z)
+- set 2d mode with _ba.set_2d_mode(true)
+- set 2d plane with _ba.set_2d_plane(z) - beta , not works with spaz.fly = true. 
 - New Splitted Team in game score screen.
 - New final score screen , StumbledScoreScreen.
 - other small small feature improvement here there find yourself.
