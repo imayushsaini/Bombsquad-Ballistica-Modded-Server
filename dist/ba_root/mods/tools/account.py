@@ -1,4 +1,4 @@
-# ba_meta require api 6
+# ba_meta require api 7
 from __future__ import annotations
 
 import ba
@@ -69,7 +69,7 @@ class AccountUtil:
     def _logged_in(self):
          logging.info("Logged in as: "+ba.internal.get_v1_account_display_string())
 
-# #ba_meta export plugin
+# ba_meta export plugin
 # class AccountV2(ba.Plugin):
 #     def __init__(self):
 #         if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):

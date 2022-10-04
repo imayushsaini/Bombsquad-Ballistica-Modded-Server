@@ -500,6 +500,7 @@
     "welcome2Text": "Bạn có thể kiếm vé từ các hoạt động giống nhau.\nVé có thể sử dụng để mở khóa nhân vật,màn chơi mới \nvà mini games các hướng dẫn mới và nhiều cái khác",
     "yourPowerRankingText": "Xếp hạng sức mạnh của bạn"
   },
+  "copyConfirmText": "sao chép vào clipboard",
   "copyOfText": "${NAME} copy",
   "copyText": "Sao chép",
   "createEditPlayerText": "<tạo/chỉnh sửa người chơi>",
@@ -628,7 +629,7 @@
   "epicDescriptionFilterText": "${DESCRIPTION} trong chế độ quay chậm.",
   "epicNameFilterText": "${NAME} Quay Chậm",
   "errorAccessDeniedText": "từ chối kết nối",
-  "errorDeviceTimeIncorrectText": "Thời gian thiết bị của bạn tắt ${HOURS} giờ.\nĐiều này có thể gây ra vấn đề.\nVui lòng kiểm tra cài đặt múi giờ và múi giờ của bạn.",
+  "errorDeviceTimeIncorrectText": "thời gian của thiết bị của bạn không chính xác ${HOURS} giờ.\nđiều này có thể gây ra vấn đề.\nVui lòng kiểm tra cài đặt múi giờ và múi giờ của bạn.",
   "errorOutOfDiskSpaceText": "hết bộ nhớ",
   "errorSecureConnectionFailText": "Không thể thiết lập kết nối đám mây an toàn; chức năng mạng có thể bị lỗi.",
   "errorText": "Lỗi",
