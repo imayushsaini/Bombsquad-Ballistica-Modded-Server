@@ -20,6 +20,33 @@ from nbstreamreader import NonBlockingStreamReader as NBSR
 ERROR_LOGGING=False
 
 
+import os,platform,shutil
+def migrate_to_aarch():
+    maps = ["BridgitMash.so","BridgitParallelo.so","CreativeThoughts.so","FloatingIsland.so","InTheAir.so","soccerStadiumPro.so"]
+    games = ["BlockDash.so","CanonFight.so","DuelElimination.so","FlappyBird.so","LaserTracer.so","MonkeyClimb.so","OneNightNoStand.so","soccer.so",
+    "SquidRace.so","StumbleRace.so","SubwayRun.so","UFOAttackGame.so"]
+    features = ["StumbledScoreScreen.so"]
+    tools = ["corelib.so"]
+    root = os.path.realpath(".")+"/dist/ba_root"
+    for map in maps:
+        shutil.copy(root+"/mods/aarch64/"+map,root+'/mods/maps/'+map)
+    for game in games:
+        shutil.copyfile(root+"/mods/aarch64/"+game,root+'/mods/games/'+game)
+    for f in features:
+        shutil.copyfile(root+"/mods/aarch64/"+f,root+'/mods/features/'+f)
+    for t in tools:
+        shutil.copyfile(root+"/mods/aarch64/"+t,root+'/mods/tools/'+t)
+    with open(".we_are_good","w") as f:
+        pass
+# by default we have x86_64 setup
+# if we found aarch64 system copy required files
+if platform.processor() == 'aarch64':
+    print("We are on aarch64 system")
+    if os.path.exists(".we_are_good"):
+        pass
+    else:
+        migrate_to_aarch()
+
 # We make use of the bacommon and efro packages as well as site-packages
 # included with our bundled Ballistica dist, so we need to add those paths
 # before we import them.
@@ -133,7 +160,7 @@ class ServerManagerApp:
 
         dbgstr = 'debug' if __debug__ else 'opt'
         print(
-            f'{Clr.CYN}{Clr.BLD}BallisticaCore server manager {VERSION_STR}'
+            f'{Clr.CYN}{Clr.BLD}Ballistica server manager {VERSION_STR}'
             f' starting up ({dbgstr} mode)...{Clr.RST}',
             flush=True)
 
@@ -584,6 +611,8 @@ class ServerManagerApp:
         print(f'{Clr.CYN}Launching server subprocess...{Clr.RST}', flush=True)
         binary_name = ('BallisticaCoreHeadless.exe'
                        if os.name == 'nt' else './bombsquad_headless')
+        if platform.processor() == 'aarch64':
+            binary_name = './bombsquad_headless_aarch64'
         assert self._ba_root_path is not None
         self._subprocess = None
 
