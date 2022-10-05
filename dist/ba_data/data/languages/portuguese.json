@@ -517,6 +517,7 @@
     "welcome2Text": "Você também pode ganhar bilhetes ao fazer várias dessas atividades.\nOs bilhetes podem ser usados para desbloquear novos personagens,\nmapas e minijogos, entrar em torneios e muito mais.",
     "yourPowerRankingText": "Sua classificação geral:"
   },
+  "copyConfirmText": "Copiado para a área de transferência",
   "copyOfText": "Cópia de ${NAME}",
   "copyText": "Copiar",
   "copyrightText": "© 2013 Eric Froemling",

@@ -33,7 +33,8 @@ def filter_chat_message(msg, client_id):
             displaystring = i['display_string']
     if acid:
         msg = ChatFilter.filter(msg, acid, client_id)
-
+    if msg == None:
+        return
     if msg.startswith("/"):
         return Main.Command(msg, client_id)
 

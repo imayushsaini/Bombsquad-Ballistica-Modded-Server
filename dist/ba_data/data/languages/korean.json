@@ -498,6 +498,7 @@
     "welcome2Text": "또한 많은 동일한 활동에서 티켓을 획득할 수 있습니다.\n티켓을 사용해서 새로운 캐릭터, 지도 및 미니 게임을\n잠금 해제하고 토너먼트에 참가할 수 있습니다.",
     "yourPowerRankingText": "내 파워 랭킹:"
   },
+  "copyConfirmText": "클립 보드에 복사",
   "copyOfText": "${NAME} 사본",
   "copyText": "복사",
   "createEditPlayerText": "<플레이어 생성/편집>",
