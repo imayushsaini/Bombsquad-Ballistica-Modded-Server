@@ -9,15 +9,28 @@ settings = setting.get_settings_data()
 INGAME_TIME=settings["afk_remover"]["ingame_idle_time_in_secs"]
 LOBBY_KICK=settings['afk_remover']["kick_idle_from_lobby"]
 INLOBBY_TIME=settings['afk_remover']["lobby_idle_time_in_secs"]
+cIdle = 0 # players/player found idle within very short time
+cLastIdle = 0
 class checkIdle(object):
     def start(self):
         self.t1=ba.timer(2, ba.Call(self.check),repeat=True)
         self.lobbies={}
     def check(self):
+        global cLastIdle
+        global cIdle
         current=ba.time(ba.TimeType.REAL,timeformat=ba.TimeFormat.MILLISECONDS)
         for player in ba.internal.get_foreground_host_session().sessionplayers:
             last_input=int(player.inputdevice.get_last_input_time())
             afk_time=int((current-last_input)/1000)
+            if afk_time in range(INGAME_TIME,INGAME_TIME+20) or afk_time > INGAME_TIME+20:
+                if (current - cLastIdle)/1000 < 3:
+                    cIdle = cIdle+1
+                    if cIdle >= 3:
+                        return
+                else:
+                    cIdle = 0
+                cLastIdle = current
+
             if afk_time in range(INGAME_TIME,INGAME_TIME+20):
                 self.warn_player(player.get_v1_account_id(),"Press any button within "+str(INGAME_TIME+20-afk_time)+" secs")
             if afk_time > INGAME_TIME+20:

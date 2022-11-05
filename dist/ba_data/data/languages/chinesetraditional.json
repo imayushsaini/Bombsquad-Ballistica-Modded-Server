@@ -13,6 +13,7 @@
     "linkAccountsInstructionsNewText": "要連結兩個帳號，在第一個帳號里點擊“生成代碼”按鈕。\n在第二個帳號裡輸入那個代碼。\n兩個帳號數據將被共享。\n（第一個帳號的數據將會消失）\n\n您總共可連結${COUNT}個帳號。\n\n重要訊息：你只能連結你自己的帳號；\n如果你連結了朋友的帳號， \n你將無法同時線上遊玩。",
     "linkAccountsText": "連結帳號",
     "linkedAccountsText": "已連結的帳號：",
+    "manageAccountText": "管理賬戶",
     "nameChangeConfirm": "更改帳號名為${NAME}?",
     "resetProgressConfirmNoAchievementsText": "這會重設你的合作模式進度和\n本地高分紀錄 (但不包含你的票卷)。\n這是不可回復的操作，你確定嗎？",
     "resetProgressConfirmText": "這會重設你的合作模式進度，\n成就和本地高分\n(但不包括你的票卷)。這是不可\n回復的操作。你確定嗎？",
@@ -495,6 +496,7 @@
     "welcome2Text": "你還可以參加很多相同活動來贏取點券\n點券可以用於解鎖新角色、地圖、圖標\n和迷你遊戲，或購買錦標賽門票",
     "yourPowerRankingText": "你的能力排名："
   },
+  "copyConfirmText": "複製到剪切板",
   "copyOfText": "${NAME} 拷貝",
   "copyText": "複製",
   "createEditPlayerText": "<創建/編輯玩家>",
@@ -995,6 +997,7 @@
     "creditsText": "製作團隊",
     "demoMenuText": "演示菜單",
     "endGameText": "結束遊戲",
+    "endTestText": "結束測試",
     "exitGameText": "退出遊戲",
     "exitToMenuText": "退出到菜單？",
     "howToPlayText": "幫助",
