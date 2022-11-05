@@ -36,6 +36,7 @@ class WorkspaceSubsystem:
 
     def set_active_workspace(
         self,
+        account: ba.AccountV2Handle,
         workspaceid: str,
         workspacename: str,
         on_completed: Callable[[], None],
@@ -46,9 +47,11 @@ class WorkspaceSubsystem:
         # interactivity.
         Thread(
             target=lambda: self._set_active_workspace_bg(
+                account=account,
                 workspaceid=workspaceid,
                 workspacename=workspacename,
-                on_completed=on_completed),
+                on_completed=on_completed,
+            ),
             daemon=True,
         ).start()
 
@@ -60,16 +63,22 @@ class WorkspaceSubsystem:
         _ba.screenmessage(msg, color=(0, 1, 0))
         _ba.playsound(_ba.getsound('gunCocking'))
 
-    def _set_active_workspace_bg(self, workspaceid: str, workspacename: str,
-                                 on_completed: Callable[[], None]) -> None:
+    def _set_active_workspace_bg(
+        self,
+        account: ba.AccountV2Handle,
+        workspaceid: str,
+        workspacename: str,
+        on_completed: Callable[[], None],
+    ) -> None:
         from ba._language import Lstr
 
         class _SkipSyncError(RuntimeError):
             pass
 
         set_path = True
-        wspath = Path(_ba.get_volatile_data_directory(), 'workspaces',
-                      workspaceid)
+        wspath = Path(
+            _ba.get_volatile_data_directory(), 'workspaces', workspaceid
+        )
         try:
 
             # If it seems we're offline, don't even attempt a sync,
@@ -85,15 +94,20 @@ class WorkspaceSubsystem:
             state = bacommon.cloud.WorkspaceFetchState(manifest=manifest)
 
             while True:
-                response = _ba.app.cloud.send_message(
-                    bacommon.cloud.WorkspaceFetchMessage(
-                        workspaceid=workspaceid, state=state))
+                with account:
+                    response = _ba.app.cloud.send_message(
+                        bacommon.cloud.WorkspaceFetchMessage(
+                            workspaceid=workspaceid, state=state
+                        )
+                    )
                 state = response.state
-                self._handle_deletes(workspace_dir=wspath,
-                                     deletes=response.deletes)
+                self._handle_deletes(
+                    workspace_dir=wspath, deletes=response.deletes
+                )
                 self._handle_downloads_inline(
                     workspace_dir=wspath,
-                    downloads_inline=response.downloads_inline)
+                    downloads_inline=response.downloads_inline,
+                )
                 if response.done:
                     # Server only deals in files; let's clean up any
                     # leftover empty dirs after the dust has cleared.
@@ -104,8 +118,10 @@ class WorkspaceSubsystem:
             _ba.pushcall(
                 tpartial(
                     self._successmsg,
-                    Lstr(resource='activatedText',
-                         subs=[('${THING}', workspacename)]),
+                    Lstr(
+                        resource='activatedText',
+                        subs=[('${THING}', workspacename)],
+                    ),
                 ),
                 from_other_thread=True,
             )
@@ -114,8 +130,11 @@ class WorkspaceSubsystem:
             _ba.pushcall(
                 tpartial(
                     self._errmsg,
-                    Lstr(resource='workspaceSyncReuseText',
-                         subs=[('${WORKSPACE}', workspacename)])),
+                    Lstr(
+                        resource='workspaceSyncReuseText',
+                        subs=[('${WORKSPACE}', workspacename)],
+                    ),
+                ),
                 from_other_thread=True,
             )
 
@@ -123,8 +142,10 @@ class WorkspaceSubsystem:
             # Avoid reusing existing if we fail in the middle; could
             # be in wonky state.
             set_path = False
-            _ba.pushcall(tpartial(self._errmsg, Lstr(value=str(exc))),
-                         from_other_thread=True)
+            _ba.pushcall(
+                tpartial(self._errmsg, Lstr(value=str(exc))),
+                from_other_thread=True,
+            )
         except Exception:
             # Ditto.
             set_path = False
@@ -132,8 +153,10 @@ class WorkspaceSubsystem:
             _ba.pushcall(
                 tpartial(
                     self._errmsg,
-                    Lstr(resource='workspaceSyncErrorText',
-                         subs=[('${WORKSPACE}', workspacename)]),
+                    Lstr(
+                        resource='workspaceSyncErrorText',
+                        subs=[('${WORKSPACE}', workspacename)],
+                    ),
                 ),
                 from_other_thread=True,
             )
@@ -186,8 +209,7 @@ class WorkspaceSubsystem:
             # listed when the parent dir is visited, so lets make sure
             # to only acknowledge still-existing ones.
             dirnames = [
-                d for d in dirnames
-                if os.path.exists(os.path.join(basename, d))
+                d for d in dirnames if os.path.exists(os.path.join(basename, d))
             ]
             if not dirnames and not filenames and basename != prunedir:
                 os.rmdir(basename)
