@@ -89,6 +89,7 @@ def bootstraping():
     _ba.set_server_name(settings["HostName"])
     _ba.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
     _ba.set_kickvote_msg_type(settings["KickVoteMsgType"])
+    _ba.hide_player_device_id(settings["Anti-IdRevealer"])
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
@@ -121,6 +122,8 @@ def bootstraping():
     # import features
     if settings["whitelist"]:
         pdata.load_white_list()
+
+    #
 
     import_discord_bot()
     import_games()

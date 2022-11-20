@@ -34,6 +34,8 @@ Here you can ban player , mute them , disable their kick votes
 - Rank System.
 - Chat commands.
 - V2 Account with cloud console for server.
+- check clients ping , use /ping chat command to check ping of any player._ba.get_client_ping().
+- Hide player specs from cleints, chatcommand /hideid /showid .
 - Easy role management , create 1000 of roles as you wish add specific chat command to the role , give tag to role ..many more.
 - Rejoin cooldown.
 - Leaderboard , top 3 rank players name on top right corner.

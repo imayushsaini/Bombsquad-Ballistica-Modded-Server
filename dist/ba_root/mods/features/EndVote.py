@@ -5,7 +5,7 @@ import ba.internal
 import time
 
 last_end_vote_start_time = 0
-end_vote_duration = 30
+end_vote_duration = 50
 game_started_on = 0
 min_game_duration_to_start_end_vote = 30
 
@@ -66,6 +66,8 @@ def required_votes(players):
         return 4
     elif players == 8:
         return 4
+    elif players == 10:
+        return 5
     else:
         return players - 4
 
@@ -90,7 +92,7 @@ def update_vote_text(votes_needed):
                                                    votes_needed)
                                            })).autoretain()
             activity.end_vote_text = node
-            ba.timer(10, remove_vote_text)
+            ba.timer(20, remove_vote_text)
 
 
 def remove_vote_text():

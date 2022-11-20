@@ -1,6 +1,7 @@
 {
     "whitelist": false,
     "useV2Account": false,
+    "Anti-IdRevealer": false,
     "ChatCommands": {
   	  "BrodcastCommand": true
     },
