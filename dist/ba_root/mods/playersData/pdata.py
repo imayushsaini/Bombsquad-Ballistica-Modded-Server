@@ -16,7 +16,7 @@ from tools.file_handle import OpenJson
 import _ba
 import ba.internal
 import json
-
+import datetime
 if TYPE_CHECKING:
     pass
 
@@ -34,6 +34,7 @@ class CacheData:  # pylint: disable=too-few-public-methods
     custom: dict = {}
     profiles: dict = {}
     whitelist: list[str] = []
+    blacklist: dict = {}
 
 
 def get_info(account_id: str) -> dict | None:
@@ -65,8 +66,12 @@ def get_profiles() -> dict:
     """
     if CacheData.profiles=={}:
         try:
-            f=open(PLAYERS_DATA_PATH + "profiles.json","r")
-            profiles = json.load(f)
+            if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000:
+                shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json"+str(datetime.datetime.now()))
+                profiles = {"pb-sdf":{}}
+            else:
+                f=open(PLAYERS_DATA_PATH + "profiles.json","r")
+                profiles = json.load(f)
             CacheData.profiles=profiles
             f.close()
         except:
@@ -78,6 +83,27 @@ def get_profiles() -> dict:
     else:
         return CacheData.profiles
 
+def get_blacklist() -> dict:
+    if CacheData.blacklist == {}:
+        try:
+            f = open(PLAYERS_DATA_PATH + "blacklist.json","r")
+            CacheData.blacklist = json.load(f)
+        except:
+            print('error opening blacklist json')
+            return {
+                "ban":{
+                    "ids":[],
+                    "ips":[],
+                    "deviceids":[]
+                   },
+                    "muted-ids":[]
+                }
+
+    return CacheData.blacklist
+
+def update_blacklist():
+    with open(PLAYERS_DATA_PATH + "blacklist.json","w") as f:
+        json.dump(CacheData.blacklist,f,indent=4)
 
 def commit_profiles(data={}) -> None:
     """Commits the given profiles in the database.
@@ -141,6 +167,9 @@ def add_profile(
     device_id = _ba.get_client_public_device_uuid(cid)
     if(device_id==None):
         device_id = _ba.get_client_device_uuid(cid)
+    if device_id in get_blacklist()["ban"]["deviceids"]:
+        serverdata.clients[account_id]["isBan"]=True
+        ba.internal.disconnect_client(cid)
     serverdata.clients[account_id]["deviceUUID"] = device_id
 
 
@@ -213,8 +242,21 @@ def ban_player(account_id: str) -> None:
     if account_id in profiles:
         profiles[account_id]["isBan"] = True
         CacheData.profiles=profiles
-        _thread.start_new_thread(commit_profiles, (profiles,))
+        # _thread.start_new_thread(commit_profiles, (profiles,))
+    cid = -1
+    for ros in ba.internal.get_game_roster():
+        if ros['account_id'] == account_id:
+            cid = ros['client_id']
+    ip = _ba.get_client_ip(cid)
 
+    device_id = _ba.get_client_public_device_uuid(cid)
+    if(device_id==None):
+        device_id = _ba.get_client_device_uuid(cid)
+    CacheData.blacklist["ban"]["ips"].append(ip)
+
+    CacheData.blacklist["ban"]["ids"].append(account_id)
+    CacheData.blacklist["ban"]["deviceids"].append(device_id)
+    _thread.start_new_thread(update_blacklist,())
 
 def mute(account_id: str) -> None:
     """Mutes the player.
@@ -602,5 +644,5 @@ def dump_cache():
         custom= copy.deepcopy(CacheData.custom)
         with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
             json.dump(custom, f, indent=4)
-    time.sleep(20)
+    time.sleep(60)
     dump_cache()

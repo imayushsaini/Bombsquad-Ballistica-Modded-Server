@@ -1,0 +1,11 @@
+{
+    "ban": {
+        "ids": [
+        ],
+        "ips": [
+        ],
+        "deviceids": [
+        ]
+    },
+    "muted-ids": []
+}

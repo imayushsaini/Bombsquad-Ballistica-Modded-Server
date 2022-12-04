@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass, field
 
 import os
-import datetime
+import datetime,shutil
 import threading
 import setting
 import _ba
@@ -92,7 +92,10 @@ class dumplogs(threading.Thread):
             log_path = SERVER_DATA_PATH + "cmndusage.log"
         else:
             log_path = SERVER_DATA_PATH + "logs.log"
-
+        if os.path.exists(log_path):
+            if os.stat(log_path).st_size > 1000:
+                shutil.copy(log_path, log_path+str(datetime.datetime.now()))
+                os.remove(log_path)
         with open(log_path, mode="a+", encoding="utf-8") as file:
             for msg in self.msg:
                 file.write(msg)

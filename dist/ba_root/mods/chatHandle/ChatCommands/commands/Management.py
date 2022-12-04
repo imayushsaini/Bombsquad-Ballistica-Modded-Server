@@ -219,7 +219,7 @@ def ban(arguments):
         ac_id=""
         for ros in ba.internal.get_game_roster():
             if ros["client_id"]==cl_id:
-                _thread.start_new_thread(pdata.ban_player,(ros['account_id'],))
+                pdata.ban_player(ros['account_id'])
 
                 ac_id=ros['account_id']
         if ac_id in serverdata.clients:

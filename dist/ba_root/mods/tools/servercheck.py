@@ -18,8 +18,9 @@ import setting
 import _thread
 from tools import logger
 from features import profanity
+from playersData import pdata
 
-
+blacklist = pdata.get_blacklist()
 
 settings = setting.get_settings_data()
 
@@ -88,6 +89,7 @@ def on_player_join_server(pbid, player_data):
     for ros in ba.internal.get_game_roster():
         if ros["account_id"] == pbid:
             clid = ros["client_id"]
+
     if pbid in serverdata.clients:
         rejoinCount = serverdata.clients[pbid]["rejoincount"]
         spamCount = serverdata.clients[pbid]["spamCount"]
@@ -126,6 +128,8 @@ def on_player_join_server(pbid, player_data):
             return
         else:
             if pbid not in serverdata.clients:
+                if check_ban(clid,pbid):
+                    return
                 serverdata.clients[pbid] = player_data
                 serverdata.clients[pbid]["warnCount"] = 0
                 serverdata.clients[pbid]["lastWarned"] = time.time()
@@ -175,6 +179,17 @@ def on_player_join_server(pbid, player_data):
 
     # pdata.add_profile(pbid,d_string,d_string)
 
+def check_ban(clid,pbid):
+    ip = _ba.get_client_ip(clid)
+
+    device_id = _ba.get_client_public_device_uuid(clid)
+    if(device_id==None):
+        device_id = _ba.get_client_device_uuid(clid)
+    if (ip in blacklist["ban"]['ips'] or device_id in blacklist['ban']['deviceids'] or pbid in blacklist["ban"]["ids"]):
+        _ba.chatmessage('sad ,your account is flagged contact server owner for unban',clients=[clid])
+        ba.internal.disconnect_client(clid)
+        return True
+    return False
 
 def verify_account(pb_id, p_data):
     d_string = ""
