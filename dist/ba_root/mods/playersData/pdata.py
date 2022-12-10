@@ -66,17 +66,22 @@ def get_profiles() -> dict:
     """
     if CacheData.profiles=={}:
         try:
-            if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000:
+            if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000000:
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json"+str(datetime.datetime.now()))
                 profiles = {"pb-sdf":{}}
+                print("resetting profiles")
             else:
                 f=open(PLAYERS_DATA_PATH + "profiles.json","r")
                 profiles = json.load(f)
+                f.close()
+                print("loading old proiles.json")
             CacheData.profiles=profiles
-            f.close()
-        except:
+
+        except Exception as e:
             f=open(PLAYERS_DATA_PATH + "profiles.json.backup","r")
             profiles = json.load(f)
+            print(e)
+            print("exception happened , falling back to profiles.json.backup")
             CacheData.profiles=profiles
             f.close()
             return profiles
