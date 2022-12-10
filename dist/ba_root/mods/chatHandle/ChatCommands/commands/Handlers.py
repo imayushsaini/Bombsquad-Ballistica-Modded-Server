@@ -17,8 +17,8 @@ def send(msg, clientid):
 def clientid_to_myself(clientid):
 	"""Return Player Index Of Self Player"""
 
-	for i in  _ba.get_foreground_host_activity().players:
-		if i.sessionplayer.inputdevice.client_id == clientid:
+	for i , player in  enumerate(_ba.get_foreground_host_activity().players):
+		if player.sessionplayer.inputdevice.client_id == clientid:
 			return i
 
 
