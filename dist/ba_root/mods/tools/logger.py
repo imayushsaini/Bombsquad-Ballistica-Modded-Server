@@ -93,7 +93,7 @@ class dumplogs(threading.Thread):
         else:
             log_path = SERVER_DATA_PATH + "logs.log"
         if os.path.exists(log_path):
-            if os.stat(log_path).st_size > 1000:
+            if os.stat(log_path).st_size > 1000000:
                 shutil.copy(log_path, log_path+str(datetime.datetime.now()))
                 os.remove(log_path)
         with open(log_path, mode="a+", encoding="utf-8") as file:
