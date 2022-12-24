@@ -1,13 +1,16 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.10.
+Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.17.
 
 ## Requirements
 - Ubuntu 20 and above
 - python3.10
+- 1 GB free Memory (Recommended 2 GB)
 
 ## Getting Started
-- `sudo apt update; sudo apt install python3-pip python3.10-dev python3.10-venv` , or [Python3.10 on Ubuntu 20.04](https://computingforgeeks.com/how-to-install-python-on-ubuntu-linux-system/)
+- `sudo apt update; sudo apt install software-properties-common -y`
+- `sudo add-apt-repository ppa:deadsnakes/ppa`
+- `sudo apt install python3-pip python3.10-dev python3.10-venv` ,
 - `tmux new -s 43210`
 - `git clone https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server`
 - `cd Bombsquad-Ballistica-Modded-Server`
