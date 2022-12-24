@@ -40,6 +40,7 @@ from _ba import (
     get_public_party_max_size,
     set_public_party_name,
     set_public_party_max_size,
+    set_public_party_queue_enabled,
     set_authenticate_clients,
     set_public_party_enabled,
     reset_random_player_names,
@@ -80,6 +81,7 @@ from _ba import (
     get_replays_dir,
 )
 
+from ba._login import LoginAdapter
 from ba._map import (
     get_map_class,
     register_map,
@@ -99,6 +101,8 @@ from ba._apputils import (
     is_browser_likely_available,
     get_remote_app_name,
     should_submit_debug_info,
+    dump_app_state,
+    log_dumped_app_state,
 )
 from ba._benchmark import (
     run_gpu_benchmark,
@@ -178,6 +182,7 @@ from ba._internal import (
 )
 
 __all__ = [
+    'LoginAdapter',
     'show_online_score_ui',
     'set_ui_input_device',
     'is_party_icon_visible',
@@ -209,6 +214,7 @@ __all__ = [
     'get_public_party_max_size',
     'set_public_party_name',
     'set_public_party_max_size',
+    'set_public_party_queue_enabled',
     'set_authenticate_clients',
     'set_public_party_enabled',
     'reset_random_player_names',
@@ -247,7 +253,6 @@ __all__ = [
     'set_telnet_access_enabled',
     'new_replay_session',
     'get_replays_dir',
-    # DIVIDER
     'get_unowned_maps',
     'get_unowned_game_types',
     'get_map_class',
@@ -329,4 +334,6 @@ __all__ = [
     'sign_out_v1',
     'sign_in_v1',
     'mark_config_dirty',
+    'dump_app_state',
+    'log_dumped_app_state',
 ]

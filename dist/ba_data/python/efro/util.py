@@ -39,6 +39,7 @@ class _EmptyObj:
     pass
 
 
+# TODO: kill this and just use efro.call.tpartial
 if TYPE_CHECKING:
     Call = Call
 else:
@@ -273,13 +274,14 @@ class DispatchMethodWrapper(Generic[ArgT, RetT]):
     """Type-aware standin for the dispatch func returned by dispatchmethod."""
 
     def __call__(self, arg: ArgT) -> RetT:
-        pass
+        raise RuntimeError('Should not get here')
 
     @staticmethod
     def register(
         func: Callable[[Any, Any], RetT]
     ) -> Callable[[Any, Any], RetT]:
         """Register a new dispatch handler for this dispatch-method."""
+        raise RuntimeError('Should not get here')
 
     registry: dict[Any, Callable]
 

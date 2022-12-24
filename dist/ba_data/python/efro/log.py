@@ -37,7 +37,27 @@ class LogLevel(Enum):
     ERROR = 3
     CRITICAL = 4
 
+    @property
+    def python_logging_level(self) -> int:
+        """Give the corresponding logging level."""
+        return LOG_LEVEL_LEVELNOS[self]
 
+    @classmethod
+    def from_python_logging_level(cls, levelno: int) -> LogLevel:
+        """Given a Python logging level, return a LogLevel."""
+        return LEVELNO_LOG_LEVELS[levelno]
+
+
+# Python logging levels from LogLevels
+LOG_LEVEL_LEVELNOS = {
+    LogLevel.DEBUG: logging.DEBUG,
+    LogLevel.INFO: logging.INFO,
+    LogLevel.WARNING: logging.WARNING,
+    LogLevel.ERROR: logging.ERROR,
+    LogLevel.CRITICAL: logging.CRITICAL,
+}
+
+# LogLevels from Python logging levels
 LEVELNO_LOG_LEVELS = {
     logging.DEBUG: LogLevel.DEBUG,
     logging.INFO: LogLevel.INFO,
@@ -128,7 +148,7 @@ class LogHandler(logging.Handler):
         self._cache_lock = Lock()
         self._printed_callback_error = False
         self._thread_bootstrapped = False
-        self._thread = Thread(target=self._thread_main, daemon=True)
+        self._thread = Thread(target=self._log_thread_main, daemon=True)
         self._thread.start()
 
         # Spin until our thread is up and running; otherwise we could
@@ -145,7 +165,7 @@ class LogHandler(logging.Handler):
         with self._callbacks_lock:
             self._callbacks.append(call)
 
-    def _thread_main(self) -> None:
+    def _log_thread_main(self) -> None:
         self._event_loop = asyncio.new_event_loop()
         # NOTE: if we ever use default threadpool at all we should allow
         # setting it for our loop.
