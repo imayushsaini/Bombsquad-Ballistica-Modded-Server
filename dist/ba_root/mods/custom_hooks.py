@@ -186,6 +186,7 @@ org_end = ba._activity.Activity.end
 def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     """Runs when game is ended."""
     activity = _ba.get_foreground_host_activity()
+    _ba.prop_axis(1,0,0)
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
     org_end(self, results, delay, force)

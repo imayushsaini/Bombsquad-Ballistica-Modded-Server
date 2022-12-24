@@ -5,7 +5,7 @@
 # Uncomment any of these values to override defaults.
 
 # Name of our server in the public parties list.
-party_name: smoothy
+party_name: "BombSquad Community Server" 
 
 # If true, your party will show up in the global public party list
 # Otherwise it will still be joinable via LAN or connecting by IP address.
@@ -125,6 +125,6 @@ team_names:
 
 # Team colors (teams mode only).
 team_colors:
-- [2, 0.25, 1.0]
-- [1.0, 0.25, 0.2]
+- [0.8, 0.0, 0.6]
+- [0, 1, 0.8]
 
