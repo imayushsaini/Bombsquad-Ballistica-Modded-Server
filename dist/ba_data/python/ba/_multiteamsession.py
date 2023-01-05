@@ -105,9 +105,16 @@ class MultiTeamSession(Session):
             add_resolved_type=True,
             name='default teams' if self.use_teams else 'default ffa',
         )
-
+        default_playlist_resolved = _playlist.filter_playlist(
+            _playlist.get_default_teams_playlist(),
+            sessiontype=type(self),
+            add_resolved_type=True,
+            name='default teams' if self.use_teams else 'default ffa',
+        )
         if not playlist_resolved:
-            raise RuntimeError('Playlist contains no valid games.')
+            print("PLAYLIST CONTAINS NO VALID GAMES , FALLING BACK TO DEFAULT TEAM PLAYLIST")
+            playlist_resolved = default_playlist_resolved
+            # raise RuntimeError('Playlist contains no valid games.')
 
         self._playlist = ShuffleList(
             playlist_resolved, shuffle=self._playlist_randomize

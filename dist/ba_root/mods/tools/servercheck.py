@@ -1,8 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 
 
-# NOT COMPLETED YET
-
 from serverData import serverdata
 from playersData import pdata
 import _ba
@@ -123,6 +121,10 @@ def on_player_join_server(pbid, player_data):
                             color=(1, 0, 0), transient=True,
                             clients=[ros['client_id']])
                     logger.log(pbid + " | kicked > reason:Banned account")
+                    _ba.screenmessage(
+                            "Contact server owner, your account not allowed here",
+                            color=(1, 0, 0), transient=True,
+                            clients=[ros['client_id']])
                     ba.internal.disconnect_client(ros['client_id'])
 
             return
@@ -152,7 +154,7 @@ def on_player_join_server(pbid, player_data):
             if(device_id==None):
                 device_id = _ba.get_client_device_uuid(cid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
-            logger.log("ip:"+serverdata.clients[pbid]["lastIP"]+",Device id"+device_id)
+            logger.log(pbid+" ip: "+serverdata.clients[pbid]["lastIP"]+", Device id: "+device_id)
             _ba.screenmessage(settings["regularWelcomeMsg"] + " " + d_st,
                               color=(0.60, 0.8, 0.6), transient=True,
                               clients=[cid])
@@ -187,6 +189,7 @@ def check_ban(clid,pbid):
         device_id = _ba.get_client_device_uuid(clid)
     if (ip in blacklist["ban"]['ips'] or device_id in blacklist['ban']['deviceids'] or pbid in blacklist["ban"]["ids"]):
         _ba.chatmessage('sad ,your account is flagged contact server owner for unban',clients=[clid])
+        logger.log(pbid + " | kicked > reason: Banned account")
         ba.internal.disconnect_client(clid)
         return True
     return False
@@ -348,6 +351,7 @@ def reportSpam(id):
         if now - profiles[id]["lastSpam"] < 2 * 24 * 60 * 60:
             count += 1
             if count > 3:
+                logger.log(id+" auto banned for spamming")
                 profiles[id]["isBan"] = True
         else:
             count = 0

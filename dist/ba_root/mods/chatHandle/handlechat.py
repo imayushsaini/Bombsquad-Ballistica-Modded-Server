@@ -18,6 +18,7 @@ def filter_chat_message(msg, client_id):
         if msg.startswith("/"):
             Main.Command(msg, client_id)
             return None
+        logger.log("Host msg: |" + msg , "chat")
         return msg
     acid = ""
     displaystring = ""
@@ -35,6 +36,7 @@ def filter_chat_message(msg, client_id):
         msg = ChatFilter.filter(msg, acid, client_id)
     if msg == None:
         return
+    logger.log(acid + " | " + displaystring + " | " + currentname + " | " + msg, "chat")
     if msg.startswith("/"):
         return Main.Command(msg, client_id)
 
@@ -45,8 +47,6 @@ def filter_chat_message(msg, client_id):
 
     if msg == "end" and settings["allowEndVote"]:
         EndVote.vote_end(acid, client_id)
-
-    logger.log(acid + " | " + displaystring + "|" + currentname + "| " + msg, "chat")
 
     if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 

@@ -12,7 +12,10 @@ import os
 import _thread
 import logging
 logging.getLogger('asyncio').setLevel(logging.WARNING)
-client = Bot(command_prefix='!')
+intents = discord.Intents().all()
+
+client = Bot(command_prefix='!', intents=intents)
+
 
 # client = discord.Client()
 
@@ -31,12 +34,10 @@ def push_log(msg):
     logs.append(msg)
 
 def init():
-    
 
-    
     loop = asyncio.get_event_loop()
     loop.create_task(client.start(token))
-    
+
     Thread(target=loop.run_forever).start()
 
 channel=None
@@ -46,7 +47,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     channel=message.channel
-    
+
     if message.channel.id==logsChannelID:
         _ba.pushcall(Call(ba.internal.chatmessage,message.content),from_other_thread=True)
 
@@ -54,7 +55,7 @@ async def on_message(message):
 @client.event
 async def on_ready():
     print("Discord bot logged in as: %s, %s" % (client.user.name, client.user.id))
-    
+
     await verify_channel()
 
 async def verify_channel():
@@ -81,10 +82,10 @@ async def refresh_stats():
     await client.wait_until_ready()
 
     while not client.is_closed():
-        
+
         await livestatsmsgs[0].edit(content=get_live_players_msg())
         await livestatsmsgs[1].edit(content=get_chats())
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
 async def send_logs():
     global logs
@@ -101,7 +102,7 @@ async def send_logs():
             if msg:
                 await channel.send(msg)
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
 
 
@@ -143,7 +144,7 @@ class BsDataThread(object):
         self.refreshStats()
         self.Timer = ba.Timer( 8,ba.Call(self.refreshStats),repeat = True)
         # self.Timerr = ba.Timer( 10,ba.Call(self.refreshLeaderboard),timetype = ba.TimeType.REAL,repeat = True)
-        
+
     # def refreshLeaderboard(self):
     #     global leaderboard
     #     global top200
@@ -152,7 +153,7 @@ class BsDataThread(object):
     #     lboard=json.loads(f.read())
     #     leaderboard=lboard
     #     entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name_html'], a['aid'],a['last_seen']) for a in lboard.values()]
-        
+
     #     entries.sort(reverse=True)
     #     rank=0
     #     for entry in entries:
@@ -161,25 +162,25 @@ class BsDataThread(object):
     #             break
     #         _t200[entry[5]]={"rank":rank,"scores":int(entry[0]),"games":int(entry[3]),"kills":int(entry[1]),"deaths":int(entry[2]),"name_html":entry[4],"last_seen":entry[6]}
     #         top200=_t200
-            
+
     def refreshStats(self):
-        
+
         liveplayers={}
         nextMap=''
         currentMap=''
         global stats
-        
+
         for i in ba.internal.get_game_roster():
             try:
                 liveplayers[i['account_id']]={'name':i['players'][0]['name_full'],'client_id':i['client_id'],'device_id':i['display_string']}
             except:
                 liveplayers[i['account_id']]={'name':"<in-lobby>",'clientid':i['client_id'],'device_id':i['display_string']}
-        try:    
+        try:
             nextMap=ba.internal.get_foreground_host_session().get_next_game_description().evaluate()
 
             current_game_spec=ba.internal.get_foreground_host_session()._current_game_spec
             gametype: Type[GameActivity] =current_game_spec['resolved_type']
-            
+
             currentMap=gametype.get_settings_display_string(current_game_spec).evaluate()
         except:
             pass
@@ -191,6 +192,6 @@ class BsDataThread(object):
         stats['chats']=ba.internal.get_chat_messages()
         stats['playlist']=minigame
 
-        
+
         # stats['teamInfo']=self.getTeamInfo()
 
