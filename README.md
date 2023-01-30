@@ -1,6 +1,6 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.17.
+Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.20.
 
 ## Requirements
 - Ubuntu 20 and above
