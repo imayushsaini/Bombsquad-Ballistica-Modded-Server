@@ -607,7 +607,7 @@ class ServerManagerApp:
         # run under us. This causes it to ignore ctrl-c presses and other
         # slight behavior tweaks. Hmm; should this be an argument instead?
         os.environ['BA_SERVER_WRAPPER_MANAGED'] = '1'
-        os.environ['BA_HOST_NAME'] = self._config.party_name
+        os.environ['BA_DEVICE_NAME'] = self._config.party_name
         print(f'{Clr.CYN}Launching server subprocess...{Clr.RST}', flush=True)
         binary_name = ('BallisticaCoreHeadless.exe'
                        if os.name == 'nt' else './bombsquad_headless')
