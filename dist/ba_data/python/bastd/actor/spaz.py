@@ -88,12 +88,12 @@ class Spaz(ba.Actor):
 
         self.play_big_death_sound = False
 
-        # scales how much impacts affect us (most damage calcs)
+        # Scales how much impacts affect us (most damage calcs).
         self.impact_scale = 1.0
 
         self.source_player = source_player
         self._dead = False
-        if self._demo_mode:  # preserve old behavior
+        if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.2
         else:
             self._punch_power_scale = factory.punch_power_scale
@@ -180,6 +180,7 @@ class Spaz(ba.Actor):
         self._bomb_wear_off_flash_timer: ba.Timer | None = None
         self._multi_bomb_wear_off_timer: ba.Timer | None = None
         self._multi_bomb_wear_off_flash_timer: ba.Timer | None = None
+        self._curse_timer: ba.Timer | None = None
         self.bomb_count = self.default_bomb_count
         self._max_bomb_count = self.default_bomb_count
         self.bomb_type_default = self.default_bomb_type
@@ -262,7 +263,7 @@ class Spaz(ba.Actor):
     def _turbo_filter_add_press(self, source: str) -> None:
         """
         Can pass all button presses through here; if we see an obscene number
-        of them in a short time let's shame/pushish this guy for using turbo
+        of them in a short time let's shame/pushish this guy for using turbo.
         """
         t_ms = ba.time(
             timetype=ba.TimeType.BASE, timeformat=ba.TimeFormat.MILLISECONDS
@@ -620,7 +621,9 @@ class Spaz(ba.Actor):
                 self.node.curse_death_time = int(
                     1000.0 * (tval + self.curse_time)
                 )
-                ba.timer(5.0, ba.WeakCall(self.curse_explode))
+                self._curse_timer = ba.Timer(
+                    5.0, ba.WeakCall(self.curse_explode)
+                )
 
     def equip_boxing_gloves(self) -> None:
         """

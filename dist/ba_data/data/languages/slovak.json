@@ -15,6 +15,7 @@
     "linkAccountsInstructionsText": "Abyste mohli pripojiť dva účty, vygenerujte na prvom kód,\nktorý následne vložte na účte druhom.\nPostup a inventár sa skombinujú.\nMôžete spojiť až ${COUNT} účtov.",
     "linkAccountsText": "Pripojené účty",
     "linkedAccountsText": "Spojené účty:",
+    "manageAccountText": "Spravovať Účet",
     "nameChangeConfirm": "Zmeniť vás účet na ${NAME}?",
     "notLoggedInText": "<neprihlásený>",
     "resetProgressConfirmNoAchievementsText": "Týmto zresetuješ progres v tímovej hre\na všetky dosiahnuté skóre (tikety ostanú). Nedá sa \nto vrátiť späť. Pokračovať?",
@@ -330,6 +331,7 @@
   "achievementsRemainingText": "Zostávajúce Achievementy",
   "achievementsText": "Achievementy",
   "achievementsUnavailableForOldSeasonsText": "Prepáč, podrobnosti achievementov nie sú dostupné pre minulé sezóny.",
+  "activatedText": "${THING} aktivovaný.",
   "addGameWindow": {
     "getMoreGamesText": "Viac Hier...",
     "titleText": "Pridať Hru"
@@ -500,6 +502,7 @@
     "welcome2Text": "Taktiež môžeš získavať tikety z veľa aktivít. Tikety sa \nmôžu používať na odomknutie nových charakterov, máp, \nminihier, ako vstupné do turnajov, a viac.",
     "yourPowerRankingText": "Tvoje Umiestnenie:"
   },
+  "copyConfirmText": "Skopírované do schránky.",
   "copyOfText": "${NAME} Kópia",
   "copyText": "Kopírovať",
   "createEditPlayerText": "<Vytvoriť/Upraviť Charakter>",
@@ -627,7 +630,9 @@
   "epicDescriptionFilterText": "${DESCRIPTION} Spomalene.",
   "epicNameFilterText": "Epic ${NAME}",
   "errorAccessDeniedText": "prístup odmietnutý",
+  "errorDeviceTimeIncorrectText": "Čas vášho zariadenia je nesprávny o ${HOURS} hodín.\nToto môže spôsobiť problémy.\nProsím skontrolujte vaše nastavenia času a časových zón.",
   "errorOutOfDiskSpaceText": "žiadne miesto na disku",
+  "errorSecureConnectionFailText": "Nebolo možné vyrvoriť bezpečné cloudové pripojenie; funkčnosť siete môže zlyhať.",
   "errorText": "Chyba",
   "errorUnknownText": "neznámy error",
   "exitGameText": "Ukončiť ${APP_NAME}?",
@@ -790,7 +795,7 @@
     "ticketPack4Text": "Obrovský Balíček Tiketov",
     "ticketPack5Text": "Gigantický Balíček Tiketov",
     "ticketPack6Text": "Ultimátny Balíček Tiketov",
-    "ticketsFromASponsorText": "Dostaň ${COUNT} tiketov\nod sponzora",
+    "ticketsFromASponsorText": "Pozri si reklamu\npre ${COUNT} tiketov",
     "ticketsText": "${COUNT} Tiketov",
     "titleText": "Dostať Tikety",
     "unavailableLinkAccountText": "Prepáč, nákupy sú nedostupné na tejto platforme.\nAko riešenie, môžeš stále prepojiť tento účet s účtom na \ninej platforme a nakupovať.",
@@ -801,6 +806,8 @@
     "youHaveText": "máš ${COUNT} tiketov"
   },
   "googleMultiplayerDiscontinuedText": "Prepáč, Google multiplayer už viac nie je dostupný.\nSnažím sa to prehodiť čo najskôr. Dovtedy prosím\nskús inú metódu pripojenia.\n-Eric",
+  "googlePlayPurchasesNotAvailableText": "Nákupy Google Play nie sú dostupné.\nAsi musíte aktualizovať svoju obchodnú aplikáciu.",
+  "googlePlayServicesNotAvailableText": "Služby Google Play nie sú dostupné.\nNiektoré funkčnosti aplikácie môžu byť vypnuté.",
   "googlePlayText": "Google Play",
   "graphicsSettingsWindow": {
     "alwaysText": "Stále",
@@ -997,6 +1004,7 @@
     "creditsText": "Credits",
     "demoMenuText": "Demo Menu",
     "endGameText": "Ukončiť Hru",
+    "endTestText": "Ukončiť Test",
     "exitGameText": "Uzavrieť Hru",
     "exitToMenuText": "Odísť do menu?",
     "howToPlayText": "Ako Hrať",
@@ -1111,7 +1119,10 @@
   "playlistsText": "Playlisty",
   "pleaseRateText": "Ak si ${APP_NAME} užívaš, prosím pouvažuj nad chvíľou\nohodnotenia a napísania recenzie. Toto poskytuje\nužitočnú spätnú väzbu a pomáha podporovať budúci rozvoj.\n\nvďaka!\n-Eric",
   "pleaseWaitText": "Prosím počkaj...",
-  "pluginsDetectedText": "Boli zistené nové doplnky.  Povoľte / nakonfigurujte ich v nastaveniach.",
+  "pluginClassLoadErrorText": "Chyba pri načítaní triedy doplnku '${PLUGIN}': ${ERROR}",
+  "pluginInitErrorText": "Chyba pri iniciovaní doplnku '${PLUGIN}': ${ERROR}",
+  "pluginsDetectedText": "Bol zistený nový doplnok(ky). Reštartujte aby sa aktivovali, alebo ich nakonfigurte v nastaveniach.",
+  "pluginsRemovedText": "${NUM} doplnok(ky) nebol najdený.",
   "pluginsText": "Pluginy",
   "practiceText": "Tréning",
   "pressAnyButtonPlayAgainText": "Stlač hocijaké tlačidlo ak chceš hrať znova...",
@@ -1362,6 +1373,7 @@
   "tournamentStandingsText": "Postavenie v Turnaji",
   "tournamentText": "Turnaj",
   "tournamentTimeExpiredText": "Čas v Turnaji Vypršal",
+  "tournamentsDisabledWorkspaceText": "Turnaje sú zakázané keď pracoviská sú aktívne.\nAby sa znova povolili turnaje, vypnite svoje pracovisko a reštartujte.",
   "tournamentsText": "Turnaje",
   "translations": {
     "characterNames": {
@@ -1845,6 +1857,8 @@
   "winsPlayerText": "${NAME} Vyhráva!",
   "winsTeamText": "${NAME} Vyhráva!",
   "winsText": "${NAME} Vyhráva!",
+  "workspaceSyncErrorText": "Chyba pri synchronizácii ${WORKSPACE}. Pozri log pre detaily.",
+  "workspaceSyncReuseText": "Nemožno synchronizovať ${WORKSPACE}. Znovu-využitie predošlej synchronizovanej verzie.",
   "worldScoresUnavailableText": "Svetové skóre nedostupné.",
   "worldsBestScoresText": "Svetovo Najlepšie Skóre",
   "worldsBestTimesText": "Svetovo Najlepšie Časy",

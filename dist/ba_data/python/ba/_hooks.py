@@ -1,13 +1,13 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Snippets of code for use by the internal C++ layer.
+"""Snippets of code for use by the internal layer.
 
-History: originally I would dynamically compile/eval bits of Python text
-from within C++ code, but the major downside there was that none of that was
-type-checked so if names or arguments changed I would never catch code breakage
-until the code was next run.  By defining all snippets I use here and then
-capturing references to them all at launch I can immediately verify everything
-I'm looking for exists and pylint/mypy can do their magic on this file.
+History: originally the engine would dynamically compile/eval various Python
+code from within C++ code, but the major downside there was that none of it
+was type-checked so if names or arguments changed it would go unnoticed
+until it broke at runtime. By instead defining such snippets here and then
+capturing references to them all at launch it is possible to allow linting
+and type-checking magic to happen and most issues will be caught immediately.
 """
 # (most of these are self-explanatory)
 # pylint: disable=missing-function-docstring
@@ -27,12 +27,8 @@ def finish_bootstrapping() -> None:
     """Do final bootstrapping related bits."""
     assert _ba.in_logic_thread()
 
-    # Kick off our asyncio event handling, allowing us to use coroutines
-    # in our logic thread alongside our internal event handling.
-    # setup_asyncio()
-
-    # Ok, bootstrapping is done; time to get the show started.
-    _ba.app.on_app_launch()
+    # Ok, low level bootstrapping is done; time to get Python stuff started.
+    _ba.app.on_bootstrapping_completed()
 
 
 def reset_to_main_menu() -> None:
@@ -495,3 +491,33 @@ def login_adapter_get_sign_in_token_response(
         adapter = _ba.app.accounts_v2.login_adapters[login_type]
         assert isinstance(adapter, LoginAdapterNative)
         adapter.on_sign_in_complete(attempt_id=attempt_id, result=result)
+
+
+def show_client_too_old_error() -> None:
+    """Called at launch if the server tells us we're too old to talk to it."""
+    from ba._language import Lstr
+
+    # If you are using an old build of the app and would like to stop
+    # seeing this error at launch, do:
+    #  ba.app.config['SuppressClientTooOldErrorForBuild'] = ba.app.build_number
+    #  ba.app.config.commit()
+    # Note that you will have to do that again later if you update to
+    # a newer build.
+    if (
+        _ba.app.config.get('SuppressClientTooOldErrorForBuild')
+        == _ba.app.build_number
+    ):
+        return
+
+    _ba.playsound(_ba.getsound('error'))
+    _ba.screenmessage(
+        Lstr(
+            translate=(
+                'serverResponses',
+                'Server functionality is no longer supported'
+                ' in this version of the game;\n'
+                'Please update to a newer version.',
+            )
+        ),
+        color=(1, 0, 0),
+    )

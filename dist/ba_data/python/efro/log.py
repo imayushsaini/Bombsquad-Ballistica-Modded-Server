@@ -8,7 +8,9 @@ import time
 import asyncio
 import logging
 import datetime
+import itertools
 from enum import Enum
+from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Annotated
 from threading import Thread, current_thread, Lock
@@ -143,12 +145,14 @@ class LogHandler(logging.Handler):
         assert cache_size_limit >= 0
         self._cache_size_limit = cache_size_limit
         self._cache_time_limit = cache_time_limit
-        self._cache: list[tuple[int, LogEntry]] = []
+        self._cache = deque[tuple[int, LogEntry]]()
         self._cache_index_offset = 0
         self._cache_lock = Lock()
         self._printed_callback_error = False
         self._thread_bootstrapped = False
         self._thread = Thread(target=self._log_thread_main, daemon=True)
+        if __debug__:
+            self._last_slow_emit_warning_time: float | None = None
         self._thread.start()
 
         # Spin until our thread is up and running; otherwise we could
@@ -167,6 +171,12 @@ class LogHandler(logging.Handler):
 
     def _log_thread_main(self) -> None:
         self._event_loop = asyncio.new_event_loop()
+
+        # In our background thread event loop we do a fair amount of
+        # slow synchronous stuff such as mucking with the log cache.
+        # Let's avoid getting tons of warnings about this in debug mode.
+        self._event_loop.slow_callback_duration = 2.0  # Default is 0.1
+
         # NOTE: if we ever use default threadpool at all we should allow
         # setting it for our loop.
         asyncio.set_event_loop(self._event_loop)
@@ -192,20 +202,15 @@ class LogHandler(logging.Handler):
             now = utc_now()
             with self._cache_lock:
 
-                # Quick out: if oldest cache entry is still valid,
-                # don't touch anything.
-                if (
+                # Prune the oldest entry as long as there is a first one that
+                # is too old.
+                while (
                     self._cache
-                    and (now - self._cache[0][1].time) < self._cache_time_limit
+                    and (now - self._cache[0][1].time) >= self._cache_time_limit
                 ):
-                    continue
-
-                # Ok; full prune.
-                self._cache = [
-                    e
-                    for e in self._cache
-                    if (now - e[1].time) < self._cache_time_limit
-                ]
+                    popped = self._cache.popleft()
+                    self._cache_size -= popped[0]
+                    self._cache_index_offset += 1
 
     def get_cached(
         self, start_index: int = 0, max_entries: int | None = None
@@ -239,19 +244,40 @@ class LogHandler(logging.Handler):
             return LogArchive(
                 log_size=self._cache_index_offset + len(self._cache),
                 start_index=start_index + self._cache_index_offset,
-                entries=[e[1] for e in self._cache[start_index:end_index]],
+                entries=self._cache_slice(start_index, end_index),
             )
 
-    def emit(self, record: logging.LogRecord) -> None:
-        # Called by logging to send us records.
-        # We simply package them up and ship them to our thread.
-        # UPDATE: turns out we CAN get log messages from this thread
-        # (the C++ layer can spit out some performance metrics when
-        # calls take too long/etc.)
-        # assert current_thread() is not self._thread
+    def _cache_slice(
+        self, start: int, end: int, step: int = 1
+    ) -> list[LogEntry]:
+        # Deque doesn't natively support slicing but we can do it manually.
+        # It sounds like rotating the deque and pulling from the beginning
+        # is the most efficient way to do this. The downside is the deque
+        # gets temporarily modified in the process so we need to make sure
+        # we're holding the lock.
+        assert self._cache_lock.locked()
+        cache = self._cache
+        cache.rotate(-start)
+        slc = [e[1] for e in itertools.islice(cache, 0, end - start, step)]
+        cache.rotate(start)
+        return slc
 
-        # Special case - filter out this common extra-chatty category.
-        # TODO - should use a standard logging.Filter for this.
+    @classmethod
+    def _is_immutable_log_data(cls, data: Any) -> bool:
+        if isinstance(data, (str, bool, int, float, bytes)):
+            return True
+        if isinstance(data, tuple):
+            return all(cls._is_immutable_log_data(x) for x in data)
+        return False
+
+    def emit(self, record: logging.LogRecord) -> None:
+        if __debug__:
+            starttime = time.monotonic()
+
+        # Called by logging to send us records.
+
+        # Special case: filter out this common extra-chatty category.
+        # TODO - perhaps should use a standard logging.Filter for this.
         if (
             self._suppress_non_root_debug
             and record.name != 'root'
@@ -259,38 +285,106 @@ class LogHandler(logging.Handler):
         ):
             return
 
-        # We want to forward as much as we can along without processing it
-        # (better to do so in a bg thread).
-        # However its probably best to flatten the message string here since
-        # it could cause problems stringifying things in threads where they
-        # didn't expect to be stringified.
-        msg = self.format(record)
-
-        # Also immediately print pretty colored output to our echo file
-        # (generally stderr). We do this part here instead of in our bg
-        # thread because the delay can throw off command line prompts or
-        # make tight debugging harder.
-        if self._echofile is not None:
-            ends = LEVELNO_COLOR_CODES.get(record.levelno)
-            if ends is not None:
-                self._echofile.write(f'{ends[0]}{msg}{ends[1]}\n')
-            else:
-                self._echofile.write(f'{msg}\n')
-
-        self._event_loop.call_soon_threadsafe(
-            tpartial(
-                self._emit_in_thread,
-                record.name,
-                record.levelno,
-                record.created,
-                msg,
-            )
+        # Optimization: if our log args are all simple immutable values,
+        # we can just kick the whole thing over to our background thread to
+        # be formatted there at our leisure. If anything is mutable and
+        # thus could possibly change between now and then or if we want
+        # to do immediate file echoing then we need to bite the bullet
+        # and do that stuff here at the call site.
+        fast_path = self._echofile is None and self._is_immutable_log_data(
+            record.args
         )
 
+        if fast_path:
+            if __debug__:
+                formattime = echotime = time.monotonic()
+            self._event_loop.call_soon_threadsafe(
+                tpartial(
+                    self._emit_in_thread,
+                    record.name,
+                    record.levelno,
+                    record.created,
+                    record,
+                )
+            )
+        else:
+            # Slow case; do formatting and echoing here at the log call
+            # site.
+            msg = self.format(record)
+
+            if __debug__:
+                formattime = time.monotonic()
+
+            # Also immediately print pretty colored output to our echo file
+            # (generally stderr). We do this part here instead of in our bg
+            # thread because the delay can throw off command line prompts or
+            # make tight debugging harder.
+            if self._echofile is not None:
+                ends = LEVELNO_COLOR_CODES.get(record.levelno)
+                if ends is not None:
+                    self._echofile.write(f'{ends[0]}{msg}{ends[1]}\n')
+                else:
+                    self._echofile.write(f'{msg}\n')
+
+            if __debug__:
+                echotime = time.monotonic()
+
+            self._event_loop.call_soon_threadsafe(
+                tpartial(
+                    self._emit_in_thread,
+                    record.name,
+                    record.levelno,
+                    record.created,
+                    msg,
+                )
+            )
+
+        if __debug__:
+            # Make noise if we're taking a significant amount of time here.
+            # Limit the noise to once every so often though; otherwise we
+            # could get a feedback loop where every log emit results in a
+            # warning log which results in another, etc.
+            now = time.monotonic()
+            # noinspection PyUnboundLocalVariable
+            duration = now - starttime
+            # noinspection PyUnboundLocalVariable
+            format_duration = formattime - starttime
+            # noinspection PyUnboundLocalVariable
+            echo_duration = echotime - formattime
+            if duration > 0.05 and (
+                self._last_slow_emit_warning_time is None
+                or now > self._last_slow_emit_warning_time + 10.0
+            ):
+                # Logging calls from *within* a logging handler
+                # sounds sketchy, so let's just kick this over to
+                # the bg event loop thread we've already got.
+                self._last_slow_emit_warning_time = now
+                self._event_loop.call_soon_threadsafe(
+                    tpartial(
+                        logging.warning,
+                        'efro.log.LogHandler emit took too long'
+                        ' (%.2fs total; %.2fs format, %.2fs echo,'
+                        ' fast_path=%s).',
+                        duration,
+                        format_duration,
+                        echo_duration,
+                        fast_path,
+                    )
+                )
+
     def _emit_in_thread(
-        self, name: str, levelno: int, created: float, message: str
+        self,
+        name: str,
+        levelno: int,
+        created: float,
+        message: str | logging.LogRecord,
     ) -> None:
         try:
+
+            # If they passed a raw record here, bake it down to a string.
+            if isinstance(message, logging.LogRecord):
+                message = self.format(message)
+
             self._emit_entry(
                 LogEntry(
                     name=name,
@@ -409,7 +503,7 @@ class LogHandler(logging.Handler):
 
                 # Prune old until we are back at or under our limit.
                 while self._cache_size > self._cache_size_limit:
-                    popped = self._cache.pop(0)
+                    popped = self._cache.popleft()
                     self._cache_size -= popped[0]
                     self._cache_index_offset += 1
 
@@ -469,6 +563,7 @@ def setup_logging(
     level: LogLevel,
     suppress_non_root_debug: bool = False,
     log_stdout_stderr: bool = False,
+    echo_to_stderr: bool = True,
     cache_size_limit: int = 0,
     cache_time_limit: datetime.timedelta | None = None,
 ) -> LogHandler:
@@ -499,8 +594,7 @@ def setup_logging(
     # which would create an infinite loop.
     loghandler = LogHandler(
         log_path,
-        # echofile=sys.stderr if sys.stderr.isatty() else None,
-        echofile=sys.stderr,
+        echofile=sys.stderr if echo_to_stderr else None,
         suppress_non_root_debug=suppress_non_root_debug,
         cache_size_limit=cache_size_limit,
         cache_time_limit=cache_time_limit,

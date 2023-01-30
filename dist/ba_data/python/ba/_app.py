@@ -20,6 +20,7 @@ from ba._meta import MetadataSubsystem
 from ba._ads import AdsSubsystem
 from ba._net import NetworkSubsystem
 from ba._workspace import WorkspaceSubsystem
+from ba._appcomponent import AppComponentSubsystem
 from ba import _internal
 
 if TYPE_CHECKING:
@@ -58,20 +59,26 @@ class App:
     class State(Enum):
         """High level state the app can be in."""
 
-        # Python-level systems being inited but should not interact.
-        LAUNCHING = 0
+        # The launch process has not yet begun.
+        INITIAL = 0
 
-        # Initial account logins, workspace & asset downloads, etc.
-        LOADING = 1
+        # Our app subsystems are being inited but should not yet interact.
+        LAUNCHING = 1
 
-        # Normal running state.
-        RUNNING = 2
+        # App subsystems are inited and interacting, but the app has not
+        # yet embarked on a high level course of action. It is doing initial
+        # account logins, workspace & asset downloads, etc. in order to
+        # prepare for this.
+        LOADING = 2
 
-        # App is backgrounded or otherwise suspended.
-        PAUSED = 3
+        # All pieces are in place and the app is now doing its thing.
+        RUNNING = 3
 
-        # App is shutting down.
-        SHUTTING_DOWN = 4
+        # The app is backgrounded or otherwise suspended.
+        PAUSED = 4
+
+        # The app is shutting down.
+        SHUTTING_DOWN = 5
 
     @property
     def aioloop(self) -> asyncio.AbstractEventLoop:
@@ -128,7 +135,7 @@ class App:
 
     @property
     def debug_build(self) -> bool:
-        """Whether the game was compiled in debug mode.
+        """Whether the app was compiled in debug mode.
 
         Debug builds generally run substantially slower than non-debug
         builds due to compiler optimizations being disabled and extra
@@ -232,11 +239,14 @@ class App:
         """
         # pylint: disable=too-many-statements
 
-        self.state = self.State.LAUNCHING
+        self.state = self.State.INITIAL
 
+        self._bootstrapping_completed = False
+        self._called_on_app_launching = False
         self._launch_completed = False
-        self._initial_login_completed = False
+        self._initial_sign_in_completed = False
         self._meta_scan_completed = False
+        self._called_on_app_loading = False
         self._called_on_app_running = False
         self._app_paused = False
 
@@ -294,6 +304,7 @@ class App:
         # Server Mode.
         self.server: ba.ServerController | None = None
 
+        self.components = AppComponentSubsystem()
         self.meta = MetadataSubsystem()
         self.accounts_v1 = AccountV1Subsystem()
         self.plugins = PluginSubsystem()
@@ -342,10 +353,8 @@ class App:
         self.delegate: ba.AppDelegate | None = None
         self._asyncio_timer: ba.Timer | None = None
 
-    def on_app_launch(self) -> None:
-        """Runs after the app finishes low level bootstrapping.
-
-        (internal)"""
+    def on_app_launching(self) -> None:
+        """Called when the app is first entering the launching state."""
         # pylint: disable=cyclic-import
         # pylint: disable=too-many-locals
         from ba import _asyncio
@@ -473,6 +482,9 @@ class App:
         self._launch_completed = True
         self._update_state()
 
+    def on_app_loading(self) -> None:
+        """Called when initially entering the loading state."""
+
     def on_app_running(self) -> None:
         """Called when initially entering the running state."""
 
@@ -480,6 +492,13 @@ class App:
 
         # from ba._dependency import test_depset
         # test_depset()
+
+    def on_bootstrapping_completed(self) -> None:
+        """Called by the C++ layer once its ready to rock."""
+        assert _ba.in_logic_thread()
+        assert not self._bootstrapping_completed
+        self._bootstrapping_completed = True
+        self._update_state()
 
     def on_meta_scan_complete(self) -> None:
         """Called by meta-scan when it is done doing its thing."""
@@ -511,15 +530,25 @@ class App:
                 self.plugins.on_app_resume()
                 self.health_monitor.on_app_resume()
 
-            if self._initial_login_completed and self._meta_scan_completed:
+            # Handle initially entering or returning to other states.
+            if self._initial_sign_in_completed and self._meta_scan_completed:
                 self.state = self.State.RUNNING
                 if not self._called_on_app_running:
                     self._called_on_app_running = True
                     self.on_app_running()
             elif self._launch_completed:
                 self.state = self.State.LOADING
+                if not self._called_on_app_loading:
+                    self._called_on_app_loading = True
+                    self.on_app_loading()
             else:
+                # Only thing left is launching. We shouldn't be getting
+                # called before at least that is complete.
+                assert self._bootstrapping_completed
                 self.state = self.State.LAUNCHING
+                if not self._called_on_app_launching:
+                    self._called_on_app_launching = True
+                    self.on_app_launching()
 
     def on_app_pause(self) -> None:
         """Called when the app goes to a suspended state."""
@@ -724,8 +753,8 @@ class App:
             _ba.screenmessage(Lstr(resource='errorText'), color=(1, 0, 0))
             _ba.playsound(_ba.getsound('error'))
 
-    def on_initial_login_completed(self) -> None:
-        """Callback to be run after initial login process (or lack thereof).
+    def on_initial_sign_in_completed(self) -> None:
+        """Callback to be run after initial sign-in (or lack thereof).
 
         This period includes things such as syncing account workspaces
         or other data so it may take a substantial amount of time.
@@ -736,5 +765,5 @@ class App:
         # (account workspaces).
         self.meta.start_extra_scan()
 
-        self._initial_login_completed = True
+        self._initial_sign_in_completed = True
         self._update_state()
