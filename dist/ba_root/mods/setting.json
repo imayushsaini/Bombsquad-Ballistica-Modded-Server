@@ -107,6 +107,7 @@
     "afterWarnKickMsg":"Enough warnings, Goodbye have a nice day :)",
     "firstTimeJoinMsg":"Welcome to the server,we r saving all your account details and chats",
     "regularWelcomeMsg":"Welcome Back",
+    "contributeData": true,
     "enabletags": true,
     "enablehptag": true,
     "enablerank": true,
