@@ -8,11 +8,12 @@ from ba._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
 on_begin_original = ba._activity.Activity.on_begin
 
 
-def fireflies_generator(activity, count, random_color:False):
+def fireflies_generator(activity, count, random_color: False):
     if random_color:
-        color=(random.uniform(0,1.2),random.uniform(0,1.2),random.uniform(0,1.2))
+        color = (random.uniform(0, 1.2), random.uniform(
+            0, 1.2), random.uniform(0, 1.2))
     else:
-        color=(0.9,0.7,0.0)
+        color = (0.9, 0.7, 0.0)
     increment = count - len(activity.fireflies)
 
     if increment > 0:
@@ -64,25 +65,14 @@ class FireFly(ba.Actor):
                 ('modify_part_collision', 'collide', False),
                 ('modify_part_collision', 'physical', False),
             ))
-        self.node = ba.newnode(
-            'prop',
-            delegate=self,
-            attrs={
-                'model': ba.getmodel('bomb'),
-                'position': (2,4,2),
-                'body': 'capsule',
-                'shadow_size': 0.0,
-                'color_texture': random.choice([ba.gettexture(tex) for tex in ("egg1", "egg2", "egg3")]),
-                'reflection': 'soft',
-                'reflection_scale': [1.5],
-                'materials': (shared.object_material, self.mat)
-            })
-        ba.animate(
-            self.node,
-            'model_scale',
-            {0:0, 1:0.23, 5:0.15, 10:0.0},
-            loop=True,
-        )
+        self.node = ba.newnode('locator', attrs={'shape': 'circle', 'position': (0, .5, 0),
+                                                 'color': self.color, 'opacity': 0.5, 'draw_beauty': True, 'additive': False, 'size': [0.10]})
+        # ba.animate(
+        #     self.node,
+        #     'scale',
+        #     {0:0, 1:0.004, 5:0.006, 10:0.0},
+        #     loop=True,
+        # )
         ba.animate_array(
             self.node,
             'position',
@@ -95,15 +85,15 @@ class FireFly(ba.Actor):
             'light',
             owner=self.node,
             attrs={
-                'intensity':0.6,
-                'height_attenuated':True,
-                'radius':0.2,
-                'color':self.color
+                'intensity': 0.6,
+                'height_attenuated': True,
+                'radius': 0.2,
+                'color': self.color
             })
         ba.animate(
             self.light,
             'radius',
-            {0:0.0, 20:0.4 ,70:0.1 ,100:0.3 ,150:0},
+            {0: 0.0, 20: 0.4, 70: 0.1, 100: 0.3, 150: 0},
             loop=True
         )
         self.node.connectattr('position', self.light, 'position')
@@ -119,7 +109,7 @@ class FireFly(ba.Actor):
             ba.animate(
                 self.light,
                 'radius',
-                {0:self.light.radius, death_secs:0}
+                {0: self.light.radius, death_secs: 0}
             )
             ba.timer(death_secs, self.node.delete)
 
@@ -129,24 +119,23 @@ class FireFly(ba.Actor):
             return None
         elif isinstance(msg, OutOfBoundsMessage):
             return self.handlemessage(ba.DieMessage(how=DeathType.OUT_OF_BOUNDS))
-
         return super().handlemessage(msg)
 
-    def generate_keys(self,m):
+    def generate_keys(self, m):
         keys = {}
         t = 0
-        last_x = random.randrange(int(m[0]),int(m[3]))
-        last_y = random.randrange(int(m[1]),int(m[4]))
+        last_x = random.randrange(int(m[0]), int(m[3]))
+        last_y = random.randrange(int(m[1]), int(m[4]))
         if int(m[2]) == int(m[5]):
             last_z = int(m[2])
         else:
-            last_z = random.randrange(int(m[2]),int(m[5]))
-        for i in range(0,7):
-            x = self.generate_random(int(m[0]),int(m[3]),last_x)
+            last_z = random.randrange(int(m[2]), int(m[5]))
+        for i in range(0, 7):
+            x = self.generate_random(int(m[0]), int(m[3]), last_x)
             last_x = x
-            y = self.generate_random(int(m[1]),int(m[4]),last_y)
+            y = self.generate_random(int(m[1]), int(m[4]), last_y)
             last_y = y
-            z = self.generate_random(int(m[2]),int(m[5]),last_z)
+            z = self.generate_random(int(m[2]), int(m[5]), last_z)
             last_z = z
             keys[t] = (x, abs(y), z)
             t += 30
@@ -156,7 +145,7 @@ class FireFly(ba.Actor):
         if a == b:
             return a
         while True:
-            n = random.randrange(a,b)
+            n = random.randrange(a, b)
             if abs(z-n) < 6:
                 return n
 
@@ -164,7 +153,6 @@ class FireFly(ba.Actor):
 def on_begin(self, *args, **kwargs) -> None:
     self.fireflies = []
     return on_begin_original(self, *args, **kwargs)
-
 
 
 ba._activity.Activity.fireflies_generator = fireflies_generator

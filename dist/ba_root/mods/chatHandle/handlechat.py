@@ -18,7 +18,7 @@ def filter_chat_message(msg, client_id):
         if msg.startswith("/"):
             Main.Command(msg, client_id)
             return None
-        logger.log("Host msg: |" + msg , "chat")
+        logger.log("Host msg: | " + msg , "chat")
         return msg
     acid = ""
     displaystring = ""

@@ -33,6 +33,7 @@ from playersData import pdata
 from features import EndVote
 from features import text_on_map
 from features import map_fun
+from spazmod import modifyspaz
 if TYPE_CHECKING:
     from typing import Optional, Any
 
@@ -44,6 +45,8 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     return handlechat.filter_chat_message(msg, client_id)
 
 # ba_meta export plugin
+
+
 class modSetup(ba.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
@@ -53,21 +56,22 @@ class modSetup(ba.Plugin):
 
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
-        if(settings["useV2Account"]):
+        if (settings["useV2Account"]):
             from tools import account
-            if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
+            if (ba.internal.get_v1_account_state() == 'signed_in' and ba.internal.get_v1_account_type() == 'V2'):
                 logging.debug("Account V2 is active")
             else:
                 logging.warning("Account V2 login require ....stay tuned.")
-                ba.timer(3, ba.Call(logging.debug,"Starting Account V2 login process...."))
-                ba.timer(6,account.AccountUtil)
+                ba.timer(3, ba.Call(logging.debug,
+                         "Starting Account V2 login process...."))
+                ba.timer(6, account.AccountUtil)
         else:
             ba.app.accounts_v2.set_primary_credentials(None)
             ba.internal.sign_in_v1('Local')
-        ba.timer(60,playlist.flush_playlists)
+        ba.timer(60, playlist.flush_playlists)
+
     def on_app_shutdown(self):
         pass
-
 
 
 def score_screen_on_begin(_stats: ba.Stats) -> None:
@@ -154,12 +158,13 @@ def import_games():
     maps = os.listdir("ba_root/mods/maps")
     for _map in maps:
         if _map.endswith(".py") or _map.endswith(".so"):
-            importlib.import_module("maps." + _map.replace(".so", "").replace(".py", ""))
+            importlib.import_module(
+                "maps." + _map.replace(".so", "").replace(".py", ""))
 
 
 def import_dual_team_score() -> None:
     """Imports the dual team score."""
-    if settings["newResultBoard"]:
+    if settings["newResultBoard"] and _ba.get_foreground_host_session().use_teams:
         dualteamscore.TeamVictoryScoreScreenActivity = newdts.TeamVictoryScoreScreenActivity
         multiteamscore.MultiTeamScoreScreenActivity.show_player_scores = newdts.show_player_scores
         drawscore.DrawScoreScreenActivity = newdts.DrawScoreScreenActivity
@@ -186,7 +191,7 @@ org_end = ba._activity.Activity.end
 def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     """Runs when game is ended."""
     activity = _ba.get_foreground_host_activity()
-    _ba.prop_axis(1,0,0)
+    _ba.prop_axis(1, 0, 0)
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
     org_end(self, results, delay, force)
@@ -195,22 +200,20 @@ def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
 ba._activity.Activity.end = new_end
 
 org_player_join = ba._activity.Activity.on_player_join
-
-
 def on_player_join(self, player) -> None:
     """Runs when player joins the game."""
     team_balancer.on_player_join()
     org_player_join(self, player)
-
-
 ba._activity.Activity.on_player_join = on_player_join
+
 
 def night_mode() -> None:
     """Checks the time and enables night mode."""
 
     if settings['autoNightMode']['enable']:
 
-        start = datetime.strptime(settings['autoNightMode']['startTime'], "%H:%M")
+        start = datetime.strptime(
+            settings['autoNightMode']['startTime'], "%H:%M")
         end = datetime.strptime(settings['autoNightMode']['endTime'], "%H:%M")
         now = datetime.now()
 
@@ -220,7 +223,8 @@ def night_mode() -> None:
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
 
             if settings['autoNightMode']['fireflies']:
-                activity.fireflies_generator(20,settings['autoNightMode']["fireflies_random_color"])
+                activity.fireflies_generator(
+                    20, settings['autoNightMode']["fireflies_random_color"])
 
 
 def kick_vote_started(started_by: str, started_to: str) -> None:
@@ -241,7 +245,30 @@ def on_kick_vote_end():
 def on_join_request(ip):
     servercheck.on_join_request(ip)
 
+
 def on_map_init():
     text_on_map.textonmap()
+    modifyspaz.setTeamCharacter()
+
+from ba._servermode import ServerController
 
 
+def shutdown(func) -> None:
+        """Set the app to quit either now or at the next clean opportunity."""
+        def wrapper(*args, **kwargs):
+            # add screen text and tell players we are going to restart soon.
+            _ba.restart_scheduled = True
+            _ba.get_foreground_host_activity().restart_msg = _ba.newnode('text',
+                                attrs={
+                                    'text':"Server going to restart after this series.",
+                                    'flatness':1.0,
+                                    'h_align':'right',
+                                    'v_attach':'bottom',
+                                    'h_attach':'right',
+                                    'scale':0.5,
+                                    'position':(-25,54),
+                                    'color':(1,0.5,0.7)
+                                })
+            func(*args, **kwargs)
+        return wrapper
+ServerController.shutdown = shutdown(ServerController.shutdown)

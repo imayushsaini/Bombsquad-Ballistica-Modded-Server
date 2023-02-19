@@ -265,7 +265,8 @@ def new_blast_init(
     lcolor = (0.6, 0.6, 1.0) if self.blast_type == "ice" else (1, 0.3, 0.1)
     light = ba.newnode(
         "light",
-        attrs={"position": position, "volume_intensity_scale": 10.0, "color": lcolor},
+        attrs={"position": position,
+               "volume_intensity_scale": 10.0, "color": lcolor},
     )
 
     scl = random.uniform(0.6, 0.9)

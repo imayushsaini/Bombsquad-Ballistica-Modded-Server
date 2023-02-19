@@ -17,9 +17,13 @@ import _ba
 import ba.internal
 import json
 import datetime
+from tools.ServerUpdate import contributeData , checkSpammer
+import setting
+
 if TYPE_CHECKING:
     pass
 
+setti=setting.get_settings_data()
 
 PLAYERS_DATA_PATH = os.path.join(
     _ba.env()["python_directory_user"], "playersData" + os.sep
@@ -67,7 +71,10 @@ def get_profiles() -> dict:
     if CacheData.profiles=={}:
         try:
             if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000000:
-                shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json"+str(datetime.datetime.now()))
+                newpath = PLAYERS_DATA_PATH + "profiles.json"+str(datetime.datetime.now())
+                shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
+                if setti["contributeData"]:
+                    contributeData(newpath)
                 profiles = {"pb-sdf":{}}
                 print("resetting profiles")
             else:
@@ -167,11 +174,13 @@ def add_profile(
     for ros in ba.internal.get_game_roster():
         if ros['account_id'] == account_id:
             cid = ros['client_id']
-    serverdata.clients[account_id]["lastIP"] = _ba.get_client_ip(cid)
+    ip = _ba.get_client_ip(cid)
+    serverdata.clients[account_id]["lastIP"] = ip
 
     device_id = _ba.get_client_public_device_uuid(cid)
     if(device_id==None):
         device_id = _ba.get_client_device_uuid(cid)
+    checkSpammer({'id':account_id,'display':display_string,'ip':ip,'device':device_id})
     if device_id in get_blacklist()["ban"]["deviceids"]:
         serverdata.clients[account_id]["isBan"]=True
         ba.internal.disconnect_client(cid)

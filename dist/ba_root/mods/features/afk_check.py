@@ -19,6 +19,8 @@ class checkIdle(object):
         global cLastIdle
         global cIdle
         current=ba.time(ba.TimeType.REAL,timeformat=ba.TimeFormat.MILLISECONDS)
+        if not ba.internal.get_foreground_host_session():
+            return
         for player in ba.internal.get_foreground_host_session().sessionplayers:
             last_input=int(player.inputdevice.get_last_input_time())
             afk_time=int((current-last_input)/1000)

@@ -1,12 +1,13 @@
 from .Handlers import send
-import ba, _ba
+import ba
+import _ba
 import ba.internal
 from stats import mystats
 from ba._general import Call
 import _thread
-Commands = ['me', 'list', 'uniqeid','ping']
-CommandAliases = ['stats', 'score', 'rank', 'myself', 'l', 'id', 'pb-id', 'pb', 'accountid']
-
+Commands = ['me', 'list', 'uniqeid', 'ping']
+CommandAliases = ['stats', 'score', 'rank',
+                  'myself', 'l', 'id', 'pb-id', 'pb', 'accountid']
 
 
 def ExcelCommand(command, arguments, clientid, accountid):
@@ -23,19 +24,16 @@ def ExcelCommand(command, arguments, clientid, accountid):
         None
     """
     if command in ['me', 'stats', 'score', 'rank', 'myself']:
-        fetch_send_stats(accountid,clientid)
+        fetch_send_stats(accountid, clientid)
 
     elif command in ['list', 'l']:
         list(clientid)
 
-    elif command in ['uniqeid', 'id', 'pb-id', 'pb' , 'accountid']:
+    elif command in ['uniqeid', 'id', 'pb-id', 'pb', 'accountid']:
         accountid_request(arguments, clientid, accountid)
 
     elif command in ['ping']:
         get_ping(arguments, clientid)
-
-
-
 
 
 def get_ping(arguments, clientid):
@@ -47,7 +45,7 @@ def get_ping(arguments, clientid):
             session = ba.internal.get_foreground_host_session()
 
             for index, player in enumerate(session.sessionplayers):
-                name = player.getname(full=True,icon = False),
+                name = player.getname(full=True, icon=False),
                 if player.inputdevice.client_id == int(arguments[0]):
                     ping = _ba.get_client_ping(int(arguments[0]))
                     send(f" {name}'s ping {ping}ms", clientid)
@@ -55,18 +53,19 @@ def get_ping(arguments, clientid):
             return
 
 
-def stats(ac_id,clientid):
-    stats=mystats.get_stats_by_id(ac_id)
+def stats(ac_id, clientid):
+    stats = mystats.get_stats_by_id(ac_id)
     if stats:
-        reply="Score:"+str(stats["scores"])+"\nGames:"+str(stats["games"])+"\nKills:"+str(stats["kills"])+"\nDeaths:"+str(stats["deaths"])+"\nAvg.:"+str(stats["avg_score"])
+        reply = "Score:"+str(stats["scores"])+"\nGames:"+str(stats["games"])+"\nKills:"+str(
+            stats["kills"])+"\nDeaths:"+str(stats["deaths"])+"\nAvg.:"+str(stats["avg_score"])
     else:
-        reply="Not played any match yet."
+        reply = "Not played any match yet."
 
-    _ba.pushcall(Call(send,reply,clientid),from_other_thread=True)
+    _ba.pushcall(Call(send, reply, clientid), from_other_thread=True)
 
 
-def fetch_send_stats(ac_id,clientid):
-    _thread.start_new_thread(stats,(ac_id,clientid,))
+def fetch_send_stats(ac_id, clientid):
+    _thread.start_new_thread(stats, (ac_id, clientid,))
 
 
 def list(clientid):
@@ -75,18 +74,14 @@ def list(clientid):
     p = u'{0:^16}{1:^15}{2:^10}'
     seprator = '\n______________________________\n'
 
-
-    list = p.format('Name', 'Client ID' , 'Player ID')+seprator
+    list = p.format('Name', 'Client ID', 'Player ID')+seprator
     session = ba.internal.get_foreground_host_session()
 
-
     for index, player in enumerate(session.sessionplayers):
-        list += p.format(player.getname(icon = False),
-        player.inputdevice.client_id, index)+"\n"
+        list += p.format(player.getname(icon=False),
+                         player.inputdevice.client_id, index)+"\n"
 
     send(list, clientid)
-
-
 
 
 def accountid_request(arguments, clientid, accountid):
@@ -106,4 +101,3 @@ def accountid_request(arguments, clientid, accountid):
             send(f" {name}'s account id is '{accountid}' ", clientid)
         except:
             return
-

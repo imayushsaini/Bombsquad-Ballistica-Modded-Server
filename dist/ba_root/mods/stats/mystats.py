@@ -1,3 +1,21 @@
+import setting
+import _ba
+import ba
+import json
+import os
+import shutil
+import threading
+import datetime
+import custom_hooks
+import urllib.request
+from ba._activitytypes import *
+from ba import _activitytypes as ba_actypes
+from ba._lobby import JoinInfo
+from typing import Any, Dict, Optional
+from ba._team import EmptyTeam  # pylint: disable=W0611
+from ba._player import EmptyPlayer  # pylint: disable=W0611
+from ba._music import setmusic, MusicType
+from ba._activity import Activity
 damage_data = {}
 # Don't touch the above line
 """
@@ -6,19 +24,7 @@ Provides functionality for dumping player stats to disk between rounds.
 """
 ranks = []
 top3Name = []
-import threading, json, os, urllib.request, ba, _ba, setting
-from ba._activity import Activity
-from ba._music import setmusic, MusicType
 # False-positive from pylint due to our class-generics-filter.
-from ba._player import EmptyPlayer  # pylint: disable=W0611
-from ba._team import EmptyTeam  # pylint: disable=W0611
-from typing import Any, Dict, Optional
-from ba._lobby import JoinInfo
-from ba import _activitytypes as ba_actypes
-from ba._activitytypes import *
-import urllib.request
-import custom_hooks
-import datetime
 
 # variables
 our_settings = setting.get_settings_data()
@@ -66,7 +72,6 @@ statsDefault = {
 
 # useful functions
 seasonStartDate = None
-import shutil, os
 
 
 def get_all_stats():
@@ -77,12 +82,14 @@ def get_all_stats():
             try:
                 jsonData = json.loads(f.read())
             except:
-                f=open(statsfile+".backup",encoding='utf-8')
-                jsonData=json.load(f)
+                f = open(statsfile+".backup", encoding='utf-8')
+                jsonData = json.load(f)
             try:
                 stats = jsonData["stats"]
-
-                seasonStartDate = datetime.datetime.strptime(jsonData["startDate"], "%d-%m-%Y")
+                seasonStartDate = datetime.datetime.strptime(
+                    jsonData["startDate"], "%d-%m-%Y")
+                _ba.season_ends_in_days = our_settings["statsResetAfterDays"] - (
+                    datetime.datetime.now() - seasonStartDate).days
                 if (datetime.datetime.now() - seasonStartDate).days >= our_settings["statsResetAfterDays"]:
                     backupStatsFile()
                     seasonStartDate = datetime.datetime.now()
@@ -96,7 +103,8 @@ def get_all_stats():
 
 
 def backupStatsFile():
-    shutil.copy(statsfile, statsfile.replace(".json", "") + str(seasonStartDate) + ".json")
+    shutil.copy(statsfile, statsfile.replace(
+        ".json", "") + str(seasonStartDate) + ".json")
 
 
 def dump_stats(s: dict):
@@ -105,7 +113,7 @@ def dump_stats(s: dict):
         seasonStartDate = datetime.datetime.now()
     s = {"startDate": seasonStartDate.strftime("%d-%m-%Y"), "stats": s}
     if os.path.exists(statsfile):
-        shutil.copyfile(statsfile,statsfile+".backup")
+        shutil.copyfile(statsfile, statsfile+".backup")
         with open(statsfile, 'w', encoding='utf8') as f:
             f.write(json.dumps(s, indent=4, ensure_ascii=False))
             f.close()
@@ -128,7 +136,8 @@ def refreshStats():
     # f=open(htmlfile, 'w')
     # f.write(html_start)
 
-    entries = [(a['scores'], a['kills'], a['deaths'], a['games'], a['name'], a['aid']) for a in pStats.values()]
+    entries = [(a['scores'], a['kills'], a['deaths'], a['games'],
+                a['name'], a['aid']) for a in pStats.values()]
     # this gives us a list of kills/names sorted high-to-low
     entries.sort(key=lambda x: x[1] or 0, reverse=True)
     rank = 0
@@ -144,7 +153,8 @@ def refreshStats():
             games = str(entry[3])
             name = str(entry[4])
             aid = str(entry[5])
-            if rank < 6: toppersIDs.append(aid)
+            if rank < 6:
+                toppersIDs.append(aid)
             # The below kd and avg_score will not be added to website's html document, it will be only added in stats.json
             try:
                 kd = str(float(kills) / float(deaths))
@@ -162,7 +172,8 @@ def refreshStats():
                 p_avg_score = "0"
             if damage_data and aid in damage_data:
                 dmg = damage_data[aid]
-                dmg = str(str(dmg).split('.')[0] + '.' + str(dmg).split('.')[1][:3])
+                dmg = str(str(dmg).split('.')[
+                          0] + '.' + str(dmg).split('.')[1][:3])
             else:
                 dmg = 0
 
@@ -170,30 +181,14 @@ def refreshStats():
 
             pStats[str(aid)]["rank"] = int(rank)
             pStats[str(aid)]["scores"] = int(scores)
-            pStats[str(aid)]["total_damage"] += float(dmg)  # not working properly
+            # not working properly
+            pStats[str(aid)]["total_damage"] += float(dmg)
             pStats[str(aid)]["games"] = int(games)
             pStats[str(aid)]["kills"] = int(kills)
             pStats[str(aid)]["deaths"] = int(deaths)
             pStats[str(aid)]["kd"] = float(p_kd)
             pStats[str(aid)]["avg_score"] = float(p_avg_score)
 
-    #             if rank < 201:
-    #                 #<td>{str(dmg)}</td> #removed this line as it isn't crt data
-    #                 f.write(f'''
-    #             <tr>
-    #                 <td>{str(rank)}</td>
-    #                 <td style="text-align:center">{str(name)}</td>
-    #                 <td>{str(scores)}</td>
-    #                 <td>{str(kills)}</td>
-    #                 <td>{str(deaths)}</td>
-    #                 <td>{str(games)}</td>
-    #             </tr>''')
-    #     f.write('''
-    #         </table>
-    #     </body>
-    # </html>''')
-
-    # f.close()
     global ranks
     ranks = _ranks
 
@@ -326,8 +321,6 @@ def updateTop3Names(ids):
                     raise ValueError
             except ValueError:
                 names.append("???")
-                
             else:
                 names.append(name)
     top3Name = names
-

@@ -6,18 +6,19 @@ import ba
 import random
 from random import choice
 CONFIGS = {
-                "Radius": 2.0,
-                "Blinking": False,
-                "AdaptivePos": True,
-                "IgnoreOnMaps": [],
-                "Colors": {
-                "Intensity": 0.8,
-                "Animate": True,
-                "Random": True,
-                "LeftSide": (1, 0, 1),
-                "RightSide": (0, 0, 1),
-                          }
-                     }
+    "Radius": 2.0,
+    "Blinking": False,
+    "AdaptivePos": True,
+    "IgnoreOnMaps": [],
+    "Colors": {
+        "Intensity": 0.8,
+        "Animate": True,
+        "Random": True,
+        "LeftSide": (1, 0, 1),
+        "RightSide": (0, 0, 1),
+    }
+}
+
 
 def get_random_color():
     """Fetches random color every time for our nodes"""

@@ -4,6 +4,7 @@
 """Functionality related to player-controlled Spazzes."""
 
 from __future__ import annotations
+from ba._generated.enums import TimeType
 from typing import TYPE_CHECKING, TypeVar, overload
 from bastd.actor.spaz import *
 from bastd.gameutils import SharedObjects
@@ -12,30 +13,40 @@ from bastd.actor import playerspaz
 from bastd.actor.playerspaz import *
 from bastd.actor.spazfactory import SpazFactory
 from bastd.actor.popuptext import PopupText
-from bastd.actor import spaz,spazappearance
+from bastd.actor import spaz, spazappearance
 from bastd.actor import bomb as stdbomb
 from bastd.actor.powerupbox import PowerupBoxFactory
-import ba,_ba,bastd,weakref,random,math,time,base64,os,json,setting
+import ba
+import _ba
+import bastd
+import weakref
+import random
+import math
+import time
+import base64
+import os
+import json
+import setting
 import ba.internal
 from playersData import pdata
 from stats import mystats
 PlayerType = TypeVar('PlayerType', bound=ba.Player)
 TeamType = TypeVar('TeamType', bound=ba.Team)
-from ba._generated.enums import TimeType
 tt = ba.TimeType.SIM
 tf = ba.TimeFormat.MILLISECONDS
 
-multicolor = {0:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              750:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              1000:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              1250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              1500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              1750:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              2000:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              2250:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0)),
-              2500:((0+random.random()*3.0),(0+random.random()*3.0),(0+random.random()*3.0))}
+multicolor = {0: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              250: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              500: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              750: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              1000: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              1250: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              1500: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              1750: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              2000: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              2250: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0)),
+              2500: ((0+random.random()*3.0), (0+random.random()*3.0), (0+random.random()*3.0))}
+
 
 class SurroundBallFactory(object):
     def __init__(self):
@@ -54,10 +65,13 @@ class SurroundBallFactory(object):
         try:
             self.mikuModel = ba.getmodel("operaSingerHead")
             self.mikuTex = ba.gettexture("operaSingerColor")
-        except:ba.print_exception()
+        except:
+            ba.print_exception()
         self.ballMaterial = ba.Material()
         self.impactSound = ba.getsound("impactMedium")
-        self.ballMaterial.add_actions(actions=("modify_node_collision", "collide", False))
+        self.ballMaterial.add_actions(
+            actions=("modify_node_collision", "collide", False))
+
 
 class SurroundBall(ba.Actor):
     def __init__(self, spaz, shape="bones"):
@@ -73,7 +87,8 @@ class SurroundBall(ba.Actor):
             "frosty": (factory.frostyModel, factory.frostyTex),
             "RedCube": (factory.cubeModel, factory.cubeTex)
         }.get(shape, (factory.bonesModel, factory.bonesTex))
-        self.node = ba.newnode("prop", attrs={"model": s_model, "body": "sphere", "color_texture": s_texture, "reflection": "soft", "model_scale": 0.5, "body_scale": 0.1, "density": 0.1, "reflection_scale": [0.15], "shadow_size": 0.6, "position": spaz.node.position, "velocity": (0, 0, 0), "materials": [SharedObjects.get().object_material, factory.ballMaterial] }, delegate=self)
+        self.node = ba.newnode("prop", attrs={"model": s_model, "body": "sphere", "color_texture": s_texture, "reflection": "soft", "model_scale": 0.5, "body_scale": 0.1, "density": 0.1, "reflection_scale": [
+                               0.15], "shadow_size": 0.6, "position": spaz.node.position, "velocity": (0, 0, 0), "materials": [SharedObjects.get().object_material, factory.ballMaterial]}, delegate=self)
         self.surroundTimer = None
         self.surroundRadius = 1.0
         self.angleDelta = math.pi / 12.0
@@ -87,15 +102,18 @@ class SurroundBall(ba.Actor):
 
     def getTargetPosition(self, spazPos):
         p = spazPos
-        pt = (p[0] + self.surroundRadius * math.cos(self.curAngle), p[1] + self.curHeight, p[2] + self.surroundRadius * math.sin(self.curAngle))
+        pt = (p[0] + self.surroundRadius * math.cos(self.curAngle), p[1] +
+              self.curHeight, p[2] + self.surroundRadius * math.sin(self.curAngle))
         self.curAngle += self.angleDelta
         self.curHeight += self.heightDelta * self.curHeightDir
-        if (self.curHeight > self.heightMax) or (self.curHeight < self.heightMin): self.curHeightDir = -self.curHeightDir
+        if (self.curHeight > self.heightMax) or (self.curHeight < self.heightMin):
+            self.curHeightDir = -self.curHeightDir
         return pt
 
     def initTimer(self, p):
         self.node.position = self.getTargetPosition(p)
-        self.surroundTimer = ba.Timer(30, self.circleMove, repeat=True, timetype=tt, timeformat=tf)
+        self.surroundTimer = ba.Timer(
+            30, self.circleMove, repeat=True, timetype=tt, timeformat=tf)
 
     def circleMove(self):
         spaz = self.spazRef()
@@ -117,19 +135,22 @@ class SurroundBall(ba.Actor):
     def handlemessage(self, m):
         ba.Actor.handlemessage(self, m)
         if isinstance(m, ba.DieMessage):
-            if self.surroundTimer is not None: self.surroundTimer = None
+            if self.surroundTimer is not None:
+                self.surroundTimer = None
             self.node.delete()
         elif isinstance(m, ba.OutOfBoundsMessage):
             self.handlemessage(ba.DieMessage())
 
     def getFactory(cls):
         activity = ba.getactivity()
-        if activity is None: raise Exception("no current activity")
+        if activity is None:
+            raise Exception("no current activity")
         try:
             return activity._sharedSurroundBallFactory
         except Exception:
             f = activity._sharedSurroundBallFactory = SurroundBallFactory()
             return f
+
 
 class Effect(ba.Actor):
     def __init__(self, spaz, player):
@@ -166,36 +187,42 @@ class Effect(ba.Actor):
         try:
             if cl_str in custom_effects:
                 effect = custom_effects[cl_str]
-
                 if effect == 'ice':
-
                     self.emitIce()
-                    self.snowTimer = ba.Timer(0.5, self.emitIce, repeat=True, timetype=TimeType.SIM)
+                    self.snowTimer = ba.Timer(
+                        0.5, self.emitIce, repeat=True, timetype=TimeType.SIM)
                     return
                 elif effect == 'sweat':
-                    self.smokeTimer = ba.Timer(0.6, self.emitSmoke, repeat=True, timetype=TimeType.SIM)
+                    self.smokeTimer = ba.Timer(
+                        0.6, self.emitSmoke, repeat=True, timetype=TimeType.SIM)
                     return
                 elif effect == 'scorch':
-                    self.scorchTimer = ba.Timer(500, self.update_Scorch, repeat=True, timetype=tt, timeformat=tf)
+                    self.scorchTimer = ba.Timer(
+                        500, self.update_Scorch, repeat=True, timetype=tt, timeformat=tf)
                     return
                 elif effect == 'glow':
                     self.addLightColor((1, 0.6, 0.4))
-                    self.checkDeadTimer = ba.Timer(150, self.checkPlayerifDead, repeat=True, timetype=tt, timeformat=tf)
+                    self.checkDeadTimer = ba.Timer(
+                        150, self.checkPlayerifDead, repeat=True, timetype=tt, timeformat=tf)
                     return
                 elif effect == 'distortion':
-                    self.DistortionTimer = ba.Timer(1000, self.emitDistortion, repeat=True, timetype=tt, timeformat=tf)
+                    self.DistortionTimer = ba.Timer(
+                        1000, self.emitDistortion, repeat=True, timetype=tt, timeformat=tf)
                     return
                 elif effect == 'slime':
-                    self.slimeTimer = ba.Timer(250, self.emitSlime, repeat=True, timetype=tt, timeformat=tf)
+                    self.slimeTimer = ba.Timer(
+                        250, self.emitSlime, repeat=True, timetype=tt, timeformat=tf)
                     return
                 elif effect == 'metal':
-                    self.metalTimer = ba.Timer(500, self.emitMetal, repeat=True, timetype=tt, timeformat=tf)
+                    self.metalTimer = ba.Timer(
+                        500, self.emitMetal, repeat=True, timetype=tt, timeformat=tf)
                     return
                 elif effect == 'surrounder':
                     self.surround = SurroundBall(spaz, shape="bones")
                     return
                 elif effect == 'spark':
-                    self.sparkTimer = ba.Timer(100, self.emitSpark, repeat=True, timetype=tt, timeformat=tf)
+                    self.sparkTimer = ba.Timer(
+                        100, self.emitSpark, repeat=True, timetype=tt, timeformat=tf)
                     return
         except:
             pass
@@ -206,29 +233,36 @@ class Effect(ba.Actor):
                 rank = pats[cl_str]["rank"]
                 if rank < 6:
                     if rank == 1:
-
-                        self.surround = SurroundBall(spaz, shape="bones") #self.neroLightTimer = ba.Timer(500, ba.WeakCall(self.neonLightSwitch,("shine" in self.Decorations),("extra_Highlight" in self.Decorations),("extra_NameColor" in self.Decorations)),repeat = True, timetype=tt, timeformat=tf)
+                        # self.neroLightTimer = ba.Timer(500, ba.WeakCall(self.neonLightSwitch,("shine" in self.Decorations),("extra_Highlight" in self.Decorations),("extra_NameColor" in self.Decorations)),repeat = True, timetype=tt, timeformat=tf)
+                        self.surround = SurroundBall(spaz, shape="bones")
                     elif rank == 2:
 
-                        self.smokeTimer = ba.Timer(40, self.emitSmoke, repeat=True, timetype=tt, timeformat=tf)
+                        self.smokeTimer = ba.Timer(
+                            40, self.emitSmoke, repeat=True, timetype=tt, timeformat=tf)
                     elif rank == 3:
 
-                        self.addLightColor((1, 0.6, 0.4));self.scorchTimer = ba.Timer(500, self.update_Scorch, repeat=True, timetype=tt, timeformat=tf)
+                        self.addLightColor((1, 0.6, 0.4))
+                        self.scorchTimer = ba.Timer(
+                            500, self.update_Scorch, repeat=True, timetype=tt, timeformat=tf)
                     elif rank == 4:
-
-                        self.metalTimer = ba.Timer(500, self.emitMetal, repeat=True, timetype=tt, timeformat=tf)
+                        self.metalTimer = ba.Timer(
+                            500, self.emitMetal, repeat=True, timetype=tt, timeformat=tf)
                     else:
-
-                        self.addLightColor((1, 0.6, 0.4));self.checkDeadTimer = ba.Timer(150, self.checkPlayerifDead, repeat=True, timetype=tt, timeformat=tf)
+                        self.addLightColor((1, 0.6, 0.4))
+                        self.checkDeadTimer = ba.Timer(
+                            150, self.checkPlayerifDead, repeat=True, timetype=tt, timeformat=tf)
 
         if "smoke" and "spark" and "snowDrops" and "slimeDrops" and "metalDrops" and "Distortion" and "neroLight" and "scorch" and "HealTimer" and "KamikazeCheck" not in self.Decorations:
-            #self.checkDeadTimer = ba.Timer(150, ba.WeakCall(self.checkPlayerifDead), repeat=True, timetype=tt, timeformat=tf)
+            # self.checkDeadTimer = ba.Timer(150, ba.WeakCall(self.checkPlayerifDead), repeat=True, timetype=tt, timeformat=tf)
             if self.source_player.is_alive() and self.source_player.actor.node.exists():
-                #print("OK")
-                self.source_player.actor.node.addDeathAction(ba.Call(self.handlemessage,ba.DieMessage()))
+                # print("OK")
+                self.source_player.actor.node.addDeathAction(
+                    ba.Call(self.handlemessage, ba.DieMessage()))
 
     def add_multicolor_effect(self):
-        if spaz.node: ba.animate_array(spaz.node, 'color', 3, multicolor, True, timetype=tt, timeformat=tf)
+        if spaz.node:
+            ba.animate_array(spaz.node, 'color', 3, multicolor,
+                             True, timetype=tt, timeformat=tf)
 
     def checkPlayerifDead(self):
         spaz = self.spazRef()
@@ -240,53 +274,66 @@ class Effect(ba.Actor):
     def update_Scorch(self):
         spaz = self.spazRef()
         if spaz is not None and spaz.is_alive() and spaz.node.exists():
-            color = (random.random(),random.random(),random.random())
-            if not hasattr(self,"scorchNode") or self.scorchNode == None:
+            color = (random.random(), random.random(), random.random())
+            if not hasattr(self, "scorchNode") or self.scorchNode == None:
                 self.scorchNode = None
-                self.scorchNode = ba.newnode("scorch",attrs={"position":(spaz.node.position),"size":1.17,"big":True})
-                spaz.node.connectattr("position",self.scorchNode,"position")
-            ba.animate_array(self.scorchNode,"color",3,{0:self.scorchNode.color,500:color}, timetype=tt, timeformat=tf)
+                self.scorchNode = ba.newnode("scorch", attrs={"position": (
+                    spaz.node.position), "size": 1.17, "big": True})
+                spaz.node.connectattr("position", self.scorchNode, "position")
+            ba.animate_array(self.scorchNode, "color", 3, {
+                             0: self.scorchNode.color, 500: color}, timetype=tt, timeformat=tf)
         else:
             self.scorchTimer = None
-            if hasattr(self,"scorchNode"):
+            if hasattr(self, "scorchNode"):
                 self.scorchNode.delete()
             self.handlemessage(ba.DieMessage())
 
-    def neonLightSwitch(self,shine,Highlight,NameColor):
+    def neonLightSwitch(self, shine, Highlight, NameColor):
         spaz = self.spazRef()
         if spaz is not None and spaz.is_alive() and spaz.node.exists():
-            color = (random.random(),random.random(),random.random())
-            if NameColor: ba.animate_array(spaz.node,"nameColor",3,{0:spaz.node.nameColor,500:ba.safecolor(color)}, timetype=tt, timeformat=tf)
-            if shine:color = tuple([min(10., 10 * x) for x in color])
-            ba.animate_array(spaz.node,"color",3,{0:spaz.node.color,500:color}, timetype=tt, timeformat=tf)
+            color = (random.random(), random.random(), random.random())
+            if NameColor:
+                ba.animate_array(spaz.node, "nameColor", 3, {
+                                 0: spaz.node.nameColor, 500: ba.safecolor(color)}, timetype=tt, timeformat=tf)
+            if shine:
+                color = tuple([min(10., 10 * x) for x in color])
+            ba.animate_array(spaz.node, "color", 3, {
+                             0: spaz.node.color, 500: color}, timetype=tt, timeformat=tf)
             if Highlight:
-                #print spaz.node.highlight
-                color = (random.random(),random.random(),random.random())
-                if shine:color = tuple([min(10., 10 * x) for x in color])
-                ba.animate_array(spaz.node,"highlight",3,{0:spaz.node.highlight,500:color}, timetype=tt, timeformat=tf)
+                # print spaz.node.highlight
+                color = (random.random(), random.random(), random.random())
+                if shine:
+                    color = tuple([min(10., 10 * x) for x in color])
+                ba.animate_array(spaz.node, "highlight", 3, {
+                                 0: spaz.node.highlight, 500: color}, timetype=tt, timeformat=tf)
         else:
             self.neroLightTimer = None
             self.handlemessage(ba.DieMessage())
 
     def addLightColor(self, color):
-        self.light = ba.newnode("light", attrs={"color": color, "height_attenuated": False, "radius": 0.4})
+        self.light = ba.newnode(
+            "light", attrs={"color": color, "height_attenuated": False, "radius": 0.4})
         self.spazRef().node.connectattr("position", self.light, "position")
-        ba.animate(self.light, "intensity", {0: 0.1, 250: 0.3, 500: 0.1}, loop=True, timetype=tt, timeformat=tf)
+        ba.animate(self.light, "intensity", {
+                   0: 0.1, 250: 0.3, 500: 0.1}, loop=True, timetype=tt, timeformat=tf)
 
     def emitDistortion(self):
         spaz = self.spazRef()
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position,emit_type="distortion",spread=1.0)
-        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,count=random.randint(1,5),emit_type="tendrils",tendril_type="smoke")
+        ba.emitfx(position=spaz.node.position,
+                  emit_type="distortion", spread=1.0)
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(1, 5), emit_type="tendrils", tendril_type="smoke")
 
     def emitSpark(self):
         spaz = self.spazRef()
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity, count=random.randint(1,10), scale=2, spread=0.2, chunk_type="spark")
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(1, 10), scale=2, spread=0.2, chunk_type="spark")
 
     def emitIce(self):
         spaz = self.spazRef()
@@ -294,57 +341,78 @@ class Effect(ba.Actor):
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position , velocity=spaz.node.velocity, count=random.randint(2,8), scale=0.4, spread=0.2, chunk_type="ice")
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(2, 8), scale=0.4, spread=0.2, chunk_type="ice")
 
     def emitSmoke(self):
         spaz = self.spazRef()
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity, count=random.randint(1,10), scale=2, spread=0.2, chunk_type="sweat")
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(1, 10), scale=2, spread=0.2, chunk_type="sweat")
 
     def emitSlime(self):
         spaz = self.spazRef()
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position , velocity=spaz.node.velocity, count=random.randint(1,10), scale=0.4, spread=0.2, chunk_type="slime")
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(1, 10), scale=0.4, spread=0.2, chunk_type="slime")
 
     def emitMetal(self):
         spaz = self.spazRef()
         if spaz is None or not spaz.is_alive() or not spaz.node.exists():
             self.handlemessage(ba.DieMessage())
             return
-        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity, count=random.randint(2,8), scale=0.4, spread=0.2, chunk_type="metal")
+        ba.emitfx(position=spaz.node.position, velocity=spaz.node.velocity,
+                  count=random.randint(2, 8), scale=0.4, spread=0.2, chunk_type="metal")
 
     def handlemessage(self, m):
-        #self._handlemessageSanityCheck()
-        if isinstance(m, ba.OutOfBoundsMessage): self.handlemessage(ba.DieMessage())
+        # self._handlemessageSanityCheck()
+        if isinstance(m, ba.OutOfBoundsMessage):
+            self.handlemessage(ba.DieMessage())
         elif isinstance(m, ba.DieMessage):
-            if hasattr(self,"light") and self.light is not None:self.light.delete()
-            if hasattr(self,"smokeTimer"):self.smokeTimer = None
-            if hasattr(self,"surround"):self.surround = None
-            if hasattr(self,"sparkTimer"):self.sparkTimer = None
-            if hasattr(self,"snowTimer"):self.snowTimer = None
-            if hasattr(self,"metalTimer"):self.metalTimer = None
-            if hasattr(self,"DistortionTimer"):self.DistortionTimer = None
-            if hasattr(self,"slimeTimer"):self.slimeTimer = None
-            if hasattr(self,"KamikazeCheck"):self.KamikazeCheck = None
-            if hasattr(self,"neroLightTimer"):self.neroLightTimer = None
-            if hasattr(self,"checkDeadTimer"):self.checkDeadTimer = None
-            if hasattr(self,"HealTimer"):self.HealTimer = None
-            if hasattr(self,"scorchTimer"):self.scorchTimer = None
-            if hasattr(self,"scorchNode"):self.scorchNode = None
+            if hasattr(self, "light") and self.light is not None:
+                self.light.delete()
+            if hasattr(self, "smokeTimer"):
+                self.smokeTimer = None
+            if hasattr(self, "surround"):
+                self.surround = None
+            if hasattr(self, "sparkTimer"):
+                self.sparkTimer = None
+            if hasattr(self, "snowTimer"):
+                self.snowTimer = None
+            if hasattr(self, "metalTimer"):
+                self.metalTimer = None
+            if hasattr(self, "DistortionTimer"):
+                self.DistortionTimer = None
+            if hasattr(self, "slimeTimer"):
+                self.slimeTimer = None
+            if hasattr(self, "KamikazeCheck"):
+                self.KamikazeCheck = None
+            if hasattr(self, "neroLightTimer"):
+                self.neroLightTimer = None
+            if hasattr(self, "checkDeadTimer"):
+                self.checkDeadTimer = None
+            if hasattr(self, "HealTimer"):
+                self.HealTimer = None
+            if hasattr(self, "scorchTimer"):
+                self.scorchTimer = None
+            if hasattr(self, "scorchNode"):
+                self.scorchNode = None
             if not self._hasDead:
                 spaz = self.spazRef()
-                #print str(spaz) + "Spaz"
-                if spaz is not None and spaz.is_alive() and spaz.node.exists(): spaz.node.color = self.spazNormalColor
+                # print str(spaz) + "Spaz"
+                if spaz is not None and spaz.is_alive() and spaz.node.exists():
+                    spaz.node.color = self.spazNormalColor
                 killer = spaz.last_player_attacked_by if spaz is not None else None
                 try:
-                    if killer in (None,ba.Player(None)) or killer.actor is None or not killer.actor.exists() or killer.actor.hitPoints <= 0:killer = None
+                    if killer in (None, ba.Player(None)) or killer.actor is None or not killer.actor.exists() or killer.actor.hitPoints <= 0:
+                        killer = None
                 except:
                     killer = None
-                    #if hasattr(self,"hasDead") and not self.hasDead:
+                    # if hasattr(self,"hasDead") and not self.hasDead:
                 self._hasDead = True
 
         ba.Actor.handlemessage(self, m)

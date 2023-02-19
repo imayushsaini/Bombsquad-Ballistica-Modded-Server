@@ -87,8 +87,8 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                         kill_delay: float, shiftdelay: float) -> None:
         del kill_delay  # Unused arg.
         ZoomText(ba.Lstr(value='${A}', subs=[('${A}', team.name)]),
-                 position=(-250, 260) if pos_v == 65 else (250,260),
-                 shiftposition=(-250, 260) if pos_v == 65 else (250,260),
+                 position=(-250, 260) if pos_v == 65 else (250, 260),
+                 shiftposition=(-250, 260) if pos_v == 65 else (250, 260),
                  shiftdelay=shiftdelay,
                  flash=False,
                  trail=False,
@@ -101,10 +101,10 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     def _show_team_old_score(self, pos_v: float, sessionteam: ba.SessionTeam,
                              shiftdelay: float) -> None:
         ZoomText(str(sessionteam.customdata['score'] - 1),
-                 position=(-250, 190) if pos_v == 65 else (250,190),
+                 position=(-250, 190) if pos_v == 65 else (250, 190),
                  maxwidth=100,
                  color=(0.6, 0.6, 0.7),
-                 shiftposition=(-250, 190) if pos_v == 65 else (250,190),
+                 shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
                  shiftdelay=shiftdelay,
                  flash=False,
                  trail=False,
@@ -118,10 +118,10 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                          shiftdelay: float) -> None:
         del kill_delay  # Unused arg.
         ZoomText(str(sessionteam.customdata['score']),
-                 position=(-250, 190) if pos_v == 65 else (250,190),
+                 position=(-250, 190) if pos_v == 65 else (250, 190),
                  maxwidth=100,
                  color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
-                 shiftposition=(-250, 190) if pos_v == 65 else (250,190),
+                 shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
                  shiftdelay=shiftdelay,
                  flash=scored,
                  trail=scored,
@@ -137,26 +137,25 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 # ====================================================================================================
 
 def show_player_scores(self,
-                           delay: float = 2.5,
-                           results: Optional[ba.GameResults] = None,
-                           scale: float = 1.0,
-                           x_offset: float = 0.0,
-                           y_offset: float = 0.0) -> None:
-        """Show scores for individual players."""
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
+                       delay: float = 2.5,
+                       results: Optional[ba.GameResults] = None,
+                       scale: float = 1.0,
+                       x_offset: float = 0.0,
+                       y_offset: float = 0.0) -> None:
+    """Show scores for individual players."""
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
 
-        ts_v_offset = 150.0 + y_offset
-        ts_h_offs = 80.0 + x_offset
-        tdelay = delay
-        spacing = 40
+    ts_v_offset = 150.0 + y_offset
+    ts_h_offs = 80.0 + x_offset
+    tdelay = delay
+    spacing = 40
 
+    is_free_for_all = isinstance(self.session, ba.FreeForAllSession)
 
-        is_free_for_all = isinstance(self.session, ba.FreeForAllSession)
+    is_two_team = True if len(self.session.sessionteams) == 2 else False
 
-        is_two_team = True if len(self.session.sessionteams) == 2 else False
-
-        def _get_prec_score(p_rec: ba.PlayerRecord) -> Optional[int]:
+    def _get_prec_score(p_rec: ba.PlayerRecord) -> Optional[int]:
             if is_free_for_all and results is not None:
                 assert isinstance(results, ba.GameResults)
                 assert p_rec.team.activityteam is not None
@@ -164,7 +163,7 @@ def show_player_scores(self,
                 return val
             return p_rec.accumscore
 
-        def _get_prec_score_str(p_rec: ba.PlayerRecord) -> Union[str, ba.Lstr]:
+    def _get_prec_score_str(p_rec: ba.PlayerRecord) -> Union[str, ba.Lstr]:
             if is_free_for_all and results is not None:
                 assert isinstance(results, ba.GameResults)
                 assert p_rec.team.activityteam is not None
@@ -177,7 +176,7 @@ def show_player_scores(self,
         # the game.. if we're using results we have to filter those out
         # (since they're not in results and that's where we pull their
         # scores from)
-        if results is not None:
+    if results is not None:
             assert isinstance(results, ba.GameResults)
             player_records = []
             assert self.stats
@@ -199,23 +198,23 @@ def show_player_scores(self,
                             team.players[0])
                         if player_entry is not None:
                             player_records.append(player_entry)
-        else:
-            player_records = []
-            player_records_scores = [
+    else:
+        player_records = []
+        player_records_scores = [
                 (_get_prec_score(p), name, p)
                 for name, p in list(self.stats.get_records().items())
             ]
-            player_records_scores.sort(reverse=True)
+        player_records_scores.sort(reverse=True)
 
             # Just want living player entries.
-            player_records = [p[2] for p in player_records_scores if p[2]]
+        player_records = [p[2] for p in player_records_scores if p[2]]
 
-        voffs = -140.0 + spacing * 5 * 0.5
+    voffs = -140.0 + spacing * 5 * 0.5
 
-        voffs_team0=voffs
-        tdelay_team0=tdelay
+    voffs_team0 = voffs
+    tdelay_team0 = tdelay
 
-        def _txt(xoffs: float,
+    def _txt(xoffs: float,
                  yoffs: float,
                  text: ba.Lstr,
                  h_align: Text.HAlign = Text.HAlign.RIGHT,
@@ -232,50 +231,50 @@ def show_player_scores(self,
                  transition=Text.Transition.IN_LEFT,
                  transition_delay=tdelay).autoretain()
 
-        session = self.session
-        assert isinstance(session, ba.MultiTeamSession)
-        if is_two_team:
-            tval =  "Game "+str(session.get_game_number())+" Results"
+    session = self.session
+    assert isinstance(session, ba.MultiTeamSession)
+    if is_two_team:
+            tval = "Game "+str(session.get_game_number())+" Results"
             _txt(-75,
                  160,
                  tval,
                  h_align=Text.HAlign.CENTER,
                  extrascale=1.4,
                  maxwidth=None)
-        _txt(-15, 4, ba.Lstr(resource='playerText'), h_align=Text.HAlign.LEFT)
-        _txt(180, 4, ba.Lstr(resource='killsText'))
-        _txt(280, 4, ba.Lstr(resource='deathsText'), maxwidth=100)
+    _txt(-15, 4, ba.Lstr(resource='playerText'), h_align=Text.HAlign.LEFT)
+    _txt(180, 4, ba.Lstr(resource='killsText'))
+    _txt(280, 4, ba.Lstr(resource='deathsText'), maxwidth=100)
 
-        score_label = 'Score' if results is None else results.score_label
-        translated = ba.Lstr(translate=('scoreNames', score_label))
+    score_label = 'Score' if results is None else results.score_label
+    translated = ba.Lstr(translate=('scoreNames', score_label))
 
-        _txt(390, 0, translated)
+    _txt(390, 0, translated)
 
-        if is_two_team:
-            _txt(-595, 4, ba.Lstr(resource='playerText'), h_align=Text.HAlign.LEFT)
+    if is_two_team:
+            _txt(-595, 4, ba.Lstr(resource='playerText'),
+                 h_align=Text.HAlign.LEFT)
             _txt(-400, 4, ba.Lstr(resource='killsText'))
             _txt(-300, 4, ba.Lstr(resource='deathsText'), maxwidth=100)
             _txt(-190, 0, translated)
 
-
-        topkillcount = 0
-        topkilledcount = 99999
-        top_score = 0 if not player_records else _get_prec_score(
+    topkillcount = 0
+    topkilledcount = 99999
+    top_score = 0 if not player_records else _get_prec_score(
             player_records[0])
 
-        for prec in player_records:
+    for prec in player_records:
             topkillcount = max(topkillcount, prec.accum_kill_count)
             topkilledcount = min(topkilledcount, prec.accum_killed_count)
 
-        def _scoretxt(text: Union[str, ba.Lstr],
+    def _scoretxt(text: Union[str, ba.Lstr],
                       x_offs: float,
                       highlight: bool,
                       delay2: float,
-                      maxwidth: float = 70.0,team_id=1) -> None:
-            
+                      maxwidth: float = 70.0, team_id=1) -> None:
+
             Text(text,
                  position=(ts_h_offs + x_offs * scale,
-                           ts_v_offset + (voffs + 15) * scale) if team_id==1 else (ts_h_offs+x_offs*scale,ts_v_offset+(voffs_team0+15)*scale),
+                           ts_v_offset + (voffs + 15) * scale) if team_id == 1 else (ts_h_offs+x_offs*scale, ts_v_offset+(voffs_team0+15)*scale),
                  scale=scale,
                  color=(1.0, 0.9, 0.5, 1.0) if highlight else
                  (0.5, 0.5, 0.6, 0.5),
@@ -283,36 +282,30 @@ def show_player_scores(self,
                  v_align=Text.VAlign.CENTER,
                  maxwidth=maxwidth,
                  transition=Text.Transition.IN_LEFT,
-                 transition_delay=(tdelay + delay2) if team_id==1 else (tdelay_team0+delay2) ).autoretain()
+                 transition_delay=(tdelay + delay2) if team_id == 1 else (tdelay_team0+delay2)).autoretain()
 
-        for playerrec in player_records:
-            if is_two_team and playerrec.team.id==0:
-                tdelay_team0 +=0.05
-                voffs_team0 -=spacing
-                x_image=617
-                x_text=-595
-                y=ts_v_offset + (voffs_team0 + 15.0) * scale
+    for playerrec in player_records:
+        if is_two_team and playerrec.team.id == 0:
+                tdelay_team0 += 0.05
+                voffs_team0 -= spacing
+                x_image = 617
+                x_text = -595
+                y = ts_v_offset + (voffs_team0 + 15.0) * scale
 
-
-                
-
-            else:
+        else:
                 tdelay += 0.05
                 voffs -= spacing
-                x_image=12
-                x_text=10.0
-                y=ts_v_offset + (voffs + 15.0) * scale
-                
+                x_image = 12
+                x_text = 10.0
+                y = ts_v_offset + (voffs + 15.0) * scale
 
-            
-            
-            Image(playerrec.get_icon(),
-                  position=(ts_h_offs - x_image* scale,
+        Image(playerrec.get_icon(),
+                  position=(ts_h_offs - x_image * scale,
                             y),
                   scale=(30.0 * scale, 30.0 * scale),
                   transition=Image.Transition.IN_LEFT,
-                  transition_delay=tdelay if playerrec.team.id==1 else tdelay_team0).autoretain()
-            Text(ba.Lstr(value=playerrec.getname(full=True)),
+                  transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
+        Text(ba.Lstr(value=playerrec.getname(full=True)),
                  maxwidth=160,
                  scale=0.75 * scale,
                  position=(ts_h_offs + x_text * scale,
@@ -321,16 +314,16 @@ def show_player_scores(self,
                  v_align=Text.VAlign.CENTER,
                  color=ba.safecolor(playerrec.team.color + (1, )),
                  transition=Text.Transition.IN_LEFT,
-                 transition_delay=tdelay if playerrec.team.id==1 else tdelay_team0).autoretain()
+                 transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
 
-            if is_two_team and playerrec.team.id==0:
+        if is_two_team and playerrec.team.id == 0:
                 _scoretxt(str(playerrec.accum_kill_count), -400,
-                      playerrec.accum_kill_count == topkillcount, 0.1,team_id=0)
+                          playerrec.accum_kill_count == topkillcount, 0.1, team_id=0)
                 _scoretxt(str(playerrec.accum_killed_count), -300,
-                      playerrec.accum_killed_count == topkilledcount, 0.1,team_id=0)
+                          playerrec.accum_killed_count == topkilledcount, 0.1, team_id=0)
                 _scoretxt(_get_prec_score_str(playerrec), -190,
-                      _get_prec_score(playerrec) == top_score, 0.2,team_id=0)
-            else:
+                          _get_prec_score(playerrec) == top_score, 0.2, team_id=0)
+        else:
                 _scoretxt(str(playerrec.accum_kill_count), 180,
                           playerrec.accum_kill_count == topkillcount, 0.1)
                 _scoretxt(str(playerrec.accum_killed_count), 280,
