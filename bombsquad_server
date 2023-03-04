@@ -22,8 +22,8 @@ ERROR_LOGGING=False
 
 import os,platform,shutil
 def migrate_to_aarch():
-    maps = ["BridgitMash.so","BridgitParallelo.so","CreativeThoughts.so","FloatingIsland.so","InTheAir.so","soccerStadiumPro.so"]
-    games = ["BlockDash.so","CanonFight.so","DuelElimination.so","FlappyBird.so","LaserTracer.so","MonkeyClimb.so","OneNightNoStand.so","soccer.so",
+    maps = ["BridgitMash.so","FloatingIsland.so","InTheAir.so"]
+    games = ["CanonFight.so","DuelElimination.so","FlappyBird.so","LaserTracer.so","MonkeyClimb.so","OneNightNoStand.so","RealSoccer.so",
     "SquidRace.so","StumbleRace.so","SubwayRun.so","UFOAttackGame.so"]
     features = ["StumbledScoreScreen.so"]
     tools = ["corelib.so"]

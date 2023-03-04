@@ -48,7 +48,7 @@ max_party_size: 6
 # playlist editor in the regular version of the game.
 # This will give you a numeric code you can enter here to host that
 # playlist.
-playlist_code: 374313
+playlist_code: 412158
 
 # Alternately, you can embed playlist data here instead of using codes.
 # Make sure to set session_type to the correct type for the data here.
