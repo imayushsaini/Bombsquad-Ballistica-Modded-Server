@@ -31,7 +31,7 @@ from spazmod import modifyspaz
 from tools import servercheck, ServerUpdate, logger, playlist
 from playersData import pdata
 from features import EndVote
-from features import text_on_map
+from features import text_on_map, announcement
 from features import map_fun
 from spazmod import modifyspaz
 if TYPE_CHECKING:
@@ -194,9 +194,8 @@ def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     _ba.prop_axis(1, 0, 0)
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
+    announcement.showScoreScreenAnnouncement()
     org_end(self, results, delay, force)
-
-
 ba._activity.Activity.end = new_end
 
 org_player_join = ba._activity.Activity.on_player_join
@@ -257,6 +256,7 @@ def shutdown(func) -> None:
         """Set the app to quit either now or at the next clean opportunity."""
         def wrapper(*args, **kwargs):
             # add screen text and tell players we are going to restart soon.
+            ba.internal.chatmessage("Server will restart on next opportunity. (series end)")
             _ba.restart_scheduled = True
             _ba.get_foreground_host_activity().restart_msg = _ba.newnode('text',
                                 attrs={

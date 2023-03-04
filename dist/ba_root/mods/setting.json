@@ -19,6 +19,10 @@
                 ]
         }
     },
+    "ScoreScreenAnnouncement":{
+        "enable": true,
+        "msg": ["click stats button to join discord", "watch hey smoothy youtube channel","downlaod new mods from discord"]
+    },
     "statsResetAfterDays":31,
     "leaderboard":{
         "enable":true,
@@ -33,11 +37,13 @@
     },
     "colorfullMap":true,
     "playlists":{
-        "default":12345,
         "team":12345,
-        "ffa":22222,
-        "elim":34343,
-        "death":23432
+        "ffa":412175,
+        "elim":412172,
+        "soccer":412160,
+        "smash":412151,
+        "ffasmash":412179,
+        "epic":412173
     },
     "coopModeWithLessPlayers":{
         "enable":false,

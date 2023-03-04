@@ -34,6 +34,10 @@
        "71":{
               "log":"BS 1.7.10 update , bug fix , V2 account support, prop rotation",
               "time":"2 Oct 2022"
+       },
+       "75": {
+              "log": "bug fixes, BS 1.7.19 , season end notfication, server restart notification, more maps and games",
+              "time": "4 March 2023"
        }
 
 }

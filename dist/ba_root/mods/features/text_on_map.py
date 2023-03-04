@@ -8,8 +8,6 @@ import ba.internal
 import setting
 from stats import mystats
 from datetime import datetime
-
-
 import random
 setti=setting.get_settings_data()
 class textonmap:
@@ -30,7 +28,7 @@ class textonmap:
         self.nextGame(nextMap)
         self.restart_msg()
         if hasattr(_ba, "season_ends_in_days"):
-            if _ba.season_ends_in_days < 8:
+            if _ba.season_ends_in_days < 9:
                 self.season_reset(_ba.season_ends_in_days)
         if setti["leaderboard"]["enable"]:
             self.leaderBoard()
