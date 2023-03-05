@@ -109,6 +109,8 @@
     "minAgeToJoinInHours":24,
     "maxWarnCount":2,
     "WarnCooldownMinutes":30,
+    "maxAccountPerIP":1,
+    "maxPlayersPerDevice":1,
     "warnMsg":"WARNING !!!",
     "afterWarnKickMsg":"Enough warnings, Goodbye have a nice day :)",
     "firstTimeJoinMsg":"Welcome to the server,we r saving all your account details and chats",

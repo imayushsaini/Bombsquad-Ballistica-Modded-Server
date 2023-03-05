@@ -25,7 +25,7 @@ from bastd.activity.coopscore import CoopScoreScreen
 import setting
 
 from chatHandle import handlechat
-from features import team_balancer, afk_check, fire_flies, dual_team_score as newdts
+from features import team_balancer, afk_check, fire_flies, hearts, dual_team_score as newdts
 from stats import mystats
 from spazmod import modifyspaz
 from tools import servercheck, ServerUpdate, logger, playlist
@@ -78,6 +78,7 @@ def score_screen_on_begin(_stats: ba.Stats) -> None:
     """Runs when score screen is displayed."""
     team_balancer.balanceTeams()
     mystats.update(_stats)
+    announcement.showScoreScreenAnnouncement()
 
 
 def playerspaz_init(playerspaz: ba.Player, node: ba.Node, player: ba.Player):
@@ -194,7 +195,6 @@ def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     _ba.prop_axis(1, 0, 0)
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
-    announcement.showScoreScreenAnnouncement()
     org_end(self, results, delay, force)
 ba._activity.Activity.end = new_end
 
@@ -251,7 +251,6 @@ def on_map_init():
 
 from ba._servermode import ServerController
 
-
 def shutdown(func) -> None:
         """Set the app to quit either now or at the next clean opportunity."""
         def wrapper(*args, **kwargs):
@@ -272,3 +271,18 @@ def shutdown(func) -> None:
             func(*args, **kwargs)
         return wrapper
 ServerController.shutdown = shutdown(ServerController.shutdown)
+
+from ba._session import Session
+def on_player_request(func) -> bool:
+    def wrapper(*args, **kwargs):
+        player = args[1]
+        count = 0
+        for current_player in args[0].sessionplayers:
+            if current_player.get_v1_account_id() == player.get_v1_account_id():
+                count +=1
+        if count >= settings["maxPlayersPerDevice"]:
+            _ba.screenmessage("Reached max players limit per device",clients=[player.inputdevice.client_id],transient=True,)
+            return False
+        return func(*args, **kwargs)
+    return wrapper
+Session.on_player_request = on_player_request(Session.on_player_request)

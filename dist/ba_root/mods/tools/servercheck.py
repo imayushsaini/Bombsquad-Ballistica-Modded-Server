@@ -31,11 +31,24 @@ class checkserver(object):
 
     def check(self):
         newPlayers = []
+        ipClientMap = {}
         for ros in ba.internal.get_game_roster():
-
+            ip = _ba.get_client_ip(ros["client_id"])
+            if ip not in ipClientMap:
+                ipClientMap[ip] = [ros["client_id"]]
+            else:
+                ipClientMap[ip].append(ros["client_id"])
+                if len(ipClientMap[ip]) >= settings['maxAccountPerIP']:
+                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
+                    ba.internal.disconnect_client(ros["client_id"])
+                    logger.log(" Player disconnected, reached max players per IP address ||"+ ros["account_id"] ,
+                        "playerjoin")
+                    continue
             newPlayers.append(ros['account_id'])
             if ros['account_id'] not in self.players and ros[
                 'client_id'] != -1:
+                # new player joined lobby
+
                 d_str = ros['display_string']
                 d_str2 = profanity.censor(d_str)
                 try:
