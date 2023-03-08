@@ -307,9 +307,12 @@ class ServerController:
         self,
         result: dict[str, Any] | None,
     ) -> None:
+
         if result is None:
             print('Error fetching playlist; aborting.')
-            sys.exit(-1)
+            # sys.exit(-1)
+            import _ba
+            _ba.quit()
 
         # Once we get here, simply modify our config to use this playlist.
         typename = (
