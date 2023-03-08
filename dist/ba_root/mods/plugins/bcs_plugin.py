@@ -39,7 +39,7 @@ class BsDataThread(object):
             print("stats reset is required , please clear out stats.json records , or download fresh stats.json from github")
             import _ba
             _ba.quit()
-        entries.sort(reverse=True)
+        entries.sort(key=lambda x: x[1] or 0, reverse=True)
         rank=0
         for entry in entries:
             rank+=1
