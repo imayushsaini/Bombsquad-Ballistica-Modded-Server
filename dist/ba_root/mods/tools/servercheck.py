@@ -21,7 +21,7 @@ from playersData import pdata
 blacklist = pdata.get_blacklist()
 
 settings = setting.get_settings_data()
-
+ipjoin = {}
 
 class checkserver(object):
     def start(self):
@@ -32,6 +32,7 @@ class checkserver(object):
     def check(self):
         newPlayers = []
         ipClientMap = {}
+        deviceClientMap = {}
         for ros in ba.internal.get_game_roster():
             ip = _ba.get_client_ip(ros["client_id"])
             if ip not in ipClientMap:
@@ -69,8 +70,8 @@ class checkserver(object):
                     except:
                         pass
                     ba.internal.disconnect_client(ros['client_id'], 1)
-
                     return
+
                 if settings["whitelist"] and ros["account_id"] != None:
                     if ros["account_id"] not in pdata.CacheData.whitelist:
                         _ba.screenmessage("Not in whitelist,contact admin",
@@ -86,44 +87,49 @@ class checkserver(object):
                     if ros['account_id'] in serverdata.clients:
                         on_player_join_server(ros['account_id'],
                                               serverdata.clients[
-                                                  ros['account_id']])
+                                                  ros['account_id']], ip)
                     else:
-                        LoadProfile(ros['account_id']).start()
+                        LoadProfile(ros['account_id'], ip).start() # from local cache, then call on_player_join_server
 
         self.players = newPlayers
 
 
-def on_player_join_server(pbid, player_data):
+def on_player_join_server(pbid, player_data, ip):
+    global ipjoin
     now = time.time()
     # player_data=pdata.get_info(pbid)
     clid = 113
+    device_string = ""
     for ros in ba.internal.get_game_roster():
         if ros["account_id"] == pbid:
             clid = ros["client_id"]
-
-    if pbid in serverdata.clients:
-        rejoinCount = serverdata.clients[pbid]["rejoincount"]
-        spamCount = serverdata.clients[pbid]["spamCount"]
-        if now - serverdata.clients[pbid]["lastJoin"] < 15:
-            rejoinCount += 1
-            if rejoinCount > 2:
+            device_string = ros['display_string']
+    if ip in ipjoin:
+        lastjoin = ipjoin[ip]["lastJoin"]
+        joincount = ipjoin[ip]["count"]
+        if now - lastjoin < 15:
+            joincount += 1
+            if joincount > 2:
                 _ba.screenmessage("Joining too fast , slow down dude",
                                   color=(1, 0, 1), transient=True,
                                   clients=[clid])
                 logger.log(pbid + "|| kicked for joining too fast")
                 ba.internal.disconnect_client(clid)
-
                 _thread.start_new_thread(reportSpam, (pbid,))
-
                 return
         else:
-            rejoinCount = 0
+            joincount = 0
 
-        serverdata.clients[pbid]["rejoincount"] = rejoinCount
+        ipjoin[ip]["count"] = joincount
+        ipjoin[ip]["lastJoin"] = now
+    else:
+        ipjoin[ip] = {"lastJoin":now,"count":0}
+    if pbid in serverdata.clients:
         serverdata.clients[pbid]["lastJoin"] = now
 
-    if player_data != None:
-        device_strin = ""
+    if player_data != None: # player data not in serevrdata or in local.json cache
+        serverdata.recents.append({"client_id":clid,"deviceId":device_string,"pbid":pbid})
+        serverdata.recents = serverdata.recents[-20:]
         if player_data["isBan"] or get_account_age(player_data["accountAge"]) < \
             settings["minAgeToJoinInHours"]:
             for ros in ba.internal.get_game_roster():
@@ -154,43 +160,30 @@ def on_player_join_server(pbid, player_data):
                 if not player_data["canStartKickVote"]:
                     _ba.disable_kickvote(pbid)
 
-            verify_account(pbid, player_data)
-            cid = 113
-            d_st = "xx"
-            for ros in ba.internal.get_game_roster():
-                if ros['account_id'] == pbid:
-                    cid = ros['client_id']
-                    d_st = ros['display_string']
-            serverdata.clients[pbid]["lastIP"] = _ba.get_client_ip(cid)
 
-            device_id = _ba.get_client_public_device_uuid(cid)
+            serverdata.clients[pbid]["lastIP"] = ip
+
+            device_id = _ba.get_client_public_device_uuid(clid)
             if(device_id==None):
-                device_id = _ba.get_client_device_uuid(cid)
+                device_id = _ba.get_client_device_uuid(clid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
+            verify_account(pbid, player_data) # checked for spoofed ids
             logger.log(pbid+" ip: "+serverdata.clients[pbid]["lastIP"]+", Device id: "+device_id)
-            _ba.screenmessage(settings["regularWelcomeMsg"] + " " + d_st,
+            _ba.screenmessage(settings["regularWelcomeMsg"] + " " + device_string,
                               color=(0.60, 0.8, 0.6), transient=True,
-                              clients=[cid])
-
+                              clients=[clid])
     else:
-
-        d_string = ""
-        cid = 113
-        for ros in ba.internal.get_game_roster():
-            if ros['account_id'] == pbid:
-                d_string = ros['display_string']
-                cid = ros['client_id']
-
+        # fetch id for first time.
         thread = FetchThread(
             target=my_acc_age,
             callback=save_age,
             pb_id=pbid,
-            display_string=d_string
+            display_string=device_string
         )
 
         thread.start()
         _ba.screenmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
-                          transient=True, clients=[cid])
+                          transient=True, clients=[clid])
 
     # pdata.add_profile(pbid,d_string,d_string)
 
@@ -282,13 +275,14 @@ def get_device_accounts(pb_id):
 # ============ file I/O =============
 
 class LoadProfile(threading.Thread):
-    def __init__(self, pb_id):
+    def __init__(self, pb_id, ip):
         threading.Thread.__init__(self)
         self.pbid = pb_id
+        self.ip = ip
 
     def run(self):
         player_data = pdata.get_info(self.pbid)
-        _ba.pushcall(Call(on_player_join_server, self.pbid, player_data),
+        _ba.pushcall(Call(on_player_join_server, self.pbid, player_data, self.ip),
                      from_other_thread=True)
 
 

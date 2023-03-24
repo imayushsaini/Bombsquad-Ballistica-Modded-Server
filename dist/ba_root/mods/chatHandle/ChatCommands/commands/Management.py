@@ -10,7 +10,7 @@ import ba.internal
 import _thread
 import random
 from tools import playlist
-Commands = ['createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
+Commands = ['recents','info','createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
             'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect', 'add', 'spectators', 'lobbytime']
 CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm',
                   'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'effect']
@@ -29,6 +29,10 @@ def ExcelCommand(command, arguments, clientid, accountid):
     Returns:
         None
     """
+    if command in ['recents']:
+        get_recents(clientid)
+    if command in ['info']:
+        get_player_info(arguments, clientid)
     if command in ['maxplayers', 'max']:
         changepartysize(arguments)
     if command in ['createteam']:
@@ -138,6 +142,17 @@ def hide_player_spec():
 def show_player_spec():
     _ba.hide_player_device_id(False)
 
+
+def get_player_info(arguments, client_id):
+    if len(arguments) == 0:
+        send("invalid client id", client_id)
+    for account in serverdata.recents:
+        if account['client_id'] == int(arguments[0]):
+            send(pdata.get_detailed_info(account["pbid"]), client_id)
+
+def get_recents(client_id):
+    for players in serverdata.recents:
+        send(f"{players['client_id']} {players['deviceId']} {players['pbid']}", client_id)
 
 def changepartysize(arguments):
     if len(arguments) == 0:
@@ -249,11 +264,13 @@ def ban(arguments):
         ac_id = ""
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
-                pdata.ban_player(ros['account_id'])
-
                 ac_id = ros['account_id']
+                pdata.ban_player(ros['account_id'])
         if ac_id in serverdata.clients:
             serverdata.clients[ac_id]["isBan"] = True
+        for account in serverdata.recents: # backup case if player left the server
+            if account['client_id'] == int(arguments[0]):
+                pdata.ban_player(account["pbid"])
         kick(arguments)
     except:
         pass
@@ -272,10 +289,13 @@ def mute(arguments):
         ac_id = ""
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
-                _thread.start_new_thread(pdata.mute, (ros['account_id'],))
+                pdata.mute(ros['account_id'])
                 ac_id = ros['account_id']
         if ac_id in serverdata.clients:
             serverdata.clients[ac_id]["isMuted"] = True
+        for account in serverdata.recents: # backup case if player left the server
+            if account['client_id'] == int(arguments[0]):
+                pdata.mute(account["pbid"])
     except:
         pass
     return

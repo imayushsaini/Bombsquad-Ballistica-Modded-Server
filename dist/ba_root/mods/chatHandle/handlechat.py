@@ -38,12 +38,9 @@ def filter_chat_message(msg, client_id):
         return
     logger.log(acid + " | " + displaystring + " | " + currentname + " | " + msg, "chat")
     if msg.startswith("/"):
-        return Main.Command(msg, client_id)
-
-    if msg.startswith(",") and settings["allowTeamChat"]:
-        return Main.QuickAccess(msg, client_id)
-    if msg.startswith(".") and settings["allowInGameChat"]:
-        return Main.QuickAccess(msg, client_id)
+        msg = Main.Command(msg, client_id)
+        if msg == None:
+            return
 
     if msg == "end" and settings["allowEndVote"]:
         EndVote.vote_end(acid, client_id)
@@ -61,6 +58,10 @@ def filter_chat_message(msg, client_id):
             _ba.screenmessage("New accounts not allowed to chat here", transient=True, clients=[client_id])
             return None
         else:
+            if msg.startswith(",") and settings["allowTeamChat"]:
+                return Main.QuickAccess(msg, client_id)
+            if msg.startswith(".") and settings["allowInGameChat"]:
+                return Main.QuickAccess(msg, client_id)
             return msg
 
 

@@ -127,6 +127,21 @@ def commit_profiles(data={}) -> None:
     # with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
     #     profiles_file.dump(CacheData.profiles, indent=4)
 
+def get_detailed_info(pbid):
+    main_account = get_info(pbid)
+    if main_account == None:
+        return "No info"
+    linked_accounts = ' '.join(main_account["display_string"])
+    ip = main_account["lastIP"]
+    deviceid = main_account["deviceUUID"]
+    otheraccounts = ""
+    dob = main_account["accountAge"]
+    profiles = get_profiles()
+    for key, value in profiles.items():
+        if ("lastIP" in value and value["lastIP"] == ip) or ("deviceUUID" in value and value["deviceUUID"] == deviceid):
+            otheraccounts += ' '.join(value["display_string"])
+    return f"Accounts:{linked_accounts} \n other accounts {otheraccounts} \n created on {dob}"
+
 
 def add_profile(
     account_id: str,
@@ -162,7 +177,6 @@ def add_profile(
             "totaltimeplayer": 0,
         }
     CacheData.profiles=profiles
-    commit_profiles()
 
     serverdata.clients[account_id] = profiles[account_id]
     serverdata.clients[account_id]["warnCount"] = 0
@@ -284,7 +298,7 @@ def mute(account_id: str) -> None:
     if account_id in profiles:
         profiles[account_id]["isMuted"] = True
         CacheData.profiles=profiles
-        _thread.start_new_thread(commit_profiles, (profiles,))
+
 
 
 def unmute(account_id: str) -> None:

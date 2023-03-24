@@ -128,3 +128,7 @@ team_colors:
 - [0.8, 0.0, 0.6]
 - [0, 1, 0.8]
 
+# Whether to enable the queue where players can line up before entering
+# your server. Disabling this can be used as a workaround to deal with
+# queue spamming attacks.
+#enable_queue: true
