@@ -21,7 +21,9 @@
     },
     "ScoreScreenAnnouncement":{
         "enable": true,
-        "msg": ["click stats button to join discord", "watch hey smoothy youtube channel","downlaod new mods from discord"]
+        "msg": ["click stats button to join discord", "watch hey smoothy youtube channel","download new mods from discord", "use /ping all to check others ping.",
+    "start msg with prefix ,(comma) to send msg to teammates", "start msg with prefix .(dot) to send in game popup msg","click stats button for leaderboard","get notification when friends join this server, checkout leaderboard",
+"abusers, spammers will get auto ban", "doesnt matter who starts fight, if you abuse- you will get ban too."]
     },
     "statsResetAfterDays":31,
     "leaderboard":{
