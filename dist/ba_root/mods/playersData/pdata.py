@@ -190,7 +190,8 @@ def add_profile(
             cid = ros['client_id']
     ip = _ba.get_client_ip(cid)
     serverdata.clients[account_id]["lastIP"] = ip
-
+    serverdata.recents.append({"client_id":cid,"deviceId":display_string,"pbid": account_id})
+    serverdata.recents = serverdata.recents[-20:]
     device_id = _ba.get_client_public_device_uuid(cid)
     if(device_id==None):
         device_id = _ba.get_client_device_uuid(cid)

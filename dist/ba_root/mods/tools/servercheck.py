@@ -35,6 +35,17 @@ class checkserver(object):
         deviceClientMap = {}
         for ros in ba.internal.get_game_roster():
             ip = _ba.get_client_ip(ros["client_id"])
+            device_id = _ba.get_client_public_device_uuid(ros["client_id"])
+            if device_id not in deviceClientMap:
+                deviceClientMap[device_id] = [ros["client_id"]]
+            else:
+                deviceClientMap[device_id].append(ros["client_id"])
+                if len(deviceClientMap[device_id]) >= settings['maxAccountPerIP']:
+                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
+                    ba.internal.disconnect_client(ros["client_id"])
+                    logger.log(" Player disconnected, reached max players per device ||"+ ros["account_id"] ,
+                        "playerjoin")
+                    continue
             if ip not in ipClientMap:
                 ipClientMap[ip] = [ros["client_id"]]
             else:

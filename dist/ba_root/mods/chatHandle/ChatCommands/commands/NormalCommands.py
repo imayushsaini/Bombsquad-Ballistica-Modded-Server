@@ -39,7 +39,8 @@ def ExcelCommand(command, arguments, clientid, accountid):
 def get_ping(arguments, clientid):
     if arguments == [] or arguments == ['']:
         send(f"Your ping {_ba.get_client_ping(clientid)}ms ", clientid)
-
+    elif arguments[0] == 'all':
+        pingall(clientid)
     else:
         try:
             session = ba.internal.get_foreground_host_session()
@@ -67,6 +68,20 @@ def stats(ac_id, clientid):
 def fetch_send_stats(ac_id, clientid):
     _thread.start_new_thread(stats, (ac_id, clientid,))
 
+def pingall(clientid):
+    """Returns The List Of Players Clientid and index"""
+
+    p = u'{0:^16}{1:^34}ms'
+    seprator = '\n______________________________\n'
+
+    list = p.format('Name', 'Ping (ms)')+seprator
+    session = ba.internal.get_foreground_host_session()
+
+    for index, player in enumerate(session.sessionplayers):
+        list += p.format(player.getname(icon=True),
+                         _ba.get_client_ping(int(player.inputdevice.client_id)))+"\n"
+
+    send(list, clientid)
 
 def list(clientid):
     """Returns The List Of Players Clientid and index"""
