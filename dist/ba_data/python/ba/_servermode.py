@@ -235,7 +235,7 @@ class ServerController:
         else:
             addr = data['address']
             port = data['port']
-            show_addr = os.environ.get('BA_ACCESS_CHECK_VERBOSE', '0') == '1'
+            show_addr = True
             if show_addr:
                 addrstr = f' {addr}'
                 poststr = ''
@@ -250,14 +250,24 @@ class ServerController:
                     f'{Clr.SBLU}Master server access check of{addrstr}'
                     f' udp port {port} succeeded.\n'
                     f'Your server appears to be'
-                    f' joinable from the internet.{poststr}{Clr.RST}'
+                    f' joinable from the internet .{poststr}{Clr.RST}'
                 )
+                if self._config.party_is_public:
+                    print(
+                        f'{Clr.SBLU}Your party {self._config.party_name}'
+                        f' visible in public party list.{Clr.RST}'
+                    )
+                else:
+                    print(
+                        f'{Clr.SBLU}Your private party {self._config.party_name}'
+                        f'can be joined by {addrstr} {port}.{Clr.RST}'
+                    )
             else:
                 print(
                     f'{Clr.SRED}Master server access check of{addrstr}'
                     f' udp port {port} failed.\n'
                     f'Your server does not appear to be'
-                    f' joinable from the internet.{poststr}{Clr.RST}'
+                    f' joinable from the internet. Please check your firewall or instance security group.{poststr}{Clr.RST}'
                 )
 
     def _prepare_to_serve(self) -> None:
@@ -307,10 +317,8 @@ class ServerController:
         self,
         result: dict[str, Any] | None,
     ) -> None:
-
         if result is None:
             print('Error fetching playlist; aborting.')
-            # sys.exit(-1)
             import _ba
             _ba.quit()
 
@@ -441,6 +449,6 @@ class ServerController:
             _ba.new_host_session(sessiontype)
 
         # Run an access check if we're trying to make a public party.
-        if not self._ran_access_check and self._config.party_is_public:
+        if not self._ran_access_check:
             self._run_access_check()
             self._ran_access_check = True

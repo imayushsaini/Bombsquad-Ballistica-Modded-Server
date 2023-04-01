@@ -30,6 +30,7 @@ from stats import mystats
 from spazmod import modifyspaz
 from tools import servercheck, ServerUpdate, logger, playlist
 from playersData import pdata
+from serverData import serverdata
 from features import EndVote
 from features import text_on_map, announcement
 from features import map_fun
@@ -123,7 +124,11 @@ def bootstraping():
         from features import StumbledScoreScreen
     if settings["colorfullMap"]:
         from plugins import colorfulmaps2
-
+    try:
+        from tools import healthcheck
+        healthcheck.main()
+    except:
+        logging.warning("please install psutil to enable system monitor.")
     # import features
     if settings["whitelist"]:
         pdata.load_white_list()
@@ -133,6 +138,7 @@ def bootstraping():
     import_discord_bot()
     import_games()
     import_dual_team_score()
+    logger.log("Server started")
 
 
 def import_discord_bot() -> None:
@@ -277,6 +283,8 @@ def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
         player = args[1]
         count = 0
+        if not (player.get_v1_account_id() in serverdata.clients and serverdata.clients[player.get_v1_account_id()]["verified"]):
+            return False
         for current_player in args[0].sessionplayers:
             if current_player.get_v1_account_id() == player.get_v1_account_id():
                 count +=1
@@ -286,3 +294,4 @@ def on_player_request(func) -> bool:
         return func(*args, **kwargs)
     return wrapper
 Session.on_player_request = on_player_request(Session.on_player_request)
+

@@ -41,12 +41,18 @@ def migrate_to_aarch():
 # by default we have x86_64 setup
 # if we found aarch64 system copy required files
 if platform.processor() == 'aarch64':
+    sys.path += [
+    str(Path(Path(__file__).parent, 'dist', 'ba_data', 'python-site-package-aarch'))
+    ]   
     print("We are on aarch64 system")
     if os.path.exists(".we_are_good"):
         pass
     else:
         migrate_to_aarch()
-
+else:
+    sys.path += [
+    str(Path(Path(__file__).parent, 'dist', 'ba_data', 'python-site-package-x86'))
+    ] 
 # We make use of the bacommon and efro packages as well as site-packages
 # included with our bundled Ballistica dist, so we need to add those paths
 # before we import them.
@@ -160,7 +166,7 @@ class ServerManagerApp:
 
         dbgstr = 'debug' if __debug__ else 'opt'
         print(
-            f'{Clr.CYN}{Clr.BLD}Ballistica server manager {VERSION_STR}'
+            f'{Clr.CYN}{Clr.BLD}Bcs server manager {VERSION_STR}'
             f' starting up ({dbgstr} mode)...{Clr.RST}',
             flush=True)
 

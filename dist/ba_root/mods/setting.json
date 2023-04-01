@@ -92,6 +92,10 @@
         "liveStatsChannelID":925440043672285205,
         "logsChannelID":925440079843958834
     },
+    "discordWebHook": {
+        "enable": false,
+        "webhookURL": "https://discord.com/api/webhooks/82649239/e7s0zyBJIuczXL7_CGSO5WM"
+    },
     "afk_remover":{
         "enable":true,
         "ingame_idle_time_in_secs":60,

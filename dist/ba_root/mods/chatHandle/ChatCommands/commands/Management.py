@@ -10,6 +10,7 @@ import ba.internal
 import _thread
 import random
 from tools import playlist
+from tools import logger
 Commands = ['recents','info','createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
             'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect', 'add', 'spectators', 'lobbytime']
 CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm',
@@ -129,7 +130,7 @@ def create_team(arguments):
         ba.internal.chatmessage("enter team name")
     else:
         from ba._team import SessionTeam
-        _ba.get_foreground_host_session().sessionteams.append(SessionTeam(team_id=2, name=str(arguments[0]), color=(random.uniform(0, 1.2), random.uniform(
+        _ba.get_foreground_host_session().sessionteams.append(SessionTeam(team_id=len(_ba.get_foreground_host_session().sessionteams) +1, name=str(arguments[0]), color=(random.uniform(0, 1.2), random.uniform(
             0, 1.2), random.uniform(0, 1.2))))
         from ba._lobby import Lobby
         _ba.get_foreground_host_session().lobby = Lobby()
@@ -174,6 +175,10 @@ def changeplaylist(arguments):
 
 
 def kick(arguments):
+    cl_id = int(arguments[0])
+    for ros in ba.internal.get_game_roster():
+        if ros["client_id"] == cl_id:
+            logger.log("kicked "+ ros["display_string"])
     ba.internal.disconnect_client(int(arguments[0]))
     return
 
@@ -266,6 +271,7 @@ def ban(arguments):
             if ros["client_id"] == cl_id:
                 ac_id = ros['account_id']
                 pdata.ban_player(ros['account_id'])
+                logger.log("banned "+ros["display_string"])
         if ac_id in serverdata.clients:
             serverdata.clients[ac_id]["isBan"] = True
         for account in serverdata.recents: # backup case if player left the server
@@ -291,6 +297,7 @@ def mute(arguments):
             if ros["client_id"] == cl_id:
                 pdata.mute(ros['account_id'])
                 ac_id = ros['account_id']
+                logger.log("muted "+ros["display_string"])
         if ac_id in serverdata.clients:
             serverdata.clients[ac_id]["isMuted"] = True
         for account in serverdata.recents: # backup case if player left the server

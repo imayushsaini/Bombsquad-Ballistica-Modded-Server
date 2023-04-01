@@ -4,12 +4,16 @@
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
+import requests
+import time
+import json
 
 from typing import TYPE_CHECKING
 from dataclasses import dataclass, field
 
 import os
-import datetime,shutil
+import datetime
+import shutil
 import threading
 import setting
 import _ba
@@ -27,6 +31,7 @@ SERVER_DATA_PATH = os.path.join(
 if SETTINGS["discordbot"]["enable"]:
     from features import discord_bot
 
+WEBHOOK_URL = SETTINGS["discordWebHook"]["webhookURL"]
 
 @dataclass
 class RecentLogs:
@@ -37,7 +42,10 @@ class RecentLogs:
     cmndlog: list[str] = field(default_factory=list)
     misclogs: list[str] = field(default_factory=list)
 
+
 logs = RecentLogs()
+webhook_queue = []
+
 
 def log(msg: str, mtype: str = "sys") -> None:
     """Cache and dumps the log."""
@@ -48,6 +56,9 @@ def log(msg: str, mtype: str = "sys") -> None:
 
     current_time = datetime.datetime.now()
     msg = f"{current_time} + : {msg} \n"
+
+    if SETTINGS["discordWebHook"]["enable"]:
+        webhook_queue.append(msg.replace("||", "|"))
 
     if mtype == "chat":
         logs.chats.append(msg)
@@ -99,3 +110,31 @@ class dumplogs(threading.Thread):
         with open(log_path, mode="a+", encoding="utf-8") as file:
             for msg in self.msg:
                 file.write(msg)
+
+def send_webhook_message():
+    global webhook_queue
+    msg = None
+    for msg_ in webhook_queue:
+        msg = msg_ + "\n"
+    webhook_queue = []
+    if msg:
+        payload = {
+            "content": msg,
+            "username": _ba.app.server._config.party_name
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = requests.post(
+            WEBHOOK_URL, data=json.dumps(payload), headers=headers)
+
+
+def schedule_webhook():
+    while True:
+        send_webhook_message()
+        time.sleep(8)
+
+
+if SETTINGS["discordWebHook"]["enable"]:
+    thread = threading.Thread(target=schedule_webhook)
+    thread.start()
