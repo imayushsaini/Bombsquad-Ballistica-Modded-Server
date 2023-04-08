@@ -42,6 +42,10 @@
        "76": {
               "log": "added limit for max players per IP address , account at a time.",
               "time": "5 March 2023"
+       },
+       "77": {
+              "log": "system logs, security patch, discord webhook logs dump.",
+              "time": "8 April 2023"
        }
 
 }

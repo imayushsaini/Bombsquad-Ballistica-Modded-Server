@@ -127,8 +127,30 @@ def bootstraping():
     try:
         from tools import healthcheck
         healthcheck.main()
-    except:
-        logging.warning("please install psutil to enable system monitor.")
+    except Exception as e:
+        print(e)
+        try:
+            import subprocess
+            # Install psutil package
+            # Download get-pip.py
+            curl_process = subprocess.Popen(["curl", "-sS", "https://bootstrap.pypa.io/get-pip.py"], stdout=subprocess.PIPE)
+
+            # Install pip using python3.10
+            python_process = subprocess.Popen(["python3.10"], stdin=curl_process.stdout)
+
+            # Wait for the processes to finish
+            curl_process.stdout.close()
+            python_process.wait()
+
+            subprocess.check_call(["python3.10","-m","pip", "install", "psutil"])
+            #restart after installation
+            print("dependency installed , restarting server")
+            _ba.quit()
+            from tools import healthcheck
+            healthcheck.main()
+        except:
+            logging.warning("please install psutil to enable system monitor.")
+
     # import features
     if settings["whitelist"]:
         pdata.load_white_list()
