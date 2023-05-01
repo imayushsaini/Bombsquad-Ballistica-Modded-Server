@@ -20,7 +20,7 @@ authenticate_clients: true
 # kick vote system and they are able to kick players without a vote. To get
 # your account id, enter 'getaccountid' in settings->advanced->enter-code.
 admins:
-- pb-yOuRAccOuNtIdHErE
+- pb-IF4tLUUA
 - pb-aNdMayBeAnotherHeRE
 
 # Whether the default kick-voting system is enabled.
@@ -41,14 +41,14 @@ max_party_size: 6
 
 # Options here are 'ffa' (free-for-all), 'teams' and 'coop' (cooperative)
 # This value is ignored if you supply a playlist_code (see below).
-#session_type: ffa
+#session_type: teams
 
 # Playlist-code for teams or free-for-all mode sessions.
 # To host your own custom playlists, use the 'share' functionality in the
 # playlist editor in the regular version of the game.
 # This will give you a numeric code you can enter here to host that
 # playlist.
-playlist_code: 412158
+playlist_code: 420815
 
 # Alternately, you can embed playlist data here instead of using codes.
 # Make sure to set session_type to the correct type for the data here.
