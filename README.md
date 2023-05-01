@@ -22,7 +22,7 @@ Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.20.
 
 ## More Configuration
 Open dist/ba_root/mods/setting.json , change value according to you.
-
+[How to edit settings.json](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Server-Settings)
 ### adding yourself owner
 - open dist/ba_root/mods/playersData/roles.json
 - add your pb-id in owner id list
