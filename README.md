@@ -22,7 +22,11 @@ Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.20.
 
 ## More Configuration
 Open dist/ba_root/mods/setting.json , change value according to you.
+
 [How to edit settings.json](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Server-Settings)
+
+[Available chat commands](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Chat-commands)
+
 ### adding yourself owner
 - open dist/ba_root/mods/playersData/roles.json
 - add your pb-id in owner id list
@@ -35,11 +39,11 @@ Here you can ban player , mute them , disable their kick votes
 
 ## Features
 - Rank System.
-- Chat commands.
+- [Chat commands](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Chat-commands).
 - V2 Account with cloud console for server.
 - check clients ping , use /ping chat command to check ping of any player._ba.get_client_ping().
 - Hide player specs from cleints, chatcommand /hideid /showid .
-- Easy role management , create 1000 of roles as you wish add specific chat command to the role , give tag to role ..many more.
+- [Easy role management](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Chat-commands#role-management-system) , create 1000 of roles as you wish add specific chat command to the role , give tag to role ..many more.
 - Rejoin cooldown.
 - Leaderboard , top 3 rank players name on top right corner.
 - Restrict some player to start kick vote.
