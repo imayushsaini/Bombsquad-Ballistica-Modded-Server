@@ -1,6 +1,6 @@
 
 from playersData import pdata
-import ba, setting
+import ba, setting, _ba
 from stats import mystats
 sett = setting.get_settings_data()
 def addtag(node,player):
@@ -33,16 +33,20 @@ def addrank(node,player):
 	if rank:
 		Rank(node,rank)
 
-def addhp(node):
-    hp = node.hitpoints
+def addhp(node, spaz):
     def showHP():
-        HitPoint(owner=node,prefix=str(int(hp)),position=(0,0.75,0),shad = 1.4)
-    if hp: t = ba.Timer(100,ba.Call(showHP),repeat = True, timetype=ba.TimeType.SIM, timeformat=ba.TimeFormat.MILLISECONDS)
+        hp = spaz.hitpoints
+        if spaz.node.exists():
+            HitPoint(owner=node,prefix=str(int(hp)),position=(0,1.75,0),shad = 1.4)
+        else:
+            spaz.hptimer = None
+
+    spaz.hptimer = ba.Timer(100,ba.Call(showHP),repeat = True, timetype=ba.TimeType.SIM, timeformat=ba.TimeFormat.MILLISECONDS)
 
 class Tag(object):
 	def __init__(self,owner=None,tag="somthing",col=(1,1,1)):
 		self.node=owner
-		
+
 		mnode = ba.newnode('math',
                                owner=self.node,
                                attrs={
@@ -115,16 +119,15 @@ class Rank(object):
 		mnode.connectattr('output', self.rank_text, 'position')
 
 class HitPoint(object):
-    def __init__(self,position = (0,1.5,0),owner = None,prefix = 'ADMIN',shad = 1.2):
-        if not sett['enablehptag']: return
+    def __init__(self,position = (0,1.5,0),owner = None,prefix = '0',shad = 1.2):
         self.position = position
-        self.owner = owner
-        m = ba.newnode('math', owner=self.owner, attrs={'input1': self.position, 'operation': 'add'})
-        self.owner.connectattr('position', m, 'input2')
+        self.node = owner
+        m = ba.newnode('math', owner=self.node, attrs={'input1': self.position, 'operation': 'add'})
+        self.node.connectattr('torso_position', m, 'input2')
         prefix = int(prefix) / 10
         preFix = u"\ue047" + str(prefix) + u"\ue047"
         self._Text = ba.newnode('text',
-                                          owner=self.owner,
+                                          owner=self.node,
                                           attrs={
                                               'text':preFix,
                                               'in_world':True,

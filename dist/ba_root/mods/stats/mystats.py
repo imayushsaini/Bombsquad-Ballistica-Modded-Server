@@ -31,28 +31,7 @@ our_settings = setting.get_settings_data()
 # where our stats file and pretty html output will go
 base_path = os.path.join(_ba.env()['python_directory_user'], "stats" + os.sep)
 statsfile = base_path + 'stats.json'
-htmlfile = base_path + 'stats_page.html'
-table_style = "{width:100%;border: 3px solid black;border-spacing: 5px;border-collapse:collapse;text-align:center;background-color:#fff}"
-heading_style = "{border: 3px solid black;text-align:center;}"
-html_start = f'''<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Test Server</title>
-        <style>table{table_style} th{heading_style}</style>
-    </head>
-    <body>
-        <h3 style="text-align:center">Top 200 Players </h3>
-        <table border=1>
-            <tr>
-                <th><b>Rank</b></th>
-                <th style="text-align:center"><b>Name</b></th>
-                <th><b>Score</b></th>
-                <th><b>Kills</b></th>
-                <th><b>Deaths</b></th>
-                <th><b>Games Played</b></th>
-            </tr>
-'''
+cached_stats = {}
 statsDefault = {
     "pb-IF4VAk4a": {
         "rank": 65,
@@ -121,20 +100,23 @@ def dump_stats(s: dict):
         print('Stats file not found!')
 
 
-def get_stats_by_id(ID: str):
-    a = get_all_stats()
-    if ID in a:
-        return a[ID]
+def get_stats_by_id(account_id: str):
+    a = get_cached_stats
+    if account_id in a:
+        return a[account_id]
     else:
         return None
 
+def get_cached_stats():
+    return cached_stats
 
 def refreshStats():
+    global cached_stats
     # lastly, write a pretty html version.
     # our stats url could point at something like this...
     pStats = get_all_stats()
-    # f=open(htmlfile, 'w')
-    # f.write(html_start)
+    cached_stats = pStats
+
 
     entries = [(a['scores'], a['kills'], a['deaths'], a['games'],
                 a['name'], a['aid']) for a in pStats.values()]

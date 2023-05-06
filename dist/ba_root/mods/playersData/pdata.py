@@ -561,7 +561,7 @@ def get_custom() -> dict:
     return CacheData.custom
 
 
-def set_effect(effect: str, accout_id: str) -> None:
+def set_effect(effect: str, account_id: str) -> None:
     """Sets the costum effect for the player.
 
     Parameters
@@ -572,7 +572,12 @@ def set_effect(effect: str, accout_id: str) -> None:
         account id of the client
     """
     custom = get_custom()
-    custom["customeffects"][accout_id] = effect
+    if account_id in custom["customeffects"]:
+        effects = [custom["customeffects"][account_id]] if type(custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
+        effects.append(effect)
+        custom["customeffects"][account_id] = effects
+    else:
+        custom["customeffects"][account_id] = [effect]
     CacheData.custom = custom
     commit_c()
 

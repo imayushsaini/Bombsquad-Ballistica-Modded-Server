@@ -12,7 +12,7 @@ import random
 from tools import playlist
 from tools import logger
 Commands = ['recents','info','createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
-            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect', 'add', 'spectators', 'lobbytime']
+            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect','removeeffect','removetag' 'add', 'spectators', 'lobbytime']
 CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm',
                   'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'effect']
 
@@ -114,6 +114,12 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
     elif command in ['customeffect', 'effect']:
         set_custom_effect(arguments)
+
+    elif command in ['removetag']:
+        remove_custom_tag(arguments)
+
+    elif command in ['removeeffect']:
+        remove_custom_effect(arguments)
 
     # elif command in ['add', 'whitelist']:
     #     whitelst_it(accountid, arguments)
@@ -479,13 +485,30 @@ def set_custom_tag(arguments):
     except:
         return
 
+def remove_custom_tag(arguments):
+    try:
+        session = ba.internal.get_foreground_host_session()
+        for i in session.sessionplayers:
+            if i.inputdevice.client_id == int(arguments[0]):
+                pdata.remove_tag( i.get_v1_account_id())
+    except:
+        return
+
+def remove_custom_effect(arguments):
+    try:
+        session = ba.internal.get_foreground_host_session()
+        for i in session.sessionplayers:
+            if i.inputdevice.client_id == int(arguments[0]):
+                pdata.remove_effect( i.get_v1_account_id())
+    except:
+        return
 
 def set_custom_effect(arguments):
     try:
         session = ba.internal.get_foreground_host_session()
         for i in session.sessionplayers:
             if i.inputdevice.client_id == int(arguments[1]):
-                roles = pdata.set_effect(arguments[0], i.get_v1_account_id())
+                pdata.set_effect(arguments[0], i.get_v1_account_id())
     except:
         return
 
