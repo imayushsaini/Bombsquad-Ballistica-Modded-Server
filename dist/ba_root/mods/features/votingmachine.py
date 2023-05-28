@@ -28,7 +28,7 @@ def vote(pb_id, client_id, vote_type):
     now = time.time()
     if now > last_vote_start_time + vote_duration:
         voters = []
-        last_vote_start_time = now
+        vote_machine[vote_type]["last_vote_start_time"] = now
     if now < game_started_on + min_game_duration_to_start_vote:
         _ba.screenmessage("Seems game just started, Try again after some time", transient=True,
                           clients=[client_id])
@@ -48,9 +48,17 @@ def vote(pb_id, client_id, vote_type):
         _ba.screenmessage(f'Thanks for vote , encourage other players to type {vote_type} too.', transient=True,
                           clients=[client_id])
         if vote_type == 'end':
-            update_vote_text(required_votes(len(active_players)) - len(voters))
+            update_vote_text(max_votes_required(
+                len(active_players)) - len(voters))
+        else:
+            _ba.screenmessage(f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
+                               image={"texture": ba.gettexture("achievementSharingIsCaring"),
+                                       "tint_texture": ba.gettexture("achievementSharingIsCaring"),
+                                         "tint_color": (0.5, 0.1, 0.2), "tint2_color": (0.1, 0.2, 0.9)},
+                              top=True)
+    vote_machine[vote_type]["voters"] = voters
 
-    if len(voters) >= required_votes(len(active_players)):
+    if len(voters) >= max_votes_required(len(active_players)):
         ba.internal.chatmessage(f"{vote_type} vote succeed")
         if vote_type == "end":
             try:
@@ -65,14 +73,16 @@ def vote(pb_id, client_id, vote_type):
         elif vote_type == "sm":
             _ba.chatmessage("/sm")
 
+
 def reset_votes():
     global vote_machine
     for value in vote_machine.values():
         value["voters"] = []
 
-def required_votes(players):
+
+def max_votes_required(players):
     if players == 2:
-        return 2
+        return 1
     elif players == 3:
         return 2
     elif players == 4:
