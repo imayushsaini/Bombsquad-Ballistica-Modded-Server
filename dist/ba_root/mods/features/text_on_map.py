@@ -21,7 +21,7 @@ class textonmap:
             nextMap=ba.internal.get_foreground_host_session().get_next_game_description().evaluate()
         except:
             pass
-        top = top.replace("@IP", _ba.our_ip).replace("@PORT", _ba.our_port)
+        top = top.replace("@IP", _ba.our_ip).replace("@PORT", str(_ba.our_port))
         self.index = 0
         self.highlights = data['center highlights']["msg"]
         self.left_watermark(left)
