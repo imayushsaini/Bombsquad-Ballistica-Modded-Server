@@ -11,7 +11,7 @@ CONFIGS = {
     "AdaptivePos": True,
     "IgnoreOnMaps": [],
     "Colors": {
-        "Intensity": 0.8,
+        "Intensity": 0.5,
         "Animate": True,
         "Random": True,
         "LeftSide": (1, 0, 1),

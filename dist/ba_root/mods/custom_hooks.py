@@ -8,10 +8,11 @@
 # pylint: disable=protected-access
 
 from __future__ import annotations
+from ba._servermode import ServerController
+from ba._session import Session
 
 from typing import TYPE_CHECKING
 from datetime import datetime
-
 import _thread
 import importlib
 import time
@@ -19,19 +20,18 @@ import os
 import ba
 import _ba
 import logging
-from ba import _hooks
 from bastd.activity import dualteamscore, multiteamscore, drawscore
 from bastd.activity.coopscore import CoopScoreScreen
 import setting
-
+from tools import account
 from chatHandle import handlechat
 from features import team_balancer, afk_check, fire_flies, hearts, dual_team_score as newdts
 from stats import mystats
 from spazmod import modifyspaz
-from tools import servercheck, ServerUpdate, logger, playlist
+from tools import servercheck, ServerUpdate, logger, playlist, servercontroller
 from playersData import pdata
 from serverData import serverdata
-from features import EndVote
+from features import votingmachine
 from features import text_on_map, announcement
 from features import map_fun
 from spazmod import modifyspaz
@@ -46,19 +46,17 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     return handlechat.filter_chat_message(msg, client_id)
 
 # ba_meta export plugin
-
-
 class modSetup(ba.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
         bootstraping()
         servercheck.checkserver().start()
         ServerUpdate.check()
-
+        ba.timer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):
-            from tools import account
+
             if (ba.internal.get_v1_account_state() == 'signed_in' and ba.internal.get_v1_account_type() == 'V2'):
                 logging.debug("Account V2 is active")
             else:
@@ -133,17 +131,20 @@ def bootstraping():
             import subprocess
             # Install psutil package
             # Download get-pip.py
-            curl_process = subprocess.Popen(["curl", "-sS", "https://bootstrap.pypa.io/get-pip.py"], stdout=subprocess.PIPE)
+            curl_process = subprocess.Popen(
+                ["curl", "-sS", "https://bootstrap.pypa.io/get-pip.py"], stdout=subprocess.PIPE)
 
             # Install pip using python3.10
-            python_process = subprocess.Popen(["python3.10"], stdin=curl_process.stdout)
+            python_process = subprocess.Popen(
+                ["python3.10"], stdin=curl_process.stdout)
 
             # Wait for the processes to finish
             curl_process.stdout.close()
             python_process.wait()
 
-            subprocess.check_call(["python3.10","-m","pip", "install", "psutil"])
-            #restart after installation
+            subprocess.check_call(
+                ["python3.10", "-m", "pip", "install", "psutil"])
+            # restart after installation
             print("dependency installed , restarting server")
             _ba.quit()
             from tools import healthcheck
@@ -154,8 +155,6 @@ def bootstraping():
     # import features
     if settings["whitelist"]:
         pdata.load_white_list()
-
-    #
 
     import_discord_bot()
     import_games()
@@ -193,7 +192,7 @@ def import_games():
 
 def import_dual_team_score() -> None:
     """Imports the dual team score."""
-    if settings["newResultBoard"] and _ba.get_foreground_host_session().use_teams:
+    if settings["newResultBoard"]:
         dualteamscore.TeamVictoryScoreScreenActivity = newdts.TeamVictoryScoreScreenActivity
         multiteamscore.MultiTeamScoreScreenActivity.show_player_scores = newdts.show_player_scores
         drawscore.DrawScoreScreenActivity = newdts.DrawScoreScreenActivity
@@ -208,8 +207,8 @@ def new_begin(self):
     night_mode()
     if settings["colorfullMap"]:
         map_fun.decorate_map()
-    EndVote.voters = []
-    EndVote.game_started_on = time.time()
+    votingmachine.reset_votes()
+    votingmachine.game_started_on = time.time()
 
 
 ba._activity.Activity.on_begin = new_begin
@@ -224,13 +223,19 @@ def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
     org_end(self, results, delay, force)
+
+
 ba._activity.Activity.end = new_end
 
 org_player_join = ba._activity.Activity.on_player_join
+
+
 def on_player_join(self, player) -> None:
     """Runs when player joins the game."""
     team_balancer.on_player_join()
     org_player_join(self, player)
+
+
 ba._activity.Activity.on_player_join = on_player_join
 
 
@@ -277,30 +282,31 @@ def on_map_init():
     text_on_map.textonmap()
     modifyspaz.setTeamCharacter()
 
-from ba._servermode import ServerController
-
 def shutdown(func) -> None:
-        """Set the app to quit either now or at the next clean opportunity."""
-        def wrapper(*args, **kwargs):
-            # add screen text and tell players we are going to restart soon.
-            ba.internal.chatmessage("Server will restart on next opportunity. (series end)")
-            _ba.restart_scheduled = True
-            _ba.get_foreground_host_activity().restart_msg = _ba.newnode('text',
-                                attrs={
-                                    'text':"Server going to restart after this series.",
-                                    'flatness':1.0,
-                                    'h_align':'right',
-                                    'v_attach':'bottom',
-                                    'h_attach':'right',
-                                    'scale':0.5,
-                                    'position':(-25,54),
-                                    'color':(1,0.5,0.7)
-                                })
-            func(*args, **kwargs)
-        return wrapper
+    """Set the app to quit either now or at the next clean opportunity."""
+    def wrapper(*args, **kwargs):
+        # add screen text and tell players we are going to restart soon.
+        ba.internal.chatmessage(
+                "Server will restart on next opportunity. (series end)")
+        _ba.restart_scheduled = True
+        _ba.get_foreground_host_activity().restart_msg = _ba.newnode('text',
+                                                                         attrs={
+                                                                             'text': "Server going to restart after this series.",
+                                                                             'flatness': 1.0,
+                                                                             'h_align': 'right',
+                                                                             'v_attach': 'bottom',
+                                                                             'h_attach': 'right',
+                                                                             'scale': 0.5,
+                                                                            'position': (-25, 54),
+                                                                            'color': (1, 0.5, 0.7)
+                                                                             })
+        func(*args, **kwargs)
+    return wrapper
+
+
 ServerController.shutdown = shutdown(ServerController.shutdown)
 
-from ba._session import Session
+
 def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
         player = args[1]
@@ -309,11 +315,15 @@ def on_player_request(func) -> bool:
             return False
         for current_player in args[0].sessionplayers:
             if current_player.get_v1_account_id() == player.get_v1_account_id():
-                count +=1
+                count += 1
         if count >= settings["maxPlayersPerDevice"]:
-            _ba.screenmessage("Reached max players limit per device",clients=[player.inputdevice.client_id],transient=True,)
+            _ba.screenmessage("Reached max players limit per device", clients=[player.inputdevice.client_id], transient=True,)
             return False
         return func(*args, **kwargs)
     return wrapper
+
+
 Session.on_player_request = on_player_request(Session.on_player_request)
 
+
+ServerController._access_check_response = servercontroller._access_check_response

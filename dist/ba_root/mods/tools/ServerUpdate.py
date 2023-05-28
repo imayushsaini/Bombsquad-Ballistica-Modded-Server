@@ -6,7 +6,7 @@ from efro.terminal import Clr
 import json
 import requests
 import _ba
-VERSION=77
+VERSION=78
 
 def check():
 

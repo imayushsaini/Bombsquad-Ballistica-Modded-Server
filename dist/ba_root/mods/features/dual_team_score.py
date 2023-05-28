@@ -46,17 +46,17 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
             best_txt = ba.Lstr(resource='bestOfSeriesText',
                                subs=[('${COUNT}',
                                       str(session.get_series_length()))])
-
-        # ZoomText(best_txt,
-        #          position=(0, 175),
-        #          shiftposition=(-250, 175),
-        #          shiftdelay=2.5,
-        #          flash=False,
-        #          trail=False,
-        #          h_align='center',
-        #          scale=0.25,
-        #          color=(0.5, 0.5, 0.5, 1.0),
-        #          jitter=3.0).autoretain()
+        if len(self.teams) != 2:
+            ZoomText(best_txt,
+                    position=(0, 175),
+                    shiftposition=(-250, 175),
+                    shiftdelay=2.5,
+                    flash=False,
+                    trail=False,
+                    h_align='center',
+                    scale=0.25,
+                    color=(0.5, 0.5, 0.5, 1.0),
+                    jitter=3.0).autoretain()
         for team in self.session.sessionteams:
             ba.timer(
                 i * 0.15 + 0.15,
@@ -86,49 +86,94 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     def _show_team_name(self, pos_v: float, team: ba.SessionTeam,
                         kill_delay: float, shiftdelay: float) -> None:
         del kill_delay  # Unused arg.
-        ZoomText(ba.Lstr(value='${A}', subs=[('${A}', team.name)]),
-                 position=(-250, 260) if pos_v == 65 else (250, 260),
-                 shiftposition=(-250, 260) if pos_v == 65 else (250, 260),
-                 shiftdelay=shiftdelay,
-                 flash=False,
-                 trail=False,
-                 h_align='center',
-                 maxwidth=300,
-                 scale=0.45,
-                 color=team.color,
-                 jitter=1.0).autoretain()
+        if len(self.teams) != 2:
+            ZoomText(
+                ba.Lstr(value='${A}:', subs=[('${A}', team.name)]),
+                position=(100, pos_v),
+                shiftposition=(-150, pos_v),
+                shiftdelay=shiftdelay,
+                flash=False,
+                trail=False,
+                h_align='right',
+                maxwidth=300,
+                color=team.color,
+                jitter=1.0,
+            ).autoretain()
+        else:
+            ZoomText(ba.Lstr(value='${A}', subs=[('${A}', team.name)]),
+                    position=(-250, 260) if pos_v == 65 else (250, 260),
+                    shiftposition=(-250, 260) if pos_v == 65 else (250, 260),
+                    shiftdelay=shiftdelay,
+                    flash=False,
+                    trail=False,
+                    h_align='center',
+                    maxwidth=300,
+                    scale=0.45,
+                    color=team.color,
+                    jitter=1.0).autoretain()
 
     def _show_team_old_score(self, pos_v: float, sessionteam: ba.SessionTeam,
                              shiftdelay: float) -> None:
-        ZoomText(str(sessionteam.customdata['score'] - 1),
-                 position=(-250, 190) if pos_v == 65 else (250, 190),
-                 maxwidth=100,
-                 color=(0.6, 0.6, 0.7),
-                 shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
-                 shiftdelay=shiftdelay,
-                 flash=False,
-                 trail=False,
-                 lifespan=1.0,
-                 scale=0.56,
-                 h_align='center',
-                 jitter=1.0).autoretain()
+
+        if len(self.teams) != 2:
+            ZoomText(
+                str(sessionteam.customdata['score'] - 1),
+                position=(150, pos_v),
+                maxwidth=100,
+                color=(0.6, 0.6, 0.7),
+                shiftposition=(-100, pos_v),
+                shiftdelay=shiftdelay,
+                flash=False,
+                trail=False,
+                lifespan=1.0,
+                h_align='left',
+                jitter=1.0,
+            ).autoretain()
+        else:
+            ZoomText(str(sessionteam.customdata['score'] - 1),
+                    position=(-250, 190) if pos_v == 65 else (250, 190),
+                    maxwidth=100,
+                    color=(0.6, 0.6, 0.7),
+                    shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
+                    shiftdelay=shiftdelay,
+                    flash=False,
+                    trail=False,
+                    lifespan=1.0,
+                    scale=0.56,
+                    h_align='center',
+                    jitter=1.0).autoretain()
 
     def _show_team_score(self, pos_v: float, sessionteam: ba.SessionTeam,
                          scored: bool, kill_delay: float,
                          shiftdelay: float) -> None:
         del kill_delay  # Unused arg.
-        ZoomText(str(sessionteam.customdata['score']),
-                 position=(-250, 190) if pos_v == 65 else (250, 190),
-                 maxwidth=100,
-                 color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
-                 shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
-                 shiftdelay=shiftdelay,
-                 flash=scored,
-                 trail=scored,
-                 scale=0.56,
-                 h_align='center',
-                 jitter=1.0,
-                 trailcolor=(1, 0.8, 0.0, 0)).autoretain()
+        if len(self.teams) != 2:
+            ZoomText(
+                str(sessionteam.customdata['score']),
+                position=(150, pos_v),
+                maxwidth=100,
+                color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
+                shiftposition=(-100, pos_v),
+                shiftdelay=shiftdelay,
+                flash=scored,
+                trail=scored,
+                h_align='left',
+                jitter=1.0,
+                trailcolor=(1, 0.8, 0.0, 0),
+            ).autoretain()
+        else:
+            ZoomText(str(sessionteam.customdata['score']),
+                    position=(-250, 190) if pos_v == 65 else (250, 190),
+                    maxwidth=100,
+                    color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
+                    shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
+                    shiftdelay=shiftdelay,
+                    flash=scored,
+                    trail=scored,
+                    scale=0.56,
+                    h_align='center',
+                    jitter=1.0,
+                    trailcolor=(1, 0.8, 0.0, 0)).autoretain()
 
 
 # ===================================================================================================
@@ -241,6 +286,19 @@ def show_player_scores(self,
                  h_align=Text.HAlign.CENTER,
                  extrascale=1.4,
                  maxwidth=None)
+    else:
+        tval = ba.Lstr(
+            resource='gameLeadersText',
+            subs=[('${COUNT}', str(session.get_game_number()))],
+        )
+        _txt(
+            180,
+            43,
+            tval,
+            h_align=Text.HAlign.CENTER,
+            extrascale=1.4,
+            maxwidth=None,
+        )
     _txt(-15, 4, ba.Lstr(resource='playerText'), h_align=Text.HAlign.LEFT)
     _txt(180, 4, ba.Lstr(resource='killsText'))
     _txt(280, 4, ba.Lstr(resource='deathsText'), maxwidth=100)

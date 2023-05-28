@@ -27,11 +27,12 @@ def balanceTeams():
                 teamBSize += 1
     except:
         pass
-    if abs(teamBSize-teamASize) >= 0:
-        if teamBSize > teamASize and teamBSize != 0:
-            movePlayers(1, 0, abs(teamBSize-teamASize)-1)
-        elif teamASize > teamBSize and teamASize != 0:
-            movePlayers(0, 1, abs(teamBSize-teamASize)-1)
+    if settings["autoTeamBalance"]:
+        if abs(teamBSize-teamASize) >= 0:
+            if teamBSize > teamASize and teamBSize != 0:
+                movePlayers(1, 0, abs(teamBSize-teamASize)-1)
+            elif teamASize > teamBSize and teamASize != 0:
+                movePlayers(0, 1, abs(teamBSize-teamASize)-1)
 
 
 def movePlayers(fromTeam, toTeam, count):
@@ -40,7 +41,6 @@ def movePlayers(fromTeam, toTeam, count):
     toTeam = session.sessionteams[toTeam]
     for i in range(0, count):
         player = fromTeam.players.pop()
-        print("moved"+player.get_v1_account_id())
         broadCastShiftMsg(player.get_v1_account_id())
         player.setdata(team=toTeam, character=player.character,
                        color=toTeam.color, highlight=player.highlight)

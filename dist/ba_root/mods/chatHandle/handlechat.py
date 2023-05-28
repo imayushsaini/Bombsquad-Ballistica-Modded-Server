@@ -5,7 +5,7 @@ from serverData import serverdata
 from chatHandle.ChatCommands import Main
 from tools import logger, servercheck
 from chatHandle.chatFilter import ChatFilter
-from features import EndVote
+from features import votingmachine
 import ba, _ba
 import ba.internal
 import setting
@@ -18,7 +18,7 @@ def filter_chat_message(msg, client_id):
         if msg.startswith("/"):
             Main.Command(msg, client_id)
             return None
-        logger.log("Host msg: | " + msg , "chat")
+        logger.log(f"Host msg: | {msg}" , "chat")
         return msg
     acid = ""
     displaystring = ""
@@ -36,14 +36,15 @@ def filter_chat_message(msg, client_id):
         msg = ChatFilter.filter(msg, acid, client_id)
     if msg == None:
         return
-    logger.log(acid + " | " + displaystring + " | " + currentname + " | " + msg, "chat")
+    logger.log(f'{acid}  |  {displaystring}| {currentname} | {msg}', "chat")
     if msg.startswith("/"):
         msg = Main.Command(msg, client_id)
         if msg == None:
             return
 
-    if msg == "end" and settings["allowEndVote"]:
-        EndVote.vote_end(acid, client_id)
+    if msg in ["end","dv","nv","sm"] and settings["allowVotes"]:
+        votingmachine.vote(acid, client_id, msg)
+
 
     if acid in serverdata.clients and serverdata.clients[acid]["verified"]:
 
@@ -63,7 +64,6 @@ def filter_chat_message(msg, client_id):
             if msg.startswith(".") and settings["allowInGameChat"]:
                 return Main.QuickAccess(msg, client_id)
             return msg
-
 
     else:
         _ba.screenmessage("Fetching your account info , Wait a minute", transient=True, clients=[client_id])

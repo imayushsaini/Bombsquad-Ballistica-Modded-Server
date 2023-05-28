@@ -27,7 +27,7 @@ class checkserver(object):
     def start(self):
         self.players = []
 
-        self.t1 = ba.timer(1, ba.Call(self.check), repeat=True)
+        self.t1 = ba.Timer(1, ba.Call(self.check), repeat=True,  timetype=ba.TimeType.REAL)
 
     def check(self):
         newPlayers = []
@@ -36,6 +36,10 @@ class checkserver(object):
         for ros in ba.internal.get_game_roster():
             ip = _ba.get_client_ip(ros["client_id"])
             device_id = _ba.get_client_public_device_uuid(ros["client_id"])
+            # if not ros["account_id"]:
+            #     logger.log(f'Player disconnected, None account Id || {ros["display_string"] } IP {ip} {device_id}' ,
+            #             "playerjoin")
+                # ba.internal.disconnect_client(ros["client_id"], 0)
             if device_id not in deviceClientMap:
                 deviceClientMap[device_id] = [ros["client_id"]]
             else:
@@ -43,7 +47,7 @@ class checkserver(object):
                 if len(deviceClientMap[device_id]) >= settings['maxAccountPerIP']:
                     _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
                     ba.internal.disconnect_client(ros["client_id"])
-                    logger.log(" Player disconnected, reached max players per device ||"+ ros["account_id"] ,
+                    logger.log(f'Player disconnected, reached max players per device || {ros["account_id"]}' ,
                         "playerjoin")
                     continue
             if ip not in ipClientMap:
@@ -53,7 +57,7 @@ class checkserver(object):
                 if len(ipClientMap[ip]) >= settings['maxAccountPerIP']:
                     _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
                     ba.internal.disconnect_client(ros["client_id"])
-                    logger.log(" Player disconnected, reached max players per IP address ||"+ ros["account_id"] ,
+                    logger.log(f'Player disconnected, reached max players per IP address || {ros["account_id"]}'  ,
                         "playerjoin")
                     continue
             newPlayers.append(ros['account_id'])
@@ -65,8 +69,9 @@ class checkserver(object):
                 d_str2 = profanity.censor(d_str)
                 try:
                     logger.log(
-                        d_str + "||" + ros["account_id"] + "|| joined server",
+                        f'{d_str}  || {ros["account_id"]} || joined server',
                         "playerjoin")
+                    logger.log(f'{ros["account_id"]} {ip} {device_id}')
                 except:
                     pass
                 if d_str2 != d_str:
@@ -75,8 +80,7 @@ class checkserver(object):
                         color=(1, 0, 0), transient=True,
                         clients=[ros['client_id']])
                     try:
-                        logger.log(d_str + "||" + ros[
-                            "account_id"] + "|| kicked by profanity check",
+                        logger.log(f'{d_str} || { ros["account_id"] } || kicked by profanity check',
                                    "sys")
                     except:
                         pass
@@ -88,8 +92,7 @@ class checkserver(object):
                         _ba.screenmessage("Not in whitelist,contact admin",
                                           color=(1, 0, 0), transient=True,
                                           clients=[ros['client_id']])
-                        logger.log(d_str + "||" + ros[
-                            "account_id"] + " | kicked > not in whitelist")
+                        logger.log(f'{d_str}  || { ros["account_id"]} | kicked > not in whitelist')
                         ba.internal.disconnect_client(ros['client_id'])
 
                         return
@@ -124,7 +127,7 @@ def on_player_join_server(pbid, player_data, ip):
                 _ba.screenmessage("Joining too fast , slow down dude",
                                   color=(1, 0, 1), transient=True,
                                   clients=[clid])
-                logger.log(pbid + "|| kicked for joining too fast")
+                logger.log(f'{pbid} || kicked for joining too fast')
                 ba.internal.disconnect_client(clid)
                 _thread.start_new_thread(reportSpam, (pbid,))
                 return
@@ -198,7 +201,7 @@ def on_player_join_server(pbid, player_data, ip):
 
     # pdata.add_profile(pbid,d_string,d_string)
 
-def check_ban(clid,pbid):
+def check_ban(clid, pbid):
     ip = _ba.get_client_ip(clid)
 
     device_id = _ba.get_client_public_device_uuid(clid)
@@ -230,7 +233,7 @@ def verify_account(pb_id, p_data):
         serverdata.clients[pb_id]["verified"] = True
 
 
-# ============== IGNORE BLOW CODE , ELSE DIE =======================
+# ============== IGNORE BELOW CODE  =======================
 
 def _make_request_safe(request, retries=2, raise_err=True):
     try:
@@ -262,10 +265,6 @@ def get_account_creation_date(pb_id):
             # Convert to IST
             creation_time += datetime.timedelta(hours=5, minutes=30)
             return str(creation_time)
-            # now = datetime.datetime.now()
-            # delta = now - creation_time
-            # delta_hours = delta.total_seconds() / (60 * 60)
-            # return delta_hours
 
 
 def get_device_accounts(pb_id):

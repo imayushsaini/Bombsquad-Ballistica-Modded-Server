@@ -5,9 +5,6 @@ import ba
 import ba.internal
 
 
-
-
-
 def clientid_to_accountid(clientid):
     """
     Transform Clientid To Accountid
@@ -22,9 +19,6 @@ def clientid_to_accountid(clientid):
         if i['client_id'] == clientid:
             return i['account_id']
     return None
-
-
-
 
 
 def check_permissions(accountid, command):
@@ -44,7 +38,7 @@ def check_permissions(accountid, command):
         return True
 
     for role in roles:
-        if accountid in roles[role]["ids"]  and "ALL" in roles[role]["commands"]:
+        if accountid in roles[role]["ids"] and "ALL" in roles[role]["commands"]:
             return True
 
         elif accountid in roles[role]["ids"] and command in roles[role]["commands"]:
@@ -54,5 +48,5 @@ def check_permissions(accountid, command):
 
 def is_server(accid):
     for i in ba.internal.get_game_roster():
-        if i['account_id']==accid and i['client_id']==-1:
+        if i['account_id'] == accid and i['client_id'] == -1:
             return True

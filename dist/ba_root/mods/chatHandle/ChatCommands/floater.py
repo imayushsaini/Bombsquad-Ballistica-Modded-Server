@@ -182,7 +182,8 @@ class Floater(ba.Actor):
             pn = self.node.position
             dist = self.distance(pn[0], pn[1], pn[2], px, py, pz)
             self.node.velocity = ((px - pn[0]) / dist, (py - pn[1]) / dist, (pz - pn[2]) / dist)
-            ba.timer(dist-1, ba.WeakCall(self.move), suppress_format_warning=True)
+            t = dist - 1 if dist - 1 >= 0 else 0.1
+            ba.timer(t, ba.WeakCall(self.move), suppress_format_warning=True)
 
     def handlemessage(self, msg):
         if isinstance(msg, ba.DieMessage):

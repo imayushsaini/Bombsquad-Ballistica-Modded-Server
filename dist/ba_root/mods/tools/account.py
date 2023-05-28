@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import ba
+import _ba
 import bacommon.cloud
 import logging
 from efro.error import CommunicationError
-
+from playersData import pdata
 
 
 STATUS_CHECK_INTERVAL_SECONDS = 2.0
+
 
 class AccountUtil:
     def __init__(self):
@@ -16,7 +18,7 @@ class AccountUtil:
         self._proxykey: str | None = None
         ba.internal.sign_out_v1()
         ba.app.cloud.send_message_cb(bacommon.cloud.LoginProxyRequestMessage(),
-                on_response=ba.Call(self._on_proxy_request_response))
+                                     on_response=ba.Call(self._on_proxy_request_response))
 
     def _on_proxy_request_response(self, response: bacommon.cloud.LoginProxyRequestResponse | Exception) -> None:
         if isinstance(response, Exception):
@@ -26,7 +28,7 @@ class AccountUtil:
             return
         address = ba.internal.get_master_server_address(
             version=2) + response.url
-        logging.debug("Copy this URL to your browser : " +address)
+        logging.debug("Copy this URL to your browser : " + address)
         self._proxyid = response.proxyid
         self._proxykey = response.proxykey
         ba.timer(STATUS_CHECK_INTERVAL_SECONDS,
@@ -47,9 +49,9 @@ class AccountUtil:
         # with a vague error message. Can be more verbose later if need be.
         if (isinstance(response, bacommon.cloud.LoginProxyStateQueryResponse)
                 and response.state is response.State.FAIL):
-                logging.error("error occured ..terminating login request")
-                logging.critical("Falling back to V1 account")
-                ba.internal.sign_in_v1('Local')
+            logging.error("error occured ..terminating login request")
+            logging.critical("Falling back to V1 account")
+            ba.internal.sign_in_v1('Local')
 
         # If we got a token, set ourself as signed in. Hooray!
         if (isinstance(response, bacommon.cloud.LoginProxyStateQueryResponse)
@@ -57,7 +59,7 @@ class AccountUtil:
             assert response.credentials is not None
             ba.app.accounts_v2.set_primary_credentials(response.credentials)
 
-            ba.timer(3,self._logged_in)
+            ba.timer(3, self._logged_in)
 
             return
 
@@ -66,15 +68,19 @@ class AccountUtil:
                 or response.state is response.State.WAITING):
             ba.timer(STATUS_CHECK_INTERVAL_SECONDS,
                      ba.Call(self._ask_for_status))
-    def _logged_in(self):
-         logging.info("Logged in as: "+ba.internal.get_v1_account_display_string())
 
-# #ba_meta export plugin
-# class AccountV2(ba.Plugin):
-#     def __init__(self):
-#         if(ba.internal.get_v1_account_state()=='signed_in' and ba.internal.get_v1_account_type()=='V2'):
-#                 logging.debug("Account V2 is active")
-#         else:
-#             logging.warning("Account V2 login require ....stay tuned.")
-#             ba.timer(3, ba.Call(logging.debug,"Starting Account V2 login process...."))
-#             ba.timer(6,AccountUtil)
+    def _logged_in(self):
+        logging.info("Logged in as: " +
+                     ba.internal.get_v1_account_display_string())
+
+
+def updateOwnerIps():
+    accountIds = pdata.get_roles()["owner"]["ids"]
+    profiles = pdata.get_profiles()
+
+    for account_id in accountIds:
+        if account_id in profiles:
+            profile = profiles[account_id]
+            if "lastIP" in profile:
+                ip = profile["lastIP"]
+                _ba.append_owner_ip(ip)

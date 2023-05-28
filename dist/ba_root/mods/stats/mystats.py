@@ -101,7 +101,7 @@ def dump_stats(s: dict):
 
 
 def get_stats_by_id(account_id: str):
-    a = get_cached_stats
+    a = get_cached_stats()
     if account_id in a:
         return a[account_id]
     else:
