@@ -1,6 +1,6 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.20.
+Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.19.
 
 ## Requirements
 - Ubuntu 20 and above
@@ -47,13 +47,16 @@ Here you can ban player , mute them , disable their kick votes
 - Rejoin cooldown.
 - Leaderboard , top 3 rank players name on top right corner.
 - Restrict some player to start kick vote.
+- Allow server owners to join even when server is full by looking owner IP address which was used earlier(don't join by queue).
+- Auto kick fake accounts (unsigned/not verified by master server).
+- Auto enable/disable public queue when server is full.
 - Auto night mode .
 - Transparent Kickvote , can see who started kick vote for whom.
 - Kickvote msg to chat/screen , can choose to show kickvote start msg either as screen message or chat message.
 - Players IP Address and Device UUID tracking and banning.
 - Team Chat, send msg starting with (,) comma to deliver it to team mates only.
 - In game popup chat , send msg starting with (.) Dot to send in game popup msg.
-- End Vote System , type `end` in chat to start end vote.
+- Custom Voting System , type `end` in chat to start end vote or `sm` , `nv`, `dv`.
 - support for [Ballisitca-web-stats](https://github.com/imayushsaini/ballistica-web-stats).
 - Integrated Discord bot to sync live stats(current players, chats , all logs) to discord.
 - Execute chat command remotely from discord.
