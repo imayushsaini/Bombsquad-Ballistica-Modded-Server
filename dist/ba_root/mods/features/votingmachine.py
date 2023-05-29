@@ -51,15 +51,19 @@ def vote(pb_id, client_id, vote_type):
             update_vote_text(max_votes_required(
                 len(active_players)) - len(voters))
         else:
-            _ba.screenmessage(f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
-                               image={"texture": ba.gettexture("achievementSharingIsCaring"),
-                                       "tint_texture": ba.gettexture("achievementSharingIsCaring"),
-                                         "tint_color": (0.5, 0.1, 0.2), "tint2_color": (0.1, 0.2, 0.9)},
-                              top=True)
+            activity = _ba.get_foreground_host_activity()
+            if activity is not None:
+                with _ba.Context(activity):
+                    _ba.screenmessage(f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
+                                    image={"texture": ba.gettexture("achievementSharingIsCaring"),
+                                            "tint_texture": ba.gettexture("achievementSharingIsCaring"),
+                                                "tint_color": (0.5, 0.5, 0.5), "tint2_color": (0.7, 0.5, 0.9)},
+                                    top=True)
     vote_machine[vote_type]["voters"] = voters
 
     if len(voters) >= max_votes_required(len(active_players)):
         ba.internal.chatmessage(f"{vote_type} vote succeed")
+        vote_machine[vote_type]["voters"] = []
         if vote_type == "end":
             try:
                 with _ba.Context(_ba.get_foreground_host_activity()):
