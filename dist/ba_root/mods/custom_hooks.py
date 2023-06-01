@@ -123,8 +123,9 @@ def bootstraping():
     if settings["colorfullMap"]:
         from plugins import colorfulmaps2
     try:
-        from tools import healthcheck
-        healthcheck.main()
+        pass
+#         from tools import healthcheck
+#         healthcheck.main()   spamming logs , will increase log interval later
     except Exception as e:
         print(e)
         try:
