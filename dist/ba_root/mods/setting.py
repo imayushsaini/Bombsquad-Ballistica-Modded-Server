@@ -30,6 +30,10 @@ def get_settings_data() -> dict:
     with open(SETTINGS_PATH, mode="r", encoding="utf-8") as data:
         return json.load(data)
 
+def refresh_cache() -> None:
+    get_settings_data.cache_clear()
+    # lets cache it again
+    get_settings_data()
 
 def commit(data: dict) -> None:
     """Commits the data in setting file.
@@ -41,3 +45,5 @@ def commit(data: dict) -> None:
     """
     with open(SETTINGS_PATH, mode="w", encoding="utf-8") as setting_file:
         json.dump(data, setting_file, indent=4)
+    # settings updated ok now update the cache
+    refresh_cache()
