@@ -7,7 +7,7 @@ import _ba
 import ba.internal
 import urllib.request
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import ba
 from ba._general import Call
@@ -282,7 +282,7 @@ def get_account_creation_date(pb_id):
             creation_time = datetime.strptime("/".join(creation_time),
                                               "%Y/%m/%d/%H/%M/%S")
             # Convert to IST
-            creation_time += datetime.timedelta(hours=5, minutes=30)
+            creation_time += timedelta(hours=5, minutes=30)
             return str(creation_time)
 
 
