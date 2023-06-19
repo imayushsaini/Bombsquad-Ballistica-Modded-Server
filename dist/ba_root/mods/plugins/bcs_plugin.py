@@ -8,7 +8,7 @@
 from flask import Flask, request, jsonify
 from functools import wraps
 import os
-
+import _ba
 import _thread
 # import uvicorn
 from . import bombsquad_service
@@ -250,7 +250,7 @@ def update_server_config():
 
 
 def enable():
-    flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", 5000, False))
+    flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", _ba.get_game_port(), False))
     # uvicorn_thread = threading.Thread(target=start_uvicorn)
     # uvicorn_thread.start()
     # options = {
