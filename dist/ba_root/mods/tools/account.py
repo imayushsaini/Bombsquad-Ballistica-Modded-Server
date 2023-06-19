@@ -75,12 +75,13 @@ class AccountUtil:
 
 
 def updateOwnerIps():
-    accountIds = pdata.get_roles()["owner"]["ids"]
-    profiles = pdata.get_profiles()
+    if "owner" in pdata.get_roles():
+        accountIds = pdata.get_roles()["owner"]["ids"]
+        profiles = pdata.get_profiles()
 
-    for account_id in accountIds:
-        if account_id in profiles:
-            profile = profiles[account_id]
-            if "lastIP" in profile:
-                ip = profile["lastIP"]
-                _ba.append_owner_ip(ip)
+        for account_id in accountIds:
+            if account_id in profiles:
+                profile = profiles[account_id]
+                if "lastIP" in profile:
+                    ip = profile["lastIP"]
+                    _ba.append_owner_ip(ip)
