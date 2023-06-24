@@ -17,7 +17,7 @@ import _thread
 from tools import logger
 from features import profanity
 from playersData import pdata
-
+from . import notification_manager
 blacklist = pdata.get_blacklist()
 
 settings = setting.get_settings_data()
@@ -191,6 +191,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
             _ba.screenmessage(settings["regularWelcomeMsg"] + " " + device_string,
                               color=(0.60, 0.8, 0.6), transient=True,
                               clients=[clid])
+            notification_manager.player_joined(pbid)
     else:
         # fetch id for first time.
         thread = FetchThread(
@@ -203,6 +204,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
         thread.start()
         _ba.screenmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
                           transient=True, clients=[clid])
+        notification_manager.player_joined(pbid)
 
     # pdata.add_profile(pbid,d_string,d_string)
 

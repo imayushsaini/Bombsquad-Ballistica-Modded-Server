@@ -1,3 +1,6 @@
+import ecdsa
+import base64
+import json
 import ba
 import _ba
 import ba.internal
@@ -6,7 +9,7 @@ from typing import Optional, Any, Dict, List, Type, Sequence
 from ba._gameactivity import GameActivity
 from playersData import pdata
 from serverData import serverdata
-from tools import servercheck, logger
+from tools import servercheck, logger, notification_manager
 import setting
 from datetime import datetime
 import _thread
@@ -15,7 +18,7 @@ import yaml
 stats = {}
 leaderboard = {}
 top200 = {}
-
+vapidkeys = {}
 serverinfo = {}
 
 
@@ -24,7 +27,7 @@ class BsDataThread(object):
         global stats
         stats["name"] = _ba.app.server._config.party_name
         stats["discord"] = "https://discord.gg/ucyaesh"
-        stats["vapidKey"] = "sjfbsdjfdsf"
+        stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
         self.refresh_stats_cache_timer = ba.Timer(8, ba.Call(self.refreshStats),
                                                   timetype=ba.TimeType.REAL, repeat=True)
@@ -255,3 +258,7 @@ def do_action(action, value):
         _ba.pushcall(ba.Call(_ba.chatmessage, value), from_other_thread=True)
     elif action == "quit":
         _ba.pushcall(ba.Call(_ba.quit), from_other_thread=True)
+
+
+def subscribe_player(sub, account_id, name):
+    notification_manager.subscribe(sub, account_id, name)

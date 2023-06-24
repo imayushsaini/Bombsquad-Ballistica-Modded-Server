@@ -35,6 +35,7 @@ from features import votingmachine
 from features import text_on_map, announcement
 from features import map_fun
 from spazmod import modifyspaz
+from tools import notification_manager
 if TYPE_CHECKING:
     from typing import Optional, Any
 
@@ -46,6 +47,8 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     return handlechat.filter_chat_message(msg, client_id)
 
 # ba_meta export plugin
+
+
 class modSetup(ba.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
@@ -69,8 +72,11 @@ class modSetup(ba.Plugin):
             ba.internal.sign_in_v1('Local')
         ba.timer(60, playlist.flush_playlists)
 
-    def on_app_shutdown(self):
-        pass
+    def on_app_shutdown(self):  # TODO not working, fix this, also dump server logs
+        print("Server shutting down , lets save cache")
+        pdata.dump_cache()
+        notification_manager.dump_cache()
+        print("Done dumping memory")
 
 
 def score_screen_on_begin(_stats: ba.Stats) -> None:
@@ -99,6 +105,7 @@ def bootstraping():
     _thread.start_new_thread(mystats.refreshStats, ())
     pdata.load_cache()
     _thread.start_new_thread(pdata.dump_cache, ())
+    _thread.start_new_thread(notification_manager.dump_cache, ())
 
     # import plugins
     if settings["elPatronPowerups"]["enable"]:
@@ -124,8 +131,7 @@ def bootstraping():
         from plugins import colorfulmaps2
     try:
         pass
-#         from tools import healthcheck
-#         healthcheck.main()   spamming logs , will increase log interval later
+        # from tools import healthcheck
     except Exception as e:
         print(e)
         try:
@@ -283,24 +289,25 @@ def on_map_init():
     text_on_map.textonmap()
     modifyspaz.setTeamCharacter()
 
+
 def shutdown(func) -> None:
     """Set the app to quit either now or at the next clean opportunity."""
     def wrapper(*args, **kwargs):
         # add screen text and tell players we are going to restart soon.
         ba.internal.chatmessage(
-                "Server will restart on next opportunity. (series end)")
+            "Server will restart on next opportunity. (series end)")
         _ba.restart_scheduled = True
         _ba.get_foreground_host_activity().restart_msg = _ba.newnode('text',
-                                                                         attrs={
-                                                                             'text': "Server going to restart after this series.",
-                                                                             'flatness': 1.0,
-                                                                             'h_align': 'right',
-                                                                             'v_attach': 'bottom',
-                                                                             'h_attach': 'right',
-                                                                             'scale': 0.5,
-                                                                            'position': (-25, 54),
-                                                                            'color': (1, 0.5, 0.7)
-                                                                             })
+                                                                     attrs={
+                                                                         'text': "Server going to restart after this series.",
+                                                                         'flatness': 1.0,
+                                                                         'h_align': 'right',
+                                                                         'v_attach': 'bottom',
+                                                                         'h_attach': 'right',
+                                                                         'scale': 0.5,
+                                                                         'position': (-25, 54),
+                                                                         'color': (1, 0.5, 0.7)
+                                                                     })
         func(*args, **kwargs)
     return wrapper
 
@@ -318,7 +325,8 @@ def on_player_request(func) -> bool:
             if current_player.get_v1_account_id() == player.get_v1_account_id():
                 count += 1
         if count >= settings["maxPlayersPerDevice"]:
-            _ba.screenmessage("Reached max players limit per device", clients=[player.inputdevice.client_id], transient=True,)
+            _ba.screenmessage("Reached max players limit per device", clients=[
+                              player.inputdevice.client_id], transient=True,)
             return False
         return func(*args, **kwargs)
     return wrapper

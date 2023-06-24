@@ -1,0 +1,10 @@
+{
+    "jrz6Rg": {
+        "endpoint": "https://wns2-pn1p.notify.windows.com/w/?token=8nmgbauneNBqKw7H6IGl",
+        "expirationTime": null,
+        "keys": {
+            "p256dh": "BOG4rFeziA",
+            "auth": "yNIDrg"
+        }
+    }
+}

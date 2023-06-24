@@ -18,7 +18,7 @@ os.environ['FLASK_ENV'] = 'development'
 
 app = Flask(__name__)
 app.config["DEBUG"] = False
-SECRET_KEY = "my_secret_key"
+SECRET_KEY = "my_secret_key2"
 
 
 @app.after_request
@@ -54,6 +54,19 @@ def get_live_stats():
 @app.route('/api/top-200', methods=['GET'])
 def get_top200():
     return jsonify(bombsquad_service.get_top_200()), 200
+
+
+@app.route('/api/subscribe', methods=['POST'])
+def subscribe_player():
+    try:
+        data = request.get_json()
+        bombsquad_service.subscribe_player(
+            data["subscription"], data["player_id"], data["name"])
+        response = {
+            'message': f'Subscribed {data["name"]} successfully , will send confirmation notification to test'}
+        return jsonify(response), 201
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
 
 
 #  ============ Admin only =========
@@ -250,7 +263,8 @@ def update_server_config():
 
 
 def enable():
-    flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", _ba.get_game_port(), False))
+    flask_run = _thread.start_new_thread(
+        app.run, ("0.0.0.0", _ba.get_game_port(), False))
     # uvicorn_thread = threading.Thread(target=start_uvicorn)
     # uvicorn_thread.start()
     # options = {
