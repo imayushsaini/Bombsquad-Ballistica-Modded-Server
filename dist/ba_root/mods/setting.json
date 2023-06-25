@@ -58,7 +58,8 @@
         "enable":true
     },
     "ballistica_web": {
-        "enable":false
+        "enable":false,
+         "server_password":"my_secerT_password_very_hard"
     },
     "character_chooser":{
         "enable":true

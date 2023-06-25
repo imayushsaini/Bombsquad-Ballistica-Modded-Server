@@ -5,6 +5,8 @@
 # from gunicorn.app.base import BaseApplication
 # from gunicorn.workers import ggevent as gevent_worker
 
+import logging
+from threading import Thread
 from flask import Flask, request, jsonify
 from functools import wraps
 import os
@@ -15,10 +17,12 @@ from . import bombsquad_service
 
 os.environ['FLASK_APP'] = 'bombsquadflaskapi.py'
 os.environ['FLASK_ENV'] = 'development'
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 app.config["DEBUG"] = False
-SECRET_KEY = "my_secret_key2"
+SECRET_KEY = 'default'
 
 
 @app.after_request
@@ -261,10 +265,16 @@ def update_server_config():
 #                 reload=False, log_level="debug", workers=3, use_colors=True, no_signal=True)
     # flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", 5000, False))
 
+def run_server():
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=_ba.get_game_port())
 
-def enable():
-    flask_run = _thread.start_new_thread(
-        app.run, ("0.0.0.0", _ba.get_game_port(), False))
+
+def enable(password):
+    global SECRET_KEY
+    SECRET_KEY = password
+    t = Thread(target=run_server)
+    t.start()
     # uvicorn_thread = threading.Thread(target=start_uvicorn)
     # uvicorn_thread.start()
     # options = {
