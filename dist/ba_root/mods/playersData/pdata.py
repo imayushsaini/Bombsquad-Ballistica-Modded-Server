@@ -4,6 +4,8 @@
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
+import shutil
+import copy
 from typing import TYPE_CHECKING
 
 import time
@@ -17,13 +19,13 @@ import _ba
 import ba.internal
 import json
 import datetime
-from tools.ServerUpdate import contributeData , checkSpammer
+from tools.ServerUpdate import checkSpammer
 import setting
-
+from datetime import datetime, timedelta
 if TYPE_CHECKING:
     pass
 
-setti=setting.get_settings_data()
+settings = setting.get_settings_data()
 
 PLAYERS_DATA_PATH = os.path.join(
     _ba.env()["python_directory_user"], "playersData" + os.sep
@@ -54,7 +56,7 @@ def get_info(account_id: str) -> dict | None:
     dict | None
         information of client
     """
-    profiles=get_profiles()
+    profiles = get_profiles()
     if account_id in profiles:
         return profiles[account_id]
     return None
@@ -68,54 +70,69 @@ def get_profiles() -> dict:
     dict
         profiles of the players
     """
-    if CacheData.profiles=={}:
+    if CacheData.profiles == {}:
         try:
             if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000000:
-                newpath = PLAYERS_DATA_PATH + "profiles.json"+str(datetime.datetime.now())
+                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
-                if setti["contributeData"]:
-                    contributeData(newpath)
-                profiles = {"pb-sdf":{}}
+                profiles = {"pb-sdf": {}}
                 print("resetting profiles")
             else:
-                f=open(PLAYERS_DATA_PATH + "profiles.json","r")
+                f = open(PLAYERS_DATA_PATH + "profiles.json", "r")
                 profiles = json.load(f)
                 f.close()
                 print("loading old proiles.json")
-            CacheData.profiles=profiles
+            CacheData.profiles = profiles
 
         except Exception as e:
-            f=open(PLAYERS_DATA_PATH + "profiles.json.backup","r")
+            f = open(PLAYERS_DATA_PATH + "profiles.json.backup", "r")
             profiles = json.load(f)
             print(e)
             print("exception happened , falling back to profiles.json.backup")
-            CacheData.profiles=profiles
+            CacheData.profiles = profiles
             f.close()
             return profiles
     else:
         return CacheData.profiles
 
+
+def get_profiles_archive_index():
+    return [x for x in os.listdir(PLAYERS_DATA_PATH) if x.startswith("profiles")]
+
+
+def get_old_profiles(filename):
+    try:
+        f = open(PLAYERS_DATA_PATH + filename, "r")
+        profiles = json.load(f)
+        return profiles
+    except:
+        return {}
+
+
 def get_blacklist() -> dict:
     if CacheData.blacklist == {}:
         try:
-            f = open(PLAYERS_DATA_PATH + "blacklist.json","r")
+            f = open(PLAYERS_DATA_PATH + "blacklist.json", "r")
             CacheData.blacklist = json.load(f)
         except:
             print('error opening blacklist json')
             return {
-                "ban":{
-                    "ids":[],
-                    "ips":[],
-                    "deviceids":[]
-                   },
-                    "muted-ids":[]
-                }
+                "ban": {
+                    "ids": {},
+                    "ips": {},
+                    "deviceids": {}
+                },
+                "muted-ids": {},
+                "kick-vote-disabled": {}
+            }
 
     return CacheData.blacklist
 
+
 def update_blacklist():
-    with open(PLAYERS_DATA_PATH + "blacklist.json","w") as f:
-        json.dump(CacheData.blacklist,f,indent=4)
+    with open(PLAYERS_DATA_PATH + "blacklist.json", "w") as f:
+        json.dump(CacheData.blacklist, f, indent=4)
+
 
 def commit_profiles(data={}) -> None:
     """Commits the given profiles in the database.
@@ -126,6 +143,7 @@ def commit_profiles(data={}) -> None:
     """
     # with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
     #     profiles_file.dump(CacheData.profiles, indent=4)
+
 
 def get_detailed_info(pbid):
     main_account = get_info(pbid)
@@ -164,19 +182,16 @@ def add_profile(
     """
     profiles = get_profiles()
     profiles[account_id] = {
-            "display_string": display_string,
-            "profiles": [],
-            "name": current_name,
-            "isBan": False,
-            "isMuted": False,
-            "accountAge": account_age,
-            "registerOn": time.time(),
-            "canStartKickVote": True,
-            "spamCount": 0,
-            "lastSpam": time.time(),
-            "totaltimeplayer": 0,
-        }
-    CacheData.profiles=profiles
+        "display_string": display_string,
+        "profiles": [],
+        "name": current_name,
+        "accountAge": account_age,
+        "registerOn": time.time(),
+        "spamCount": 0,
+        "lastSpam": time.time(),
+        "totaltimeplayer": 0,
+    }
+    CacheData.profiles = profiles
 
     serverdata.clients[account_id] = profiles[account_id]
     serverdata.clients[account_id]["warnCount"] = 0
@@ -190,14 +205,15 @@ def add_profile(
             cid = ros['client_id']
     ip = _ba.get_client_ip(cid)
     serverdata.clients[account_id]["lastIP"] = ip
-    serverdata.recents.append({"client_id":cid,"deviceId":display_string,"pbid": account_id})
+    serverdata.recents.append(
+        {"client_id": cid, "deviceId": display_string, "pbid": account_id})
     serverdata.recents = serverdata.recents[-20:]
     device_id = _ba.get_client_public_device_uuid(cid)
-    if(device_id==None):
+    if (device_id == None):
         device_id = _ba.get_client_device_uuid(cid)
-    checkSpammer({'id':account_id,'display':display_string,'ip':ip,'device':device_id})
-    if device_id in get_blacklist()["ban"]["deviceids"]:
-        serverdata.clients[account_id]["isBan"]=True
+    checkSpammer({'id': account_id, 'display': display_string,
+                 'ip': ip, 'device': device_id})
+    if device_id in get_blacklist()["ban"]["deviceids"] or account_id in get_blacklist()["ban"]["ids"]:
         ba.internal.disconnect_client(cid)
     serverdata.clients[account_id]["deviceUUID"] = device_id
 
@@ -215,7 +231,7 @@ def update_display_string(account_id: str, display_string: str) -> None:
     profiles = get_profiles()
     if account_id in profiles:
         profiles[account_id]["display_string"] = display_string
-        CacheData.profiles=profiles
+        CacheData.profiles = profiles
         commit_profiles()
 
 
@@ -255,11 +271,11 @@ def update_profile(
 
     if name is not None:
         profiles[account_id]["name"] = name
-    CacheData.profiles=profiles
+    CacheData.profiles = profiles
     commit_profiles()
 
 
-def ban_player(account_id: str) -> None:
+def ban_player(account_id: str,  duration_in_days: float, reason: str) -> None:
     """Bans the player.
 
     Parameters
@@ -267,27 +283,51 @@ def ban_player(account_id: str) -> None:
     account_id : str
         account id of the player to be banned
     """
-    profiles = get_profiles()
-    if account_id in profiles:
-        profiles[account_id]["isBan"] = True
-        CacheData.profiles=profiles
-        # _thread.start_new_thread(commit_profiles, (profiles,))
-    cid = -1
-    for ros in ba.internal.get_game_roster():
-        if ros['account_id'] == account_id:
-            cid = ros['client_id']
-    ip = _ba.get_client_ip(cid)
+    current_profiles = get_profiles()
+    ip = ""
+    device_id = ""
+    if account_id in current_profiles:
+        ip = current_profiles[account_id]["lastIP"]
+        device_id = current_profiles[account_id]["deviceUUID"]
 
-    device_id = _ba.get_client_public_device_uuid(cid)
-    if(device_id==None):
-        device_id = _ba.get_client_device_uuid(cid)
-    CacheData.blacklist["ban"]["ips"].append(ip)
+    ban_time = datetime.now() + timedelta(days=duration_in_days)
 
-    CacheData.blacklist["ban"]["ids"].append(account_id)
-    CacheData.blacklist["ban"]["deviceids"].append(device_id)
-    _thread.start_new_thread(update_blacklist,())
+    CacheData.blacklist["ban"]["ips"][ip] = {"till": ban_time.strftime(
+        "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
+    CacheData.blacklist["ban"]["ids"][account_id] = {
+        "till": ban_time.strftime("%Y-%m-%d %H:%M:%S"), "reason": reason}
+    CacheData.blacklist["ban"]["deviceids"][device_id] = {"till": ban_time.strftime(
+        "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
+    _thread.start_new_thread(update_blacklist, ())
 
-def mute(account_id: str) -> None:
+
+def unban_player(account_id):
+    current_profiles = get_profiles()
+    ip = ""
+    device_id = ""
+    if account_id in current_profiles:
+        ip = current_profiles[account_id]["lastIP"]
+        device_id = current_profiles[account_id]["deviceUUID"]
+
+    CacheData.blacklist["ban"]["ips"].pop(ip, None)
+    CacheData.blacklist["ban"]["deviceids"].pop(device_id, None)
+    CacheData.blacklist["ban"]["ids"].pop(account_id, None)
+    _thread.start_new_thread(update_blacklist, ())
+
+
+def disable_kick_vote(account_id, duration, reason):
+    ban_time = datetime.now() + timedelta(days=duration)
+    CacheData.blacklist["kick-vote-disabled"][account_id] = {"till": ban_time.strftime(
+        "%Y-%m-%d %H:%M:%S"), "reason": reason}
+    _thread.start_new_thread(update_blacklist, ())
+
+
+def enable_kick_vote(account_id):
+    CacheData.blacklist["kick-vote-disabled"].pop(account_id, None)
+    _thread.start_new_thread(update_blacklist, ())
+
+
+def mute(account_id: str, duration_in_days: float, reason: str) -> None:
     """Mutes the player.
 
     Parameters
@@ -295,11 +335,11 @@ def mute(account_id: str) -> None:
     account_id : str
         acccount id of the player to be muted
     """
-    profiles = get_profiles()
-    if account_id in profiles:
-        profiles[account_id]["isMuted"] = True
-        CacheData.profiles=profiles
+    ban_time = datetime.now() + timedelta(days=duration_in_days)
 
+    CacheData.blacklist["muted-ids"][account_id] = {"till": ban_time.strftime(
+        "%Y-%m-%d %H:%M:%S"), "reason": reason}
+    _thread.start_new_thread(update_blacklist, ())
 
 
 def unmute(account_id: str) -> None:
@@ -310,11 +350,8 @@ def unmute(account_id: str) -> None:
     account_id : str
         acccount id of the player to be unmuted
     """
-    profiles = get_profiles()
-    if account_id in profiles:
-        profiles[account_id]["isMuted"] = False
-        CacheData.profiles=profiles
-        _thread.start_new_thread(commit_profiles, (profiles,))
+    CacheData.blacklist["muted-ids"].pop(account_id, None)
+    _thread.start_new_thread(update_blacklist, ())
 
 
 def update_spam(account_id: str, spam_count: int, last_spam: float) -> None:
@@ -333,7 +370,7 @@ def update_spam(account_id: str, spam_count: int, last_spam: float) -> None:
     if account_id in profiles:
         profiles[account_id]["spamCount"] = spam_count
         profiles[account_id]["lastSpam"] = last_spam
-        CacheData.profiles=profiles
+        CacheData.profiles = profiles
         commit_profiles(profiles)
 
 
@@ -549,15 +586,19 @@ def get_custom() -> dict:
     """
     if CacheData.custom == {}:
         try:
-            f=open(PLAYERS_DATA_PATH + "custom.json","r")
+            f = open(PLAYERS_DATA_PATH + "custom.json", "r")
             custom = json.load(f)
             f.close()
-            CacheData.custom=custom
+            CacheData.custom = custom
         except:
-            f=open(PLAYERS_DATA_PATH + "custom.json.backup","r")
+            f = open(PLAYERS_DATA_PATH + "custom.json.backup", "r")
             custom = json.load(f)
             f.close()
-            CacheData.custom=custom
+            CacheData.custom = custom
+        for account_id in custom["customeffects"]:
+            custom["customeffects"][account_id] = [custom["customeffects"][account_id]] if type(
+                custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
+
     return CacheData.custom
 
 
@@ -573,7 +614,8 @@ def set_effect(effect: str, account_id: str) -> None:
     """
     custom = get_custom()
     if account_id in custom["customeffects"]:
-        effects = [custom["customeffects"][account_id]] if type(custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
+        effects = [custom["customeffects"][account_id]] if type(
+            custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
         effects.append(effect)
         custom["customeffects"][account_id] = effects
     else:
@@ -598,6 +640,22 @@ def set_tag(tag: str, account_id: str) -> None:
     commit_c()
 
 
+def get_roles():
+    return CacheData.roles
+
+
+def update_roles(roles):
+    CacheData.roles = roles
+
+
+def get_custom_perks():
+    return CacheData.custom
+
+
+def update_custom_perks(custom):
+    CacheData.custom = custom
+
+
 def remove_effect(account_id: str) -> None:
     """Removes the effect from player.
 
@@ -609,7 +667,6 @@ def remove_effect(account_id: str) -> None:
     custom = get_custom()
     custom["customeffects"].pop(account_id)
     CacheData.custom = custom
-    commit_c()
 
 
 def remove_tag(account_id: str) -> None:
@@ -623,7 +680,6 @@ def remove_tag(account_id: str) -> None:
     custom = get_custom()
     custom["customtag"].pop(account_id)
     CacheData.custom = custom
-    commit_c()
 
 
 def commit_c():
@@ -654,28 +710,31 @@ def load_white_list() -> None:
         for account_id in data:
             CacheData.whitelist.append(account_id)
 
+
 def load_cache():
     """ to be called on server boot"""
     get_profiles()
     get_custom()
     get_roles()
 
-import shutil
-import copy
+
 def dump_cache():
-    if CacheData.profiles!={}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",PLAYERS_DATA_PATH + "profiles.json.backup")
-        profiles= copy.deepcopy(CacheData.profiles)
-        with open(PLAYERS_DATA_PATH + "profiles.json","w") as f:
-            json.dump(profiles,f,indent=4)
-    if CacheData.roles!={}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "roles.json",PLAYERS_DATA_PATH + "roles.json.backup")
-        roles= copy.deepcopy(CacheData.roles)
+    if CacheData.profiles != {}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",
+                        PLAYERS_DATA_PATH + "profiles.json.backup")
+        profiles = copy.deepcopy(CacheData.profiles)
+        with open(PLAYERS_DATA_PATH + "profiles.json", "w") as f:
+            json.dump(profiles, f, indent=4)
+    if CacheData.roles != {}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "roles.json",
+                        PLAYERS_DATA_PATH + "roles.json.backup")
+        roles = copy.deepcopy(CacheData.roles)
         with open(PLAYERS_DATA_PATH + "roles.json", "w") as f:
             json.dump(roles, f, indent=4)
-    if CacheData.custom!={}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "custom.json",PLAYERS_DATA_PATH + "custom.json.backup")
-        custom= copy.deepcopy(CacheData.custom)
+    if CacheData.custom != {}:
+        shutil.copyfile(PLAYERS_DATA_PATH + "custom.json",
+                        PLAYERS_DATA_PATH + "custom.json.backup")
+        custom = copy.deepcopy(CacheData.custom)
         with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
             json.dump(custom, f, indent=4)
     time.sleep(60)

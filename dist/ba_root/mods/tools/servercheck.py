@@ -7,7 +7,7 @@ import _ba
 import ba.internal
 import urllib.request
 import json
-import datetime
+from datetime import datetime, timedelta
 import time
 import ba
 from ba._general import Call
@@ -17,17 +17,19 @@ import _thread
 from tools import logger
 from features import profanity
 from playersData import pdata
-
+from . import notification_manager
 blacklist = pdata.get_blacklist()
 
 settings = setting.get_settings_data()
 ipjoin = {}
 
+
 class checkserver(object):
     def start(self):
         self.players = []
 
-        self.t1 = ba.Timer(1, ba.Call(self.check), repeat=True,  timetype=ba.TimeType.REAL)
+        self.t1 = ba.Timer(1, ba.Call(self.check),
+                           repeat=True,  timetype=ba.TimeType.REAL)
 
     def check(self):
         newPlayers = []
@@ -36,33 +38,33 @@ class checkserver(object):
         for ros in ba.internal.get_game_roster():
             ip = _ba.get_client_ip(ros["client_id"])
             device_id = _ba.get_client_public_device_uuid(ros["client_id"])
-            # if not ros["account_id"]:
-            #     logger.log(f'Player disconnected, None account Id || {ros["display_string"] } IP {ip} {device_id}' ,
-            #             "playerjoin")
-                # ba.internal.disconnect_client(ros["client_id"], 0)
+            if (device_id == None):
+                device_id = _ba.get_client_device_uuid(ros["client_id"])
             if device_id not in deviceClientMap:
                 deviceClientMap[device_id] = [ros["client_id"]]
             else:
                 deviceClientMap[device_id].append(ros["client_id"])
                 if len(deviceClientMap[device_id]) >= settings['maxAccountPerIP']:
-                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
+                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[
+                                    ros["client_id"]])
                     ba.internal.disconnect_client(ros["client_id"])
-                    logger.log(f'Player disconnected, reached max players per device || {ros["account_id"]}' ,
-                        "playerjoin")
+                    logger.log(f'Player disconnected, reached max players per device || {ros["account_id"]}',
+                               "playerjoin")
                     continue
             if ip not in ipClientMap:
                 ipClientMap[ip] = [ros["client_id"]]
             else:
                 ipClientMap[ip].append(ros["client_id"])
                 if len(ipClientMap[ip]) >= settings['maxAccountPerIP']:
-                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[ros["client_id"]])
+                    _ba.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[
+                                    ros["client_id"]])
                     ba.internal.disconnect_client(ros["client_id"])
-                    logger.log(f'Player disconnected, reached max players per IP address || {ros["account_id"]}'  ,
-                        "playerjoin")
+                    logger.log(f'Player disconnected, reached max players per IP address || {ros["account_id"]}',
+                               "playerjoin")
                     continue
             newPlayers.append(ros['account_id'])
             if ros['account_id'] not in self.players and ros[
-                'client_id'] != -1:
+                    'client_id'] != -1:
                 # new player joined lobby
 
                 d_str = ros['display_string']
@@ -92,7 +94,8 @@ class checkserver(object):
                         _ba.screenmessage("Not in whitelist,contact admin",
                                           color=(1, 0, 0), transient=True,
                                           clients=[ros['client_id']])
-                        logger.log(f'{d_str}  || { ros["account_id"]} | kicked > not in whitelist')
+                        logger.log(
+                            f'{d_str}  || { ros["account_id"]} | kicked > not in whitelist')
                         ba.internal.disconnect_client(ros['client_id'])
 
                         return
@@ -101,14 +104,15 @@ class checkserver(object):
                     if ros['account_id'] in serverdata.clients:
                         on_player_join_server(ros['account_id'],
                                               serverdata.clients[
-                                                  ros['account_id']], ip)
+                                                  ros['account_id']], ip, device_id)
                     else:
-                        LoadProfile(ros['account_id'], ip).start() # from local cache, then call on_player_join_server
+                        # from local cache, then call on_player_join_server
+                        LoadProfile(ros['account_id'], ip, device_id).start()
 
         self.players = newPlayers
 
 
-def on_player_join_server(pbid, player_data, ip):
+def on_player_join_server(pbid, player_data, ip, device_id):
     global ipjoin
     now = time.time()
     # player_data=pdata.get_info(pbid)
@@ -124,7 +128,7 @@ def on_player_join_server(pbid, player_data, ip):
         if now - lastjoin < 15:
             joincount += 1
             if joincount > 2:
-                _ba.screenmessage("Joining too fast , slow down dude",
+                _ba.screenmessage("Joining too fast , slow down dude",  # its not possible now tho, network layer will catch it before reaching here
                                   color=(1, 0, 1), transient=True,
                                   clients=[clid])
                 logger.log(f'{pbid} || kicked for joining too fast')
@@ -137,55 +141,57 @@ def on_player_join_server(pbid, player_data, ip):
         ipjoin[ip]["count"] = joincount
         ipjoin[ip]["lastJoin"] = now
     else:
-        ipjoin[ip] = {"lastJoin":now,"count":0}
+        ipjoin[ip] = {"lastJoin": now, "count": 0}
     if pbid in serverdata.clients:
         serverdata.clients[pbid]["lastJoin"] = now
 
-    if player_data != None: # player data not in serevrdata or in local.json cache
-        serverdata.recents.append({"client_id":clid,"deviceId":device_string,"pbid":pbid})
+    if player_data != None:  # player data is in serevrdata or in local.json cache
+        serverdata.recents.append(
+            {"client_id": clid, "deviceId": device_string, "pbid": pbid})
         serverdata.recents = serverdata.recents[-20:]
-        if player_data["isBan"] or get_account_age(player_data["accountAge"]) < \
-            settings["minAgeToJoinInHours"]:
+        if check_ban(ip, device_id, pbid):
+            _ba.chatmessage(
+                'sad ,your account is flagged contact server owner for unban', clients=[clid])
+            ba.internal.disconnect_client(clid)
+            return
+        if get_account_age(player_data["accountAge"]) < \
+                settings["minAgeToJoinInHours"]:
             for ros in ba.internal.get_game_roster():
                 if ros['account_id'] == pbid:
-                    if not player_data["isBan"]:
-                        _ba.screenmessage(
-                            "New Accounts not allowed here , come back later",
-                            color=(1, 0, 0), transient=True,
-                            clients=[ros['client_id']])
-                    logger.log(pbid + " | kicked > reason:Banned account")
                     _ba.screenmessage(
-                            "Contact server owner, your account not allowed here",
-                            color=(1, 0, 0), transient=True,
-                            clients=[ros['client_id']])
+                        "New Accounts not allowed here , come back later",
+                        color=(1, 0, 0), transient=True,
+                        clients=[ros['client_id']])
+                    logger.log(pbid + " | kicked > reason:Banned account")
                     ba.internal.disconnect_client(ros['client_id'])
 
             return
         else:
+            current_time = datetime.now()
             if pbid not in serverdata.clients:
-                if check_ban(clid,pbid):
-                    return
+                # ahh , lets reset if plyer joining after some long time
                 serverdata.clients[pbid] = player_data
                 serverdata.clients[pbid]["warnCount"] = 0
                 serverdata.clients[pbid]["lastWarned"] = time.time()
                 serverdata.clients[pbid]["verified"] = False
                 serverdata.clients[pbid]["rejoincount"] = 1
                 serverdata.clients[pbid]["lastJoin"] = time.time()
-                if not player_data["canStartKickVote"]:
+                if pbid in blacklist["kick-vote-disabled"] and current_time < datetime.strptime(blacklist["kick-vote-disabled"][pbid]["till"], "%Y-%m-%d %H:%M:%S"):
                     _ba.disable_kickvote(pbid)
-
 
             serverdata.clients[pbid]["lastIP"] = ip
 
             device_id = _ba.get_client_public_device_uuid(clid)
-            if(device_id==None):
+            if (device_id == None):
                 device_id = _ba.get_client_device_uuid(clid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
-            verify_account(pbid, player_data) # checked for spoofed ids
-            logger.log(pbid+" ip: "+serverdata.clients[pbid]["lastIP"]+", Device id: "+device_id)
+            verify_account(pbid, player_data)  # checked for spoofed ids
+            logger.log(
+                f'{pbid} ip: {serverdata.clients[pbid]["lastIP"]} , Device id: {device_id}')
             _ba.screenmessage(settings["regularWelcomeMsg"] + " " + device_string,
                               color=(0.60, 0.8, 0.6), transient=True,
                               clients=[clid])
+            notification_manager.player_joined(pbid)
     else:
         # fetch id for first time.
         thread = FetchThread(
@@ -198,21 +204,36 @@ def on_player_join_server(pbid, player_data, ip):
         thread.start()
         _ba.screenmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
                           transient=True, clients=[clid])
+        notification_manager.player_joined(pbid)
 
     # pdata.add_profile(pbid,d_string,d_string)
 
-def check_ban(clid, pbid):
-    ip = _ba.get_client_ip(clid)
 
-    device_id = _ba.get_client_public_device_uuid(clid)
-    if(device_id==None):
-        device_id = _ba.get_client_device_uuid(clid)
-    if (ip in blacklist["ban"]['ips'] or device_id in blacklist['ban']['deviceids'] or pbid in blacklist["ban"]["ids"]):
-        _ba.chatmessage('sad ,your account is flagged contact server owner for unban',clients=[clid])
-        logger.log(pbid + " | kicked > reason: Banned account")
-        ba.internal.disconnect_client(clid)
-        return True
+def check_ban(ip, device_id, pbid, log=True):
+    current_time = datetime.now()
+
+    if ip in blacklist["ban"]['ips'] and current_time < datetime.strptime(blacklist["ban"]["ips"][ip]["till"], "%Y-%m-%d %H:%M:%S"):
+        msg = f' reason: matched IP | {blacklist["ban"]["ips"][ip]["reason"]} , Till : {blacklist["ban"]["ips"][ip]["till"]}'
+        if log:
+            logger.log(f'{pbid} | kicked > {msg}')
+            return True
+        return msg
+    elif device_id in blacklist["ban"]["deviceids"] and current_time < datetime.strptime(blacklist["ban"]["deviceids"][device_id]["till"], "%Y-%m-%d %H:%M:%S"):
+        msg = f'reason: matched deviceId | {blacklist["ban"]["deviceids"][device_id]["reason"]}, Till : {blacklist["ban"]["deviceids"][device_id]["till"]}'
+        if log:
+            logger.log(
+                f'{pbid} | kicked > {msg}')
+            return True
+        return msg
+    elif pbid in blacklist["ban"]["ids"] and current_time < datetime.strptime(blacklist["ban"]["ids"][pbid]["till"], "%Y-%m-%d %H:%M:%S"):
+        msg = f'reason: matched ID | {blacklist["ban"]["ids"][pbid]["reason"]} , Till : {blacklist["ban"]["ids"][pbid]["till"]}'
+        if log:
+            logger.log(
+                f'{pbid} | kicked > {msg}')
+            return True
+        return msg
     return False
+
 
 def verify_account(pb_id, p_data):
     d_string = ""
@@ -260,10 +281,10 @@ def get_account_creation_date(pb_id):
         else:
             creation_time = account_creation["created"]
             creation_time = map(str, creation_time)
-            creation_time = datetime.datetime.strptime("/".join(creation_time),
-                                                       "%Y/%m/%d/%H/%M/%S")
+            creation_time = datetime.strptime("/".join(creation_time),
+                                              "%Y/%m/%d/%H/%M/%S")
             # Convert to IST
-            creation_time += datetime.timedelta(hours=5, minutes=30)
+            creation_time += timedelta(hours=5, minutes=30)
             return str(creation_time)
 
 
@@ -285,14 +306,15 @@ def get_device_accounts(pb_id):
 # ============ file I/O =============
 
 class LoadProfile(threading.Thread):
-    def __init__(self, pb_id, ip):
+    def __init__(self, pb_id, ip, device_id):
         threading.Thread.__init__(self)
         self.pbid = pb_id
         self.ip = ip
+        self.device_id = device_id
 
     def run(self):
         player_data = pdata.get_info(self.pbid)
-        _ba.pushcall(Call(on_player_join_server, self.pbid, player_data, self.ip),
+        _ba.pushcall(Call(on_player_join_server, self.pbid, player_data, self.ip, self.device_id),
                      from_other_thread=True)
 
 
@@ -316,7 +338,8 @@ def my_acc_age(pb_id):
 
 
 def save_age(age, pb_id, display_string):
-    _ba.pushcall(Call(pdata.add_profile,pb_id, display_string,display_string, age), from_other_thread=True)
+    _ba.pushcall(Call(pdata.add_profile, pb_id, display_string,
+                 display_string, age), from_other_thread=True)
     time.sleep(2)
     thread2 = FetchThread(
         target=get_device_accounts,
@@ -352,8 +375,8 @@ def kick_by_pb_id(pb_id, msg):
 
 
 def get_account_age(ct):
-    creation_time = datetime.datetime.strptime(ct, "%Y-%m-%d %H:%M:%S")
-    now = datetime.datetime.now()
+    creation_time = datetime.strptime(ct, "%Y-%m-%d %H:%M:%S")
+    now = datetime.now()
     delta = now - creation_time
     delta_hours = delta.total_seconds() / (60 * 60)
     return delta_hours
@@ -364,18 +387,18 @@ def reportSpam(id):
     profiles = pdata.get_profiles()
     if id in profiles:
         count = profiles[id]["spamCount"]
-
         if now - profiles[id]["lastSpam"] < 2 * 24 * 60 * 60:
             count += 1
             if count > 3:
                 logger.log(id+" auto banned for spamming")
-                profiles[id]["isBan"] = True
+                # by default ban for 1 day , change here if you want
+                pdata.ban_player(id, 1, "auto ban exceed warn count")
         else:
             count = 0
 
         profiles[id]["spamCount"] = count
         profiles[id]["lastSpam"] = now
-        pdata.commit_profiles(profiles)
+
 
 def on_join_request(ip):
     now = time.time()
@@ -383,11 +406,11 @@ def on_join_request(ip):
         lastRequest = serverdata.ips[ip]["lastRequest"]
         count = serverdata.ips[ip]["count"]
         if now - lastRequest < 5:
-            count +=1
+            count += 1
             if count > 40:
                 _ba.ban_ip(ip)
         else:
             count = 0
-        serverdata.ips[ip] = {"lastRequest":time.time(),"count":count}
+        serverdata.ips[ip] = {"lastRequest": time.time(), "count": count}
     else:
-        serverdata.ips[ip]={"lastRequest":time.time(),"count":0}
+        serverdata.ips[ip] = {"lastRequest": time.time(), "count": 0}

@@ -17,7 +17,7 @@ import shutil
 import threading
 import setting
 import _ba
-
+import fcntl
 if TYPE_CHECKING:
     pass
 
@@ -32,6 +32,7 @@ if SETTINGS["discordbot"]["enable"]:
     from features import discord_bot
 
 WEBHOOK_URL = SETTINGS["discordWebHook"]["webhookURL"]
+
 
 @dataclass
 class RecentLogs:
@@ -54,7 +55,7 @@ def log(msg: str, mtype: str = "sys") -> None:
         message = msg.replace("||", "|")
         discord_bot.push_log("***" + mtype + ":***" + message)
 
-    current_time = datetime.datetime.now()
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     msg = f"{current_time} + : {msg} \n"
 
     if SETTINGS["discordWebHook"]["enable"]:
@@ -102,14 +103,38 @@ class dumplogs(threading.Thread):
         elif self.type == "cmndlog":
             log_path = SERVER_DATA_PATH + "cmndusage.log"
         else:
-            log_path = SERVER_DATA_PATH + "logs.log"
+            log_path = SERVER_DATA_PATH + "systemlogs.log"
         if os.path.exists(log_path):
             if os.stat(log_path).st_size > 1000000:
-                shutil.copy(log_path, log_path+str(datetime.datetime.now()))
-                os.remove(log_path)
-        with open(log_path, mode="a+", encoding="utf-8") as file:
-            for msg in self.msg:
+                self.copy_file(
+                    log_path, log_path+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+        self.write_file(log_path, self.msg)
+
+    def write_file(self, file_path, data):
+        file = open(file_path, "a+", encoding="utf-8")
+        fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+
+        try:
+            for msg in data:
                 file.write(msg)
+        finally:
+            fcntl.flock(file.fileno(), fcntl.LOCK_UN)
+            file.close()
+
+    def copy_file(self, file_path, dest_path):
+        lock_file = open(file_path, "r")
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+        try:
+            shutil.copy(file_path, dest_path)
+        except Exception as e:
+            print("Error occurred while copying file:", str(e))
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            lock_file.close()
+            os.remove(lock_file)
+
 
 def send_webhook_message():
     global webhook_queue

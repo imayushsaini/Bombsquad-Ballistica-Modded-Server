@@ -11,8 +11,8 @@ import _thread
 import random
 from tools import playlist
 from tools import logger
-Commands = ['recents','info','createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
-            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect','removeeffect','removetag' 'add', 'spectators', 'lobbytime']
+Commands = ['recents', 'info', 'createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
+            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect', 'removeeffect', 'removetag' 'add', 'spectators', 'lobbytime']
 CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm',
                   'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'effect']
 
@@ -136,7 +136,7 @@ def create_team(arguments):
         ba.internal.chatmessage("enter team name")
     else:
         from ba._team import SessionTeam
-        _ba.get_foreground_host_session().sessionteams.append(SessionTeam(team_id=len(_ba.get_foreground_host_session().sessionteams) +1, name=str(arguments[0]), color=(random.uniform(0, 1.2), random.uniform(
+        _ba.get_foreground_host_session().sessionteams.append(SessionTeam(team_id=len(_ba.get_foreground_host_session().sessionteams) + 1, name=str(arguments[0]), color=(random.uniform(0, 1.2), random.uniform(
             0, 1.2), random.uniform(0, 1.2))))
         from ba._lobby import Lobby
         _ba.get_foreground_host_session().lobby = Lobby()
@@ -157,9 +157,12 @@ def get_player_info(arguments, client_id):
         if account['client_id'] == int(arguments[0]):
             send(pdata.get_detailed_info(account["pbid"]), client_id)
 
+
 def get_recents(client_id):
     for players in serverdata.recents:
-        send(f"{players['client_id']} {players['deviceId']} {players['pbid']}", client_id)
+        send(
+            f"{players['client_id']} {players['deviceId']} {players['pbid']}", client_id)
+
 
 def changepartysize(arguments):
     if len(arguments) == 0:
@@ -184,7 +187,7 @@ def kick(arguments):
     cl_id = int(arguments[0])
     for ros in ba.internal.get_game_roster():
         if ros["client_id"] == cl_id:
-            logger.log("kicked "+ ros["display_string"])
+            logger.log("kicked " + ros["display_string"])
     ba.internal.disconnect_client(int(arguments[0]))
     return
 
@@ -201,11 +204,11 @@ def kikvote(arguments, clientid):
                 cl_id = int(arguments[1])
                 for ros in ba.internal.get_game_roster():
                     if ros["client_id"] == cl_id:
-                        if ros["account_id"] in serverdata.clients:
-                            serverdata.clients[ros["account_id"]
-                                               ]["canStartKickVote"] = True
-                            send(
-                                "Upon server restart, Kick-vote will be enabled for this person", clientid)
+                        pdata.enable_kick_vote(ros["account_id"])
+                        logger.log(
+                            f'kick vote enabled for {ros["account_id"]} {ros["display_string"]}')
+                        send(
+                            "Upon server restart, Kick-vote will be enabled for this person", clientid)
                 return
             except:
                 return
@@ -220,9 +223,10 @@ def kikvote(arguments, clientid):
                     if ros["client_id"] == cl_id:
                         _ba.disable_kickvote(ros["account_id"])
                         send("Kick-vote disabled for this person", clientid)
-                        if ros["account_id"] in serverdata.clients:
-                            serverdata.clients[ros["account_id"]
-                                               ]["canStartKickVote"] = False
+                        logger.log(
+                            f'kick vote disabled for {ros["account_id"]} {ros["display_string"]}')
+                        pdata.disable_kick_vote(
+                            ros["account_id"], 2, "by chat command")
                 return
             except:
                 return
@@ -272,17 +276,19 @@ def end(arguments):
 def ban(arguments):
     try:
         cl_id = int(arguments[0])
-        ac_id = ""
+        duration = int(arguments[1]) if len(arguments) >= 2 else 0.5
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
-                ac_id = ros['account_id']
-                pdata.ban_player(ros['account_id'])
-                logger.log("banned "+ros["display_string"])
-        if ac_id in serverdata.clients:
-            serverdata.clients[ac_id]["isBan"] = True
-        for account in serverdata.recents: # backup case if player left the server
+                pdata.ban_player(ros['account_id'], duration,
+                                 "by chat command")
+                logger.log(f'banned {ros["display_string"]} by chat command')
+
+        for account in serverdata.recents:  # backup case if player left the server
             if account['client_id'] == int(arguments[0]):
-                pdata.ban_player(account["pbid"])
+                pdata.ban_player(
+                    account["pbid"], duration, "by chat command")
+                logger.log(
+                    f'banned {ros["display_string"]} by chat command, recents')
         kick(arguments)
     except:
         pass
@@ -298,17 +304,18 @@ def mute(arguments):
         serverdata.muted = True
     try:
         cl_id = int(arguments[0])
-        ac_id = ""
+        duration = int(arguments[1]) if len(arguments) >= 2 else 0.5
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
                 pdata.mute(ros['account_id'])
                 ac_id = ros['account_id']
-                logger.log("muted "+ros["display_string"])
-        if ac_id in serverdata.clients:
-            serverdata.clients[ac_id]["isMuted"] = True
-        for account in serverdata.recents: # backup case if player left the server
+                logger.log(f'muted {ros["display_string"]}')
+                pdata.mute(ac_id, duration, "muted by chat command")
+                return
+        for account in serverdata.recents:  # backup case if player left the server
             if account['client_id'] == int(arguments[0]):
-                pdata.mute(account["pbid"])
+                pdata.mute(account["pbid"],  duration,
+                           "muted by chat command, from recents")
     except:
         pass
     return
@@ -319,14 +326,16 @@ def un_mute(arguments):
         serverdata.muted = False
     try:
         cl_id = int(arguments[0])
-        ac_id = ""
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
                 pdata.unmute(ros['account_id'])
-                ac_id = ros['account_id']
-        if ac_id in serverdata.clients:
-            serverdata.clients[ac_id]["isMuted"] = False
-        return
+                logger.log(f'unmuted {ros["display_string"]} by chat command')
+                return
+        for account in serverdata.recents:  # backup case if player left the server
+            if account['client_id'] == int(arguments[0]):
+                pdata.unmute(account["pbid"])
+                logger.log(
+                    f'unmuted {ros["display_string"]} by chat command, recents')
     except:
         pass
 
@@ -485,23 +494,26 @@ def set_custom_tag(arguments):
     except:
         return
 
+
 def remove_custom_tag(arguments):
     try:
         session = ba.internal.get_foreground_host_session()
         for i in session.sessionplayers:
             if i.inputdevice.client_id == int(arguments[0]):
-                pdata.remove_tag( i.get_v1_account_id())
+                pdata.remove_tag(i.get_v1_account_id())
     except:
         return
+
 
 def remove_custom_effect(arguments):
     try:
         session = ba.internal.get_foreground_host_session()
         for i in session.sessionplayers:
             if i.inputdevice.client_id == int(arguments[0]):
-                pdata.remove_effect( i.get_v1_account_id())
+                pdata.remove_effect(i.get_v1_account_id())
     except:
         return
+
 
 def set_custom_effect(arguments):
     try:

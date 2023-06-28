@@ -6,29 +6,17 @@ import os
 import shutil
 import threading
 import datetime
-import custom_hooks
+
 import urllib.request
 from ba._activitytypes import *
-from ba import _activitytypes as ba_actypes
-from ba._lobby import JoinInfo
-from typing import Any, Dict, Optional
-from ba._team import EmptyTeam  # pylint: disable=W0611
-from ba._player import EmptyPlayer  # pylint: disable=W0611
-from ba._music import setmusic, MusicType
-from ba._activity import Activity
+
 damage_data = {}
-# Don't touch the above line
-"""
-mystats module for BombSquad version 1.5.29
-Provides functionality for dumping player stats to disk between rounds.
-"""
+
 ranks = []
 top3Name = []
-# False-positive from pylint due to our class-generics-filter.
 
-# variables
 our_settings = setting.get_settings_data()
-# where our stats file and pretty html output will go
+
 base_path = os.path.join(_ba.env()['python_directory_user'], "stats" + os.sep)
 statsfile = base_path + 'stats.json'
 cached_stats = {}
@@ -47,16 +35,14 @@ statsDefault = {
         "last_seen": "2022-04-26 17:01:13.715014"
     }
 }
-#                <th><b>Total Damage</b></th>  #removed this line as it isn't crt data
 
-# useful functions
+
 seasonStartDate = None
 
 
 def get_all_stats():
     global seasonStartDate
     if os.path.exists(statsfile):
-        renameFile = False
         with open(statsfile, 'r', encoding='utf8') as f:
             try:
                 jsonData = json.loads(f.read())
@@ -83,7 +69,7 @@ def get_all_stats():
 
 def backupStatsFile():
     shutil.copy(statsfile, statsfile.replace(
-        ".json", "") + str(seasonStartDate) + ".json")
+        ".json", "") + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ".json")
 
 
 def dump_stats(s: dict):
@@ -107,8 +93,18 @@ def get_stats_by_id(account_id: str):
     else:
         return None
 
+
 def get_cached_stats():
     return cached_stats
+
+
+def get_sorted_stats(stats):
+    entries = [(a['scores'], a['kills'], a['deaths'], a['games'],
+                a['name'], a['aid']) for a in stats.values()]
+    # this gives us a list of kills/names sorted high-to-low
+    entries.sort(key=lambda x: x[1] or 0, reverse=True)
+    return entries
+
 
 def refreshStats():
     global cached_stats
@@ -116,14 +112,8 @@ def refreshStats():
     # our stats url could point at something like this...
     pStats = get_all_stats()
     cached_stats = pStats
-
-
-    entries = [(a['scores'], a['kills'], a['deaths'], a['games'],
-                a['name'], a['aid']) for a in pStats.values()]
-    # this gives us a list of kills/names sorted high-to-low
-    entries.sort(key=lambda x: x[1] or 0, reverse=True)
+    entries = get_sorted_stats(pStats)
     rank = 0
-    toppers = {}
     toppersIDs = []
     _ranks = []
     for entry in entries:
