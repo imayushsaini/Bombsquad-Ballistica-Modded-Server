@@ -72,11 +72,13 @@ class modSetup(ba.Plugin):
             ba.internal.sign_in_v1('Local')
         ba.timer(60, playlist.flush_playlists)
 
-    def on_app_shutdown(self):  # TODO not working, fix this, also dump server logs
+    # it works sometimes , but it blocks shutdown so server raise runtime exception,   also dump server logs
+    def on_app_shutdown(self):
         print("Server shutting down , lets save cache")
-        pdata.dump_cache()
-        notification_manager.dump_cache()
-        print("Done dumping memory")
+        # lets try  threading here
+        # _thread.start_new_thread(pdata.dump_cache, ())
+        # _thread.start_new_thread(notification_manager.dump_cache, ())
+        # print("Done dumping memory")
 
 
 def score_screen_on_begin(_stats: ba.Stats) -> None:
@@ -118,7 +120,7 @@ def bootstraping():
         color_explosion.enable()
     if settings["ballistica_web"]["enable"]:
         from plugins import bcs_plugin
-        bcs_plugin.enable()
+        bcs_plugin.enable(settings["ballistica_web"]["server_password"])
     if settings["character_chooser"]["enable"]:
         from plugins import CharacterChooser
         CharacterChooser.enable()
@@ -132,6 +134,7 @@ def bootstraping():
     try:
         pass
         # from tools import healthcheck
+        # healthcheck.main()
     except Exception as e:
         print(e)
         try:
