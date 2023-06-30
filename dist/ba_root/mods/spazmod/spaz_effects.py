@@ -75,7 +75,10 @@ class NewPlayerSpaz(PlayerSpaz):
         ba._asyncio._asyncio_event_loop.create_task(self.set_effects())
 
     async def set_effects(self):
-        account_id = self._player._sessionplayer.get_v1_account_id()
+        try:
+            account_id = self._player._sessionplayer.get_v1_account_id()
+        except:
+            return
         custom_effects = pdata.get_custom()['customeffects']
 
         if account_id  in custom_effects:

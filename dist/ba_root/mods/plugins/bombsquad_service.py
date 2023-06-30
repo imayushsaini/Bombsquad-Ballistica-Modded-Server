@@ -139,7 +139,8 @@ def get_roles():
 
 def get_perks():
     # TODO wire with spaz_effects to fetch list of effects.
-    return {"perks": pdata.get_custom_perks(), "availableEffects": ["spark", "glow", "fairydust"]}
+    return {"perks": pdata.get_custom_perks(), "availableEffects": ["spark", "glow", "fairydust", "sparkground", "sweat", "sweatground", "distortion", "shine", "highlightshine", "scorch", "ice", "iceground",
+                                                                    "slime", "metal",  "splinter",  "rainbow"]}
 
 
 def update_perks(custom):
@@ -175,11 +176,15 @@ def search_player_profile(search_key: str, db: str):
         selectedDB = pdata.get_old_profiles(db)
 
     matching_objects = {}
+    count = 0
     for key in selectedDB.keys():
         if (search_key == key or
            any(search_key.lower() in s.lower() for s in selectedDB[key].get("display_string", [])) or
                 search_key.lower() in selectedDB[key].get("name", "").lower()):
             matching_objects[key] = selectedDB[key]
+            count += 1
+            if count > 50:
+                break
     return matching_objects
 
 
