@@ -403,7 +403,8 @@ def get_roles() -> dict:
             roles = json.load(f)
             f.close()
             CacheData.roles = roles
-        except:
+        except Exception as e:
+            print(e)
             f = open(PLAYERS_DATA_PATH + "roles.json.backup", "r")
             roles = json.load(f)
             f.close()
@@ -638,10 +639,6 @@ def set_tag(tag: str, account_id: str) -> None:
     custom["customtag"][account_id] = tag
     CacheData.custom = custom
     commit_c()
-
-
-def get_roles():
-    return CacheData.roles
 
 
 def update_roles(roles):
