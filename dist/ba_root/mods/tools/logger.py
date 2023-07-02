@@ -133,7 +133,7 @@ class dumplogs(threading.Thread):
         finally:
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
             lock_file.close()
-            os.remove(lock_file)
+            os.remove(file_path)
 
 
 def send_webhook_message():
