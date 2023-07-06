@@ -307,7 +307,6 @@ def mute(arguments):
         duration = int(arguments[1]) if len(arguments) >= 2 else 0.5
         for ros in ba.internal.get_game_roster():
             if ros["client_id"] == cl_id:
-                pdata.mute(ros['account_id'])
                 ac_id = ros['account_id']
                 logger.log(f'muted {ros["display_string"]}')
                 pdata.mute(ac_id, duration, "muted by chat command")
