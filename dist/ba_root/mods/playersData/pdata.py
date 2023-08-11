@@ -18,7 +18,7 @@ from tools.file_handle import OpenJson
 import _ba
 import ba.internal
 import json
-import datetime
+
 from tools.ServerUpdate import checkSpammer
 import setting
 from datetime import datetime, timedelta
@@ -73,7 +73,7 @@ def get_profiles() -> dict:
     if CacheData.profiles == {}:
         try:
             if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000000:
-                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
+                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
                 profiles = {"pb-sdf": {}}
                 print("resetting profiles")
