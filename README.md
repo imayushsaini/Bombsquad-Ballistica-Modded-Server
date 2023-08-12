@@ -1,40 +1,70 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modder server scripts to host ballistica (Bombsquad).Running on BS1.7.19.
+Modded server scripts to host ballistica (Bombsquad) server. Running on BS1.7.19.
 
-## Requirements
-- Ubuntu 20 and above
-- python3.10
+# Prerequisites
+- Basic knowledge of Linux
+- A VPS (e.g. [Amazon Web Services](https://aws.amazon.com/), [Microsoft Azure](https://portal.azure.com/))
+- Any Linux distribution.
+  - It is recommended to use Ubuntu.
+- Python 3.10
 - 1 GB free Memory (Recommended 2 GB)
 
 ## Getting Started
-- `sudo apt update; sudo apt install software-properties-common -y`
-- `sudo add-apt-repository ppa:deadsnakes/ppa`
-- `sudo apt install python3-pip python3.10-dev python3.10-venv` ,
-- `tmux new -s 43210`
-- `git clone https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server`
-- `cd Bombsquad-Ballistica-Modded-Server`
-- Now edit config.yaml in root dir change server name , port , admins , playlist , team name etc..
-- `chmod 777 bombsquad_server`
-- `chmod 777 dist/bombsquad_headless`
-- `./bombsquad_server`
-- If ports are open , you can connect to your server now
+This assumes you are on Ubuntu or an Ubuntu based distribution.
 
-## More Configuration
-Open dist/ba_root/mods/setting.json , change value according to you.
+Update and install `software-properties-common`
+```
+sudo apt update; sudo apt install software-properties-common -y
+```
+Add python Deadsnakes PPA
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+```
+Install Python 3.10
+```
+sudo apt install python3-pip python3.10-dev python3.10-venv
+```
+Create a tmux session.
+```
+tmux new -s 43210
+```
+Download server files.
+```
+git clone https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server
+cd Bombsquad-Ballistica-Modded-Server
+```
+Now edit config.yaml in root dir change server name, port, admins, playlist, team name etc..
+Making the server files executable.
+```
+chmod 777 bombsquad_server
+chmod 777 dist/bombsquad_headless
+```
+Starting the server
+```
+./bombsquad_server
+```
+If ports are open, you can connect to your server now.
+
+___
+### More Configuration
+Open `dist/ba_root/mods/setting.json` in your prefered editor and change values according to you.
 
 [How to edit settings.json](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Server-Settings)
 
 [Available chat commands](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Chat-commands)
 
-### adding yourself owner
-- open dist/ba_root/mods/playersData/roles.json
-- add your pb-id in owner id list
-- restart your server
+___
+### Adding yourself as owner
+- Open `dist/ba_root/mods/playersData/roles.json` in your prefered editor.
+- Add your Pb-id in owner id list.
+- Restart your server
 
-### managing players
-open dist/ba_root/mods/playersData/profiles.json . 
-Here you can ban player , mute them , disable their kick votes 
+___
+### Managing players
+Open `dist/ba_root/mods/playersData/profiles.json` in your prefered editor.
+
+Here you can ban players, mute them, or disable their kick votes.
 
 
 ## Features
@@ -56,7 +86,7 @@ Here you can ban player , mute them , disable their kick votes
 - Players IP Address and Device UUID tracking and banning.
 - Team Chat, send msg starting with (,) comma to deliver it to team mates only.
 - In game popup chat , send msg starting with (.) Dot to send in game popup msg.
-- Custom Voting System , type `end` in chat to start end vote or `sm` , `nv`, `dv`.
+- Custom Voting System , type end in chat to start end vote or sm , nv, dv.
 - support for [Ballisitca-web-stats](https://github.com/imayushsaini/ballistica-web-stats).
 - Integrated Discord bot to sync live stats(current players, chats , all logs) to discord.
 - Execute chat command remotely from discord.
