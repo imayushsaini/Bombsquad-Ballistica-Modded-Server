@@ -18,7 +18,7 @@ jobs:
       run: chmod +x ./ballisticakit_server
 
     - name: Set execute permissions for binary
-      run: chmod +x ./dist/ballisticakit_server
+      run: chmod +x dist/ballisticakit_server
 
     - name: Run server binary and capture output
       run: |
