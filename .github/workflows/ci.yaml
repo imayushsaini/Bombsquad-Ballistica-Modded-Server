@@ -32,3 +32,9 @@ jobs:
           echo "Success message not found. Check server-output.log for details."
           exit 1
         fi
+    - name: Upload ballistica output as artifact
+      if: always()  
+      uses: actions/upload-artifact@v2
+      with:
+        name: server-output
+        path: ./server-output.log
