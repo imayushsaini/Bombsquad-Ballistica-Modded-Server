@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - api8
+
+jobs:
+  run_server_binary:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Set execute permissions for wrapper
+      run: chmod +x ./ballisticakit_server
+
+    - name: Set execute permissions for binary
+      run: chmod +x ./dist/ballisticakit_server
+
+    - name: Run server binary and capture output
+      run: |
+        .ballisticakit_server > server-output.log 2>&1 &
+        SERVER_PID=$!
+        sleep 30  # let it run for 30 seconds
+        kill $SERVER_PID  # terminate the server
+    - name: Check server output for success message
+      run: |
+        if ! grep -q "Master server access check of udp port 43210 failed." server-output.log; then 
+          echo "Success message not found. Check server-output.log for details."
+          exit 1
+        fi
