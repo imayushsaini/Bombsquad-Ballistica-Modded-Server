@@ -29,7 +29,7 @@ jobs:
     - name: Check server output for success message
       run: |
         if grep -E "Exception|RuntimeError" server-output.log; then 
-          echo "Success message not found. Check server-output.log for details."
+          echo "Error message found. Check server-output.log for details."
           exit 1
         elif ! grep -q "entering server-mode" server-output.log; then
           echo "Success message not found in ballistica's output."
