@@ -22,7 +22,7 @@ jobs:
 
     - name: Run server binary and capture output
       run: |
-        .ballisticakit_server > server-output.log 2>&1 &
+        ./ballisticakit_server > server-output.log 2>&1 &
         SERVER_PID=$!
         sleep 30  # let it run for 30 seconds
         kill $SERVER_PID  # terminate the server
