@@ -145,12 +145,10 @@
  ],
  "Fleet Zone Pings": {
   "prod": {
-   "bangkok": 179.38869999852614,
-   "delhi": 21.102889599649643,
-   "dubai": 162.18640000079176,
-   "hyderabad": 51.26196139941021,
-   "kolkata": 38.122235600676504,
-   "mumbai": 36.901065400630614
+   "delhi": 16.50450974109344,
+   "hyderabad": 40.392026402187184,
+   "kolkata": 41.73070900011953,
+   "mumbai": 42.654999799975485
   }
  },
  "Free-for-All Playlist Randomize": true,

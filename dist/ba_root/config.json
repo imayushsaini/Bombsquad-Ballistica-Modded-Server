@@ -143,6 +143,9 @@
   "ladoo",
   "barfi"
  ],
+ "Default Player Profiles": {
+  "Client Input Device #1": "__account__"
+ },
  "Fleet Zone Pings": {
   "prod": {
    "delhi": 16.50450974109344,
