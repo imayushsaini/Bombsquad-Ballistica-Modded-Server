@@ -25,16 +25,18 @@ class CleanError(Exception):
     more descriptive exception types.
     """
 
-    def pretty_print(self, flush: bool = False) -> None:
+    def pretty_print(self, flush: bool = True, prefix: str = 'Error') -> None:
         """Print the error to stdout, using red colored output if available.
 
         If the error has an empty message, prints nothing (not even a newline).
         """
         from efro.terminal import Clr
 
+        if prefix:
+            prefix = f'{prefix}: '
         errstr = str(self)
         if errstr:
-            print(f'{Clr.SRED}{errstr}{Clr.RST}', flush=flush)
+            print(f'{Clr.SRED}{prefix}{errstr}{Clr.RST}', flush=flush)
 
 
 class CommunicationError(Exception):
@@ -117,13 +119,11 @@ def is_urllib_communication_error(exc: BaseException, url: str | None) -> bool:
             socket.timeout,
         ),
     ):
-
         # Special case: although an HTTPError is a subclass of URLError,
         # we don't consider it a communication error. It generally means we
         # have successfully communicated with the server but what we are asking
         # for is not there/etc.
         if isinstance(exc, urllib.error.HTTPError):
-
             # Special sub-case: appspot.com hosting seems to give 403 errors
             # (forbidden) to some countries. I'm assuming for legal reasons?..
             # Let's consider that a communication error since its out of our

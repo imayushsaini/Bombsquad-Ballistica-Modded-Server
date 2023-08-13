@@ -336,6 +336,7 @@
     "getMoreGamesText": "Ще ігри...",
     "titleText": "Додати гру"
   },
+  "allText": "Все",
   "allowText": "Дозволити",
   "alreadySignedInText": "На вашому акаунті грають на іншому пристрої;\nбудь ласка зайдіть з іншого акаунта або закрийте гру на\nіншому пристрої та спробуйте знову.",
   "apiVersionErrorText": "Неможливо завантажити модуль ${NAME}; він призначений для API версії ${VERSION_USED}; потрібна версія ${VERSION_REQUIRED}.",
@@ -560,6 +561,7 @@
   "disableRemoteAppConnectionsText": "Відключення з'єднання RemoteApp",
   "disableXInputDescriptionText": "Підключення більше 4 контролерів, але може не працювати.",
   "disableXInputText": "Відключити XInput",
+  "disabledText": "Виключено",
   "doneText": "Готово",
   "drawText": "Нічия",
   "duplicateText": "Дублювати",
@@ -627,6 +629,7 @@
     "useMusicFolderText": "Тека з музикою"
   },
   "editText": "Редагувати",
+  "enabledText": "Включено",
   "endText": "Кінець",
   "enjoyText": "Успіхів!",
   "epicDescriptionFilterText": "${DESCRIPTION} в епічному сповільненій дії.",
@@ -1221,6 +1224,8 @@
   "runText": "Бігти",
   "saveText": "Зберегти",
   "scanScriptsErrorText": "Помилка(и) сканування скриптів; дивіться лог для деталей.",
+  "scanScriptsMultipleModulesNeedUpdatesText": "${PATH} і ${NUM} інших модулів потрібно оновити для api ${API}.",
+  "scanScriptsSingleModuleNeedsUpdatesText": "${PATH} потрібно оновити для api ${API}.",
   "scoreChallengesText": "Медалі за очки",
   "scoreListUnavailableText": "Список очок недоступний.",
   "scoreText": "Очки",

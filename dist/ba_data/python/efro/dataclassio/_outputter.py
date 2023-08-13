@@ -13,7 +13,7 @@ import dataclasses
 import typing
 import types
 import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, Any
 
 from efro.util import check_utc
 from efro.dataclassio._base import (
@@ -29,7 +29,6 @@ from efro.dataclassio._base import (
 from efro.dataclassio._prep import PrepSession
 
 if TYPE_CHECKING:
-    from typing import Any
     from efro.dataclassio._base import IOAttrs
 
 
@@ -166,6 +165,7 @@ class _Outputter:
                 )
             return value if self._create else None
 
+        # noinspection PyPep8
         if origin is typing.Union or origin is types.UnionType:
             # Currently, the only unions we support are None/Value
             # (translated from Optional), which we verified on prep.
@@ -301,7 +301,7 @@ class _Outputter:
             return self._process_dict(cls, fieldpath, anntype, value, ioattrs)
 
         if dataclasses.is_dataclass(origin):
-            if not isinstance(value, origin):
+            if not isinstance(value, cast(Any, origin)):
                 raise TypeError(
                     f'Expected a {origin} for {fieldpath};'
                     f' found a {type(value)}.'
@@ -387,8 +387,9 @@ class _Outputter:
         assert len(childtypes) in (0, 2)
 
         # We treat 'Any' dicts simply as json; we don't do any translating.
+        value_any: Any = value
         if not childtypes or childtypes[0] is typing.Any:
-            if not isinstance(value, dict) or not _is_valid_for_codec(
+            if not isinstance(value_any, dict) or not _is_valid_for_codec(
                 value, self._codec
             ):
                 raise TypeError(

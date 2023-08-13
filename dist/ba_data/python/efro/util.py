@@ -25,7 +25,7 @@ except ModuleNotFoundError:
 if TYPE_CHECKING:
     import asyncio
     from efro.call import Call as Call  # 'as Call' so we re-export.
-    from typing import Any, Callable, NoReturn
+    from typing import Any, Callable
 
 T = TypeVar('T')
 ValT = TypeVar('ValT')
@@ -44,6 +44,19 @@ if TYPE_CHECKING:
     Call = Call
 else:
     Call = functools.partial
+
+
+def snake_case_to_title(val: str) -> str:
+    """Given a snake-case string 'foo_bar', returns 'Foo Bar'."""
+    # Kill empty words resulting from leading/trailing/multiple underscores.
+    return ' '.join(w for w in val.split('_') if w).title()
+
+
+def snake_case_to_camel_case(val: str) -> str:
+    """Given a snake-case string 'foo_bar', returns camel-case 'FooBar'."""
+    # Replace underscores with spaces; capitalize words; kill spaces.
+    # Not sure about efficiency, but logically simple.
+    return val.replace('_', ' ').title().replace(' ', '')
 
 
 def enum_by_value(cls: type[EnumT], value: Any) -> EnumT:
@@ -218,7 +231,6 @@ class DirtyBit:
 
     @dirty.setter
     def dirty(self, value: bool) -> None:
-
         # If we're freshly clean, set our next auto-dirty time (if we have
         # one).
         if self._dirty and not value and self._auto_dirty_seconds is not None:
@@ -668,16 +680,6 @@ def compact_id(num: int) -> str:
     )
 
 
-# NOTE: Even though this is available as part of typing_extensions, keeping
-# it in here for now so we don't require typing_extensions as a dependency.
-# Once 3.11 rolls around we can kill this and use typing.assert_never.
-def assert_never(value: NoReturn) -> NoReturn:
-    """Trick for checking exhaustive handling of Enums, etc.
-    See https://github.com/python/typing/issues/735
-    """
-    assert False, f'Unhandled value: {value} ({type(value).__name__})'
-
-
 def unchanging_hostname() -> str:
     """Return an unchanging name for the local device.
 
@@ -704,32 +706,135 @@ def unchanging_hostname() -> str:
     return os.uname().nodename
 
 
-def set_canonical_module(
-    module_globals: dict[str, Any], names: list[str]
-) -> None:
-    """Override any __module__ attrs on passed classes/etc.
+def set_canonical_module_names(module_globals: dict[str, Any]) -> None:
+    """Do the thing."""
+    if os.environ.get('EFRO_SUPPRESS_SET_CANONICAL_MODULE_NAMES') == '1':
+        return
 
-    This allows classes to present themselves using clean paths such as
-    mymodule.MyClass instead of possibly ugly internal ones such as
-    mymodule._internal._stuff.MyClass.
-    """
     modulename = module_globals.get('__name__')
     if not isinstance(modulename, str):
         raise RuntimeError('Unable to get module name.')
-    for name in names:
-        obj = module_globals[name]
+    assert not modulename.startswith('_')
+    modulename_prefix = f'{modulename}.'
+    modulename_prefix_2 = f'_{modulename}.'
+
+    for name, obj in module_globals.items():
+        if name.startswith('_'):
+            continue
         existing = getattr(obj, '__module__', None)
         try:
-            if existing is not None and existing != modulename:
+            # Override the module ONLY if it lives under us somewhere.
+            # So ourpackage._submodule.Foo becomes ourpackage.Foo
+            # but otherpackage._submodule.Foo remains untouched.
+            if existing is not None and (
+                existing.startswith(modulename_prefix)
+                or existing.startswith(modulename_prefix_2)
+            ):
                 obj.__module__ = modulename
         except Exception:
             import logging
 
             logging.warning(
-                'set_canonical_module: unable to change __module__'
+                'set_canonical_module_names: unable to change __module__'
                 " from '%s' to '%s' on %s object at '%s'.",
                 existing,
                 modulename,
                 type(obj),
                 name,
             )
+
+
+def timedelta_str(
+    timeval: datetime.timedelta | float, maxparts: int = 2, decimals: int = 0
+) -> str:
+    """Return a simple human readable time string for a length of time.
+
+    Time can be given as a timedelta or a float representing seconds.
+    Example output:
+      "23d 1h 2m 32s" (with maxparts == 4)
+      "23d 1h" (with maxparts == 2)
+      "23d 1.08h" (with maxparts == 2 and decimals == 2)
+
+    Note that this is hard-coded in English and probably not especially
+    performant.
+    """
+    # pylint: disable=too-many-locals
+
+    if isinstance(timeval, float):
+        timevalfin = datetime.timedelta(seconds=timeval)
+    else:
+        timevalfin = timeval
+
+    # Internally we only handle positive values.
+    if timevalfin.total_seconds() < 0:
+        return f'-{timedelta_str(timeval=-timeval, maxparts=maxparts)}'
+
+    years = timevalfin.days // 365
+    days = timevalfin.days % 365
+    hours = timevalfin.seconds // 3600
+    hour_remainder = timevalfin.seconds % 3600
+    minutes = hour_remainder // 60
+    seconds = hour_remainder % 60
+
+    # Now, if we want decimal places for our last value,
+    # calc fractional parts.
+    if decimals:
+        # Calc totals of each type.
+        t_seconds = timevalfin.total_seconds()
+        t_minutes = t_seconds / 60
+        t_hours = t_minutes / 60
+        t_days = t_hours / 24
+        t_years = t_days / 365
+
+        # Calc fractional parts that exclude all whole values to their left.
+        years_covered = years
+        years_f = t_years - years_covered
+        days_covered = years_covered * 365 + days
+        days_f = t_days - days_covered
+        hours_covered = days_covered * 24 + hours
+        hours_f = t_hours - hours_covered
+        minutes_covered = hours_covered * 60 + minutes
+        minutes_f = t_minutes - minutes_covered
+        seconds_covered = minutes_covered * 60 + seconds
+        seconds_f = t_seconds - seconds_covered
+    else:
+        years_f = days_f = hours_f = minutes_f = seconds_f = 0.0
+
+    parts: list[str] = []
+    for part, part_f, suffix in (
+        (years, years_f, 'y'),
+        (days, days_f, 'd'),
+        (hours, hours_f, 'h'),
+        (minutes, minutes_f, 'm'),
+        (seconds, seconds_f, 's'),
+    ):
+        if part or parts or (not parts and suffix == 's'):
+            # Do decimal version only for the last part.
+            if decimals and (len(parts) >= maxparts - 1 or suffix == 's'):
+                parts.append(f'{part+part_f:.{decimals}f}{suffix}')
+            else:
+                parts.append(f'{part}{suffix}')
+            if len(parts) >= maxparts:
+                break
+    return ' '.join(parts)
+
+
+def ago_str(
+    timeval: datetime.datetime,
+    maxparts: int = 1,
+    now: datetime.datetime | None = None,
+    decimals: int = 0,
+) -> str:
+    """Given a datetime, return a clean human readable 'ago' str.
+
+    Note that this is hard-coded in English so should not be used
+    for visible in-game elements; only tools/etc.
+
+    If now is not passed, efro.util.utc_now() is used.
+    """
+    if now is None:
+        now = utc_now()
+    return (
+        timedelta_str(now - timeval, maxparts=maxparts, decimals=decimals)
+        + ' ago'
+    )

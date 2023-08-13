@@ -7,12 +7,12 @@
     "campaignProgressText": "Прогресс кампании [Сложный режим]: ${PROGRESS}",
     "changeOncePerSeason": "Вы можете изменить это только раз в сезон.",
     "changeOncePerSeasonError": "Вы должны подождать до следующего сезона, чтобы изменить это снова (${NUM} дней)",
-    "customName": "Имя аккаунта",
+    "customName": "имя пользователя",
     "deviceSpecificAccountText": "Сейчас используется аккаунт имениустройства: ${NAME}",
     "googlePlayGamesAccountSwitchText": "Если хотите сменить внутриигровой аккаунт Google, используйте приложение Google Play.",
     "linkAccountsEnterCodeText": "Введите код",
     "linkAccountsGenerateCodeText": "Сгенерировать код",
-    "linkAccountsInfoText": "(делиться достижениями с другими платформами)",
+    "linkAccountsInfoText": "(поделитесь достижениями с другими платформами)",
     "linkAccountsInstructionsNewText": "Чтобы связать два аккаунта, сгенерируйте код на первом\nи введите этот код на втором. Данные из\nвторого аккаунта будут распределены между ними.\n(Данные из первого будут потеряны)\n\nВы можете связать ${COUNT} аккаунтов.\n\nВАЖНО: связывайте только собственные аккаунты;\nЕсли вы свяжетесь с аккаунтами друзей, вы не сможете\nодновременно играть онлайн.",
     "linkAccountsInstructionsText": "Для связки двух аккаунтов, создайте код на одном\nиз них и введите код на другом.\nПрогресс и инвентарь будут объединены.\nВы можете связать до ${COUNT} аккаунтов.",
     "linkAccountsText": "Связать акаунты",
@@ -23,7 +23,7 @@
     "resetProgressConfirmNoAchievementsText": "Это сбросит весь ваш кооперативный прогресс\nи локальные рекорды (но не билеты).\nЭтот процесс необратим. Вы уверены?",
     "resetProgressConfirmText": "Это сбросит весь ваш кооперативный\nпрогресс, достижения и локальные рекорды\n(кроме билетов). Этот процесс необратим.\nВы уверены?",
     "resetProgressText": "Сбросить прогресс",
-    "setAccountName": "Задать имя аккаунта",
+    "setAccountName": "Напишите имя аккаунта",
     "setAccountNameDesc": "Выберите имя для отображения своего аккаунта.\nВы можете использовать имя одного из ваших связанных аккаунтов или создать уникальное имя аккаунта.",
     "signInInfoText": "Войдите в аккаунт, чтобы собирать билеты, \nсоревноваться онлайн и делиться успехами.",
     "signInText": "Войти",
@@ -55,10 +55,10 @@
   "achievementText": "Достижение",
   "achievements": {
     "Boom Goes the Dynamite": {
-      "description": "Убейте 3 негодяев с помощью TNT",
+      "description": "Убейте 3 плохих парней с помощью TNT",
       "descriptionComplete": "С помощью TNT убито 3 негодяев",
       "descriptionFull": "Убейте 3 негодяев с помощью TNT на уровне ${LEVEL}",
-      "descriptionFullComplete": "3 негодяя убито с помощью TNT на уровне ${LEVEL}",
+      "descriptionFullComplete": "3 плохих парней убито с помощью TNT на уровне ${LEVEL}",
       "name": "Динамит делает “БУМ”!"
     },
     "Boxer": {
@@ -127,16 +127,16 @@
     },
     "Mine Games": {
       "description": "Убейте 3 плохих парней с помощью мин",
-      "descriptionComplete": "С помощью мин убито 3 негодяя",
+      "descriptionComplete": "С помощью мин убито 3 плохих парней",
       "descriptionFull": "Убейте 3 негодяев с помощью мин на уровне ${LEVEL}",
       "descriptionFullComplete": "С помощью мин убито 3 негодяя на уровне ${LEVEL}",
       "name": "Игры с минами"
     },
     "Off You Go Then": {
-      "description": "Сбросьте 3 негодяев с карты",
-      "descriptionComplete": "С карты сброшено 3 негодяя",
-      "descriptionFull": "Сбросьте 3 негодяев с карты на уровне ${LEVEL}",
-      "descriptionFullComplete": "3 негодяя сброшено с карты на уровне ${LEVEL}",
+      "description": "Сбросьте 3 плохих парней с карты",
+      "descriptionComplete": "С карты сброшено 3 плохих парней",
+      "descriptionFull": "Сбросьте 3 плохих парней с карты на уровне ${LEVEL}",
+      "descriptionFullComplete": "3 плохих парней сброшено с карты на уровне ${LEVEL}",
       "name": "Пора учится летать"
     },
     "Onslaught God": {
@@ -340,6 +340,7 @@
     "getMoreGamesText": "Еще игры",
     "titleText": "Добавить игру"
   },
+  "allText": "Все",
   "allowText": "Разрешить",
   "alreadySignedInText": "С вашего аккаунта играют на другом устройстве;\nпожалуйста зайдите с другого аккаунта или закройте\nигру на другом устройстве и попытайтесь снова.",
   "apiVersionErrorText": "Невозможно загрузить модуль ${NAME}; он предназначен для API версии ${VERSION_USED}; здесь требуется версия ${VERSION_REQUIRED}.",
@@ -391,7 +392,7 @@
   },
   "configGamepadSelectWindow": {
     "androidNoteText": "Внимание: поддержка геймпада различается в зависимости от устройства и версии Android.",
-    "pressAnyButtonText": "Нажмите любую кнопку на геймпаде,\n которую хотите настроить...",
+    "pressAnyButtonText": "Нажмите любую кнопку на геймпаде,\n Что-бы настроить геймпад...",
     "titleText": "Настроить геймпад"
   },
   "configGamepadWindow": {
@@ -408,7 +409,7 @@
     "extraStartButtonText": "Настроить дополнительную кнопку \"Start\"",
     "ifNothingHappensTryAnalogText": "Если ничего не происходит, попробуйте вместо этого присвоить аналоговому стику.",
     "ifNothingHappensTryDpadText": "Если ничего не происходит, попробуйте вместо этого присвоить D-Pad.",
-    "ignoreCompletelyDescriptionText": "(запретить геймпаду воздействовать на игру, или меню)",
+    "ignoreCompletelyDescriptionText": "(запретить геймпаду управлять на игрой, или менюшкой)",
     "ignoreCompletelyText": "Игнорировать полностью",
     "ignoredButton1Text": "Игнорируемая кнопка 1",
     "ignoredButton2Text": "Игнорируемая кнопка 2",
@@ -580,6 +581,7 @@
   "disableRemoteAppConnectionsText": "Отключить соединения RemoteApp",
   "disableXInputDescriptionText": "Позволяет подключение более 4 контроллеров, но может не очень хорошо работать.",
   "disableXInputText": "Отключить XInput",
+  "disabledText": "Отключено",
   "doneText": "Готово",
   "drawText": "Ничья",
   "duplicateText": "Дублировать",
@@ -653,6 +655,7 @@
     "useMusicFolderText": "Папка с музыкой"
   },
   "editText": "Редактировать",
+  "enabledText": "Включено",
   "endText": "Конец",
   "enjoyText": "Удачи!",
   "epicDescriptionFilterText": "${DESCRIPTION} в эпическом замедленном действии.",
@@ -1281,7 +1284,9 @@
   "revertText": "Восстановить",
   "runText": "Бежать",
   "saveText": "Сохранить",
-  "scanScriptsErrorText": "Ошибка(и) сканирования скриптов; посмотри лог для подробностей.",
+  "scanScriptsErrorText": "Ошибка(и) сканирования скриптов. Загляни в логи для подробностей.",
+  "scanScriptsMultipleModulesNeedUpdatesText": "${PATH} и ${NUM} других мод(ов) нужно обновить до ${API}",
+  "scanScriptsSingleModuleNeedsUpdatesText": "${PATH} Нужно обновить до ${API}",
   "scoreChallengesText": "Медали за очки",
   "scoreListUnavailableText": "Список очков недоступен.",
   "scoreText": "Очки",
@@ -1501,13 +1506,13 @@
       "${GAME} Training": "${GAME}: тренировка",
       "Infinite ${GAME}": "Бесконечный уровень ${GAME}",
       "Infinite Onslaught": "Бесконечная атака",
-      "Infinite Runaround": "Бесконечная беготня",
+      "Infinite Runaround": "Бесконечный побег",
       "Onslaught": "Бесконечная атака",
       "Onslaught Training": "Атака: тренировка",
       "Pro ${GAME}": "${GAME} профи",
       "Pro Football": "Регби профи",
       "Pro Onslaught": "Атака профи",
-      "Pro Runaround": "Беготня профи",
+      "Pro Runaround": "Побег профи",
       "Rookie ${GAME}": "${GAME} для новичков",
       "Rookie Football": "Регби для новичков",
       "Rookie Onslaught": "Атака для новичков",
@@ -1516,7 +1521,7 @@
       "Uber ${GAME}": "Убер ${GAME}",
       "Uber Football": "Убер регби",
       "Uber Onslaught": "Убер атака",
-      "Uber Runaround": "Убер беготня"
+      "Uber Runaround": "Убер побег"
     },
     "gameDescriptions": {
       "Be the chosen one for a length of time to win.\nKill the chosen one to become it.": "Чтобы победить, стань избранным на некоторое время.\nЧтобы стать избранным, убей избранного.",
@@ -1590,7 +1595,7 @@
       "Ninja Fight": "Бой с ниндзя",
       "Onslaught": "Атака",
       "Race": "Гонка",
-      "Runaround": "Обход",
+      "Runaround": "Побег",
       "Target Practice": "Стрельба по мишеням",
       "The Last Stand": "Последний рубеж"
     },
@@ -1968,7 +1973,7 @@
   "winsText": "${NAME} выиграл!",
   "workspaceSyncErrorText": "Ошибка при попытке синхронизации ${WORKSPACE}. Посмотрите лог для информации.",
   "workspaceSyncReuseText": "Не получается синхронизировать ${WORKSPACE}. Используется прошлая синхронизация.",
-  "worldScoresUnavailableText": "Мировые результаты недоступны.",
+  "worldScoresUnavailableText": "Мировые рекорды не доступны",
   "worldsBestScoresText": "Лучшие в мире очки",
   "worldsBestTimesText": "Лучшее в мире время",
   "xbox360ControllersWindow": {
