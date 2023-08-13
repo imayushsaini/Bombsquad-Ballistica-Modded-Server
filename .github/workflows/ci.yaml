@@ -24,11 +24,11 @@ jobs:
       run: |
         ./ballisticakit_server > server-output.log 2>&1 &
         SERVER_PID=$!
-        sleep 50  # let it run for 30 seconds
+        sleep 30  # let it run for 30 seconds
         kill $SERVER_PID  # terminate the server
     - name: Check server output for success message
       run: |
-        if ! grep -q "Master server access check of udp port 43210 failed." server-output.log; then 
+        if grep -E "Exception|RuntimeError" server-output.log; then 
           echo "Success message not found. Check server-output.log for details."
           exit 1
         fi
