@@ -6,6 +6,7 @@ import babase
 import bauiv1 as bui
 import bascenev1 as bs
 import random
+from bascenev1._map import Map
 from random import choice
 CONFIGS = {
     "Radius": 2.0,
@@ -122,4 +123,4 @@ def Map___init__(func):
     return wrapper
 
 
-babase.Map.__init__ = Map___init__(babase.Map.__init__)
+Map.__init__ = Map___init__(Map.__init__)

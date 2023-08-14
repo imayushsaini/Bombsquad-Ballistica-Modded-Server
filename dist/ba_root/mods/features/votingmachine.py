@@ -1,9 +1,8 @@
 #  Electronic Voting Machine (EVM) by -mr.smoothy
 
-import _babaseimport ba
-import babase.internal
+import _babase
 import time
-
+import bascenev1 as bs
 game_started_on = 0
 
 
@@ -29,28 +28,28 @@ def vote(pb_id, client_id, vote_type):
         voters = []
         vote_machine[vote_type]["last_vote_start_time"] = now
     if now < game_started_on + min_game_duration_to_start_vote:
-        _bs.broadcastmessage("Seems game just started, Try again after some time", transient=True,
+        bs.broadcastmessage("Seems game just started, Try again after some time", transient=True,
                           clients=[client_id])
         return
     if len(voters) == 0:
-        babase.internal.chatmessage(f"{vote_type} vote started")
+        bs.chatmessage(f"{vote_type} vote started")
 
     # clean up voters list
     active_players = []
-    for player in babase.internal.get_game_roster():
+    for player in bs.get_game_roster():
         active_players.append(player['account_id'])
     for voter in voters:
         if voter not in active_players:
             voters.remove(voter)
     if pb_id not in voters:
         voters.append(pb_id)
-        _bs.broadcastmessage(f'Thanks for vote , encourage other players to type {vote_type} too.', transient=True,
+        bs.broadcastmessage(f'Thanks for vote , encourage other players to type {vote_type} too.', transient=True,
                           clients=[client_id])
         if vote_type == 'end':
             update_vote_text(max_votes_required(
                 len(active_players)) - len(voters))
         else:
-            activity = _babase.get_foreground_host_activity()
+            activity = bs.get_foreground_host_activity()
             if activity is not None:
                 with _babase.Context(activity):
                     _bs.broadcastmessage(f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
@@ -61,12 +60,12 @@ def vote(pb_id, client_id, vote_type):
     vote_machine[vote_type]["voters"] = voters
 
     if len(voters) >= max_votes_required(len(active_players)):
-        babase.internal.chatmessage(f"{vote_type} vote succeed")
+        bs.chatmessage(f"{vote_type} vote succeed")
         vote_machine[vote_type]["voters"] = []
         if vote_type == "end":
             try:
-                with _babase.Context(_babase.get_foreground_host_activity()):
-                    _babase.get_foreground_host_activity().end_game()
+                with _babase.Context(bs.get_foreground_host_activity()):
+                    bs.get_foreground_host_activity().end_game()
             except:
                 pass
         elif vote_type == "nv":
@@ -105,12 +104,12 @@ def max_votes_required(players):
 
 
 def update_vote_text(votes_needed):
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     try:
         activity.end_vote_text.node.text = "{} more votes to end this map\ntype 'end' to vote".format(
             votes_needed)
     except:
-        with _babase.Context(_babase.get_foreground_host_activity()):
+        with _babase.Context(bs.get_foreground_host_activity()):
             node = bs.NodeActor(bs.newnode('text',
                                            attrs={
                                                'v_attach': 'top',
@@ -129,6 +128,6 @@ def update_vote_text(votes_needed):
 
 
 def remove_vote_text():
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     if hasattr(activity, "end_vote_text") and activity.end_vote_text.node.exists():
         activity.end_vote_text.node.delete()

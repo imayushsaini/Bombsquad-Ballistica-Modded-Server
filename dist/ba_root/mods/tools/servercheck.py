@@ -3,7 +3,7 @@
 
 from serverData import serverdata
 from playersData import pdata
-import _babaseimport babase.internal
+import _babase
 import urllib.request
 import json
 from datetime import datetime, timedelta
@@ -11,6 +11,7 @@ import time
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
+import _bascenev1
 from babase._general import Call
 import threading
 import setting
@@ -28,26 +29,26 @@ class checkserver(object):
     def start(self):
         self.players = []
 
-        self.t1 = bs.Timer(1, babase.Call(self.check),
-                           repeat=True,  babase.TimeType.REAL)
+        self.t1 = bs.AppTimer(1, babase.Call(self.check),
+                           repeat=True)
 
     def check(self):
         newPlayers = []
         ipClientMap = {}
         deviceClientMap = {}
-        for ros in babase.internal.get_game_roster():
-            ip = _babase.get_client_ip(ros["client_id"])
-            device_id = _babase.get_client_public_device_uuid(ros["client_id"])
+        for ros in bs.get_game_roster():
+            ip = _bascenev1.get_client_ip(ros["client_id"])
+            device_id = _bascenev1.get_client_public_device_uuid(ros["client_id"])
             if (device_id == None):
-                device_id = _babase.get_client_device_uuid(ros["client_id"])
+                device_id = _bascenev1.get_client_device_uuid(ros["client_id"])
             if device_id not in deviceClientMap:
                 deviceClientMap[device_id] = [ros["client_id"]]
             else:
                 deviceClientMap[device_id].append(ros["client_id"])
                 if len(deviceClientMap[device_id]) >= settings['maxAccountPerIP']:
-                    _babase.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[
+                    bs.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[
                                     ros["client_id"]])
-                    babase.internal.disconnect_client(ros["client_id"])
+                    bs.disconnect_client(ros["client_id"])
                     logger.log(f'Player disconnected, reached max players per device || {ros["account_id"]}',
                                "playerjoin")
                     continue
@@ -58,7 +59,7 @@ class checkserver(object):
                 if len(ipClientMap[ip]) >= settings['maxAccountPerIP']:
                     _babase.chatmessage(f"Only {settings['maxAccountPerIP']} player per IP allowed, disconnecting this device.", clients=[
                                     ros["client_id"]])
-                    babase.internal.disconnect_client(ros["client_id"])
+                    bs.disconnect_client(ros["client_id"])
                     logger.log(f'Player disconnected, reached max players per IP address || {ros["account_id"]}',
                                "playerjoin")
                     continue
@@ -86,7 +87,7 @@ class checkserver(object):
                                    "sys")
                     except:
                         pass
-                    babase.internal.disconnect_client(ros['client_id'], 1)
+                    bs.disconnect_client(ros['client_id'], 1)
                     return
 
                 if settings["whitelist"] and ros["account_id"] != None:
@@ -96,7 +97,7 @@ class checkserver(object):
                                           clients=[ros['client_id']])
                         logger.log(
                             f'{d_str}  || { ros["account_id"]} | kicked > not in whitelist')
-                        babase.internal.disconnect_client(ros['client_id'])
+                        bs.disconnect_client(ros['client_id'])
 
                         return
 
@@ -118,7 +119,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
     # player_data=pdata.get_info(pbid)
     clid = 113
     device_string = ""
-    for ros in babase.internal.get_game_roster():
+    for ros in bs.get_game_roster():
         if ros["account_id"] == pbid:
             clid = ros["client_id"]
             device_string = ros['display_string']
@@ -132,7 +133,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
                                   color=(1, 0, 1), transient=True,
                                   clients=[clid])
                 logger.log(f'{pbid} || kicked for joining too fast')
-                babase.internal.disconnect_client(clid)
+                bs.disconnect_client(clid)
                 _thread.start_new_thread(reportSpam, (pbid,))
                 return
         else:
@@ -152,18 +153,18 @@ def on_player_join_server(pbid, player_data, ip, device_id):
         if check_ban(ip, device_id, pbid):
             _babase.chatmessage(
                 'sad ,your account is flagged contact server owner for unban', clients=[clid])
-            babase.internal.disconnect_client(clid)
+            bs.disconnect_client(clid)
             return
         if get_account_age(player_data["accountAge"]) < \
                 settings["minAgeToJoinInHours"]:
-            for ros in babase.internal.get_game_roster():
+            for ros in bs.get_game_roster():
                 if ros['account_id'] == pbid:
                     _bs.broadcastmessage(
                         "New Accounts not allowed here , come back later",
                         color=(1, 0, 0), transient=True,
                         clients=[ros['client_id']])
                     logger.log(pbid + " | kicked > reason:Banned account")
-                    babase.internal.disconnect_client(ros['client_id'])
+                    bs.disconnect_client(ros['client_id'])
 
             return
         else:
@@ -181,14 +182,14 @@ def on_player_join_server(pbid, player_data, ip, device_id):
 
             serverdata.clients[pbid]["lastIP"] = ip
 
-            device_id = _babase.get_client_public_device_uuid(clid)
+            device_id = _bascenev1.get_client_public_device_uuid(clid)
             if (device_id == None):
-                device_id = _babase.get_client_device_uuid(clid)
+                device_id = _bascenev1.get_client_device_uuid(clid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
             verify_account(pbid, player_data)  # checked for spoofed ids
             logger.log(
                 f'{pbid} ip: {serverdata.clients[pbid]["lastIP"]} , Device id: {device_id}')
-            _bs.broadcastmessage(settings["regularWelcomeMsg"] + " " + device_string,
+            bs.broadcastmessage(settings["regularWelcomeMsg"] + " " + device_string,
                               color=(0.60, 0.8, 0.6), transient=True,
                               clients=[clid])
             if (settings["ballistica_web"]["enable"]):
@@ -204,7 +205,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
         )
 
         thread.start()
-        _bs.broadcastmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
+        bs.broadcastmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
                           transient=True, clients=[clid])
         if (settings["ballistica_web"]["enable"]):
             from . import notification_manager
@@ -241,7 +242,7 @@ def check_ban(ip, device_id, pbid, log=True):
 
 def verify_account(pb_id, p_data):
     d_string = ""
-    for ros in babase.internal.get_game_roster():
+    for ros in bs.get_game_roster():
         if ros['account_id'] == pb_id:
             d_string = ros['display_string']
 
@@ -372,10 +373,10 @@ def save_ids(ids, pb_id, display_string):
 
 
 def kick_by_pb_id(pb_id, msg):
-    for ros in babase.internal.get_game_roster():
+    for ros in bs.get_game_roster():
         if ros['account_id'] == pb_id:
             _bs.broadcastmessage(msg, transient=True, clients=[ros['client_id']])
-            babase.internal.disconnect_client(ros['client_id'])
+            bs.disconnect_client(ros['client_id'])
 
 
 def get_account_age(ct):

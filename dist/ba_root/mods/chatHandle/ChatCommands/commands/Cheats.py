@@ -1,7 +1,7 @@
 from .Handlers import handlemsg, handlemsg_all, clientid_to_myself
 import babase
 import bauiv1 as bui
-import bascenev1 as bs, _ba
+import bascenev1 as bs
 
 
 Commands = ['kill', 'heal', 'curse', 'sleep',  'superpunch', 'gloves', 'shield', 'freeze', 'unfreeze', 'godmode']
@@ -13,45 +13,45 @@ CommandAliases = ['die', 'heath', 'cur', 'sp', 'punch', 'protect', 'ice', 'thaw'
 
 def ExcelCommand(command, arguments, clientid, accountid):
 	"""
-	Checks The Command And Run Function 
-	
+	Checks The Command And Run Function
+
 	Parameters:
-		command : str 
-		arguments : str 
-		clientid : int 
-		accountid : int 
-	
+		command : str
+		arguments : str
+		clientid : int
+		accountid : int
+
 	Returns:
-		None 
+		None
 	"""
-	
+
 	if command in ['kill', 'die']:
 		kill(arguments, clientid)
-		
+
 	elif command in ['heal', 'heath']:
 		heal(arguments, clientid)
-		
+
 	elif command in ['curse', 'cur']:
 		curse(arguments, clientid)
-		
+
 	elif command == 'sleep':
 		sleep(arguments, clientid)
-		
+
 	elif command in ['sp', 'superpunch']:
 		super_punch(arguments, clientid)
-		
+
 	elif command in ['gloves', 'punch']:
 		gloves(arguments, clientid)
-		
+
 	elif command in ['shield', 'protect']:
 		shield(arguments, clientid)
-		
+
 	elif command in ['freeze', 'ice']:
 		freeze(arguments, clientid)
-		
+
 	elif command in ['unfreeze', 'thaw']:
 		un_freeze(arguments, clientid)
-		
+
 	elif command in ['gm', 'godmode']:
 		god_mode(arguments, clientid)
 
@@ -59,14 +59,14 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 
 def kill(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
 		handlemsg(myself, bs.DieMessage())
-	
+
 	elif arguments[0] == 'all':
 		handlemsg_all(bs.DieMessage())
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -79,14 +79,14 @@ def kill(arguments, clientid):
 
 
 def heal(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.PowerupMessage(poweruptype='health')) 
-	
+		handlemsg(myself, babase.PowerupMessage(poweruptype='health'))
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.PowerupMessage(poweruptype='health'))
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -99,14 +99,14 @@ def heal(arguments, clientid):
 
 
 def curse(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.PowerupMessage(poweruptype='curse')) 
-	
+		handlemsg(myself, babase.PowerupMessage(poweruptype='curse'))
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.PowerupMessage(poweruptype='curse'))
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -119,13 +119,13 @@ def curse(arguments, clientid):
 
 
 def sleep(arguments, clientid):
-	
-	activity = _babase.get_foreground_host_activity()
-	
+
+	activity = bs.get_foreground_host_activity()
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		activity.players[myself].actor.node.handlemessage('knockout', 8000) 
-		
+		activity.players[myself].actor.node.handlemessage('knockout', 8000)
+
 	elif arguments[0] == 'all':
 		for i in activity.players:
 			i.actor.node.handlemessage('knockout', 8000)
@@ -141,24 +141,24 @@ def sleep(arguments, clientid):
 
 
 def super_punch(arguments, clientid):
-	
-	activity = _babase.get_foreground_host_activity()
-	
+
+	activity = bs.get_foreground_host_activity()
+
 	if arguments == [] or arguments == ['']:
-		
+
 		myself = clientid_to_myself(clientid)
-		
+
 		if activity.players[myself].actor._punch_power_scale != 15:
 			activity.players[myself].actor._punch_power_scale = 15
 			activity.players[myself].actor._punch_cooldown = 0
 		else:
 			activity.players[myself].actor._punch_power_scale = 1.2
 			activity.players[myself].actor._punch_cooldown = 400
-	
+
 	elif arguments[0] == 'all':
-		
-		activity = _babase.get_foreground_host_activity()
-		
+
+		activity = bs.get_foreground_host_activity()
+
 		for i in activity.players:
 			if i.actor._punch_power_scale != 15:
 				i.actor._punch_power_scale = 15
@@ -166,12 +166,12 @@ def super_punch(arguments, clientid):
 			else:
 				i.actor._punch_power_scale = 1.2
 				i.actor._punch_cooldown = 400
-			
+
 	else:
 		try:
-			activity = _babase.get_foreground_host_activity()
+			activity = bs.get_foreground_host_activity()
 			req_player = int(arguments[0])
-			
+
 			if activity.players[req_player].actor._punch_power_scale != 15:
 				activity.players[req_player].actor._punch_power_scale = 15
 				activity.players[req_player].actor._punch_cooldown = 0
@@ -186,14 +186,14 @@ def super_punch(arguments, clientid):
 
 
 def gloves(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.PowerupMessage(poweruptype='punch')) 
-	
+		handlemsg(myself, babase.PowerupMessage(poweruptype='punch'))
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.PowerupMessage(poweruptype='punch'))
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -206,14 +206,14 @@ def gloves(arguments, clientid):
 
 
 def shield(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.PowerupMessage(poweruptype='shield')) 
-	
+		handlemsg(myself, babase.PowerupMessage(poweruptype='shield'))
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.PowerupMessage(poweruptype='shield'))
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -226,14 +226,14 @@ def shield(arguments, clientid):
 
 
 def freeze(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.FreezeMessage()) 
-	
+		handlemsg(myself, babase.FreezeMessage())
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.FreezeMessage())
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -246,14 +246,14 @@ def freeze(arguments, clientid):
 
 
 def un_freeze(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		handlemsg(myself, babase.ThawMessage()) 
-	
+		handlemsg(myself, babase.ThawMessage())
+
 	elif arguments[0] == 'all':
 		handlemsg_all(babase.ThawMessage())
-			
+
 	else:
 		try:
 			req_player = int(arguments[0])
@@ -266,47 +266,47 @@ def un_freeze(arguments, clientid):
 
 
 def god_mode(arguments, clientid):
-	
+
 	if arguments == [] or arguments == ['']:
 		myself = clientid_to_myself(clientid)
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 		player = activity.players[myself].actor
-		
+
 		if player._punch_power_scale != 7:
 			player._punch_power_scale = 7
-			player.node.hockey = True 
-			player.node.invincible = True 
-			
+			player.node.hockey = True
+			player.node.invincible = True
+
 		else:
 			player._punch_power_scale = 1.2
-			player.node.hockey = False 
-			player.node.invincible = False 
-	
+			player.node.hockey = False
+			player.node.invincible = False
+
 	elif arguments[0] == 'all':
-		
-		activity = _babase.get_foreground_host_activity()
-		
+
+		activity = bs.get_foreground_host_activity()
+
 		for i in activity.players:
 			if i.actor._punch_power_scale != 7:
 				i.actor._punch_power_scale = 7
-				i.actor.node.hockey = True 
-				i.actor.node.invincible = True 
+				i.actor.node.hockey = True
+				i.actor.node.invincible = True
 			else:
 				i.actor._punch_power_scale = 1.2
-				i.actor.node.hockey = False 
-				i.actor.node.invincible = False 
-				
+				i.actor.node.hockey = False
+				i.actor.node.invincible = False
+
 	else:
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 		req_player = int(arguments[0])
 		player = activity.players[req_player].actor
-		
+
 		if player._punch_power_scale != 7:
 			player._punch_power_scale = 7
-			player.node.hockey = True 
-			player.node.invincible = True 
-			
+			player.node.hockey = True
+			player.node.invincible = True
+
 		else:
 			player._punch_power_scale = 1.2
-			player.node.hockey = False 
-			player.node.invincible = False 
+			player.node.hockey = False
+			player.node.invincible = False

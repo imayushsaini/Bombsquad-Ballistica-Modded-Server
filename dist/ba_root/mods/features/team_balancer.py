@@ -1,16 +1,15 @@
 from tools import playlist
-import _babaseimport ba
-import babase.internal
+import _babase
 import setting
 from serverData import serverdata
-
-from babase._dualteamsession import DualTeamSession
-from babase._coopsession import CoopSession
+import bascenev1 as bs
+from bascenev1._dualteamsession import DualTeamSession
+from bascenev1._coopsession import CoopSession
 settings = setting.get_settings_data()
 
 
 def balanceTeams():
-    session = babase.internal.get_foreground_host_session()
+    session = bs.get_foreground_host_session()
     if settings["coopModeWithLessPlayers"]["enable"] and len(session.sessionplayers) < settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"]:
         playlist.setPlaylist('coop')
         return
@@ -35,7 +34,7 @@ def balanceTeams():
 
 
 def movePlayers(fromTeam, toTeam, count):
-    session = babase.internal.get_foreground_host_session()
+    session = bs.get_foreground_host_session()
     fromTeam = session.sessionteams[fromTeam]
     toTeam = session.sessionteams[toTeam]
     for i in range(0, count):
@@ -51,14 +50,14 @@ def movePlayers(fromTeam, toTeam, count):
 
 
 def broadCastShiftMsg(pb_id):
-    for ros in babase.internal.get_game_roster():
+    for ros in bs.get_game_roster():
         if ros['account_id'] == pb_id:
-            _bs.broadcastmessage(
+            bs.broadcastmessage(
                 "Shifted "+ros["display_string"]+" to balance team")
 
 
 def on_player_join():
-    session = babase.internal.get_foreground_host_session()
+    session = bs.get_foreground_host_session()
     if len(session.sessionplayers) > 1:
         return
     if isinstance(session, DualTeamSession):
@@ -72,6 +71,6 @@ def on_player_join():
 
 
 def checkToExitCoop():
-    session = babase.internal.get_foreground_host_session()
+    session = bs.get_foreground_host_session()
     if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"] and not serverdata.coopmode:
         playlist.setPlaylist('default')

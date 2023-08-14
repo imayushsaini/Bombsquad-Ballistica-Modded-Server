@@ -331,7 +331,7 @@ def new_blast_init(
     factory.random_explode_sound().play(position=lpos)
     factory.debris_fall_sound.play(position=lpos)
 
-    babase.camerashake(intensity=5.0 if self.blast_type == "tnt" else 1.0)
+    bs.camerashake(intensity=5.0 if self.blast_type == "tnt" else 1.0)
 
     # TNT is more epic.
     if self.blast_type == "tnt":

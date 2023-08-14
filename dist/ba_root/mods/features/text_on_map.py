@@ -2,15 +2,15 @@
 
 """ TODO need to set coordinates of text node , move timer values to settings.json """
 
-from babase._generated.enums import TimeType
+
 import babase
 import bauiv1 as bui
-import bascenev1 as bs, _ba
-import babase.internal
+import bascenev1 as bs
 import setting
 from stats import mystats
 from datetime import datetime
 import random
+import _babase
 setti=setting.get_settings_data()
 class textonmap:
 
@@ -20,7 +20,7 @@ class textonmap:
         top = data['top watermark']
         nextMap=""
         try:
-            nextMap=babase.internal.get_foreground_host_session().get_next_game_description().evaluate()
+            nextMap=bs.get_foreground_host_session().get_next_game_description().evaluate()
         except:
             pass
         top = top.replace("@IP", _babase.our_ip).replace("@PORT", str(_babase.our_port))
@@ -30,7 +30,7 @@ class textonmap:
         self.top_message(top)
         self.nextGame(nextMap)
         self.restart_msg()
-        if hasattr(_ba, "season_ends_in_days"):
+        if hasattr(_babase, "season_ends_in_days"):
             if _babase.season_ends_in_days < 9:
                 self.season_reset(_babase.season_ends_in_days)
         if setti["leaderboard"]["enable"]:
@@ -42,7 +42,7 @@ class textonmap:
             color=((0+random.random()*1.0),(0+random.random()*1.0),(0+random.random()*1.0))
         else:
             color=tuple(setti["textonmap"]["center highlights"]["color"])
-        node = _bs.newnode('text',
+        node = bs.newnode('text',
                             attrs={
                                 'text': self.highlights[self.index],
                                 'flatness': 1.0,
@@ -57,7 +57,7 @@ class textonmap:
         self.index = int((self.index+1)%len(self.highlights))
 
     def left_watermark(self, text):
-        node = _bs.newnode('text',
+        node = bs.newnode('text',
                             attrs={
                                 'text': text,
                                 'flatness': 1.0,
@@ -69,7 +69,7 @@ class textonmap:
                                 'color':(0.7,0.7,0.7)
                             })
     def nextGame(self,text):
-        node = _bs.newnode('text',
+        node = bs.newnode('text',
                             attrs={
                                 'text':"Next : "+text,
                                 'flatness':1.0,
@@ -81,7 +81,7 @@ class textonmap:
                                 'color':(0.5,0.5,0.5)
                             })
     def season_reset(self,text):
-        node = _bs.newnode('text',
+        node = bs.newnode('text',
                             attrs={
                                 'text':"Season ends in: "+str(text)+" days",
                                 'flatness':1.0,
@@ -93,8 +93,8 @@ class textonmap:
                                 'color':(0.6,0.5,0.7)
                             })
     def restart_msg(self):
-        if hasattr(_ba,'restart_scheduled'):
-            _babase.get_foreground_host_activity().restart_msg = _bs.newnode('text',
+        if hasattr(_babase,'restart_scheduled'):
+            _babase.get_foreground_host_activity().restart_msg = bs.newnode('text',
                                 attrs={
                                     'text':"Server going to restart after this series.",
                                     'flatness':1.0,
@@ -107,7 +107,7 @@ class textonmap:
                                 })
 
     def top_message(self, text):
-        node = _bs.newnode('text',
+        node = bs.newnode('text',
                             attrs={
                                 'text': text,
                                 'flatness': 1.0,

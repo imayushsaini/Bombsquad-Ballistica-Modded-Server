@@ -21,6 +21,7 @@ import babase
 import bauiv1 as bui
 import bascenev1 as bs
 import _babase
+import _bascenev1
 import logging
 from bascenev1lib.activity import dualteamscore, multiteamscore, drawscore
 from bascenev1lib.activity.coopscore import CoopScoreScreen
@@ -52,10 +53,11 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
 class modSetup(babase.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
+        plus = bui.app.plus
         bootstraping()
         servercheck.checkserver().start()
         ServerUpdate.check()
-        bs.timer(5, account.updateOwnerIps)
+        bs.AppTimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):
@@ -64,13 +66,13 @@ class modSetup(babase.Plugin):
                 logging.debug("Account V2 is active")
             else:
                 logging.warning("Account V2 login require ....stay tuned.")
-                bs.timer(3, babase.Call(logging.debug,
+                bs.apptimer(3, babase.Call(logging.debug,
                          "Starting Account V2 login process...."))
-                bs.timer(6, account.AccountUtil)
+                bs.apptimer(6, account.AccountUtil)
         else:
-            babase.app.accounts_v2.set_primary_credentials(None)
-            babase.internal.sign_in_v1('Local')
-        bs.timer(60, playlist.flush_playlists)
+            plus.accounts.set_primary_credentials(None)
+            plus.sign_in_v1('Local')
+        bs.apptimer(60, playlist.flush_playlists)
 
     # it works sometimes , but it blocks shutdown so server raise runtime exception,   also dump server logs
     def on_app_shutdown(self):
@@ -112,10 +114,10 @@ def bootstraping():
     """Bootstarps the server."""
     logging.warning("Bootstraping mods...")
     # server related
-    _babase.set_server_name(settings["HostName"])
-    _babase.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
-    _babase.set_kickvote_msg_type(settings["KickVoteMsgType"])
-    _babase.hide_player_device_id(settings["Anti-IdRevealer"])
+    # _bascenev1.set_server_name(settings["HostName"])
+    # _bascenev1.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
+    # _bascenev1.set_kickvote_msg_type(settings["KickVoteMsgType"])
+    # bs.hide_player_device_id(settings["Anti-IdRevealer"]) TODO add call in cpp
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
@@ -136,13 +138,14 @@ def bootstraping():
         from plugins import bcs_plugin
         bcs_plugin.enable(settings["ballistica_web"]["server_password"])
     if settings["character_chooser"]["enable"]:
-        from plugins import CharacterChooser
-        CharacterChooser.enable()
+        from plugins import character_chooser
+        character_chooser.enable()
     if settings["custom_characters"]["enable"]:
         from plugins import importcustomcharacters
         importcustomcharacters.enable()
     if settings["StumbledScoreScreen"]:
-        from features import StumbledScoreScreen
+        pass
+        # from features import StumbledScoreScreen
     if settings["colorfullMap"]:
         from plugins import colorfulmaps2
     try:
@@ -222,7 +225,7 @@ def import_dual_team_score() -> None:
         drawscore.DrawScoreScreenActivity = newdts.DrawScoreScreenActivity
 
 
-org_begin = babase._activity.Activity.on_begin
+org_begin = bs._activity.Activity.on_begin
 
 
 def new_begin(self):
@@ -235,23 +238,23 @@ def new_begin(self):
     votingmachine.game_started_on = time.time()
 
 
-babase._activity.Activity.on_begin = new_begin
+bs._activity.Activity.on_begin = new_begin
 
-org_end = babase._activity.Activity.end
+org_end = bs._activity.Activity.end
 
 
 def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
     """Runs when game is ended."""
-    activity = _babase.get_foreground_host_activity()
-    _babase.prop_axis(1, 0, 0)
+    activity = bs.get_foreground_host_activity()
+
     if isinstance(activity, CoopScoreScreen):
         team_balancer.checkToExitCoop()
     org_end(self, results, delay, force)
 
 
-babase._activity.Activity.end = new_end
+bs._activity.Activity.end = new_end
 
-org_player_join = babase._activity.Activity.on_player_join
+org_player_join = bs._activity.Activity.on_player_join
 
 
 def on_player_join(self, player) -> None:
@@ -260,7 +263,7 @@ def on_player_join(self, player) -> None:
     org_player_join(self, player)
 
 
-babase._activity.Activity.on_player_join = on_player_join
+bs._activity.Activity.on_player_join = on_player_join
 
 
 def night_mode() -> None:
@@ -274,7 +277,7 @@ def night_mode() -> None:
         now = datetime.now()
 
         if now.time() > start.time() or now.time() < end.time():
-            activity = _babase.get_foreground_host_activity()
+            activity = bs.get_foreground_host_activity()
 
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
 

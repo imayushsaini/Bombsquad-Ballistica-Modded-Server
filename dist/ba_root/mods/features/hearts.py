@@ -128,7 +128,7 @@ class PopupText(bs.Actor):
 
 
 def spawn_heart():
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     if not hasattr(activity, "heart"):
         activity.heart = []
     if hasattr(activity, "map"):
@@ -136,11 +136,11 @@ def spawn_heart():
         for i in range(0, 4):
             position = (random.uniform(bounds[0], bounds[3]), random.uniform(
                 bounds[4]*1.15, bounds[4]*1.45)-8, random.uniform(bounds[2], bounds[5]))
-            with babase.Context(activity):
+            with activity.context:
                 k = PopupText(u"\ue047", position)
                 activity.heart.append(k)
 
 
 def start(activity):
-    _bs.timer(random.uniform(7, 8), spawn_heart, repeat=True)
-babase._activity.Activity.hearts_generator = start
+    bs.timer(random.uniform(7, 8), spawn_heart, repeat=True)
+bs._activity.Activity.hearts_generator = start

@@ -3,8 +3,8 @@
 
 import babase
 import bauiv1 as bui
-import bascenev1 as bs, _ba, setting
-import babase.internal
+import bascenev1 as bs, setting
+
 from stats.mystats import damage_data
 from bascenev1lib.actor.popuptext import PopupText
 

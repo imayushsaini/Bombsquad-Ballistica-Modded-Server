@@ -35,6 +35,8 @@ def _cmd(command_data: bytes) -> None:
     assert babase.app.classic is not None
 
     command = pickle.loads(command_data)
+    print("server mode got command")
+    print(command)
     assert isinstance(command, ServerCommand)
 
     if isinstance(command, StartServerModeCommand):
@@ -434,6 +436,6 @@ class ServerController:
             bascenev1.new_host_session(sessiontype)
 
         # Run an access check if we're trying to make a public party.
-        if not self._ran_access_check and self._config.party_is_public:
+        if not self._ran_access_check :
             self._run_access_check()
             self._ran_access_check = True

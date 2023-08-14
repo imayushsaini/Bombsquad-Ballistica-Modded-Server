@@ -4,7 +4,8 @@ import babase
 import bauiv1 as bui
 import bascenev1 as bs
 import setting
-import _babasefrom stats import mystats
+import _babase
+from stats import mystats
 sett = setting.get_settings_data()
 
 
@@ -49,7 +50,7 @@ def addhp(node, spaz):
             spaz.hptimer = None
 
     spaz.hptimer = bs.Timer(100, babase.Call(
-        showHP), repeat=True, babase.TimeType.SIM, timeformat=babase.TimeFormat.MILLISECONDS)
+        showHP), repeat=True)
 
 
 class Tag(object):
@@ -163,5 +164,5 @@ class HitPoint(object):
         def a():
             self._Text.delete()
             m.delete()
-        self.timer = bs.Timer(100, babase.Call(
-            a), babase.TimeType.SIM, timeformat=babase.TimeFormat.MILLISECONDS)
+        self.timer = bs.Timer(1.2, babase.Call(
+            a))

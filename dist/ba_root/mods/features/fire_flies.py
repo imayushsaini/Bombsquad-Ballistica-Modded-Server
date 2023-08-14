@@ -2,11 +2,12 @@
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-import _babasefrom bascenev1lib.gameutils import SharedObjects
+import _babase
+from bascenev1lib.gameutils import SharedObjects
 import random
 import weakref
-from babase._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
-on_begin_original = babase._activity.Activity.on_begin
+from bascenev1._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
+on_begin_original = bs._activity.Activity.on_begin
 
 
 def fireflies_generator(activity, count, random_color: False):
@@ -22,7 +23,7 @@ def fireflies_generator(activity, count, random_color: False):
         if not spawn_areas:
             return
         for _ in range(increment):
-            with babase.Context(activity):
+            with activity.context:
                 firefly = FireFly(random.choice(spawn_areas), color)
             activity.fireflies.append(firefly)
     else:
@@ -36,8 +37,8 @@ def fireflies_generator(activity, count, random_color: False):
 
 
 def _calculate_spawn_areas():
-    activity = _babase.get_foreground_host_activity()
-    if not isinstance(activity, babase.GameActivity):
+    activity = bs.get_foreground_host_activity()
+    if not isinstance(activity, bs.GameActivity):
         return
     aoi_bounds = activity.map.get_def_bound_box("area_of_interest_bounds")
     # aoi_bounds = activity.map.get_def_bound_box("map_bounds")
@@ -156,5 +157,5 @@ def on_begin(self, *args, **kwargs) -> None:
     return on_begin_original(self, *args, **kwargs)
 
 
-babase._activity.Activity.fireflies_generator = fireflies_generator
-babase._activity.Activity.on_begin = on_begin
+bs._activity.Activity.fireflies_generator = fireflies_generator
+bs._activity.Activity.on_begin = on_begin

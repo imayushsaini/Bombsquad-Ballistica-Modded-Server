@@ -1,7 +1,8 @@
 
 from typing import TYPE_CHECKING
 from efro.terminal import Clr
-import _babaseimport ba
+import _babase
+import bascenev1 as bs
 if TYPE_CHECKING:
     from typing import Any
 
@@ -20,7 +21,7 @@ def _access_check_response(self, data) -> None:
             _babase.our_port = port
             if data['accessible']:
                 # _fetch_public_servers()
-                _babase.queue_chcker_timer = bs.Timer(8, babase.Call(simple_queue_checker), repeat=True,  babase.TimeType.REAL)
+                _babase.queue_chcker_timer = bs.AppTimer(8, babase.Call(simple_queue_checker), repeat=True)
                 print(
                     f'{Clr.SBLU}Master server access check of{addrstr}'
                     f' udp port {port} succeeded.\n'

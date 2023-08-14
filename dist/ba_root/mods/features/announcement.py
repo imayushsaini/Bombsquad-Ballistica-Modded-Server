@@ -1,7 +1,6 @@
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-import babase.internal
 
 import setting
 import random

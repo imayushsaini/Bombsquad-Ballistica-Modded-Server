@@ -11,7 +11,8 @@ import os
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-import _babaseimport json
+import _babase
+import json
 from bascenev1lib.actor.spazappearance import Appearance
 from tools.file_handle import OpenJson
 

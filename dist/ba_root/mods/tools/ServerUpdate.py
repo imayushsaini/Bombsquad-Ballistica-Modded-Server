@@ -5,20 +5,21 @@ import urllib.request
 from efro.terminal import Clr
 import json
 import requests
-import _babase
+import babase
+import bascenev1
 
 VERSION = 71
 
 
 def check():
+    print("hey")
+    print(babase.app.classic)
+    print(babase.app.classic.server)
 
-    data = {'name': _babase.app.server._config.party_name,
-            'port': str(_babase.get_game_port()),
-            'build': _babase.app.build_number,
-            'bcsversion': VERSION}
     _thread.start_new_thread(updateProfilesJson, ())
     _thread.start_new_thread(checkChangelog, ())
-    _thread.start_new_thread(postStatus, (data,))
+
+    bascenev1.AppTimer(5, postStatus)
 
 
 def updateProfilesJson():
@@ -32,9 +33,19 @@ def updateProfilesJson():
     pdata.commit_profiles(profiles)
 
 
-def postStatus(data):
+def postStatus():
+    print("post status clled finally")
+    link = 'https://bcsservers.ballistica.workers.dev/ping'
+    data = {'name': babase.app.classic.server._config.party_name,
+            'port': str(bascenev1.get_game_port()),
+            'build': babase.app.build_number,
+            'bcsversion': VERSION}
+    _thread.start_new_thread(postRequest, (link, data,))
+
+def postRequest(link, data):
+    print(data)
     try:
-        res = requests.post('https://bcsservers.ballistica.workers.dev/ping',
+        res = requests.post(link,
                             json=data)
     except:
         pass

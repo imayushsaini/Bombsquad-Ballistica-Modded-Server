@@ -74,7 +74,7 @@ def fly(arguments):
 
 	elif arguments[0] == 'all':
 
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 
 		for players in activity.players:
 			if players.actor.node.fly != True:
@@ -85,7 +85,7 @@ def fly(arguments):
 	else:
 		try:
 
-			activity = _babase.get_foreground_host_activity()
+			activity = bs.get_foreground_host_activity()
 			player = int(arguments[0])
 
 			if activity.players[player].actor.node.fly != True:
@@ -106,7 +106,7 @@ def invi(arguments):
 
 	elif arguments[0] == 'all':
 
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 
 		for i in activity.players:
 			if i.actor.exists() and i.actor.node.torso_mesh != None:
@@ -124,7 +124,7 @@ def invi(arguments):
 	else:
 
 		player = int(arguments[0])
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 
 		body = activity.players[player].actor.node
 
@@ -150,7 +150,7 @@ def headless(arguments):
 
 	elif arguments[0] == 'all':
 
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 
 		for players in activity.players:
 
@@ -162,7 +162,7 @@ def headless(arguments):
 	else:
 		try:
 			player = int(arguments[0])
-			activity = _babase.get_foreground_host_activity()
+			activity = bs.get_foreground_host_activity()
 
 			node = activity.players[player].actor.node
 
@@ -181,7 +181,7 @@ def creep(arguments):
 
 	elif arguments[0] == 'all':
 
-		activity = _babase.get_foreground_host_activity()
+		activity = bs.get_foreground_host_activity()
 
 		for players in activity.players:
 			node = players.actor.node
@@ -194,7 +194,7 @@ def creep(arguments):
 	else:
 		try:
 			player = int(arguments[0])
-			activity = _babase.get_foreground_host_activity()
+			activity = bs.get_foreground_host_activity()
 
 			node = activity.players[player].actor.node
 

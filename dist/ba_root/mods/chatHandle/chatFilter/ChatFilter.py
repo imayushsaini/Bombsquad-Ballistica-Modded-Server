@@ -1,8 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 import babase
 import bauiv1 as bui
-import bascenev1 as bs, _ba
-import babase.internal
+import bascenev1 as bs
 from serverData import serverdata
 from features import profanity
 from tools import servercheck
@@ -55,7 +54,7 @@ def filter(msg,pb_id,client_id):
 					smsgcount+=1
 					if smsgcount>=3:
 						logger.log(pb_id+" | kicked for chat spam")
-						babase.internal.disconnect_client(client_id)
+						bs.disconnect_client(client_id)
 						smsgcount=0
 				_bs.broadcastmessage("Don\'t SPAM!", color=(1,0,0), transient=True, clients=[client_id])
 				if not check_permissions(pb_id):
@@ -89,11 +88,11 @@ def addWarn(pb_id,client_id):
 	if now - player['lastWarned'] <= settings["WarnCooldownMinutes"]*60:
 		warn+=1
 		if warn > settings["maxWarnCount"]:
-			_bs.broadcastmessage(settings["afterWarnKickMsg"],color=(1,0,0),transient=True,clients=[client_id])
+			bs.broadcastmessage(settings["afterWarnKickMsg"],color=(1,0,0),transient=True,clients=[client_id])
 			logger.log(pb_id+" | kicked for chat spam")
-			babase.internal.disconnect_client(client_id)
+			bs.disconnect_client(client_id)
 			_thread.start_new_thread(servercheck.reportSpam,(pb_id,))
-			
+
 		else:
 			_bs.broadcastmessage(settings["warnMsg"]+f"\n\nWarn Count = {warn}/3!!!",color=(1,0,0),transient=True,clients=[client_id])
 	else:

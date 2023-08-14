@@ -2,8 +2,9 @@ from spazmod import tag
 import setting
 from random import randint
 from spazmod import hitmessage
-import _babaseimport ba
-import babase.internal
+
+import _babase
+import bascenev1 as bs
 _setting = setting.get_settings_data()
 
 
@@ -13,10 +14,9 @@ if _setting['enableeffects']:
 
 
 def update_name():
-    import babase.internal
     from stats import mystats
     stat = mystats.get_all_stats()
-    ros = babase.internal.get_game_roster()
+    ros = bs.get_game_roster()
     for i in ros:
         if i['account_id']:
             name = i['display_string']

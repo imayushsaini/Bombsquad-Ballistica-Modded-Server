@@ -31,8 +31,10 @@ def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
         'tint_color': info['tint_color'],
         'tint2_color': info['tint2_color'],
     }
-
-
+try:
+    import custom_hooks as chooks
+except:
+    pass
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     """Intercept/filter chat messages.
 
@@ -41,8 +43,10 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     Should filter and return the string to be displayed, or return None
     to ignore the message.
     """
-    del client_id  # Unused by default.
-    return msg
+    try:
+        return chooks.filter_chat_message(msg,client_id)
+    except:
+        return msg
 
 
 def local_chat_message(msg: str) -> None:

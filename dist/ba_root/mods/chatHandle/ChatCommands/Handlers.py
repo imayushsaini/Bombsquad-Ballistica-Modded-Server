@@ -4,7 +4,6 @@ from playersData import pdata
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-import babase.internal
 
 
 def clientid_to_accountid(clientid):
@@ -17,7 +16,7 @@ def clientid_to_accountid(clientid):
     Returns:
         None
     """
-    for i in babase.internal.get_game_roster():
+    for i in bs.get_game_roster():
         if i['client_id'] == clientid:
             return i['account_id']
     return None
@@ -49,6 +48,6 @@ def check_permissions(accountid, command):
 
 
 def is_server(accid):
-    for i in babase.internal.get_game_roster():
+    for i in bs.get_game_roster():
         if i['account_id'] == accid and i['client_id'] == -1:
             return True

@@ -8,17 +8,17 @@ This plugin will let you choose your character from lobby.
 Install this plugin on your Phone/PC  or on Server
 
 If installed on server :- this will also let players choose server specific custom characters . so no more sharing of character file with all players,
-just install this plugin on server ...and players can pick character from lobby . 
+just install this plugin on server ...and players can pick character from lobby .
 
 Use:-
 > select your profile (focus on color and name)
 > press ready (punch)
 > now use UP/DOWN buttons to scroll character list
-> Press ready again (punch) to join the game 
+> Press ready again (punch) to join the game
 > or press Bomb button to go back to profile choosing menu
-> END 
+> END
 
-Watch   : https://www.youtube.com/watch?v=hNmv2l-NahE   
+Watch   : https://www.youtube.com/watch?v=hNmv2l-NahE
 Join    : https://discord.gg/ucyaesh
 Contact : discord mr.smoothy#5824
 
@@ -348,13 +348,9 @@ def _update_text(self) -> None:
     self._text_node.text = text
 
 # ba_meta export plugin
+def enable():
+    _lobby.Chooser.__init__ = __init__
+    _lobby.Chooser._set_ready = _set_ready
 
-
-class HeySmoothy(babase.Plugin):
-
-    def __init__(self):
-        _lobby.Chooser.__init__ = __init__
-        _lobby.Chooser._set_ready = _set_ready
-
-        _lobby.Chooser._update_text = _update_text
-        _lobby.Chooser.handlemessage = handlemessage
+    _lobby.Chooser._update_text = _update_text
+    _lobby.Chooser.handlemessage = handlemessage

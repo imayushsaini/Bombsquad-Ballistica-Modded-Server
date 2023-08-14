@@ -15,7 +15,8 @@ import babase
 from serverData import serverdata
 from tools.file_handle import OpenJson
 # pylint: disable=import-error
-
+import bascenev1 as bs
+import _bascenev1
 import json
 import datetime
 from tools.ServerUpdate import checkSpammer
@@ -111,8 +112,8 @@ def get_old_profiles(filename):
 def get_blacklist() -> dict:
     if CacheData.blacklist == {}:
         try:
-            f = open(PLAYERS_DATA_PATH + "blacklist.json", "r")
-            CacheData.blacklist = json.load(f)
+            with open(PLAYERS_DATA_PATH + "blacklist.json", "r") as f:
+                CacheData.blacklist = json.load(f)
         except:
             print('error opening blacklist json')
             return {
@@ -202,14 +203,14 @@ def add_profile(
     for ros in bs.get_game_roster():
         if ros['account_id'] == account_id:
             cid = ros['client_id']
-    ip = _babase.get_client_ip(cid)
+    ip = _bascenev1.get_client_ip(cid)
     serverdata.clients[account_id]["lastIP"] = ip
     serverdata.recents.append(
         {"client_id": cid, "deviceId": display_string, "pbid": account_id})
     serverdata.recents = serverdata.recents[-20:]
-    device_id = _babase.get_client_public_device_uuid(cid)
+    device_id = _bascenev1.get_client_public_device_uuid(cid)
     if (device_id == None):
-        device_id = _babase.get_client_device_uuid(cid)
+        device_id = _bascenev1.get_client_device_uuid(cid)
     checkSpammer({'id': account_id, 'display': display_string,
                  'ip': ip, 'device': device_id})
     if device_id in get_blacklist()["ban"]["deviceids"] or account_id in get_blacklist()["ban"]["ids"]:

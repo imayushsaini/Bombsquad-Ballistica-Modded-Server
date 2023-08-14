@@ -4,7 +4,7 @@ import babase
 import bauiv1 as bui
 import bascenev1 as bs
 from babase._general import Call
-import _babaseimport babase.internal
+import _babase
 import setting
 settings = setting.get_settings_data()
 INGAME_TIME=settings["afk_remover"]["ingame_idle_time_in_secs"]
@@ -20,9 +20,9 @@ class checkIdle(object):
         global cLastIdle
         global cIdle
         current=bs.time(babase.TimeType.REAL,timeformat=babase.TimeFormat.MILLISECONDS)
-        if not babase.internal.get_foreground_host_session():
+        if not bs.get_foreground_host_session():
             return
-        for player in babase.internal.get_foreground_host_session().sessionplayers:
+        for player in bs.get_foreground_host_session().sessionplayers:
             last_input=int(player.inputdevice.get_last_input_time())
             afk_time=int((current-last_input)/1000)
             if afk_time in range(INGAME_TIME,INGAME_TIME+20) or afk_time > INGAME_TIME+20:
@@ -40,7 +40,7 @@ class checkIdle(object):
                 player.remove_from_game()
         if LOBBY_KICK:
             current_players=[]
-            for player in babase.internal.get_game_roster():
+            for player in bs.get_game_roster():
                 if player['client_id'] !=-1 and len(player['players']) ==0:
                     current_players.append(player['client_id'])
                     if player['client_id'] not in self.lobbies:
@@ -49,14 +49,14 @@ class checkIdle(object):
                     if lobby_afk in range(INLOBBY_TIME,INLOBBY_TIME+10):
                         _bs.broadcastmessage("Join game within "+str(INLOBBY_TIME+10-lobby_afk)+" secs",color=(1,0,0),transient=True,clients=[player['client_id']])
                     if lobby_afk > INLOBBY_TIME+ 10:
-                        babase.internal.disconnect_client(player['client_id'],0)
+                        bs.disconnect_client(player['client_id'],0)
             # clean the lobbies dict
             temp=self.lobbies.copy()
             for clid in temp:
                 if clid not in current_players:
                     del self.lobbies[clid]
     def warn_player(self,pbid,msg):
-        for player in babase.internal.get_game_roster():
+        for player in bs.get_game_roster():
             if player["account_id"]==pbid:
                 _bs.broadcastmessage(msg,color=(1,0,0),transient=True,clients=[player['client_id']])
 

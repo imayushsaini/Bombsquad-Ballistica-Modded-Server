@@ -1,9 +1,9 @@
-import _babaseimport ba
+import bascenev1 as bs
 import random
 
 def decorate_map():
     try:
-        activity = _babase.get_foreground_host_activity()
+        activity = bs.get_foreground_host_activity()
         activity.fireflies_generator(20, True)
         activity.hearts_generator()
         activity.map.node.reflection = "powerup"
