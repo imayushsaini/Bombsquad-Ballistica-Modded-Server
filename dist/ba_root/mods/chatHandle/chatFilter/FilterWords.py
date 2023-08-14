@@ -1,0 +1,1 @@
+blackListWords=['wtf']

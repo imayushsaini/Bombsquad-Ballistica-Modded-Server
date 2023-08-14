@@ -148,10 +148,12 @@
  },
  "Fleet Zone Pings": {
   "prod": {
-   "delhi": 16.50450974109344,
-   "hyderabad": 40.392026402187184,
-   "kolkata": 41.73070900011953,
-   "mumbai": 42.654999799975485
+   "bangkok": 178.89479999575997,
+   "delhi": 13.92013339677942,
+   "dubai": 154.7783000060008,
+   "hyderabad": 40.31838120082102,
+   "kolkata": 44.57410000031814,
+   "mumbai": 41.06290000345325
   }
  },
  "Free-for-All Playlist Randomize": true,
@@ -1048,7 +1050,7 @@
    }
   ]
  },
- "launchCount": 2,
+ "launchCount": 4,
  "lc14173": 1,
  "lc14292": 1
 }
