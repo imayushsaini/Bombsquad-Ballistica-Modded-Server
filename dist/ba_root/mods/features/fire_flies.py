@@ -9,6 +9,7 @@ on_begin_original = bs._activity.Activity.on_begin
 
 
 def fireflies_generator(activity, count, random_color: False):
+
     if random_color:
         color = (random.uniform(0, 1.2), random.uniform(
             0, 1.2), random.uniform(0, 1.2))

@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 import _bascenev1
 import setting
-from serverData import serverdata
+from serverdata import serverdata
 from tools.ServerUpdate import checkSpammer
 from tools.file_handle import OpenJson
 from typing import TYPE_CHECKING

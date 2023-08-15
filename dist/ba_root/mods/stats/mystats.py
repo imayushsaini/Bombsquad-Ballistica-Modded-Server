@@ -168,7 +168,7 @@ def refreshStats():
     dump_stats(pStats)
     updateTop3Names(toppersIDs[0:3])
 
-    from playersData import pdata
+    from playersdata import pdata
     pdata.update_toppers(toppersIDs)
 
 

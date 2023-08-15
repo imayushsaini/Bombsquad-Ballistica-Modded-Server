@@ -4,7 +4,7 @@ import time
 import urllib.request
 
 import requests
-from playersData import pdata
+from playersdata import pdata
 
 import babase
 import bascenev1
@@ -14,14 +14,13 @@ VERSION = 71
 
 
 def check():
-    print("hey")
     print(babase.app.classic)
     print(babase.app.classic.server)
 
     _thread.start_new_thread(updateProfilesJson, ())
     _thread.start_new_thread(checkChangelog, ())
 
-    bascenev1.AppTimer(5, postStatus)
+    bascenev1.apptimer(15, postStatus)
 
 
 def updateProfilesJson():
@@ -36,7 +35,6 @@ def updateProfilesJson():
 
 
 def postStatus():
-    print("post status clled finally")
     link = 'https://bcsservers.ballistica.workers.dev/ping'
     data = {'name': babase.app.classic.server._config.party_name,
             'port': str(bascenev1.get_game_port()),
@@ -46,7 +44,6 @@ def postStatus():
 
 
 def postRequest(link, data):
-    print(data)
     try:
         res = requests.post(link,
                             json=data)

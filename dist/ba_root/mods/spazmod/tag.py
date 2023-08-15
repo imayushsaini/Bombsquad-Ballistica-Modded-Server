@@ -1,5 +1,5 @@
 import setting
-from playersData import pdata
+from playersdata import pdata
 from stats import mystats
 
 import babase

@@ -5,9 +5,9 @@ from datetime import datetime
 
 import _babase
 import setting
-from playersData import pdata
-from serverData import serverdata
-
+from playersdata import pdata
+from serverdata import serverdata
+from .commands import normal_commands , management, fun , cheats
 import bascenev1 as bs
 from .handlers import check_permissions
 from .handlers import clientid_to_accountid
@@ -25,16 +25,16 @@ def command_type(command):
     Returns:
         any
     """
-    if command in NormalCommands.Commands or command in NormalCommands.CommandAliases:
+    if command in normal_commands.Commands or command in normal_commands.CommandAliases:
         return "Normal"
 
-    if command in Management.Commands or command in Management.CommandAliases:
+    if command in management.Commands or command in management.CommandAliases:
         return "Manage"
 
-    if command in Fun.Commands or command in Fun.CommandAliases:
+    if command in fun.Commands or command in fun.CommandAliases:
         return "Fun"
 
-    if command in Cheats.Commands or command in Cheats.CommandAliases:
+    if command in cheats.Commands or command in cheats.CommandAliases:
         return "Cheats"
 
 
@@ -55,11 +55,11 @@ def execute(msg, clientid):
     print("checking command type")
     print(command_type(command))
     if command_type(command) == "Normal":
-        NormalCommands.ExcelCommand(command, arguments, clientid, accountid)
+        normal_commands.ExcelCommand(command, arguments, clientid, accountid)
 
     elif command_type(command) == "Manage":
         if check_permissions(accountid, command):
-            Management.ExcelCommand(command, arguments, clientid, accountid)
+            management.ExcelCommand(command, arguments, clientid, accountid)
             bs.broadcastmessage("Executed", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,
@@ -67,7 +67,7 @@ def execute(msg, clientid):
 
     elif command_type(command) == "Fun":
         if check_permissions(accountid, command):
-            Fun.ExcelCommand(command, arguments, clientid, accountid)
+            fun.ExcelCommand(command, arguments, clientid, accountid)
             bs.broadcastmessage("Executed", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,
@@ -75,7 +75,7 @@ def execute(msg, clientid):
 
     elif command_type(command) == "Cheats":
         if check_permissions(accountid, command):
-            Cheats.ExcelCommand(command, arguments, clientid, accountid)
+            cheats.ExcelCommand(command, arguments, clientid, accountid)
             bs.broadcastmessage("Executed", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,

@@ -4,8 +4,8 @@ import time
 
 import setting
 from features import profanity
-from playersData import pdata
-from serverData import serverdata
+from playersdata import pdata
+from serverdata import serverdata
 
 import bascenev1 as bs
 from tools import logger

@@ -3,11 +3,11 @@
 from datetime import datetime
 
 import setting
-from chatHandle.chatFilter import ChatFilter
-from chatHandle.chatcommands import executor
+from chathandle.chatfilter import chatfilter
+from chathandle.chatcommands import command_executor
 from features import votingmachine
-from playersData import pdata
-from serverData import serverdata
+from playersdata import pdata
+from serverdata import serverdata
 
 import bascenev1 as bs
 from tools import logger, servercheck
@@ -19,8 +19,7 @@ def filter_chat_message(msg, client_id):
     now = datetime.now()
     if client_id == -1:
         if msg.startswith("/"):
-            print("message stars with /")
-            executor.execute(msg, client_id)
+            command_executor.execute(msg, client_id)
             return None
         logger.log(f"Host msg: | {msg}", "chat")
         return msg
@@ -37,12 +36,12 @@ def filter_chat_message(msg, client_id):
                 currentname = "<in-lobby>"
             displaystring = i['display_string']
     if acid:
-        msg = ChatFilter.filter(msg, acid, client_id)
+        msg = chatfilter.filter(msg, acid, client_id)
     if msg == None:
         return
     logger.log(f'{acid}  |  {displaystring}| {currentname} | {msg}', "chat")
     if msg.startswith("/"):
-        msg = executor.execute(msg, client_id)
+        msg = command_executor.execute(msg, client_id)
         if msg == None:
             return
 
@@ -72,9 +71,9 @@ def filter_chat_message(msg, client_id):
             return None
         else:
             if msg.startswith(",") and settings["allowTeamChat"]:
-                return executor.QuickAccess(msg, client_id)
+                return command_executor.QuickAccess(msg, client_id)
             if msg.startswith(".") and settings["allowInGameChat"]:
-                return executor.QuickAccess(msg, client_id)
+                return command_executor.QuickAccess(msg, client_id)
             return msg
 
     else:

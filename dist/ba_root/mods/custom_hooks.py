@@ -64,7 +64,7 @@ class modSetup(babase.Plugin):
         bootstraping()
         servercheck.checkserver().start()
         ServerUpdate.check()
-        bs.AppTimer(5, account.updateOwnerIps)
+        bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):
@@ -302,8 +302,11 @@ def night_mode() -> None:
             activity.globalsnode.tint = (0.5, 0.7, 1.0)
 
             if settings['autoNightMode']['fireflies']:
-                activity.fireflies_generator(
-                    20, settings['autoNightMode']["fireflies_random_color"])
+                try:
+                    activity.fireflies_generator(
+                        20, settings['autoNightMode']["fireflies_random_color"])
+                except:
+                    pass
 
 
 def kick_vote_started(started_by: str, started_to: str) -> None:
@@ -398,7 +401,6 @@ def wrap_player_spaz_init(original_class):
             character = args[3] if len(
                 args) > 3 else kwargs.get('character', 'Spaz')
 
-            print(f"Player: {player}, Character: {character}")
             # Modify the character value
             modified_character = modifyspaz.getCharacter(player, character)
             if len(args) > 3:

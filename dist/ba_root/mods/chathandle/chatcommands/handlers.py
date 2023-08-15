@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 
-from playersData import pdata
+from playersdata import pdata
 
 import bascenev1 as bs
 

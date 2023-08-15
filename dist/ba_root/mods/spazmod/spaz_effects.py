@@ -2,7 +2,7 @@ import functools
 import random
 
 import setting
-from playersData import pdata
+from playersdata import pdata
 from stats import mystats
 from typing import Sequence
 

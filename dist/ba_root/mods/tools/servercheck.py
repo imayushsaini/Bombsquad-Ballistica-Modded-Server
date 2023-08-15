@@ -12,8 +12,8 @@ import _babase
 import _bascenev1
 import setting
 from features import profanity
-from playersData import pdata
-from serverData import serverdata
+from playersdata import pdata
+from serverdata import serverdata
 
 import babase
 import bascenev1 as bs

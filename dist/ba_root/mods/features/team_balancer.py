@@ -1,5 +1,5 @@
 import setting
-from serverData import serverdata
+from serverdata import serverdata
 
 import bascenev1 as bs
 from bascenev1._coopsession import CoopSession

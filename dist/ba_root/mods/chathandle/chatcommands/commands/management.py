@@ -3,9 +3,9 @@ import random
 import _babase
 import _bascenev1
 import setting
-from playersData import pdata
+from playersdata import pdata
 # from tools.whitelist import add_to_white_list, add_commit_to_logs
-from serverData import serverdata
+from serverdata import serverdata
 
 import babase
 import bascenev1 as bs
