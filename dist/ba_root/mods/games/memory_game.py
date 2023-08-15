@@ -1,30 +1,25 @@
 from __future__ import annotations
 
+import random
+
+# ba_meta require api 8
+from typing import TYPE_CHECKING
+
+import babase
+import bascenev1 as bs
+from bascenev1lib.gameutils import SharedObjects
 
 ## Original creator: byANG3L ##
 ## Made by: Freaku ##
-
 ## From: BSWorld Modpack (https://youtu.be/1TN56NLlShE) ##
-
-
 # Used in-game boxes and textures instead of external
 # So it will run on server and randoms can play init ._.
 # (& some improvements)
-
-
 # incase someone is wondering how is map floating. Check out
 # def spawnAllMap(self)
 
-
-# ba_meta require api 8
-from typing import TYPE_CHECKING, overload
-import _babase
-import babase
-import random
-import bascenev1 as bs
-from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, List, Dict, Type, Union, Any, Literal
+    from typing import Any, Optional, List, Dict, Type, Any
 
 
 class OnTimer(bs.Actor):
@@ -33,8 +28,12 @@ class OnTimer(bs.Actor):
     def __init__(self) -> None:
         super().__init__()
         self._starttime_ms: int | None = None
-        self.node = bs.newnode('text', attrs={'v_attach': 'top', 'h_attach': 'center', 'h_align': 'center', 'color': (
-            1, 1, 0.5, 1), 'flatness': 0.5, 'shadow': 0.5, 'position': (0, -70), 'scale': 0, 'text': ''})
+        self.node = bs.newnode('text',
+                               attrs={'v_attach': 'top', 'h_attach': 'center',
+                                      'h_align': 'center', 'color': (
+                                       1, 1, 0.5, 1), 'flatness': 0.5,
+                                      'shadow': 0.5, 'position': (0, -70),
+                                      'scale': 0, 'text': ''})
         self.inputnode = bs.newnode(
             'timedisplay', attrs={'timemin': 0, 'showsubseconds': True}
         )
@@ -112,12 +111,14 @@ class Team(bs.Team[Player]):
 
 # ba_meta export bascenev1.GameActivity
 class MGgame(bs.TeamGameActivity[Player, Team]):
-
     name = 'Memory Game'
     description = 'Memories tiles and survive till the end!'
     available_settings = [bs.BoolSetting(
-        'Epic Mode', default=False), bs.BoolSetting('Enable Bottom Credits', True)]
-    scoreconfig = bs.ScoreConfig(label='Survived', scoretype=bs.ScoreType.MILLISECONDS, version='B')
+        'Epic Mode', default=False),
+        bs.BoolSetting('Enable Bottom Credits', True)]
+    scoreconfig = bs.ScoreConfig(label='Survived',
+                                 scoretype=bs.ScoreType.MILLISECONDS,
+                                 version='B')
 
     # Print messages when players die (since its meaningful in this game).
     announce_player_deaths = True
@@ -149,9 +150,11 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
             self.slow_motion = True
         shared = SharedObjects.get()
         self._collide_with_player = bs.Material()
-        self._collide_with_player.add_actions(actions=(('modify_part_collision', 'collide', True)))
+        self._collide_with_player.add_actions(
+            actions=(('modify_part_collision', 'collide', True)))
         self.dont_collide = bs.Material()
-        self.dont_collide.add_actions(actions=(('modify_part_collision', 'collide', False)))
+        self.dont_collide.add_actions(
+            actions=(('modify_part_collision', 'collide', False)))
         self._levelStage = 0
 
         self.announcePlayerDeaths = True
@@ -210,7 +213,8 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
                                               'v_align': 'center'})
 
         self._textLevel = bs.newnode('text',
-                                     attrs={'text': 'Level ' + str(self._levelStage),
+                                     attrs={'text': 'Level ' + str(
+                                         self._levelStage),
                                             'position': (0, -28),
                                             'scale': 1.3,
                                             'shadow': 1.0,
@@ -295,14 +299,16 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
         self.coldel16 = True
         if self.credit_text:
             t = bs.newnode('text',
-                           attrs={'text': "Made by Freaku\nOriginally for 1.4: byANG3L",  # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
-                                  'scale': 0.7,
-                                  'position': (0, 0),
-                                  'shadow': 0.5,
-                                  'flatness': 1.2,
-                                  'color': (1, 1, 1),
-                                  'h_align': 'center',
-                                  'v_attach': 'bottom'})
+                           attrs={
+                               'text': "Made by Freaku\nOriginally for 1.4: byANG3L",
+                               # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
+                               'scale': 0.7,
+                               'position': (0, 0),
+                               'shadow': 0.5,
+                               'flatness': 1.2,
+                               'color': (1, 1, 1),
+                               'h_align': 'center',
+                               'v_attach': 'bottom'})
             self.spawnAllMap()
             self.flashHide()
 
@@ -327,33 +333,43 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
                                                 self._textCounter.text = ''
                                                 self._tickFinal.play()
                                                 self._stop()
+
                                             self._textCounter.text = '1'
                                             self._tickSound.play()
                                             bs.timer(1, countFinal)
+
                                         self._textCounter.text = '2'
                                         self._tickSound.play()
                                         bs.timer(1, count1)
+
                                     self._textCounter.text = '3'
                                     self._tickSound.play()
                                     bs.timer(1, count2)
+
                                 self._textCounter.text = '4'
                                 self._tickSound.play()
                                 bs.timer(1, count3)
+
                             self._textCounter.text = '5'
                             self._tickSound.play()
                             bs.timer(1, count4)
+
                         self._textCounter.text = '6'
                         self._tickSound.play()
                         bs.timer(1, count5)
+
                     self._textCounter.text = '7'
                     self._tickSound.play()
                     bs.timer(1, count6)
+
                 self._textCounter.text = '8'
                 self._tickSound.play()
                 bs.timer(1, count7)
+
             self._textCounter.text = '9'
             self._tickSound.play()
             bs.timer(1, count8)
+
         bs.timer(1, count9)
 
     def on_player_join(self, player: Player) -> None:
@@ -363,7 +379,8 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
             bs.broadcastmessage(
                 babase.Lstr(resource='playerDelayedJoinText',
                             subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0), transient=True, clients=[player.sessionplayer.inputdevice.client_id])
+                color=(0, 1, 0), transient=True,
+                clients=[player.sessionplayer.inputdevice.client_id])
             # For score purposes, mark them as having died right as the
             # game started.
             assert self._timer is not None
@@ -382,8 +399,10 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
     def spawn_player(self, player: Player) -> bs.Actor:
         spaz = self.spawn_player_spaz(player)
         pos = (self._spawnCenter[0] + random.uniform(-1.5, 2.5),
-               self._spawnCenter[1], self._spawnCenter[2] + random.uniform(-2.5, 1.5))
-        spaz.connect_controls_to_player(enable_punch=False, enable_bomb=False, enable_pickup=False)
+               self._spawnCenter[1],
+               self._spawnCenter[2] + random.uniform(-2.5, 1.5))
+        spaz.connect_controls_to_player(enable_punch=False, enable_bomb=False,
+                                        enable_pickup=False)
         spaz.handlemessage(bs.StandMessage(pos))
         return spaz
 
@@ -441,14 +460,17 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
                     self._imageCircle3.opacity = 1.0
                     self._bellHigh.play()
                     bs.timer(0.2, self._doDelete)
+
                 self._imageCircle2.color = (1.0, 1.0, 0.0)
                 self._imageCircle2.opacity = 1.0
                 self._bellMed.play()
                 bs.timer(1, circle3)
+
             self._imageCircle.color = (1.0, 0.0, 0.0)
             self._imageCircle.opacity = 1.0
             self._bellLow.play()
             bs.timer(1, circle2)
+
         bs.timer(1, circle)
 
     def _randomPlatform(self):
@@ -539,7 +561,7 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
                              self._mapFGPixel]
 
         (self.mapFGPTex, self.mapFGP2Tex,
-            self.mapFGP3Tex, self.mapFGP4Tex,
+         self.mapFGP3Tex, self.mapFGP4Tex,
          self.mapFGP5Tex, self.mapFGP6Tex,
          self.mapFGP7Tex, self.mapFGP8Tex,
          self.mapFGP9Tex, self.mapFGP10Tex,
@@ -683,130 +705,386 @@ class MGgame(bs.TeamGameActivity[Player, Team]):
         shared = SharedObjects.get()
         if self.coldel:
             self.mapFGP = bs.newnode('prop',
-                                     attrs={'body': 'puck', 'position': (4.5, 2, -9), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                     attrs={'body': 'puck',
+                                            'position': (4.5, 2, -9),
+                                            'mesh': self._mapFGPModel,
+                                            'mesh_scale': 3.73,
+                                            'body_scale': 3.73,
+                                            'shadow_size': 0.5,
+                                            'gravity_scale': 0.0,
+                                            'color_texture': self._mapFGPDefaultTex,
+                                            'reflection': 'soft',
+                                            'reflection_scale': [1.0],
+                                            'is_area_of_interest': True,
+                                            'materials': [self.dont_collide]})
             self.mapFGPTex = None
-            self.mapFGPcol = bs.newnode('region', attrs={'position': (4.5, 2, -9), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGPcol = bs.newnode('region',
+                                        attrs={'position': (4.5, 2, -9),
+                                               'scale': (
+                                                   3.5, 0.1, 3.5),
+                                               'type': 'box', 'materials': (
+                                            self._collide_with_player,
+                                            shared.footing_material)})
             self.coldel = False
 
         if self.coldel2:
             self.mapFGP2 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (4.5, 2, -6), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (4.5, 2, -6),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP2Tex = None
-            self.mapFGP2col = bs.newnode('region', attrs={'position': (4.5, 2, -6), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP2col = bs.newnode('region',
+                                         attrs={'position': (4.5, 2, -6),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel2 = False
 
         if self.coldel3:
             self.mapFGP3 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (4.5, 2, -3), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (4.5, 2, -3),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP3Tex = None
-            self.mapFGP3col = bs.newnode('region', attrs={'position': (4.5, 2, -3), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP3col = bs.newnode('region',
+                                         attrs={'position': (4.5, 2, -3),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel3 = False
 
         if self.coldel4:
             self.mapFGP4 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (4.5, 2, 0), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (4.5, 2, 0),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP4Tex = None
-            self.mapFGP4col = bs.newnode('region', attrs={'position': (4.5, 2, 0), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP4col = bs.newnode('region',
+                                         attrs={'position': (4.5, 2, 0),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel4 = False
 
         if self.coldel5:
             self.mapFGP5 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (1.5, 2, -9), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (1.5, 2, -9),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP5Tex = None
-            self.mapFGP5col = bs.newnode('region', attrs={'position': (1.5, 2, -9), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP5col = bs.newnode('region',
+                                         attrs={'position': (1.5, 2, -9),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel5 = False
 
         if self.coldel6:
             self.mapFGP6 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (1.5, 2, -6), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (1.5, 2, -6),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP6Tex = None
-            self.mapFGP6col = bs.newnode('region', attrs={'position': (1.5, 2, -6), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP6col = bs.newnode('region',
+                                         attrs={'position': (1.5, 2, -6),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel6 = False
 
         if self.coldel7:
             self.mapFGP7 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (1.5, 2, -3), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (1.5, 2, -3),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP7Tex = None
-            self.mapFGP7col = bs.newnode('region', attrs={'position': (1.5, 2, -3), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP7col = bs.newnode('region',
+                                         attrs={'position': (1.5, 2, -3),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel7 = False
 
         if self.coldel8:
             self.mapFGP8 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (1.5, 2, 0), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (1.5, 2, 0),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP8Tex = None
-            self.mapFGP8col = bs.newnode('region', attrs={'position': (1.5, 2, 0), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP8col = bs.newnode('region',
+                                         attrs={'position': (1.5, 2, 0),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel8 = False
 
         if self.coldel9:
             self.mapFGP9 = bs.newnode('prop',
-                                      attrs={'body': 'puck', 'position': (-1.5, 2, -9), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                      attrs={'body': 'puck',
+                                             'position': (-1.5, 2, -9),
+                                             'mesh': self._mapFGPModel,
+                                             'mesh_scale': 3.73,
+                                             'body_scale': 3.73,
+                                             'shadow_size': 0.5,
+                                             'gravity_scale': 0.0,
+                                             'color_texture': self._mapFGPDefaultTex,
+                                             'reflection': 'soft',
+                                             'reflection_scale': [1.0],
+                                             'is_area_of_interest': True,
+                                             'materials': [self.dont_collide]})
             self.mapFGP9Tex = None
-            self.mapFGP9col = bs.newnode('region', attrs={'position': (-1.5, 2, -9), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP9col = bs.newnode('region',
+                                         attrs={'position': (-1.5, 2, -9),
+                                                'scale': (
+                                                    3.5, 0.1, 3.5),
+                                                'type': 'box', 'materials': (
+                                             self._collide_with_player,
+                                             shared.footing_material)})
             self.coldel9 = False
 
         if self.coldel10:
             self.mapFGP10 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-1.5, 2, -6), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-1.5, 2, -6),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP10Tex = None
-            self.mapFGP10col = bs.newnode('region', attrs={'position': (-1.5, 2, -6), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP10col = bs.newnode('region',
+                                          attrs={'position': (-1.5, 2, -6),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel10 = False
 
         if self.coldel11:
             self.mapFGP11 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-1.5, 2, -3), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-1.5, 2, -3),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP11Tex = None
-            self.mapFGP11col = bs.newnode('region', attrs={'position': (-1.5, 2, -3), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP11col = bs.newnode('region',
+                                          attrs={'position': (-1.5, 2, -3),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel11 = False
 
         if self.coldel12:
             self.mapFGP12 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-1.5, 2, 0), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-1.5, 2, 0),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP12Tex = None
-            self.mapFGP12col = bs.newnode('region', attrs={'position': (-1.5, 2, 0), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP12col = bs.newnode('region',
+                                          attrs={'position': (-1.5, 2, 0),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel12 = False
 
         if self.coldel13:
             self.mapFGP13 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-4.5, 2, -9), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-4.5, 2, -9),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP13Tex = None
-            self.mapFGP13col = bs.newnode('region', attrs={'position': (-4.5, 2, -9), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP13col = bs.newnode('region',
+                                          attrs={'position': (-4.5, 2, -9),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel13 = False
 
         if self.coldel14:
             self.mapFGP14 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-4.5, 2, -6), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-4.5, 2, -6),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP14Tex = None
-            self.mapFGP14col = bs.newnode('region', attrs={'position': (-4.5, 2, -6), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP14col = bs.newnode('region',
+                                          attrs={'position': (-4.5, 2, -6),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel14 = False
 
         if self.coldel15:
             self.mapFGP15 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-4.5, 2, -3), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-4.5, 2, -3),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP15Tex = None
-            self.mapFGP15col = bs.newnode('region', attrs={'position': (-4.5, 2, -3), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP15col = bs.newnode('region',
+                                          attrs={'position': (-4.5, 2, -3),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel15 = False
 
         if self.coldel16:
             self.mapFGP16 = bs.newnode('prop',
-                                       attrs={'body': 'puck', 'position': (-4.5, 2, 0), 'mesh': self._mapFGPModel, 'mesh_scale': 3.73, 'body_scale': 3.73, 'shadow_size': 0.5, 'gravity_scale': 0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                                       attrs={'body': 'puck',
+                                              'position': (-4.5, 2, 0),
+                                              'mesh': self._mapFGPModel,
+                                              'mesh_scale': 3.73,
+                                              'body_scale': 3.73,
+                                              'shadow_size': 0.5,
+                                              'gravity_scale': 0.0,
+                                              'color_texture': self._mapFGPDefaultTex,
+                                              'reflection': 'soft',
+                                              'reflection_scale': [1.0],
+                                              'is_area_of_interest': True,
+                                              'materials': [self.dont_collide]})
             self.mapFGP16Tex = None
-            self.mapFGP16col = bs.newnode('region', attrs={'position': (-4.5, 2, 0), 'scale': (
-                3.5, 0.1, 3.5), 'type': 'box', 'materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP16col = bs.newnode('region',
+                                          attrs={'position': (-4.5, 2, 0),
+                                                 'scale': (
+                                                     3.5, 0.1, 3.5),
+                                                 'type': 'box', 'materials': (
+                                              self._collide_with_player,
+                                              shared.footing_material)})
             self.coldel16 = False
 
     def _platformTexDefault(self):
@@ -946,9 +1224,12 @@ class MGdefs():
     points = {}
     boxes = {}
     boxes['area_of_interest_bounds'] = (
-        0.3544110667, 4.493562578, -2.518391331) + (0.0, 0.0, 0.0) + (16.64754831, 8.06138989, 18.5029888)
+                                           0.3544110667, 4.493562578,
+                                           -2.518391331) + (0.0, 0.0, 0.0) + (
+                                       16.64754831, 8.06138989, 18.5029888)
     boxes['map_bounds'] = (0.2608783669, 4.899663734, -3.543675157) + \
-        (0.0, 0.0, 0.0) + (29.23565494, 14.19991443, 29.92689344)
+                          (0.0, 0.0, 0.0) + (
+                          29.23565494, 14.19991443, 29.92689344)
 
 
 class MGmap(bs.Map):
@@ -1000,4 +1281,5 @@ class byFreaku(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
         babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Memory Game', displayname='${GAME}', gametype=MGgame, settings={}, preview_texture_name='achievementOffYouGo'))
+            name='Memory Game', displayname='${GAME}', gametype=MGgame,
+            settings={}, preview_texture_name='achievementOffYouGo'))

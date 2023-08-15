@@ -27,23 +27,22 @@
 
 from __future__ import annotations
 
+import random
 import weakref
 from enum import Enum
+
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import random
 from bascenev1lib.actor.flag import Flag
-from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
-
 
 lang = bs.app.lang.language
 if lang == 'Spanish':
@@ -53,16 +52,16 @@ if lang == 'Spanish':
     description_ingame = 'Obtén ${ARG1} cápsulas de tus enemigos.'
     description_short = 'colecciona ${ARG1} cápsulas'
     tips = [(
-            '¡Si tu oponente cae fuera del mapa, sus cápsulas desapareceran!\n'
-            'No intestes matar a tus enemigos arrojándolos al vacio.'),
-            'No te apresures. ¡Puedes perder tus cápsulas rápidamente!',
-            ('¡No dejes que el jugador con más cápsulas anote!\n'
-             '¡Intenta atraparlo si puedes!'),
-            ('¡Las Capsulas de la Suerte te dan 4 cápsulas en lugar de 2'
-            'y tienen un 8% de probabilidad de aparecer después de matar'),
-            ('¡No te quedes en un solo lugar! Muevete más rapido que tu enemigo, '
-            '¡con suerte conseguirás algunas cápsulas!'),
-            ]
+        '¡Si tu oponente cae fuera del mapa, sus cápsulas desapareceran!\n'
+        'No intestes matar a tus enemigos arrojándolos al vacio.'),
+        'No te apresures. ¡Puedes perder tus cápsulas rápidamente!',
+        ('¡No dejes que el jugador con más cápsulas anote!\n'
+         '¡Intenta atraparlo si puedes!'),
+        ('¡Las Capsulas de la Suerte te dan 4 cápsulas en lugar de 2'
+         'y tienen un 8% de probabilidad de aparecer después de matar'),
+        ('¡No te quedes en un solo lugar! Muevete más rapido que tu enemigo, '
+         '¡con suerte conseguirás algunas cápsulas!'),
+    ]
     capsules_to_win = 'Cápsulas para Ganar'
     capsules_death = 'Cápsulas al Morir'
     lucky_capsules = 'Cápsulas de la Suerte'
@@ -75,16 +74,16 @@ else:
     description_ingame = 'Score ${ARG1} capsules from your enemies.'
     description_short = 'collect ${ARG1} capsules'
     tips = [(
-            'Making you opponent fall down the pit makes his Capsules wasted!\n'
-            'Try not to kill enemies by throwing them off the cliff.'),
-            'Don\'t be too reckless. You can lose your loot quite quickly!',
-            ('Don\'t let the leading player score his Capsules '
-             'at the Deposit Point!\nTry to catch him if you can!'),
-            ('Lucky Capsules give 4 to your inventory and they have 8% chance '
-            'of spawning after kill!'),
-            ('Don\'t camp in one place! Make your move first, '
-            'so hopefully you get some dough!'),
-            ]
+        'Making you opponent fall down the pit makes his Capsules wasted!\n'
+        'Try not to kill enemies by throwing them off the cliff.'),
+        'Don\'t be too reckless. You can lose your loot quite quickly!',
+        ('Don\'t let the leading player score his Capsules '
+         'at the Deposit Point!\nTry to catch him if you can!'),
+        ('Lucky Capsules give 4 to your inventory and they have 8% chance '
+         'of spawning after kill!'),
+        ('Don\'t camp in one place! Make your move first, '
+         'so hopefully you get some dough!'),
+    ]
     capsules_to_win = 'Capsules to Win'
     capsules_death = 'Capsules on Death'
     lucky_capsules = 'Allow Lucky Capsules'
@@ -119,7 +118,6 @@ class Team(bs.Team[Player]):
 
 # ba_meta export bascenev1.GameActivity
 class CollectorGame(bs.TeamGameActivity[Player, Team]):
-
     name = name
     description = description
     tips = tips
@@ -129,7 +127,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
@@ -294,7 +292,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                 'position': self._flag_pos,
                 'scale': (1.8, 1.8, 1.8),
                 'type': 'sphere',
-                        'materials': flagmats,
+                'materials': flagmats,
             },
         )
         self._update_flag_state()
@@ -330,7 +328,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                     scoring_team.score += 1
                     self._handle_capsule_storage((
                         self._flag_pos[0],
-                        self._flag_pos[1]+1,
+                        self._flag_pos[1] + 1,
                         self._flag_pos[2]
                     ), player)
                     self._collect_sound.play(0.8, position=self._flag_pos)
@@ -468,14 +466,14 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
             bs.emitfx(
                 position=capsule.node.position,
                 velocity=(0, 0, 0),
-                count=int(6.4+random.random()*24),
+                count=int(6.4 + random.random() * 24),
                 scale=1.2,
                 spread=2.0,
                 chunk_type='spark')
             bs.emitfx(
                 position=capsule.node.position,
                 velocity=(0, 0, 0),
-                count=int(4.0+random.random()*6),
+                count=int(4.0 + random.random() * 6),
                 emit_type='tendrils')
         else:
             player.capsules += 1
@@ -510,6 +508,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
 
             def newintensity():
                 player.light.intensity = intensity
+
             bs.timer(0.1, newintensity)
         else:
             player.light = bs.newnode(
@@ -546,7 +545,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
             text,
             color=color,
             scale=scale,
-            position=(pos[0], pos[1]-1, pos[2])
+            position=(pos[0], pos[1] - 1, pos[2])
         ).autoretain()
         self._update_player_light(player, capsules)
 
@@ -588,15 +587,15 @@ class Capsule(bs.Actor):
                 'color_texture': activity._capsule_lucky_tex if lucky else (
                     activity._capsule_tex),
                 'body': 'crate' if lucky else 'capsule',
-                        'reflection': 'powerup' if lucky else 'soft',
-                        'body_scale': 0.65 if lucky else 0.3,
-                        'density': 6.0 if lucky else 4.0,
-                        'reflection_scale': [0.15],
-                        'shadow_size': 0.65 if lucky else 0.6,
-                        'position': self._spawn_pos,
-                        'velocity': velocity,
-                        'materials': [
-                        shared.object_material, activity._capsule_material]
+                'reflection': 'powerup' if lucky else 'soft',
+                'body_scale': 0.65 if lucky else 0.3,
+                'density': 6.0 if lucky else 4.0,
+                'reflection_scale': [0.15],
+                'shadow_size': 0.65 if lucky else 0.6,
+                'position': self._spawn_pos,
+                'velocity': velocity,
+                'materials': [
+                    shared.object_material, activity._capsule_material]
             },
             delegate=self)
         bs.animate(self.node, 'mesh_scale', {
@@ -628,8 +627,9 @@ class Capsule(bs.Actor):
             self.node.handlemessage(
                 'impulse',
                 msg.pos[0], msg.pos[1], msg.pos[2],
-                msg.velocity[0]/8, msg.velocity[1]/8, msg.velocity[2]/8,
-                1.0*msg.magnitude, 1.0*msg.velocity_magnitude, msg.radius, 0,
+                msg.velocity[0] / 8, msg.velocity[1] / 8, msg.velocity[2] / 8,
+                1.0 * msg.magnitude, 1.0 * msg.velocity_magnitude, msg.radius,
+                0,
                 msg.force_direction[0], msg.force_direction[1],
                 msg.force_direction[2])
         else:

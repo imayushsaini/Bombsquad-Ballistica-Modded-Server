@@ -1,8 +1,6 @@
 # Made by your friend: Freaku
 
 
-import babase
-import bascenev1 as bs
 from bascenev1lib.game.deathmatch import Player, DeathMatchGame
 
 

@@ -1,11 +1,10 @@
-
-from playersData import pdata
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
 import setting
-import _babase
+from playersData import pdata
 from stats import mystats
+
+import babase
+import bascenev1 as bs
+
 sett = setting.get_settings_data()
 
 
@@ -25,7 +24,8 @@ def addtag(node, player):
             if role in p_roles:
                 tag = roles[role]['tag']
                 col = (
-                    0.7, 0.7, 0.7) if 'tagcolor' not in roles[role] else roles[role]['tagcolor']
+                    0.7, 0.7, 0.7) if 'tagcolor' not in roles[role] else \
+                roles[role]['tagcolor']
                 break
     if tag:
         Tag(node, tag, col)
@@ -65,7 +65,6 @@ class Tag(object):
                            })
         self.node.connectattr('torso_position', mnode, 'input2')
         if '\\' in tag:
-
             tag = tag.replace('\\d', ('\ue048'))
             tag = tag.replace('\\c', ('\ue043'))
             tag = tag.replace('\\h', ('\ue049'))
@@ -118,13 +117,13 @@ class Rank(object):
                            })
         self.node.connectattr('torso_position', mnode, 'input2')
         if (rank == 1):
-            rank = '\ue01f' + "#"+str(rank) + '\ue01f'
+            rank = '\ue01f' + "#" + str(rank) + '\ue01f'
         elif (rank == 2):
-            rank = '\ue01f' + "#"+str(rank) + '\ue01f'
+            rank = '\ue01f' + "#" + str(rank) + '\ue01f'
         elif (rank == 3):
-            rank = '\ue01f' + "#"+str(rank) + '\ue01f'
+            rank = '\ue01f' + "#" + str(rank) + '\ue01f'
         else:
-            rank = "#"+str(rank)
+            rank = "#" + str(rank)
 
         self.rank_text = bs.newnode('text',
                                     owner=self.node,
@@ -145,7 +144,7 @@ class HitPoint(object):
         self.position = position
         self.node = owner
         m = bs.newnode('math', owner=self.node, attrs={
-                       'input1': self.position, 'operation': 'add'})
+            'input1': self.position, 'operation': 'add'})
         self.node.connectattr('torso_position', m, 'input2')
         prefix = int(prefix) / 10
         preFix = u"\ue047" + str(prefix) + u"\ue047"
@@ -156,7 +155,8 @@ class HitPoint(object):
                                     'in_world': True,
                                     'shadow': shad,
                                     'flatness': 1.0,
-                                    'color': (1, 1, 1) if int(prefix) >= 20 else (1.0, 0.2, 0.2),
+                                    'color': (1, 1, 1) if int(
+                                        prefix) >= 20 else (1.0, 0.2, 0.2),
                                     'scale': 0.01,
                                     'h_align': 'center'})
         m.connectattr('output', self._Text, 'position')
@@ -164,5 +164,6 @@ class HitPoint(object):
         def a():
             self._Text.delete()
             m.delete()
+
         self.timer = bs.Timer(1.2, babase.Call(
             a))

@@ -1,21 +1,30 @@
-from .Handlers import handlemsg, handlemsg_all, send
+import random
+
+import _babase
+import _bascenev1
+import setting
 from playersData import pdata
 # from tools.whitelist import add_to_white_list, add_commit_to_logs
 from serverData import serverdata
+
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import _babase
-import time
-import setting
-import _thread
-import random
-from tools import playlist
 from tools import logger
-Commands = ['recents', 'info', 'createteam', 'showid', 'hideid', 'lm', 'gp', 'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban', 'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv', 'dv', 'pause',
-            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand', 'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag', 'customtag', 'customeffect', 'removeeffect', 'removetag' 'add', 'spectators', 'lobbytime']
-CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat', 'sm',
-                  'slow', 'night', 'day', 'pausegame', 'camera_mode', 'rotate_camera', 'effect']
+from tools import playlist
+from .handlers import send
+
+Commands = ['recents', 'info', 'createteam', 'showid', 'hideid', 'lm', 'gp',
+            'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban',
+            'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv',
+            'dv', 'pause',
+            'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand',
+            'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag',
+            'customtag', 'customeffect', 'removeeffect', 'removetag' 'add',
+            'spectators', 'lobbytime']
+CommandAliases = ['max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat',
+                  'sm',
+                  'slow', 'night', 'day', 'pausegame', 'camera_mode',
+                  'rotate_camera', 'effect']
 
 
 def ExcelCommand(command, arguments, clientid, accountid):
@@ -137,8 +146,11 @@ def create_team(arguments):
         bs.chatmessage("enter team name")
     else:
         from bascenev1._team import SessionTeam
-        bs.get_foreground_host_session().sessionteams.append(SessionTeam(team_id=len(bs.get_foreground_host_session().sessionteams) + 1, name=str(arguments[0]), color=(random.uniform(0, 1.2), random.uniform(
-            0, 1.2), random.uniform(0, 1.2))))
+        bs.get_foreground_host_session().sessionteams.append(SessionTeam(
+            team_id=len(bs.get_foreground_host_session().sessionteams) + 1,
+            name=str(arguments[0]),
+            color=(random.uniform(0, 1.2), random.uniform(
+                0, 1.2), random.uniform(0, 1.2))))
         from bascenev1._lobby import Lobby
         bs.get_foreground_host_session().lobby = Lobby()
 
@@ -162,7 +174,8 @@ def get_player_info(arguments, client_id):
 def get_recents(client_id):
     for players in serverdata.recents:
         send(
-            f"{players['client_id']} {players['deviceId']} {players['pbid']}", client_id)
+            f"{players['client_id']} {players['deviceId']} {players['pbid']}",
+            client_id)
 
 
 def changepartysize(arguments):
@@ -209,7 +222,8 @@ def kikvote(arguments, clientid):
                         logger.log(
                             f'kick vote enabled for {ros["account_id"]} {ros["display_string"]}')
                         send(
-                            "Upon server restart, Kick-vote will be enabled for this person", clientid)
+                            "Upon server restart, Kick-vote will be enabled for this person",
+                            clientid)
                 return
             except:
                 return
@@ -222,7 +236,7 @@ def kikvote(arguments, clientid):
                 cl_id = int(arguments[1])
                 for ros in bs.get_game_roster():
                     if ros["client_id"] == cl_id:
-                        _babase.disable_kickvote(ros["account_id"])
+                        _bascenev1.disable_kickvote(ros["account_id"])
                         send("Kick-vote disabled for this person", clientid)
                         logger.log(
                             f'kick vote disabled for {ros["account_id"]} {ros["display_string"]}')
@@ -244,7 +258,8 @@ def get_profiles(arguments, clientid):
     try:
         playerID = int(arguments[0])
         num = 1
-        for i in bs.get_foreground_host_session().sessionplayers[playerID].inputdevice.get_player_profiles():
+        for i in bs.get_foreground_host_session().sessionplayers[
+            playerID].inputdevice.get_player_profiles():
             try:
                 send(f"{num})-  {i}", clientid)
                 num += 1
@@ -314,7 +329,7 @@ def mute(arguments):
                 return
         for account in serverdata.recents:  # backup case if player left the server
             if account['client_id'] == int(arguments[0]):
-                pdata.mute(account["pbid"],  duration,
+                pdata.mute(account["pbid"], duration,
                            "muted by chat command, from recents")
     except:
         pass
@@ -341,7 +356,6 @@ def un_mute(arguments):
 
 
 def remove(arguments):
-
     if arguments == [] or arguments == ['']:
         return
 
@@ -361,7 +375,6 @@ def remove(arguments):
 
 
 def slow_motion():
-
     activity = _babase.get_foreground_host_activity()
 
     if activity.globalsnode.slow_motion != True:
@@ -372,7 +385,6 @@ def slow_motion():
 
 
 def nv(arguments):
-
     activity = _babase.get_foreground_host_activity()
 
     if arguments == [] or arguments == ['']:
@@ -391,7 +403,6 @@ def nv(arguments):
 
 
 def dv(arguments):
-
     activity = _babase.get_foreground_host_activity()
 
     if arguments == [] or arguments == ['']:
@@ -410,7 +421,6 @@ def dv(arguments):
 
 
 def pause():
-
     activity = _babase.get_foreground_host_activity()
 
     if activity.globalsnode.paused != True:
@@ -421,7 +431,6 @@ def pause():
 
 
 def rotate_camera():
-
     activity = _babase.get_foreground_host_activity()
 
     if activity.globalsnode.camera_mode != 'rotate':
@@ -472,7 +481,7 @@ def get_roles_of_player(arguments, clientid):
                 roles = pdata.get_player_roles(i.get_v1_account_id())
                 print(roles)
         for role in roles:
-            reply = reply+role+","
+            reply = reply + role + ","
         send(reply, clientid)
     except:
         return
@@ -525,8 +534,16 @@ def set_custom_effect(arguments):
         return
 
 
-all_commands = ["changetag", "createrole", "addrole", "removerole", "addcommand", "addcmd", "removecommand", "removecmd", "kick", "remove", "rm", "end", "next", "quit", "restart", "mute", "mutechat", "unmute", "unmutechat", "sm", "slow", "slowmo", "nv", "night", "dv", "day", "pause", "pausegame", "cameraMode",
-                "camera_mode", "rotate_camera", "kill", "die", "heal", "heath", "curse", "cur", "sleep", "sp", "superpunch", "gloves", "punch", "shield", "protect", "freeze", "ice", "unfreeze", "thaw", "gm", "godmode", "fly", "inv", "invisible", "hl", "headless", "creepy", "creep", "celebrate", "celeb", "spaz"]
+all_commands = ["changetag", "createrole", "addrole", "removerole",
+                "addcommand", "addcmd", "removecommand", "removecmd", "kick",
+                "remove", "rm", "end", "next", "quit", "restart", "mute",
+                "mutechat", "unmute", "unmutechat", "sm", "slow", "slowmo",
+                "nv", "night", "dv", "day", "pause", "pausegame", "cameraMode",
+                "camera_mode", "rotate_camera", "kill", "die", "heal", "heath",
+                "curse", "cur", "sleep", "sp", "superpunch", "gloves", "punch",
+                "shield", "protect", "freeze", "ice", "unfreeze", "thaw", "gm",
+                "godmode", "fly", "inv", "invisible", "hl", "headless",
+                "creepy", "creep", "celebrate", "celeb", "spaz"]
 
 
 def add_command_to_role(arguments):
@@ -567,18 +584,17 @@ def remove_command_to_role(arguments):
 #         bs.chatmessage("whitelist off")
 #         return
 
-    # else:
-    #     rost = bs.get_game_roster()
+# else:
+#     rost = bs.get_game_roster()
 
-    #     for i in rost:
-    #         if i['client_id'] == int(arguments[0]):
-    #             add_to_white_list(i['account_id'], i['display_string'])
-    #             bs.chatmessage(str(i['display_string'])+" whitelisted")
-    #             add_commit_to_logs(accountid+" added "+i['account_id'])
+#     for i in rost:
+#         if i['client_id'] == int(arguments[0]):
+#             add_to_white_list(i['account_id'], i['display_string'])
+#             bs.chatmessage(str(i['display_string'])+" whitelisted")
+#             add_commit_to_logs(accountid+" added "+i['account_id'])
 
 
 def spectators(arguments):
-
     if arguments[0] in ['on', 'off']:
         settings = setting.get_settings_data()
 

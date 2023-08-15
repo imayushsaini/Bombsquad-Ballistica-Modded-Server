@@ -31,7 +31,6 @@
 - More accurate Goal positions
 """
 
-
 # ba_meta require api 8
 
 from __future__ import annotations
@@ -39,12 +38,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import random
 import bascenev1 as bs
-from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.powerupbox import PowerupBoxFactory
 from bascenev1lib.actor.bomb import BombFactory
+from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.powerupbox import PowerupBoxFactory
+from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
@@ -112,7 +110,8 @@ class Puck(bs.Actor):
             self.node.handlemessage(
                 'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
                 msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
+                                                  1.0 * msg.velocity_magnitude,
+                msg.radius, 0,
                 msg.force_direction[0], msg.force_direction[1],
                 msg.force_direction[2])
 
@@ -225,7 +224,7 @@ class VolleyBallGame(bs.TeamGameActivity[Player, Team]):
         self.puck_material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(('call', 'at_connect',
-                      self._handle_puck_player_collide), ))
+                      self._handle_puck_player_collide),))
 
         # We want the puck to kill powerups; not get stopped by them
         self.puck_material.add_actions(
@@ -366,7 +365,8 @@ class VolleyBallGame(bs.TeamGameActivity[Player, Team]):
         self._chant_sound.play()
         if self.credit_text:
             t = bs.newnode('text',
-                           attrs={'text': "Created by Freaku\nVolleyBall",  # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
+                           attrs={'text': "Created by Freaku\nVolleyBall",
+                                  # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
                                   'scale': 0.7,
                                   'position': (0, 0),
                                   'shadow': 0.5,
@@ -375,11 +375,15 @@ class VolleyBallGame(bs.TeamGameActivity[Player, Team]):
                                   'h_align': 'center',
                                   'v_attach': 'bottom'})
         shared = SharedObjects.get()
-        self.blocks.append(bs.NodeActor(bs.newnode('region', attrs={'position': (0, 2.4, 0), 'scale': (
-            0.8, 6, 20), 'type': 'box', 'materials': (self._fake_wall_material, )})))
+        self.blocks.append(bs.NodeActor(
+            bs.newnode('region', attrs={'position': (0, 2.4, 0), 'scale': (
+                0.8, 6, 20), 'type': 'box', 'materials': (
+            self._fake_wall_material,)})))
 
-        self.net_blocc.append(bs.NodeActor(bs.newnode('region', attrs={'position': (0, 0, 0), 'scale': (
-            0.6, 2.4, 20), 'type': 'box', 'materials': (self._net_wall_material, )})))
+        self.net_blocc.append(bs.NodeActor(
+            bs.newnode('region', attrs={'position': (0, 0, 0), 'scale': (
+                0.6, 2.4, 20), 'type': 'box', 'materials': (
+            self._net_wall_material,)})))
 
     def on_team_join(self, team: Team) -> None:
         self._update_scoreboard()
@@ -390,7 +394,7 @@ class VolleyBallGame(bs.TeamGameActivity[Player, Team]):
             puck = collision.sourcenode.getdelegate(Puck, True)
             player = collision.opposingnode.getdelegate(PlayerSpaz,
                                                         True).getplayer(
-                                                            Player, True)
+                Player, True)
         except bs.NotFoundError:
             return
 
@@ -435,7 +439,7 @@ class VolleyBallGame(bs.TeamGameActivity[Player, Team]):
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
                 if (scoring_team.id in self._puck.last_players_to_touch
-                        and self._puck.last_players_to_touch[scoring_team.id]):
+                    and self._puck.last_players_to_touch[scoring_team.id]):
                     self.stats.player_scored(
                         self._puck.last_players_to_touch[scoring_team.id],
                         100,
@@ -522,7 +526,8 @@ class Pointzz:
     points['spawn1'] = (-8.03866, 0.02275, 0.0) + (0.5, 0.05, 4.0)
     points['spawn2'] = (8.82311, 0.01092, 0.0) + (0.5, 0.05, 4.0)
     boxes['area_of_interest_bounds'] = (0.0, 1.18575, 0.43262) + \
-        (0, 0, 0) + (29.81803, 11.57249, 18.89134)
+                                       (0, 0, 0) + (
+                                       29.81803, 11.57249, 18.89134)
     boxes['map_bounds'] = (0.0, 1.185751251, 0.4326226188) + (0.0, 0.0, 0.0) + (
         42.09506485, 22.81173179, 29.76723155)
 
@@ -530,9 +535,11 @@ class Pointzz:
 class PointzzforH:
     points, boxes = {}, {}
     boxes['area_of_interest_bounds'] = (0.0, 0.7956858119, 0.0) + \
-        (0.0, 0.0, 0.0) + (30.80223883, 0.5961646365, 13.88431707)
-    boxes['map_bounds'] = (0.0, 0.7956858119, -0.4689020853) + (0.0, 0.0, 0.0) + (
-        35.16182389, 12.18696164, 21.52869693)
+                                       (0.0, 0.0, 0.0) + (
+                                       30.80223883, 0.5961646365, 13.88431707)
+    boxes['map_bounds'] = (0.0, 0.7956858119, -0.4689020853) + (
+    0.0, 0.0, 0.0) + (
+                              35.16182389, 12.18696164, 21.52869693)
     points['spawn1'] = (-6.835352227, 0.02305323209, 0.0) + (1.0, 1.0, 3.0)
     points['spawn2'] = (6.857415055, 0.03938567998, 0.0) + (1.0, 1.0, 3.0)
 
@@ -564,40 +571,106 @@ class VolleyBallMap(bs.Map):
         shared = SharedObjects.get()
         x = -5
         while x < 5:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, 0, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .25, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .5, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .75, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, 1, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, 0, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .25, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .5, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .75, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, 1, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             x = x + 0.5
 
         y = -1
         while y > -11:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (y, 0.01, 4),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (y, 0.01, -4),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-y, 0.01, 4),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-y, 0.01, -4),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (y, 0.01, 4),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (y, 0.01, -4),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-y, 0.01, 4),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-y, 0.01, -4),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             y -= 1
 
         z = 0
         while z < 5:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (11, 0.01, z),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (11, 0.01, -z),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-11, 0.01, z),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-11, 0.01, -z),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (11, 0.01, z),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (11, 0.01, -z),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-11, 0.01, z),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (
+                                                     -11, 0.01, -z),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             z += 1
 
         self.node = bs.newnode(
@@ -657,40 +730,106 @@ class VolleyBallMapH(bs.Map):
         shared = SharedObjects.get()
         x = -5
         while x < 5:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, 0, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .25, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .5, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .75, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, 1, x),
-                                                     'color': (1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, 0, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .25, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .5, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, .75, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (0, 1, x),
+                                                     'color': (1, 1, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             x = x + 0.5
 
         y = -1
         while y > -11:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (y, 0.01, 4),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (y, 0.01, -4),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-y, 0.01, 4),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-y, 0.01, -4),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (y, 0.01, 4),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (y, 0.01, -4),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-y, 0.01, 4),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-y, 0.01, -4),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             y -= 1
 
         z = 0
         while z < 5:
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (11, 0.01, z),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (11, 0.01, -z),
-                                                     'color': (1, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-11, 0.01, z),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
-            self.zone = bs.newnode('locator', attrs={'shape': 'circle', 'position': (-11, 0.01, -z),
-                                                     'color': (0, 0, 1), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (11, 0.01, z),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (11, 0.01, -z),
+                                                     'color': (1, 0, 0),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (-11, 0.01, z),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
+            self.zone = bs.newnode('locator', attrs={'shape': 'circle',
+                                                     'position': (
+                                                     -11, 0.01, -z),
+                                                     'color': (0, 0, 1),
+                                                     'opacity': 1,
+                                                     'draw_beauty': True,
+                                                     'additive': False,
+                                                     'size': [0.40]})
             z += 1
 
         self.node = bs.newnode('terrain',
@@ -699,8 +838,9 @@ class VolleyBallMapH(bs.Map):
                                    'mesh':
                                        None,
                                    'collision_mesh':
-                                       # we dont want Goalposts...
-                                       bs.getcollisionmesh('footballStadiumCollide'),
+                                   # we dont want Goalposts...
+                                       bs.getcollisionmesh(
+                                           'footballStadiumCollide'),
                                    'color_texture':
                                        self.preloaddata['tex'],
                                    'materials': [

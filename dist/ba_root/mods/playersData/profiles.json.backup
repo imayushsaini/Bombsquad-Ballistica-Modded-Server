@@ -22982,11 +22982,15 @@
         "lastSpam": 1692041275.3951833,
         "totaltimeplayer": 0,
         "warnCount": 0,
-        "lastWarned": 1692043356.2733295,
+        "lastWarned": 1692092826.0631683,
         "verified": true,
         "rejoincount": 1,
-        "lastJoin": 1692043356.2733343,
+        "lastJoin": 1692092826.063172,
         "lastIP": "axj~}j~~jhai",
-        "deviceUUID": "26f30cfd3921c2d15574b534cb824c952b14f189"
+        "deviceUUID": "26f30cfd3921c2d15574b534cb824c952b14f189",
+        "cMsgCount": 0,
+        "lastMsgTime": 1692092832.8181152,
+        "lastMsg": "/ping all",
+        "cSameMsg": 0
     }
 }

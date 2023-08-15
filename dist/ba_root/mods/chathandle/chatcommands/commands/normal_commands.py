@@ -1,11 +1,13 @@
-from .Handlers import send
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
-import _babase
-from stats import mystats
-from babase._general import Call
 import _thread
+
+import _babase
+import _bascenev1
+from stats import mystats
+
+import bascenev1 as bs
+from babase._general import Call
+from .handlers import send
+
 Commands = ['me', 'list', 'uniqeid', 'ping']
 CommandAliases = ['stats', 'score', 'rank',
                   'myself', 'l', 'id', 'pb-id', 'pb', 'accountid']
@@ -39,7 +41,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 def get_ping(arguments, clientid):
     if arguments == [] or arguments == ['']:
-        send(f"Your ping {_babase.get_client_ping(clientid)}ms ", clientid)
+        send(f"Your ping {_bascenev1.get_client_ping(clientid)}ms ", clientid)
     elif arguments[0] == 'all':
         pingall(clientid)
     else:
@@ -49,7 +51,7 @@ def get_ping(arguments, clientid):
             for index, player in enumerate(session.sessionplayers):
                 name = player.getname(full=True, icon=False),
                 if player.inputdevice.client_id == int(arguments[0]):
-                    ping = _babase.get_client_ping(int(arguments[0]))
+                    ping = _bascenev1.get_client_ping(int(arguments[0]))
                     send(f" {name}'s ping {ping}ms", clientid)
         except:
             return
@@ -58,8 +60,10 @@ def get_ping(arguments, clientid):
 def stats(ac_id, clientid):
     stats = mystats.get_stats_by_id(ac_id)
     if stats:
-        reply = "Score:"+str(stats["scores"])+"\nGames:"+str(stats["games"])+"\nKills:"+str(
-            stats["kills"])+"\nDeaths:"+str(stats["deaths"])+"\nAvg.:"+str(stats["avg_score"])
+        reply = "Score:" + str(stats["scores"]) + "\nGames:" + str(
+            stats["games"]) + "\nKills:" + str(
+            stats["kills"]) + "\nDeaths:" + str(
+            stats["deaths"]) + "\nAvg.:" + str(stats["avg_score"])
     else:
         reply = "Not played any match yet."
 
@@ -69,20 +73,23 @@ def stats(ac_id, clientid):
 def fetch_send_stats(ac_id, clientid):
     _thread.start_new_thread(stats, (ac_id, clientid,))
 
+
 def pingall(clientid):
     """Returns The List Of Players Clientid and index"""
 
     p = u'{0:^16}{1:^34}ms'
     seprator = '\n______________________________\n'
 
-    list = p.format('Name', 'Ping (ms)')+seprator
+    list = p.format('Name', 'Ping (ms)') + seprator
     session = bs.get_foreground_host_session()
 
     for index, player in enumerate(session.sessionplayers):
         list += p.format(player.getname(icon=True),
-                         _babase.get_client_ping(int(player.inputdevice.client_id)))+"\n"
+                         _bascenev1.get_client_ping(
+                             int(player.inputdevice.client_id))) + "\n"
 
     send(list, clientid)
+
 
 def list(clientid):
     """Returns The List Of Players Clientid and index"""
@@ -90,12 +97,12 @@ def list(clientid):
     p = u'{0:^16}{1:^15}{2:^10}'
     seprator = '\n______________________________\n'
 
-    list = p.format('Name', 'Client ID', 'Player ID')+seprator
+    list = p.format('Name', 'Client ID', 'Player ID') + seprator
     session = bs.get_foreground_host_session()
 
     for index, player in enumerate(session.sessionplayers):
         list += p.format(player.getname(icon=False),
-                         player.inputdevice.client_id, index)+"\n"
+                         player.inputdevice.client_id, index) + "\n"
 
     send(list, clientid)
 

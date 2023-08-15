@@ -6,15 +6,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.game.deathmatch import DeathMatchGame
 
 if TYPE_CHECKING:
-    from typing import Any, Sequence
-
+    from typing import Sequence
 
 lang = bs.app.lang.language
 
@@ -58,7 +56,7 @@ class NewPlayerSpaz(PlayerSpaz):
                 ('call', 'at_disconnect', babase.Call(self.jump_state, False))
             ),
         )
-        self.node.roller_materials += (self.super_jump_material, )
+        self.node.roller_materials += (self.super_jump_material,)
 
     def jump_state(self, mode: bool) -> None:
         self.jump_mode = mode
@@ -76,7 +74,7 @@ class NewPlayerSpaz(PlayerSpaz):
             self.node.jump_pressed = True
             self.last_jump_time_ms = t_ms
             if self._player.is_alive() and self.jump_mode and (
-                    self._super_jump):
+                self._super_jump):
                 def do_jump():
                     self.node.handlemessage(
                         'impulse',
@@ -85,6 +83,7 @@ class NewPlayerSpaz(PlayerSpaz):
                         self.node.position[2],
                         0, 0, 0, 95, 95, 0, 0, 0, 1, 0
                     )
+
                 bs.timer(0.0, do_jump)
                 bs.timer(0.1, do_jump)
                 bs.timer(0.2, do_jump)
@@ -93,13 +92,12 @@ class NewPlayerSpaz(PlayerSpaz):
 
 # ba_meta export bascenev1.GameActivity
 class BoxingGame(DeathMatchGame):
-
     name = name
     description = description
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
@@ -197,7 +195,6 @@ class BoxingGame(DeathMatchGame):
         import random
         from babase import _math
         from bascenev1._gameutils import animate
-        from bascenev1._coopsession import CoopSession
 
         if isinstance(self.session, bs.DualTeamSession):
             position = self.map.get_start_position(player.team.id)

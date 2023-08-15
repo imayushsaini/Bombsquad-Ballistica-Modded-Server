@@ -5,16 +5,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import json
 import os
 
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
 import _babase
-import json
+from typing import TYPE_CHECKING
+
 from bascenev1lib.actor.spazappearance import Appearance
-from tools.file_handle import OpenJson
 
 if TYPE_CHECKING:
     pass
@@ -46,16 +43,18 @@ def register_character(name: str, char: dict) -> None:
     t.fall_sounds = char['fall_sounds']
     t.style = char['style']
 
+
 def enable() -> None:
-    path=os.path.join(_babase.env()["python_directory_user"],"custom_characters" + os.sep)
+    path = os.path.join(_babase.env()["python_directory_user"],
+                        "custom_characters" + os.sep)
 
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    files=os.listdir(path)
+    files = os.listdir(path)
 
     for file in files:
         if file.endswith(".json"):
             with open(path + file) as json_file:
                 character = json.load(json_file)
-                register_character(file,character)
+                register_character(file, character)

@@ -4,18 +4,17 @@
 
 from __future__ import annotations
 
+import random
+
 from typing import TYPE_CHECKING
 
-import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import random
 from bascenev1lib.actor import bomb
 from bascenev1lib.actor.bomb import BombFactory
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, Callable
+    from typing import Sequence
 
 
 def new_blast_init(
@@ -233,7 +232,6 @@ def new_blast_init(
 
             # TNT throws splintery chunks.
             if self.blast_type == "tnt":
-
                 def emit_splinters() -> None:
                     bs.emitfx(
                         position=position,
@@ -248,7 +246,6 @@ def new_blast_init(
 
             # Every now and then do a sparky one.
             if self.blast_type == "tnt" or random.random() < 0.1:
-
                 def emit_extra_sparks() -> None:
                     bs.emitfx(
                         position=position,

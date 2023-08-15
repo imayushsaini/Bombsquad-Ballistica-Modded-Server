@@ -1,8 +1,6 @@
 # Ported by your friend: Freaku
 
 
-import babase
-import bascenev1 as bs
 from bascenev1lib.game.chosenone import Player, ChosenOneGame
 
 

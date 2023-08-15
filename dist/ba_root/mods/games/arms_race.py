@@ -12,14 +12,14 @@ from typing import TYPE_CHECKING
 
 import babase
 import bascenev1 as bs
-from bascenev1lib.actor.playerspaz import PlayerSpaz
 
 if TYPE_CHECKING:
-    from typing import Any, Type, List, Dict, Tuple, Union, Sequence, Optional
+    from typing import Any, Type, List, Union, Sequence
 
 
 class State:
-    def __init__(self, bomb=None, grab=False, punch=False, curse=False, required=False, final=False, name=''):
+    def __init__(self, bomb=None, grab=False, punch=False, curse=False,
+                 required=False, final=False, name=''):
         self.bomb = bomb
         self.grab = grab
         self.punch = punch
@@ -82,7 +82,7 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntChoiceSetting(
                 'Time Limit',
@@ -110,7 +110,8 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
             bs.BoolSetting('Epic Mode', default=False)]
         for state in states:
             if not state.required:
-                settings.append(bs.BoolSetting(state.get_setting(), default=True))
+                settings.append(
+                    bs.BoolSetting(state.get_setting(), default=True))
 
         return settings
 
@@ -175,10 +176,13 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
         if isinstance(msg, bs.PlayerDiedMessage):
             if self.isValidKill(msg):
-                self.stats.player_scored(msg.getkillerplayer(Player), 10, kill=True)
+                self.stats.player_scored(msg.getkillerplayer(Player), 10,
+                                         kill=True)
                 if not msg.getkillerplayer(Player).state.final:
-                    msg.getkillerplayer(Player).state = msg.getkillerplayer(Player).state.next
-                    msg.getkillerplayer(Player).state.apply(msg.getkillerplayer(Player).actor)
+                    msg.getkillerplayer(Player).state = msg.getkillerplayer(
+                        Player).state.next
+                    msg.getkillerplayer(Player).state.apply(
+                        msg.getkillerplayer(Player).actor)
                 else:
                     msg.getkillerplayer(Player).team.score += 1
                     self.end_game()

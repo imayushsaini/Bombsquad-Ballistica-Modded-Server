@@ -1,8 +1,10 @@
 # Released under the MIT License. See LICENSE for details.
 
 import fcntl
-import _babase
 import os
+
+import _babase
+
 clients = {}
 cachedclients = []
 muted = False
@@ -10,9 +12,8 @@ coopmode = False
 ips = {}
 recents = []
 
-
 SERVER_DATA_PATH = os.path.join(
-    _babase.env()["python_directory_user"], "serverData" + os.sep
+    _babase.env()["python_directory_user"], "serverdata" + os.sep
 )
 
 
@@ -21,7 +22,7 @@ def get_stats_index():
 
 
 def read_logs(filename):
-    file_path = SERVER_DATA_PATH+filename
+    file_path = SERVER_DATA_PATH + filename
     if not os.path.exists(file_path):
         return ""
     file = open(file_path, "r")

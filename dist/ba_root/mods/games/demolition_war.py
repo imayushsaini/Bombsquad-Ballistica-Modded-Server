@@ -1,4 +1,3 @@
-
 # ba_meta require api 8
 """
 DemolitionWar - BombFight on wooden floor flying in air.
@@ -10,19 +9,20 @@ Github:  https://github.com/bombsquad-community
 """
 from __future__ import annotations
 
+import random
+
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1 import _map
+from bascenev1lib.actor.bomb import BombFactory
+from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.game.elimination import EliminationGame, Player
 from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.bomb import BombFactory
-import random
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+
 if TYPE_CHECKING:
-    from typing import Any, Sequence
+    from typing import Any
+
 
 # ba_meta export bascenev1.GameActivity
 
@@ -161,8 +161,12 @@ class DemolitionWar(EliminationGame):
                      ('modify_part_collision', 'collide', False))
         )
         pos = (x, 0, z)
-        ud_1_r = bs.newnode('region', attrs={'position': pos, 'scale': (1.5, 1, 1.5), 'type': 'box', 'materials': [
-                            shared.footing_material, self._real_collied_material, self.ramp_bomb]})
+        ud_1_r = bs.newnode('region',
+                            attrs={'position': pos, 'scale': (1.5, 1, 1.5),
+                                   'type': 'box', 'materials': [
+                                    shared.footing_material,
+                                    self._real_collied_material,
+                                    self.ramp_bomb]})
 
         node = bs.newnode('prop',
                           owner=ud_1_r,
@@ -176,7 +180,8 @@ class DemolitionWar(EliminationGame):
                               'color_texture': bs.gettexture('tnt'),
                               'mesh_scale': 1.5,
                               'reflection_scale': [1.5],
-                              'materials': [self.mat, shared.object_material, shared.footing_material],
+                              'materials': [self.mat, shared.object_material,
+                                            shared.footing_material],
                               'density': 9000000000
                           })
         # node.changerotation(1, 0, 0)
@@ -221,7 +226,8 @@ class mapdefs:
     points['tnt1'] = (-0.08421587483, 0.9515026107, -0.7762602271)
 
 
-class WoodenFloor(bs._map.Map):  # ahdunno if this is correct way, change if u find better way
+class WoodenFloor(
+    bs._map.Map):  # ahdunno if this is correct way, change if u find better way
     """Stadium map for football games."""
     defs = mapdefs
     defs.points['spawn1'] = (-12.03866341, 0.02275111462, 0.0) + (0.5, 1.0, 4.0)
@@ -272,7 +278,8 @@ class WoodenFloor(bs._map.Map):  # ahdunno if this is correct way, change if u f
                                  'lighting': False,
                                  'vr_only': True,
                                  'background': True,
-                                 'color_texture': self.preloaddata['mesh_bg_tex']
+                                 'color_texture': self.preloaddata[
+                                     'mesh_bg_tex']
                              })
         gnode = bs.getactivity().globalsnode
         gnode.tint = (1.3, 1.2, 1.0)

@@ -8,12 +8,12 @@
 
 from __future__ import annotations
 
+import math
+
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import math
 import bascenev1lib
 from bascenev1lib.actor.spaz import Spaz
 
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 
 class MikiWavedashTest:
-
     class FootConnectMessage:
         """Spaz started touching the ground"""
 
@@ -54,10 +53,10 @@ class MikiWavedashTest:
             vel_length = math.hypot(vel[0], vel[1])
             if vel_length < 1.25:
                 return
-            move_norm = [m/move_length for m in move]
-            vel_norm = [v/vel_length for v in vel]
-            dot = sum(x*y for x, y in zip(move_norm, vel_norm))
-            turn_power = min(round(math.acos(dot) / math.pi, 2)*1.3, 1)
+            move_norm = [m / move_length for m in move]
+            vel_norm = [v / vel_length for v in vel]
+            dot = sum(x * y for x, y in zip(move_norm, vel_norm))
+            turn_power = min(round(math.acos(dot) / math.pi, 2) * 1.3, 1)
             if turn_power < 0.2:
                 return
 
@@ -70,7 +69,7 @@ class MikiWavedashTest:
 
             # FX
             bs.emitfx(position=self.node.position,
-                      velocity=(vel[0]*0.5, -1, vel[1]*0.5),
+                      velocity=(vel[0] * 0.5, -1, vel[1] * 0.5),
                       chunk_type='sweat',
                       count=8,
                       scale=boost_power / 160 * turn_power,
@@ -79,7 +78,8 @@ class MikiWavedashTest:
             # Boost itself
             pos = self.node.position
             for i in range(6):
-                self.node.handlemessage('impulse', pos[0], -0.1+pos[1]+i*0.1, pos[2],
+                self.node.handlemessage('impulse', pos[0],
+                                        -0.1 + pos[1] + i * 0.1, pos[2],
                                         0, 0, 0,
                                         boost_power * turn_power,
                                         boost_power * turn_power, 0, 0,
@@ -87,7 +87,6 @@ class MikiWavedashTest:
 
     def new_spaz_init(func):
         def wrapper(*args, **kwargs):
-
             func(*args, **kwargs)
 
             # args[0] = self
@@ -96,6 +95,7 @@ class MikiWavedashTest:
             args[0].grounded = 0
 
         return wrapper
+
     bascenev1lib.actor.spaz.Spaz.__init__ = new_spaz_init(
         bascenev1lib.actor.spaz.Spaz.__init__)
 
@@ -106,9 +106,13 @@ class MikiWavedashTest:
             args[0].roller_material.add_actions(
                 conditions=('they_have_material',
                             bascenev1lib.gameutils.SharedObjects.get().footing_material),
-                actions=(('message', 'our_node', 'at_connect', MikiWavedashTest.FootConnectMessage),
-                         ('message', 'our_node', 'at_disconnect', MikiWavedashTest.FootDisconnectMessage)))
+                actions=(('message', 'our_node', 'at_connect',
+                          MikiWavedashTest.FootConnectMessage),
+                         ('message', 'our_node', 'at_disconnect',
+                          MikiWavedashTest.FootDisconnectMessage)))
+
         return wrapper
+
     bascenev1lib.actor.spazfactory.SpazFactory.__init__ = new_factory(
         bascenev1lib.actor.spazfactory.SpazFactory.__init__)
 
@@ -121,7 +125,9 @@ class MikiWavedashTest:
                     args[0].grounded -= 1
 
             func(*args, **kwargs)
+
         return wrapper
+
     bascenev1lib.actor.spaz.Spaz.handlemessage = new_handlemessage(
         bascenev1lib.actor.spaz.Spaz.handlemessage)
 
@@ -130,5 +136,8 @@ class MikiWavedashTest:
             if args[0]._last_run_value < args[1] and args[1] > 0.8:
                 MikiWavedashTest.wavedash(args[0])
             func(*args, **kwargs)
+
         return wrapper
-    bascenev1lib.actor.spaz.Spaz.on_run = new_on_run(bascenev1lib.actor.spaz.Spaz.on_run)
+
+    bascenev1lib.actor.spaz.Spaz.on_run = new_on_run(
+        bascenev1lib.actor.spaz.Spaz.on_run)

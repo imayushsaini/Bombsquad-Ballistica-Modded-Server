@@ -6,11 +6,13 @@
 # from gunicorn.workers import ggevent as gevent_worker
 
 import logging
-from threading import Thread
-from flask import Flask, request, jsonify
-from functools import wraps
 import os
-import _babaseimport _thread
+from functools import wraps
+from threading import Thread
+
+import _babase
+from flask import Flask, request, jsonify
+
 # import uvicorn
 from . import bombsquad_service
 
@@ -29,7 +31,8 @@ def add_cors_headers(response):
     # Allow requests from any origin
     response.headers['Access-Control-Allow-Origin'] = '*'
     # Allow specific headers
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Secret-Key'
+    response.headers[
+        'Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Secret-Key'
     # Allow specific HTTP methods
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
     return response
@@ -38,9 +41,11 @@ def add_cors_headers(response):
 def check_admin(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if "Secret-Key" not in request.headers or request.headers["Secret-Key"] != SECRET_KEY:
+        if "Secret-Key" not in request.headers or request.headers[
+            "Secret-Key"] != SECRET_KEY:
             return jsonify({"message": "Invalid secret key provided."}), 401
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -69,7 +74,8 @@ def subscribe_player():
             'message': f'Subscribed {data["name"]} successfully , will send confirmation notification to test'}
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
 
 
 #  ============ Admin only =========
@@ -109,7 +115,8 @@ def update_roles():
             'message': 'Roles updated successfully'}
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
 
 
 @app.route('/api/perks', methods=['GET'])
@@ -128,7 +135,8 @@ def update_perks():
             'message': 'Custom perks updated successfully'}
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
 
 
 @app.route('/api/server-settings', methods=['POST'])
@@ -141,7 +149,8 @@ def update_server_settings():
             'message': 'Settings updated successfully, server may need restart'}
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
 
 
 @app.route('/api/db-list', methods=['GET'])
@@ -237,7 +246,9 @@ def update_server_config():
             'message': 'config updated successfully, server will restart'}
         return jsonify(response), 201
     except Exception as e:
-        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
+
 
 # from flask_asgi import FlaskASGI
 # asgi_app = FlaskASGI(app)
@@ -262,7 +273,7 @@ def update_server_config():
 # def start_uvicorn():
 #     uvicorn.run("main:app", host='0.0.0.0', port=5000,
 #                 reload=False, log_level="debug", workers=3, use_colors=True, no_signal=True)
-    # flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", 5000, False))
+# flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", 5000, False))
 
 def run_server():
     from waitress import serve

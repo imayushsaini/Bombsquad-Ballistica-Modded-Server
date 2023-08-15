@@ -3,20 +3,19 @@
 
 from __future__ import annotations
 
+import random
+
 from typing import TYPE_CHECKING
 
 import babase
-import random
-import bauiv1 as bui
 import bascenev1 as bs
 from babase import _math
-from bascenev1lib.actor.spaz import Spaz
-from bascenev1lib.actor.spazfactory import SpazFactory
-from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.game import elimination
-from bascenev1lib.game.elimination import Icon, Player, Team
 from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.playerspaz import PlayerSpaz, PlayerSpazHurtMessage
+from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.spaz import Spaz
+from bascenev1lib.actor.spazfactory import SpazFactory
+from bascenev1lib.game.elimination import Icon, Player, Team
 
 if TYPE_CHECKING:
     from typing import Any, Type, List, Sequence, Optional
@@ -109,7 +108,8 @@ class SSPlayerSpaz(PlayerSpaz):
             if not self.node:
                 return None
             if self.node.invincible:
-                SpazFactory.get().block_sound.play(1.0, position=self.node.position)
+                SpazFactory.get().block_sound.play(1.0,
+                                                   position=self.node.position)
                 return True
 
             # If we were recently hit, don't count this as another.
@@ -117,7 +117,7 @@ class SSPlayerSpaz(PlayerSpaz):
             local_time = int(bs.time() * 1000)
             assert isinstance(local_time, int)
             if (self._last_hit_time is None
-                    or local_time - self._last_hit_time > 1000):
+                or local_time - self._last_hit_time > 1000):
                 self._num_times_hit += 1
                 self._last_hit_time = local_time
 
@@ -156,7 +156,8 @@ class SSPlayerSpaz(PlayerSpaz):
                     # FIXME: Transition out perhaps?
                     self.shield.delete()
                     self.shield = None
-                    SpazFactory.get().shield_down_sound.play(1.0, position=self.node.position)
+                    SpazFactory.get().shield_down_sound.play(1.0,
+                                                             position=self.node.position)
 
                     # Emit some cool looking sparks when the shield dies.
                     npos = self.node.position
@@ -168,7 +169,8 @@ class SSPlayerSpaz(PlayerSpaz):
                               chunk_type='spark')
 
                 else:
-                    SpazFactory.get().shield_hit_sound.play(0.5, position=self.node.position)
+                    SpazFactory.get().shield_hit_sound.play(0.5,
+                                                            position=self.node.position)
 
                 # Emit some cool looking sparks on shield hit.
                 assert msg.force_direction is not None
@@ -223,7 +225,8 @@ class SSPlayerSpaz(PlayerSpaz):
                 # Let's always add in a super-punch sound with boxing
                 # gloves just to differentiate them.
                 if msg.hit_subtype == 'super_punch':
-                    SpazFactory.get().punch_sound_stronger.play(1.0, position=self.node.position)
+                    SpazFactory.get().punch_sound_stronger.play(1.0,
+                                                                position=self.node.position)
                 if damage > 500:
                     sounds = SpazFactory.get().punch_sound_strong
                     sound = sounds[random.randrange(len(sounds))]
@@ -301,8 +304,9 @@ class SSPlayerSpaz(PlayerSpaz):
                     self.node.hold_node = None
                 # self.hitpoints -= damage
                 self.multiplyer += min(damage / 2000, 0.15)
-                if damage/2000 > 0.05:
-                    self.set_score_text(str(int((self.multiplyer-1)*100))+'%')
+                if damage / 2000 > 0.05:
+                    self.set_score_text(
+                        str(int((self.multiplyer - 1) * 100)) + '%')
                 # self.node.hurt = 1.0 - float(
                 # 	self.hitpoints) / self.hitpoints_max
                 self.node.hurt = 0.0
@@ -334,7 +338,8 @@ class SSPlayerSpaz(PlayerSpaz):
                 self.last_player_attacked_by = source_player
                 self.last_attacked_time = bs.time()
                 self.last_attacked_type = (msg.hit_type, msg.hit_subtype)
-            Spaz.handlemessage(self, bs.HitMessage)  # Augment standard behavior.
+            Spaz.handlemessage(self,
+                               bs.HitMessage)  # Augment standard behavior.
             activity = self._activity()
             if activity is not None and self._player.exists():
                 activity.handlemessage(PlayerSpazHurtMessage(self))
@@ -349,7 +354,7 @@ class SSPlayerSpaz(PlayerSpaz):
                 else:
                     self.multiplyer *= 0.75
                 self.multiplyer = max(1, self.multiplyer)
-                self.set_score_text(str(int((self.multiplyer-1)*100))+"%")
+                self.set_score_text(str(int((self.multiplyer - 1) * 100)) + "%")
             super().handlemessage(msg)
         else:
             super().handlemessage(msg)
@@ -368,7 +373,6 @@ class Team(bs.Team[Player]):
 
 # ba_meta export bascenev1.GameActivity
 class SuperSmash(bs.TeamGameActivity[Player, Team]):
-
     name = 'Super Smash'
     description = 'Knock everyone off the map.'
 
@@ -377,7 +381,7 @@ class SuperSmash(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -506,8 +510,8 @@ class SuperSmash(bs.TeamGameActivity[Player, Team]):
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color
@@ -614,7 +618,6 @@ class Team2(bs.Team[Player]):
 
 # ba_meta export bascenev1.GameActivity
 class SuperSmashElimination(bs.TeamGameActivity[Player2, Team2]):
-
     name = 'Super Smash Elimination'
     description = 'Knock everyone off the map.'
     scoreconfig = bs.ScoreConfig(label='Survived',
@@ -626,7 +629,7 @@ class SuperSmashElimination(bs.TeamGameActivity[Player2, Team2]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives (0 = Unlimited)',
@@ -726,7 +729,7 @@ class SuperSmashElimination(bs.TeamGameActivity[Player2, Team2]):
 
         if self.has_begun():
             if (all(teammate.lives == 0 for teammate in player.team.players)
-                    and player.team.survival_seconds is None):
+                and player.team.survival_seconds is None):
                 player.team.survival_seconds = 0
             bs.broadcastmessage(
                 babase.Lstr(resource='playerDelayedJoinText',
@@ -868,8 +871,8 @@ class SuperSmashElimination(bs.TeamGameActivity[Player2, Team2]):
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color

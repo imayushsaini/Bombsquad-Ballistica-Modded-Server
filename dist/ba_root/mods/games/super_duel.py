@@ -8,15 +8,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import random
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.game.elimination import Icon
 
 if TYPE_CHECKING:
-    from typing import Any, Type, List, Dict, Tuple, Union, Sequence, Optional
+    from typing import Any, Type, List, Union, Sequence, Optional
 
 
 class SuperSpaz(PlayerSpaz):
@@ -103,6 +101,7 @@ else:
     box_mode = 'Box Mode'
     boxing_gloves = 'Boxing Gloves'
 
+
 # ba_meta export bascenev1.GameActivity
 
 
@@ -117,7 +116,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -278,13 +277,13 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         # material that allows us to collide with the player-walls.
         # FIXME: Need to generalize this.
         if isinstance(self.session, CoopSession) and self.map.getname() in [
-                'Courtyard', 'Tower D'
+            'Courtyard', 'Tower D'
         ]:
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color
@@ -311,8 +310,9 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                     else:
                         pos3.append(pos1[0])
 
-        spaz.handlemessage(bs.StandMessage(pos1[0] if player.playervs1 else pos2[0],
-                                           pos1[1] if player.playervs1 else pos2[1]))
+        spaz.handlemessage(
+            bs.StandMessage(pos1[0] if player.playervs1 else pos2[0],
+                            pos1[1] if player.playervs1 else pos2[1]))
 
         if any(pos3):
             spaz.handlemessage(bs.StandMessage(pos3[0]))
@@ -345,6 +345,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                           chunk_type='spark')
                 if lfx:
                     spaz.node.connectattr('position', lfx, 'position')
+
             bs.timer(0.1, sp_fx, repeat=True)
 
         if self._box_mode:
@@ -367,7 +368,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                 if player.playervs1 or player.playervs2:
                     if not player.is_alive():
                         self.spawn_player(player)
-                       # player.actor.disconnect_controls_from_player()
+                        # player.actor.disconnect_controls_from_player()
 
                         if self._night_mode:
                             if not player.light:
@@ -387,7 +388,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                         player.actor.disconnect_controls_from_player()
 
                     bs.timer(0.0, self._countdown)
-                  #  bs.timer(0.1, self._clear_all_objects)
+                #  bs.timer(0.1, self._clear_all_objects)
 
     def _countdown(self) -> None:
         self._first_countdown = False

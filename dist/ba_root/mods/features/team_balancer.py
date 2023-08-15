@@ -1,19 +1,23 @@
-from tools import playlist
-import _babase
 import setting
 from serverData import serverdata
+
 import bascenev1 as bs
-from bascenev1._dualteamsession import DualTeamSession
 from bascenev1._coopsession import CoopSession
+from bascenev1._dualteamsession import DualTeamSession
+from tools import playlist
+
 settings = setting.get_settings_data()
 
 
 def balanceTeams():
     session = bs.get_foreground_host_session()
-    if settings["coopModeWithLessPlayers"]["enable"] and len(session.sessionplayers) < settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"]:
+    if settings["coopModeWithLessPlayers"]["enable"] and len(
+        session.sessionplayers) < settings["coopModeWithLessPlayers"][
+        "minPlayerToExitCoop"]:
         playlist.setPlaylist('coop')
         return
-    if not isinstance(session, DualTeamSession) or len(session.sessionplayers) < 4 or len(session.sessionteams) != 2:
+    if not isinstance(session, DualTeamSession) or len(
+        session.sessionplayers) < 4 or len(session.sessionteams) != 2:
         return
     teamASize = 0
     teamBSize = 0
@@ -26,11 +30,11 @@ def balanceTeams():
     except:
         pass
     if settings["autoTeamBalance"]:
-        if abs(teamBSize-teamASize) >= 0:
+        if abs(teamBSize - teamASize) >= 0:
             if teamBSize > teamASize and teamBSize != 0:
-                movePlayers(1, 0, abs(teamBSize-teamASize)-1)
+                movePlayers(1, 0, abs(teamBSize - teamASize) - 1)
             elif teamASize > teamBSize and teamASize != 0:
-                movePlayers(0, 1, abs(teamBSize-teamASize)-1)
+                movePlayers(0, 1, abs(teamBSize - teamASize) - 1)
 
 
 def movePlayers(fromTeam, toTeam, count):
@@ -44,7 +48,8 @@ def movePlayers(fromTeam, toTeam, count):
                        color=toTeam.color, highlight=player.highlight)
         iconinfo = player.get_icon_info()
         player.set_icon_info(
-            iconinfo['texture'], iconinfo['tint_texture'], toTeam.color, player.highlight)
+            iconinfo['texture'], iconinfo['tint_texture'], toTeam.color,
+            player.highlight)
         toTeam.players.append(player)
         player.sessionteam.activityteam.players.append(player.activityplayer)
 
@@ -53,7 +58,7 @@ def broadCastShiftMsg(pb_id):
     for ros in bs.get_game_roster():
         if ros['account_id'] == pb_id:
             bs.broadcastmessage(
-                "Shifted "+ros["display_string"]+" to balance team")
+                "Shifted " + ros["display_string"] + " to balance team")
 
 
 def on_player_join():
@@ -61,16 +66,20 @@ def on_player_join():
     if len(session.sessionplayers) > 1:
         return
     if isinstance(session, DualTeamSession):
-        if settings["coopModeWithLessPlayers"]["enable"] and len(session.sessionplayers) < settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"]:
+        if settings["coopModeWithLessPlayers"]["enable"] and len(
+            session.sessionplayers) < settings["coopModeWithLessPlayers"][
+            "minPlayerToExitCoop"]:
             playlist.setPlaylist('coop')
 
     # this not usefull now ., leave it here for now
     elif isinstance(session, CoopSession):
-        if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"]:
+        if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"][
+            "minPlayerToExitCoop"]:
             playlist.setPlaylist('default')
 
 
 def checkToExitCoop():
     session = bs.get_foreground_host_session()
-    if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"]["minPlayerToExitCoop"] and not serverdata.coopmode:
+    if len(session.sessionplayers) >= settings["coopModeWithLessPlayers"][
+        "minPlayerToExitCoop"] and not serverdata.coopmode:
         playlist.setPlaylist('default')

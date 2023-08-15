@@ -1,19 +1,20 @@
-import time
-import shutil
-import random
-import string
-
-import json
 import base64
-import ecdsa
+import json
 import os
-import _babase
+import random
+import shutil
+import string
+import time
 from datetime import datetime
+
+import _babase
+import ecdsa
+
 vapidkeys = {}
 subscriptions = {}
 subscribed_players = {}
 PLAYERS_DATA_PATH = os.path.join(
-    _babase.env()["python_directory_user"], "playersData" + os.sep
+    _babase.env()["python_directory_user"], "playersdata" + os.sep
 )
 
 
@@ -30,8 +31,10 @@ def get_vapid_keys():
         pk = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
         vk = pk.get_verifying_key()
         vapidkeys = {
-            'private_key': base64.urlsafe_b64encode(pk.to_string()).rstrip(b'=').decode('utf-8'),
-            'public_key': base64.urlsafe_b64encode(b'\x04' + vk.to_string()).rstrip(b'=').decode('utf-8')
+            'private_key': base64.urlsafe_b64encode(pk.to_string()).rstrip(
+                b'=').decode('utf-8'),
+            'public_key': base64.urlsafe_b64encode(
+                b'\x04' + vk.to_string()).rstrip(b'=').decode('utf-8')
         }
         f = open(".keys", "w")
         json.dump(vapidkeys, f)
@@ -45,9 +48,10 @@ def send_push_notification(subscription, payload):
         # Send the push notification using the subscription and payload
 
         webpush(subscription_info=subscription, data=json.dumps(payload),
-                vapid_private_key=get_vapid_keys()["private_key"], vapid_claims={
+                vapid_private_key=get_vapid_keys()["private_key"],
+                vapid_claims={
                     'sub': 'mailto:{}'.format("test@ballistica.net"),
-        })
+                })
         print("Push notification sent successfully")
     except Exception as e:
         print("Error sending push notification:", str(e))
@@ -74,7 +78,6 @@ def generate_random_string(length):
 
 
 def subscribe(sub, account_id, name):
-
     id = get_subscriber_id(sub)
     if account_id in subscribed_players:
         if id not in subscribed_players[account_id]["subscribers"]:
@@ -83,13 +86,15 @@ def subscribe(sub, account_id, name):
     else:
         subscribed_players[account_id] = {"subscribers": [id], "name": name}
     send_push_notification(sub, {"notification": {
-                           "title": "Notification working !", "body": f'subscribed {name}'}})
+        "title": "Notification working !", "body": f'subscribed {name}'}})
 
 
 def player_joined(pb_id):
     now = datetime.now()
     if pb_id in subscribed_players:
-        if "last_notification" in subscribed_players[pb_id] and (now - subscribed_players[pb_id]["last_notification"]).seconds < 15 * 60:
+        if "last_notification" in subscribed_players[pb_id] and (
+            now - subscribed_players[pb_id][
+            "last_notification"]).seconds < 15 * 60:
             pass
         else:
             subscribed_players[pb_id]["last_notification"] = now
@@ -99,13 +104,15 @@ def player_joined(pb_id):
                 send_push_notification(
                     sub, {
                         "notification": {
-                            "title": f'{subscribed_players[pb_id]["name"] } is playing now',
+                            "title": f'{subscribed_players[pb_id]["name"]} is playing now',
                             "body": f'Join {_babase.app.server._config.party_name} server {subscribed_players[pb_id]["name"]} is waiting for you ',
                             "icon": "assets/icons/icon-96x96.png",
                             "vibrate": [100, 50, 100],
                             "requireInteraction": True,
-                            "data": {"dateOfArrival": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                            "actions": [{"action": "nothing", "title": "Launch Bombsquad"}],
+                            "data": {"dateOfArrival": datetime.now().strftime(
+                                "%Y-%m-%d %H:%M:%S")},
+                            "actions": [{"action": "nothing",
+                                         "title": "Launch Bombsquad"}],
                         }
                     })
 
@@ -114,19 +121,19 @@ def loadCache():
     global subscriptions
     global subscribed_players
     try:
-        f = open(PLAYERS_DATA_PATH+"subscriptions.json", "r")
+        f = open(PLAYERS_DATA_PATH + "subscriptions.json", "r")
         subscriptions = json.load(f)
         f.close()
     except:
-        f = open(PLAYERS_DATA_PATH+"subscriptions.json.backup", "r")
+        f = open(PLAYERS_DATA_PATH + "subscriptions.json.backup", "r")
         subscriptions = json.load(f)
         f.close()
     try:
-        f = open(PLAYERS_DATA_PATH+"subscribed_players.json", "r")
+        f = open(PLAYERS_DATA_PATH + "subscribed_players.json", "r")
         subscribed_players = json.load(f)
         f.close()
     except:
-        f = open(PLAYERS_DATA_PATH+"subscribed_players.json.backup", "r")
+        f = open(PLAYERS_DATA_PATH + "subscribed_players.json.backup", "r")
         subscribed_players = json.load(f)
         f.close()
 

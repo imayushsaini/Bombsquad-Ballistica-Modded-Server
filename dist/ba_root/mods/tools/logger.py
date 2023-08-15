@@ -4,29 +4,28 @@
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
-import requests
-import time
-import json
 
-from typing import TYPE_CHECKING
-from dataclasses import dataclass, field
-
-import os
 import datetime
+import fcntl
+import json
+import os
 import shutil
 import threading
-import setting
+import time
+from dataclasses import dataclass, field
+
 import _babase
-import fcntl
+import requests
+import setting
+from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     pass
 
-
 SETTINGS = setting.get_settings_data()
 SERVER_DATA_PATH = os.path.join(
-    _babase.env()["python_directory_user"], "serverData" + os.sep
+    _babase.env()["python_directory_user"], "serverdata" + os.sep
 )
-
 
 if SETTINGS["discordbot"]["enable"]:
     from features import discord_bot
@@ -107,7 +106,8 @@ class dumplogs(threading.Thread):
         if os.path.exists(log_path):
             if os.stat(log_path).st_size > 1000000:
                 self.copy_file(
-                    log_path, log_path+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                    log_path, log_path + str(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
         self.write_file(log_path, self.msg)
 

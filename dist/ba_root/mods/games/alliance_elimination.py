@@ -10,10 +10,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.spazfactory import SpazFactory
 
 if TYPE_CHECKING:
     from typing import (Any, Tuple, Type, List, Sequence, Optional,
@@ -185,7 +184,7 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -275,7 +274,7 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             # (otherwise blocked new ffa players are considered 'still alive'
             # in score tallying).
             if (self._get_total_team_lives(player.team) == 0
-                    and player.team.survival_seconds is None):
+                and player.team.survival_seconds is None):
                 player.team.survival_seconds = 0
             bs.broadcastmessage(
                 babase.Lstr(resource='playerDelayedJoinText',
@@ -316,10 +315,10 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
         if (isinstance(self.session, bs.DualTeamSession)
-                and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+            and self._balance_total_lives and self.teams[0].players
+            and self.teams[1].players):
             if self._get_total_team_lives(
-                    self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:

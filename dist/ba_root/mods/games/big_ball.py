@@ -4,16 +4,15 @@
 
 # ba_meta require api 8
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
-import babase
-import bauiv1 as bui
+
 import bascenev1 as bs
-import random
 from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory
+from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.flag import Flag
+
 if TYPE_CHECKING:
     from typing import Any, Sequence, Dict, Type, List, Optional, Union
 
@@ -24,6 +23,7 @@ class PuckDiedMessage:
     def __init__(self, puck: Puck):
         self.puck = puck
 
+
 # goalpost
 
 
@@ -33,10 +33,12 @@ class FlagKale(bs.Actor):
         activity = self.getactivity()
         shared = SharedObjects.get()
         self.node = bs.newnode('flag',
-                               attrs={'position': (position[0], position[1]+0.75, position[2]),
+                               attrs={'position': (
+                               position[0], position[1] + 0.75, position[2]),
                                       'color_texture': activity._flagKaleTex,
                                       'color': color,
-                                      'materials': [shared.object_material, activity._kaleMaterial],
+                                      'materials': [shared.object_material,
+                                                    activity._kaleMaterial],
                                       },
                                delegate=self)
 
@@ -99,7 +101,8 @@ class Puck(bs.Actor):
             self.node.handlemessage(
                 'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
                 msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
+                                                  1.0 * msg.velocity_magnitude,
+                msg.radius, 0,
                 msg.force_direction[0], msg.force_direction[1],
                 msg.force_direction[2])
 
@@ -112,6 +115,7 @@ class Puck(bs.Actor):
                         self.last_players_to_touch[s_player.team.id] = s_player
         else:
             super().handlemessage(msg)
+
 
 # for night mode: using a actor with large shadow and little mesh scale. Better then tint i think, players and objects more visible
 
@@ -220,21 +224,25 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
         self._nightTex = bs.gettexture("black")
         self._kaleMaterial = bs.Material()
         # add friction to flags for standing our position (as far as)
-        self._kaleMaterial.add_actions(conditions=("they_have_material", shared.footing_material),
-                                       actions=(("modify_part_collision", "friction", 9999.5)))
-        self._kaleMaterial.add_actions(conditions=(("we_are_younger_than", 1), 'and',
-                                                   ("they_have_material", shared.object_material)),
-                                       actions=(("modify_part_collision", "collide", False)))
-        self._kaleMaterial.add_actions(conditions=("they_have_material", shared.pickup_material),
-                                       actions=(("modify_part_collision", "collide", False)))
+        self._kaleMaterial.add_actions(
+            conditions=("they_have_material", shared.footing_material),
+            actions=(("modify_part_collision", "friction", 9999.5)))
+        self._kaleMaterial.add_actions(
+            conditions=(("we_are_younger_than", 1), 'and',
+                        ("they_have_material", shared.object_material)),
+            actions=(("modify_part_collision", "collide", False)))
+        self._kaleMaterial.add_actions(
+            conditions=("they_have_material", shared.pickup_material),
+            actions=(("modify_part_collision", "collide", False)))
         self._kaleMaterial.add_actions(
             conditions=('they_have_material', shared.object_material),
             actions=(('impact_sound', self._kaleSound, 2, 5)))
         # we dont wanna hit the night so
         self._nightMaterial = bs.Material()
-        self._nightMaterial.add_actions(conditions=(('they_have_material', shared.pickup_material), 'or',
-                                                    ('they_have_material', shared.attack_material)),
-                                        actions=(('modify_part_collision', 'collide', False)))
+        self._nightMaterial.add_actions(
+            conditions=(('they_have_material', shared.pickup_material), 'or',
+                        ('they_have_material', shared.attack_material)),
+            actions=(('modify_part_collision', 'collide', False)))
         # we also dont want anything moving it
         self._nightMaterial.add_actions(
             conditions=(('they_have_material', shared.object_material), 'or',
@@ -265,7 +273,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
         self.puck_material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(('call', 'at_connect',
-                      self._handle_puck_player_collide), ))
+                      self._handle_puck_player_collide),))
 
         # We want the puck to kill powerups; not get stopped by them
         self.puck_material.add_actions(
@@ -327,7 +335,8 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
             bs.NodeActor(
                 bs.newnode('region',
                            attrs={
-                               'position': (-13.55, 0.85744967453, 0.1095578275),
+                               'position': (
+                               -13.55, 0.85744967453, 0.1095578275),
                                'scale': (1.05, 1.1, 3.8),
                                'type': 'box',
                                'materials': [self._score_region_material]
@@ -365,6 +374,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                            attrs={'position': kale4,
                                   'radius': 0.15,
                                   'color': (0.7, 1.0, 1.0)})
+
     # flags positions
 
     def _flagKalesSpawn(self):
@@ -374,10 +384,14 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
             if team.id == 1:
                 _colorTeam1 = team.color
 
-        self._MythB = FlagKale(position=(-12.45, 0.05744967453, -2.075), color=_colorTeam0)
-        self._MythB2 = FlagKale(position=(-12.45, 0.05744967453, 2.075), color=_colorTeam0)
-        self._MythB3 = FlagKale(position=(12.66, 0.03986567039, 2.075), color=_colorTeam1)
-        self._MythB4 = FlagKale(position=(12.66, 0.03986567039, -2.075), color=_colorTeam1)
+        self._MythB = FlagKale(position=(-12.45, 0.05744967453, -2.075),
+                               color=_colorTeam0)
+        self._MythB2 = FlagKale(position=(-12.45, 0.05744967453, 2.075),
+                                color=_colorTeam0)
+        self._MythB3 = FlagKale(position=(12.66, 0.03986567039, 2.075),
+                                color=_colorTeam1)
+        self._MythB4 = FlagKale(position=(12.66, 0.03986567039, -2.075),
+                                color=_colorTeam1)
 
     def on_team_join(self, team: Team) -> None:
         self._update_scoreboard()
@@ -388,7 +402,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
             puck = collision.sourcenode.getdelegate(Puck, True)
             player = collision.opposingnode.getdelegate(PlayerSpaz,
                                                         True).getplayer(
-                                                            Player, True)
+                Player, True)
         except bs.NotFoundError:
             return
 
@@ -423,7 +437,8 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                 if self._grant_power:
                     for player in team.players:
                         try:
-                            player.actor.node.handlemessage(bs.PowerupMessage('punch'))
+                            player.actor.node.handlemessage(
+                                bs.PowerupMessage('punch'))
                         except:
                             pass
 
@@ -435,7 +450,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
                 if (scoring_team.id in self._puck.last_players_to_touch
-                        and self._puck.last_players_to_touch[scoring_team.id]):
+                    and self._puck.last_players_to_touch[scoring_team.id]):
                     self.stats.player_scored(
                         self._puck.last_players_to_touch[scoring_team.id],
                         100,
@@ -448,7 +463,8 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                 if self._grant_power:
                     for player in team.players:
                         try:
-                            player.actor.node.handlemessage(bs.PowerupMessage('shield'))
+                            player.actor.node.handlemessage(
+                                bs.PowerupMessage('shield'))
                         except:
                             pass
 

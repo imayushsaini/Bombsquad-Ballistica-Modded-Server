@@ -1,12 +1,9 @@
 import random
-from typing import TYPE_CHECKING
-
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
-import _babase
 
 from typing import Any, Sequence
+
+import babase
+import bascenev1 as bs
 
 
 class PopupText(bs.Actor):
@@ -135,7 +132,8 @@ def spawn_heart():
         bounds = activity.map.get_def_bound_box("area_of_interest_bounds")
         for i in range(0, 4):
             position = (random.uniform(bounds[0], bounds[3]), random.uniform(
-                bounds[4]*1.15, bounds[4]*1.45)-8, random.uniform(bounds[2], bounds[5]))
+                bounds[4] * 1.15, bounds[4] * 1.45) - 8,
+                        random.uniform(bounds[2], bounds[5]))
             with activity.context:
                 k = PopupText(u"\ue047", position)
                 activity.heart.append(k)
@@ -143,4 +141,6 @@ def spawn_heart():
 
 def start(activity):
     bs.timer(random.uniform(7, 8), spawn_heart, repeat=True)
+
+
 bs._activity.Activity.hearts_generator = start

@@ -1,24 +1,25 @@
 """
 
     DondgeTheBall minigame by EmperoR#4098
-    
+
 """
 
 # Feel free to edit.
 
 # ba_meta require api 8
 from __future__ import annotations
+
+from enum import Enum
+from random import choice
+
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-from random import choice
-from enum import Enum
 from bascenev1lib.actor.bomb import Blast
+from bascenev1lib.actor.onscreencountdown import OnScreenCountdown
 from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.powerupbox import PowerupBox
-from bascenev1lib.actor.onscreencountdown import OnScreenCountdown
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
@@ -91,7 +92,8 @@ class Ball(bs.Actor):
                 'mesh_scale': body_scale,
                 'color_texture': texture,
                 'gravity_scale': gravity_scale,
-                'density': 4.0,  # increase density of ball so ball collide with player with heavy force. # ammm very bad grammer
+                'density': 4.0,
+                # increase density of ball so ball collide with player with heavy force. # ammm very bad grammer
                 'materials': (ball_material,),
             },
         )
@@ -242,7 +244,8 @@ class Box(bs.Actor):
             # to finding difference between player and box.
             # we just need to subtract player pos and ball pos.
             # Same logic as eric applied in Target Practice Gamemode.
-            difference = babase.Vec3(target_player.position) - babase.Vec3(self.node.position)
+            difference = babase.Vec3(target_player.position) - babase.Vec3(
+                self.node.position)
 
             # discard Y position so ball shoot more straight.
             difference[1] = 0.0
@@ -269,7 +272,7 @@ class Box(bs.Actor):
             if self.ball_type == BallType.MEDIUM or self.ball_type == BallType.HARD:
                 # Target head by increasing Y pos.
                 # How this work? cause ball gravity_scale is ......
-                pos = (pos[0], pos[1]+.25, pos[2])
+                pos = (pos[0], pos[1] + .25, pos[2])
 
             # ball is generating..
             ball = Ball(
@@ -294,13 +297,15 @@ class Box(bs.Actor):
                 self.node.position[1],  # Y
                 self.node.position[2],  # Z
                 0, 0, 0,  # velocity x,y,z
-                self.ball_mag,   # magnetude
+                self.ball_mag,  # magnetude
                 0.000,  # magnetude velocity
                 0.000,  # radius
                 0.000,  # idk
-                difference[0] + self.player_facing_direction[0],  # force direction X
-                difference[1],                                            # force direction Y
-                difference[2] + self.player_facing_direction[1],  # force direction Z
+                difference[0] + self.player_facing_direction[0],
+                # force direction X
+                difference[1],  # force direction Y
+                difference[2] + self.player_facing_direction[1],
+                # force direction Z
             )
             # creating our timer and shoot the ball again.(and we create a loop)
             self.shoot_timer = bs.Timer(self.shoot_speed, self.start_shoot)
@@ -412,7 +417,8 @@ class Box(bs.Actor):
         bs.timer(self.shoot_speed, light.delete)
         bs.timer(self.shoot_speed, circle_outline.delete)
 
-    def calculate_player_analog_stick(self, player: bs.Player, distance: float) -> NoReturn:
+    def calculate_player_analog_stick(self, player: bs.Player,
+                                      distance: float) -> NoReturn:
         # at first i was very confused how i can read the player analog stick \
         # then i saw TheMikirog#1984 autorun plugin code.
         # and i got it how analog stick values are works.
@@ -424,8 +430,10 @@ class Box(bs.Actor):
         # if player is too close and the player pushing his analog stick fully the ball shoot's too far away to player.
         # so, we need to reduce the value of "self.player_facing_direction" to fix this problem.
         if distance <= 3:
-            self.player_facing_direction[0] = 0.4 if self.player_facing_direction[0] > 0 else -0.4
-            self.player_facing_direction[1] = 0.4 if self.player_facing_direction[0] > 0 else -0.4
+            self.player_facing_direction[0] = 0.4 if \
+            self.player_facing_direction[0] > 0 else -0.4
+            self.player_facing_direction[1] = 0.4 if \
+            self.player_facing_direction[0] > 0 else -0.4
         # same problem to long distance but in reverse, the ball can't reach to the player,
         # its because player analog stick value is between 1 and -1,
         # and this value is low to shoot ball forward to Player if player is too far from the box.
@@ -471,6 +479,7 @@ class Player(bs.Player['Team']):
 class Team(bs.Team[Player]):
     """Our team type for this game."""
 
+
 # almost 80 % for game we done in box class.
 # now remain things, like name, seetings, scoring, cooldonw,
 # and main thing don't allow player to camp inside of box are going in this class.
@@ -479,7 +488,6 @@ class Team(bs.Team[Player]):
 
 
 class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
-
     # defining name, description and settings..
     name = 'Dodge the ball'
     description = 'Survive from shooting balls'
@@ -580,13 +588,14 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
 
         return alive_players
 
-   # let's disallowed camping inside of box by doing a blast and increasing ball shoot speed.
+    # let's disallowed camping inside of box by doing a blast and increasing ball shoot speed.
     def check_player_pos(self):
 
         for player in self.get_alive_players():
 
             # same logic as applied for the ball
-            difference = babase.Vec3(player.position) - babase.Vec3(self.box.node.position)
+            difference = babase.Vec3(player.position) - babase.Vec3(
+                self.box.node.position)
 
             distance = difference.length()
 
@@ -686,7 +695,6 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
     def handlemessage(self, msg: Any) -> Any:
 
         if isinstance(msg, bs.PlayerDiedMessage):
-
             # Augment standard behavior.
             super().handlemessage(msg)
 

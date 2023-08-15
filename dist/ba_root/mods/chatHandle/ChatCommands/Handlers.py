@@ -1,8 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 
 from playersData import pdata
-import babase
-import bauiv1 as bui
+
 import bascenev1 as bs
 
 
@@ -42,7 +41,8 @@ def check_permissions(accountid, command):
         if accountid in roles[role]["ids"] and "ALL" in roles[role]["commands"]:
             return True
 
-        elif accountid in roles[role]["ids"] and command in roles[role]["commands"]:
+        elif accountid in roles[role]["ids"] and command in roles[role][
+            "commands"]:
             return True
     return False
 

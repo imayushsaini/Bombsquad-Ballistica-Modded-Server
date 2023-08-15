@@ -1,5 +1,5 @@
 import bascenev1 as bs
-import random
+
 
 def decorate_map():
     try:
@@ -13,7 +13,8 @@ def decorate_map():
         m = 5
         s = 5000
         bs.animate_array(activity.globalsnode, 'ambient_color', 3, {0: (
-            1*m, 0, 0), s: (0, 1*m, 0), s*2: (0, 0, 1*m), s*3: (1*m, 0, 0)}, True)
+            1 * m, 0, 0), s: (0, 1 * m, 0), s * 2: (0, 0, 1 * m),
+            s * 3: (1 * m, 0, 0)}, True)
         activity.map.background.reflection = "soft"
     except:
         pass

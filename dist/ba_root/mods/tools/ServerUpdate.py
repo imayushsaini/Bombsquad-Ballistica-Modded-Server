@@ -1,12 +1,14 @@
-from playersData import pdata
-import time
 import _thread
-import urllib.request
-from efro.terminal import Clr
 import json
+import time
+import urllib.request
+
 import requests
+from playersData import pdata
+
 import babase
 import bascenev1
+from efro.terminal import Clr
 
 VERSION = 71
 
@@ -42,6 +44,7 @@ def postStatus():
             'bcsversion': VERSION}
     _thread.start_new_thread(postRequest, (link, data,))
 
+
 def postRequest(link, data):
     print(data)
     try:
@@ -54,11 +57,13 @@ def postRequest(link, data):
 def checkSpammer(data):
     def checkMaster(data):
         try:
-            res = requests.post('https://bcsservers.ballistica.workers.dev/checkspammer',
-                                json=data)
+            res = requests.post(
+                'https://bcsservers.ballistica.workers.dev/checkspammer',
+                json=data)
         except:
             pass
         # TODO handle response and kick player based on status
+
     _thread.start_new_thread(checkMaster, (data,))
     return
 
@@ -66,7 +71,7 @@ def checkSpammer(data):
 def fetchChangelogs():
     url = "https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/dist/ba_root/mods/changelogs.json"
 
-    if 2*2 == 4:
+    if 2 * 2 == 4:
         try:
             data = urllib.request.urlopen(url)
             changelog = json.loads(data.read())
@@ -80,7 +85,8 @@ def checkChangelog():
     changelog = fetchChangelogs()
     if changelog == None:
         print(
-            f'{Clr.BRED} UNABLE TO CHECK UPDATES , CHECK MANUALLY FROM URL {Clr.RST}', flush=True)
+            f'{Clr.BRED} UNABLE TO CHECK UPDATES , CHECK MANUALLY FROM URL {Clr.RST}',
+            flush=True)
     else:
         msg = ""
         avail = False
@@ -90,9 +96,11 @@ def checkChangelog():
 
         if not avail:
             print(
-                f'{Clr.BGRN}{Clr.WHT} YOU ARE ON LATEST VERSION {Clr.RST}', flush=True)
+                f'{Clr.BGRN}{Clr.WHT} YOU ARE ON LATEST VERSION {Clr.RST}',
+                flush=True)
         else:
-            print(f'{Clr.BYLW}{Clr.BLU} UPDATES AVAILABLE {Clr.RST}', flush=True)
+            print(f'{Clr.BYLW}{Clr.BLU} UPDATES AVAILABLE {Clr.RST}',
+                  flush=True)
             for log in changelog:
                 if int(log) > VERSION:
                     msg = changelog[log]["time"]

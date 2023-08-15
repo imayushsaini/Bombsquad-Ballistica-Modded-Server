@@ -1,12 +1,10 @@
+import random
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import _babase
+from bascenev1._messages import DeathType, OutOfBoundsMessage
 from bascenev1lib.gameutils import SharedObjects
-import random
-import weakref
-from bascenev1._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
+
 on_begin_original = bs._activity.Activity.on_begin
 
 
@@ -67,8 +65,11 @@ class FireFly(bs.Actor):
                 ('modify_part_collision', 'collide', False),
                 ('modify_part_collision', 'physical', False),
             ))
-        self.node = bs.newnode('locator', attrs={'shape': 'circle', 'position': (0, .5, 0),
-                                                 'color': self.color, 'opacity': 0.5, 'draw_beauty': True, 'additive': False, 'size': [0.10]})
+        self.node = bs.newnode('locator',
+                               attrs={'shape': 'circle', 'position': (0, .5, 0),
+                                      'color': self.color, 'opacity': 0.5,
+                                      'draw_beauty': True, 'additive': False,
+                                      'size': [0.10]})
         # bs.animate(
         #     self.node,
         #     'scale',
@@ -120,7 +121,8 @@ class FireFly(bs.Actor):
             self.off()
             return None
         elif isinstance(msg, OutOfBoundsMessage):
-            return self.handlemessage(bs.DieMessage(how=DeathType.OUT_OF_BOUNDS))
+            return self.handlemessage(
+                bs.DieMessage(how=DeathType.OUT_OF_BOUNDS))
         return super().handlemessage(msg)
 
     def generate_keys(self, m):
@@ -148,7 +150,7 @@ class FireFly(bs.Actor):
             return a
         while True:
             n = random.randrange(a, b)
-            if abs(z-n) < 6:
+            if abs(z - n) < 6:
                 return n
 
 

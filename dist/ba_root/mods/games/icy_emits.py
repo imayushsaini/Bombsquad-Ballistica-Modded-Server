@@ -1,11 +1,12 @@
 # Made by your friend: Freaku
 
 
+import random
+
 import babase
 import bascenev1 as bs
-import random
 from bascenev1lib.actor.bomb import Bomb
-from bascenev1lib.game.meteorshower import Player, MeteorShowerGame
+from bascenev1lib.game.meteorshower import MeteorShowerGame
 
 
 # ba_meta require api 8
@@ -32,11 +33,13 @@ class IcyEmitsGame(MeteorShowerGame):
 
     def _drop_bomb(self, position, velocity):
         random_xpositions = [-10, -9, -8, -7, -6, -5, -
-                             4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         random_zpositions = [-5, -4.5, -4, -3.5, -3, -2.5, -2, -
-                             1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
-        bomb_position = (random.choice(random_xpositions), 0.2, random.choice(random_zpositions))
-        Bomb(position=bomb_position, velocity=velocity, bomb_type='ice').autoretain()
+        1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+        bomb_position = (
+        random.choice(random_xpositions), 0.2, random.choice(random_zpositions))
+        Bomb(position=bomb_position, velocity=velocity,
+             bomb_type='ice').autoretain()
 
 
 # ba_meta export plugin
@@ -45,4 +48,5 @@ class byFreaku(babase.Plugin):
         ## Campaign support ##
         randomPic = ['lakeFrigidPreview', 'hockeyStadiumPreview']
         babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Icy Emits', displayname='${GAME}', gametype=IcyEmitsGame, settings={}, preview_texture_name=random.choice(randomPic)))
+            name='Icy Emits', displayname='${GAME}', gametype=IcyEmitsGame,
+            settings={}, preview_texture_name=random.choice(randomPic)))

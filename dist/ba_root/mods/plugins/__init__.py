@@ -14,11 +14,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
-import bascenev1 as bs
 
 if TYPE_CHECKING:
     pass
+
 
 # ba_meta export plugin
 class Init(babase.Plugin):  # pylint: disable=too-few-public-methods

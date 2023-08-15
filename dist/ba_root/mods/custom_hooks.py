@@ -8,39 +8,43 @@
 # pylint: disable=protected-access
 
 from __future__ import annotations
-from baclassic._servermode import ServerController
-from bascenev1._session import Session
 
-from typing import TYPE_CHECKING
-from datetime import datetime
 import _thread
 import importlib
-import time
-import os
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
-import _babase
-import _bascenev1
 import logging
+import os
+import time
+from datetime import datetime
+
+import _babase
+from typing import TYPE_CHECKING
+
+import babase
+import bascenev1 as bs
+import bauiv1 as bui
+import setting
+from baclassic._servermode import ServerController
+from bascenev1._activitytypes import ScoreScreenActivity
+from bascenev1._map import Map
+from bascenev1._session import Session
 from bascenev1lib.activity import dualteamscore, multiteamscore, drawscore
 from bascenev1lib.activity.coopscore import CoopScoreScreen
-import setting
-from tools import account
-from chatHandle import handlechat
-from features import team_balancer, afk_check, fire_flies, hearts, dual_team_score as newdts
-from stats import mystats
-from spazmod import modifyspaz
-from tools import servercheck, ServerUpdate, logger, playlist, servercontroller
-from playersData import pdata
-from serverData import serverdata
-from features import votingmachine
-from features import text_on_map, announcement
+from bascenev1lib.actor import playerspaz
+from chathandle import handlechat
 from features import map_fun
-
+from features import team_balancer, afk_check, dual_team_score as newdts
+from features import text_on_map, announcement
+from features import votingmachine
+from playersdata import pdata
+from serverdata import serverdata
+from spazmod import modifyspaz
+from stats import mystats
+from tools import account
 from tools import notification_manager
+from tools import servercheck, ServerUpdate, logger, playlist, servercontroller
+
 if TYPE_CHECKING:
-    from typing import Optional, Any
+    from typing import Any
 
 settings = setting.get_settings_data()
 
@@ -49,7 +53,10 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     """Returns all in game messages or None (ignore's message)."""
     return handlechat.filter_chat_message(msg, client_id)
 
+
 # ba_meta export plugin
+
+
 class modSetup(babase.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
@@ -62,19 +69,21 @@ class modSetup(babase.Plugin):
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):
 
-            if (babase.internal.get_v1_account_state() == 'signed_in' and babase.internal.get_v1_account_type() == 'V2'):
+            if (babase.internal.get_v1_account_state() ==
+                'signed_in' and babase.internal.get_v1_account_type() == 'V2'):
                 logging.debug("Account V2 is active")
             else:
                 logging.warning("Account V2 login require ....stay tuned.")
                 bs.apptimer(3, babase.Call(logging.debug,
-                         "Starting Account V2 login process...."))
+                                           "Starting Account V2 login process...."))
                 bs.apptimer(6, account.AccountUtil)
         else:
             plus.accounts.set_primary_credentials(None)
             plus.sign_in_v1('Local')
         bs.apptimer(60, playlist.flush_playlists)
 
-    # it works sometimes , but it blocks shutdown so server raise runtime exception,   also dump server logs
+    # it works sometimes , but it blocks shutdown so server raise runtime
+    # exception,   also dump server logs
     def on_app_shutdown(self):
         print("Server shutting down , lets save cache")
         # lets try  threading here
@@ -82,29 +91,36 @@ class modSetup(babase.Plugin):
         # _thread.start_new_thread(notification_manager.dump_cache, ())
         # print("Done dumping memory")
 
-from bascenev1._activitytypes import ScoreScreenActivity
 
 def score_screen_on_begin(func) -> None:
     """Runs when score screen is displayed."""
+
     def wrapper(self, *args, **kwargs):
         result = func(self, *args, **kwargs)  # execute the original method
         team_balancer.balanceTeams()
         mystats.update(self._stats)
         announcement.showScoreScreenAnnouncement()
         return result
+
     return wrapper
 
-ScoreScreenActivity.on_begin = score_screen_on_begin(ScoreScreenActivity.on_begin)
 
-from bascenev1._map import Map
+ScoreScreenActivity.on_begin = score_screen_on_begin(
+    ScoreScreenActivity.on_begin)
+
+
 def on_map_init(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         text_on_map.textonmap()
         modifyspaz.setTeamCharacter()
+
     return wrapper
 
+
 Map.__init__ = on_map_init(Map.__init__)
+
+
 def playerspaz_init(playerspaz: bs.Player, node: bs.Node, player: bs.Player):
     """Runs when player is spawned on map."""
     modifyspaz.main(playerspaz, node, player)
@@ -117,7 +133,8 @@ def bootstraping():
     # _bascenev1.set_server_name(settings["HostName"])
     # _bascenev1.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
     # _bascenev1.set_kickvote_msg_type(settings["KickVoteMsgType"])
-    # bs.hide_player_device_id(settings["Anti-IdRevealer"]) TODO add call in cpp
+    # bs.hide_player_device_id(settings["Anti-IdRevealer"]) TODO add call in
+    # cpp
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
@@ -159,7 +176,8 @@ def bootstraping():
             # Install psutil package
             # Download get-pip.py
             curl_process = subprocess.Popen(
-                ["curl", "-sS", "https://bootstrap.pypa.io/get-pip.py"], stdout=subprocess.PIPE)
+                ["curl", "-sS", "https://bootstrap.pypa.io/get-pip.py"],
+                stdout=subprocess.PIPE)
 
             # Install pip using python3.10
             python_process = subprocess.Popen(
@@ -176,7 +194,7 @@ def bootstraping():
             _babase.quit()
             from tools import healthcheck
             healthcheck.main()
-        except:
+        except BaseException:
             logging.warning("please install psutil to enable system monitor.")
 
     # import features
@@ -194,7 +212,8 @@ def import_discord_bot() -> None:
     if settings["discordbot"]["enable"]:
         from features import discord_bot
         discord_bot.token = settings["discordbot"]["token"]
-        discord_bot.liveStatsChannelID = settings["discordbot"]["liveStatsChannelID"]
+        discord_bot.liveStatsChannelID = settings["discordbot"][
+            "liveStatsChannelID"]
         discord_bot.logsChannelID = settings["discordbot"]["logsChannelID"]
         discord_bot.liveChat = settings["discordbot"]["liveChat"]
         discord_bot.BsDataThread()
@@ -243,7 +262,8 @@ bs._activity.Activity.on_begin = new_begin
 org_end = bs._activity.Activity.end
 
 
-def new_end(self, results: Any = None, delay: float = 0.0, force: bool = False):
+def new_end(self, results: Any = None,
+            delay: float = 0.0, force: bool = False):
     """Runs when game is ended."""
     activity = bs.get_foreground_host_activity()
 
@@ -305,28 +325,32 @@ def on_join_request(ip):
     servercheck.on_join_request(ip)
 
 
-
-
-
 def shutdown(func) -> None:
     """Set the app to quit either now or at the next clean opportunity."""
+
     def wrapper(*args, **kwargs):
         # add screen text and tell players we are going to restart soon.
         bs.chatmessage(
             "Server will restart on next opportunity. (series end)")
         _babase.restart_scheduled = True
-        _babase.get_foreground_host_activity().restart_msg = _bs.newnode('text',
-                                                                     attrs={
-                                                                         'text': "Server going to restart after this series.",
-                                                                         'flatness': 1.0,
-                                                                         'h_align': 'right',
-                                                                         'v_attach': 'bottom',
-                                                                         'h_attach': 'right',
-                                                                         'scale': 0.5,
-                                                                         'position': (-25, 54),
-                                                                         'color': (1, 0.5, 0.7)
-                                                                     })
+        bs.get_foreground_host_activity().restart_msg = bs.newnode('text',
+                                                                        attrs={
+                                                                            'text': "Server going to restart after this series.",
+                                                                            'flatness': 1.0,
+                                                                            'h_align': 'right',
+                                                                            'v_attach': 'bottom',
+                                                                            'h_attach': 'right',
+                                                                            'scale': 0.5,
+                                                                            'position': (
+                                                                            -25,
+                                                                            54),
+                                                                            'color': (
+                                                                            1,
+                                                                            0.5,
+                                                                            0.7)
+                                                                        })
         func(*args, **kwargs)
+
     return wrapper
 
 
@@ -337,16 +361,21 @@ def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
         player = args[1]
         count = 0
-        if not (player.get_v1_account_id() in serverdata.clients and serverdata.clients[player.get_v1_account_id()]["verified"]):
+        if not (player.get_v1_account_id(
+        ) in serverdata.clients and
+                serverdata.clients[player.get_v1_account_id()]["verified"]):
             return False
         for current_player in args[0].sessionplayers:
             if current_player.get_v1_account_id() == player.get_v1_account_id():
                 count += 1
         if count >= settings["maxPlayersPerDevice"]:
-            _bs.broadcastmessage("Reached max players limit per device", clients=[
-                              player.inputdevice.client_id], transient=True,)
+            bs.broadcastmessage("Reached max players limit per device",
+                                 clients=[
+                                     player.inputdevice.client_id],
+                                 transient=True, )
             return False
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -354,18 +383,20 @@ Session.on_player_request = on_player_request(Session.on_player_request)
 
 ServerController._access_check_response = servercontroller._access_check_response
 
-from bascenev1lib.actor import playerspaz
+
 def wrap_player_spaz_init(original_class):
     """
     Modify the __init__ method of the player_spaz.
     """
+
     class WrappedClass(original_class):
         def __init__(self, *args, **kwargs):
             # Custom code before the original __init__
 
             # Modify args or kwargs as needed
             player = args[0] if args else kwargs.get('player')
-            character = args[3] if len(args) > 3 else kwargs.get('character', 'Spaz')
+            character = args[3] if len(
+                args) > 3 else kwargs.get('character', 'Spaz')
 
             print(f"Player: {player}, Character: {character}")
             # Modify the character value
@@ -381,4 +412,6 @@ def wrap_player_spaz_init(original_class):
 
     # Return the modified class
     return WrappedClass
+
+
 playerspaz.PlayerSpaz = wrap_player_spaz_init(playerspaz.PlayerSpaz)

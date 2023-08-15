@@ -2,12 +2,11 @@
 # Just edit Config before starting server
 # by: Lirik
 # Further edited/Fixed by:Freak
-import babase
-import bauiv1 as bui
-import bascenev1 as bs
-import random
-from bascenev1._map import Map
 from random import choice
+
+import bascenev1 as bs
+from bascenev1._map import Map
+
 CONFIGS = {
     "Radius": 2.0,
     "Blinking": False,

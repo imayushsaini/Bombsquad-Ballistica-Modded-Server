@@ -1,22 +1,19 @@
-
-import discord
 import asyncio
+import logging
 from threading import Thread
+
+import _babase
+import discord
 from discord.ext.commands import Bot
+
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
 from babase._general import Call
-import _babaseimport babase.internal
-import json
-import os
-import _thread
-import logging
+
 logging.getLogger('asyncio').setLevel(logging.WARNING)
 intents = discord.Intents().all()
 
 client = Bot(command_prefix='!', intents=intents)
-
 
 # client = discord.Client()
 
@@ -36,7 +33,6 @@ def push_log(msg):
 
 
 def init():
-
     loop = asyncio.get_event_loop()
     loop.create_task(client.start(token))
 
@@ -55,7 +51,7 @@ async def on_message(message):
 
     if message.channel.id == logsChannelID:
         _babase.pushcall(Call(babase.internal.chatmessage,
-                     message.content), from_other_thread=True)
+                              message.content), from_other_thread=True)
 
 
 @client.event
@@ -91,7 +87,6 @@ async def refresh_stats():
     await client.wait_until_ready()
 
     while not client.is_closed():
-
         await livestatsmsgs[0].edit(content=get_live_players_msg())
         await livestatsmsgs[1].edit(content=get_chats())
         await asyncio.sleep(10)
@@ -107,7 +102,7 @@ async def send_logs():
         if logs:
             msg = ''
             for msg_ in logs:
-                msg += msg_+"\n"
+                msg += msg_ + "\n"
             logs = []
             if msg:
                 await channel.send(msg)
@@ -123,15 +118,15 @@ def get_live_players_msg():
         for id in stats['roster']:
             name = stats['roster'][id]['name']
             device_id = stats['roster'][id]['device_id']
-            msg += id + " -> "+name+" -> "+device_id+" \n"
+            msg += id + " -> " + name + " -> " + device_id + " \n"
     except:
         pass
     if not msg:
         msg = "```No one``` \n"
     msg_2 = "\n\n***Current: *** " + \
-        stats['playlist']['current'] + "\n ***Next: ***" + \
+            stats['playlist']['current'] + "\n ***Next: ***" + \
             stats['playlist']['next'] + "\n\n."
-    return msg_1+msg+msg_2
+    return msg_1 + msg + msg_2
 
 
 def get_chats():
@@ -139,14 +134,14 @@ def get_chats():
     msg = ''
     try:
         for msg_ in stats['chats']:
-            msg += msg_+"\n"
+            msg += msg_ + "\n"
     except:
         pass
     if not msg:
         msg = "```Empty```\n"
     if not liveChat:
         return '```disabled```'
-    return msg_1+msg
+    return msg_1 + msg
 
 
 class BsDataThread(object):
@@ -183,10 +178,13 @@ class BsDataThread(object):
         for i in babase.internal.get_game_roster():
             try:
                 liveplayers[i['account_id']] = {
-                    'name': i['players'][0]['name_full'], 'client_id': i['client_id'], 'device_id': i['display_string']}
+                    'name': i['players'][0]['name_full'],
+                    'client_id': i['client_id'],
+                    'device_id': i['display_string']}
             except:
                 liveplayers[i['account_id']] = {
-                    'name': "<in-lobby>", 'clientid': i['client_id'], 'device_id': i['display_string']}
+                    'name': "<in-lobby>", 'clientid': i['client_id'],
+                    'device_id': i['display_string']}
         try:
             nextMap = babase.internal.get_foreground_host_session(
             ).get_next_game_description().evaluate()

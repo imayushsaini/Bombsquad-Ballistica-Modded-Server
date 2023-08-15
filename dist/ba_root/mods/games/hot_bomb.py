@@ -7,23 +7,20 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import random
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.powerupbox import PowerupBoxFactory
-from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.bomb import Bomb
-from bascenev1lib.actor.spaz import PickupMessage, BombDiedMessage
-
-from bascenev1._messages import StandMessage
+import _babase
+import _bascenev1 as _bs
+from typing import TYPE_CHECKING
 
 import bascenev1 as bs
-import _bascenev1 as _bs
-import _babase
-
+from bascenev1._messages import StandMessage
+from bascenev1lib.actor.bomb import Bomb
+from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.powerupbox import PowerupBoxFactory
+from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.spaz import PickupMessage, BombDiedMessage
+from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Dict, Type, List, Optional, Union
@@ -43,7 +40,8 @@ class ExplodeHitMessage:
 class Ball(bs.Actor):
     """A lovely bomb mortal"""
 
-    def __init__(self, position: Sequence[float] = (0.0, 1.0, 0.0), timer: int = 5, d_time=0.2, color=(1, 1, 1)):
+    def __init__(self, position: Sequence[float] = (0.0, 1.0, 0.0),
+                 timer: int = 5, d_time=0.2, color=(1, 1, 1)):
         super().__init__()
         shared = SharedObjects.get()
         activity = self.getactivity()
@@ -100,8 +98,10 @@ class Ball(bs.Actor):
         self.node.connectattr('position', self.light, 'position')
         self.animate_light = None
 
-        self._particles = bs.Timer(0.1, call=bs.WeakCall(self.particles), repeat=True)
-        self._sound_effect = bs.Timer(4, call=bs.WeakCall(self.sound_effect), repeat=True)
+        self._particles = bs.Timer(0.1, call=bs.WeakCall(self.particles),
+                                   repeat=True)
+        self._sound_effect = bs.Timer(4, call=bs.WeakCall(self.sound_effect),
+                                      repeat=True)
 
         self.d_time = d_time
 
@@ -115,7 +115,7 @@ class Ball(bs.Actor):
                                         call=bs.WeakCall(self._tick),
                                         repeat=True)
             m = bs.newnode('math', owner=self.node, attrs={
-                           'input1': (0, 0.6, 0), 'operation': 'add'})
+                'input1': (0, 0.6, 0), 'operation': 'add'})
             self.node.connectattr('position', m, 'input2')
             self._counter = bs.newnode(
                 'text',
@@ -151,7 +151,7 @@ class Ball(bs.Actor):
 
     def explode(self, color=(3, 1, 0)) -> None:
         sound = random.choice(['explosion01', 'explosion02',
-                              'explosion03', 'explosion04', 'explosion05'])
+                               'explosion03', 'explosion04', 'explosion05'])
         bs.getsound(sound).play(volume=1)
         bs.emitfx(position=self.node.position,
                   velocity=(0, 10, 0),
@@ -194,7 +194,8 @@ class Ball(bs.Actor):
             'region',
             delegate=self,
             attrs={
-                'position': (self.node.position[0], self.node.position[1] - 0.1, self.node.position[2]),
+                'position': (self.node.position[0], self.node.position[1] - 0.1,
+                             self.node.position[2]),
                 'scale': (2.0, 2.0, 2.0),
                 'type': 'sphere',
                 'materials': rmats
@@ -283,10 +284,11 @@ class Ball(bs.Actor):
 
             def damage():
                 if (msg is not None and msg.node.exists()
-                        and msg.node.getdelegate(PlayerSpaz).hitpoints > 0):
+                    and msg.node.getdelegate(PlayerSpaz).hitpoints > 0):
                     spaz = msg.node.getdelegate(PlayerSpaz)
-                    spaz.node.color = (spaz.node.color[0]-0.1,
-                                       spaz.node.color[1]-0.1, spaz.node.color[2]-0.1)
+                    spaz.node.color = (spaz.node.color[0] - 0.1,
+                                       spaz.node.color[1] - 0.1,
+                                       spaz.node.color[2] - 0.1)
                     if spaz.node.hold_node != self.node:
                         self.handlemessage(bs.DroppedMessage(spaz.node))
                     if spaz.hitpoints > 10000:
@@ -294,7 +296,8 @@ class Ball(bs.Actor):
                         spaz.hitpoints -= 10000
                         spaz._last_hit_time = None
                         spaz._num_time_shit = 0
-                        spaz.node.hurt = 1.0 - float(spaz.hitpoints) / spaz.hitpoints_max
+                        spaz.node.hurt = 1.0 - float(
+                            spaz.hitpoints) / spaz.hitpoints_max
                     else:
                         spaz.handlemessage(bs.DieMessage())
                     bs.emitfx(
@@ -319,7 +322,8 @@ class Ball(bs.Actor):
             self.node.handlemessage(
                 'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
                 msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
+                                                  1.0 * msg.velocity_magnitude,
+                msg.radius, 0,
                 msg.force_direction[0], msg.force_direction[1],
                 msg.force_direction[2])
 
@@ -352,14 +356,15 @@ class Ball(bs.Actor):
         else:
             super().handlemessage(msg)
 
+
 ### HUMAN###
 
 
 class NewPlayerSpaz(PlayerSpaz):
-
     move_mult = 1.0
     reload = True
     extra_jump = True
+
     # calls
 
     def impulse(self):
@@ -367,7 +372,7 @@ class NewPlayerSpaz(PlayerSpaz):
         p = self.node
         self.node.handlemessage(
             "impulse",
-            p.position[0], p.position[1]+40, p.position[2],
+            p.position[0], p.position[1] + 40, p.position[2],
             0, 0, 0,
             160, 0, 0, 0,
             0, 205, 0)
@@ -443,7 +448,8 @@ class NewPlayerSpaz(PlayerSpaz):
             except bs.NotFoundError:
                 return True
             if opposingnode.getnodetype() == 'spaz':
-                player = opposingnode.getdelegate(PlayerSpaz, True).getplayer(Player, True)
+                player = opposingnode.getdelegate(PlayerSpaz, True).getplayer(
+                    Player, True)
                 if player.actor.shield:
                     return None
             super().handlemessage(msg)
@@ -479,7 +485,8 @@ if lang == 'Spanish':
     difficulty = 'Dificultad'
     difficulty_o = ['Fácil', 'Difícil', 'Chernobyl']
     wall_color = 'Color de la Red'
-    w_c = ['Verde', 'Rojo', 'Naranja', 'Amarillo', 'Celeste', 'Azul', 'Rosa', 'Gris']
+    w_c = ['Verde', 'Rojo', 'Naranja', 'Amarillo', 'Celeste', 'Azul', 'Rosa',
+           'Gris']
     ball_body = 'Tipo de Hot Bomb'
     body = ['Esfera', 'Cubo']
 
@@ -499,7 +506,8 @@ else:
     difficulty = 'Difficulty'
     difficulty_o = ['Easy', 'Hard', 'Chernobyl']
     wall_color = 'Mesh Color'
-    w_c = ['Green', 'Red', 'Orange', 'Yellow', 'Light blue', 'Blue', 'Ping', 'Gray']
+    w_c = ['Green', 'Red', 'Orange', 'Yellow', 'Light blue', 'Blue', 'Ping',
+           'Gray']
     ball_body = 'Type of Hot Bomb'
     body = ['Sphere', 'Box']
 
@@ -553,7 +561,7 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         ),
         bs.IntChoiceSetting(
             bomb_timer,
-            choices=[(str(choice)+'s', choice) for choice in range(2, 11)],
+            choices=[(str(choice) + 's', choice) for choice in range(2, 11)],
             default=5,
 
         ),
@@ -622,8 +630,10 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         self._ball_sound = bs.getsound('splatter')
 
         self.last_point = None
-        self.colors = [(0.25, 0.5, 0.25), (1, 0.15, 0.15), (1, 0.5, 0), (1, 1, 0),
-                       (0.2, 1, 1), (0.1, 0.1, 1), (1, 0.3, 0.5), (0.5, 0.5, 0.5)]
+        self.colors = [(0.25, 0.5, 0.25), (1, 0.15, 0.15), (1, 0.5, 0),
+                       (1, 1, 0),
+                       (0.2, 1, 1), (0.1, 0.1, 1), (1, 0.3, 0.5),
+                       (0.5, 0.5, 0.5)]
         #
         self.slow_motion = self._epic_mode
 
@@ -720,7 +730,7 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         self._collide = bs.Material()
         self._collide.add_actions(
             conditions=(
-                ('they_are_different_node_than_us', ),
+                ('they_are_different_node_than_us',),
                 'and',
                 ('they_have_material', shared.player_material),
             ),
@@ -779,7 +789,7 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         node.handlemessage(
             "impulse",
             node.position[0], node.position[1], node.position[2],
-            -node.velocity[0]*2, -node.velocity[1], -node.velocity[2],
+            -node.velocity[0] * 2, -node.velocity[1], -node.velocity[2],
             100, 100, 0, 0,
             -node.velocity[0], -node.velocity[1], -node.velocity[2]
         )
@@ -794,21 +804,23 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
 
     def add_game_complements(self):
         HealthBox(
-            position=(-1, 3.5, -5+random.random()*10)
+            position=(-1, 3.5, -5 + random.random() * 10)
         )
         HealthBox(
-            position=(1, 3.5, -5+random.random()*10)
+            position=(1, 3.5, -5 + random.random() * 10)
         )
         ###
         g = 0
         while g < self._num_bones:
             b = 0
             Torso(
-                position=(-6+random.random()*12, 3.5, -5+random.random()*10)
+                position=(
+                -6 + random.random() * 12, 3.5, -5 + random.random() * 10)
             )
             while b < 6:
                 Bone(
-                    position=(-6+random.random()*12, 2, -5+random.random()*10),
+                    position=(
+                    -6 + random.random() * 12, 2, -5 + random.random() * 10),
                     style=b
                 )
                 b += 1
@@ -832,20 +844,24 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
             'locator',
             attrs={
                 'shape': 'box',
-                'position': (0, -13.51, 0.5) if self._space_under_wall else (0, -35.540, 0.5),
+                'position': (0, -13.51, 0.5) if self._space_under_wall else (
+                0, -35.540, 0.5),
                 'color': self.wall_color,
                 'opacity': 1,
                 'drawShadow': False,
                 'draw_beauty': True,
                 'additive': False,
-                'size': [0.3, 30, 13] if self._space_under_wall else [0.3, 75, 13]
+                'size': [0.3, 30, 13] if self._space_under_wall else [0.3, 75,
+                                                                      13]
             }
         )
         wall = bs.newnode(
             'region',
             attrs={
-                'position': (0, 1.11, 0.5) if self._space_under_wall else (0, 0.75, 0.5),
-                'scale': (0.3, 0.75, 13) if self._space_under_wall else (0.3, 1.5, 13),
+                'position': (0, 1.11, 0.5) if self._space_under_wall else (
+                0, 0.75, 0.5),
+                'scale': (0.3, 0.75, 13) if self._space_under_wall else (
+                0.3, 1.5, 13),
                 'type': 'box',
                 'materials': (self._wall_material, self._reaction_material)
             }
@@ -858,7 +874,8 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
                 'position': pos,
                 'scale': (0.001, 15, 12),
                 'type': 'box',
-                'materials': [self._check_region_material, self._reaction_material]
+                'materials': [self._check_region_material,
+                              self._reaction_material]
             }
         )
 
@@ -881,8 +898,8 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
                                  'shadow': 1.0,
                                  'flatness': 0.7,
                                  'color': (1.91, 1.31, 0.59),
-                                 'opacity': 0.25-0.15,
-                                 'scale': 0.013+0.007,
+                                 'opacity': 0.25 - 0.15,
+                                 'scale': 0.013 + 0.007,
                                  'h_align': 'center'})
         walls_data = {
             'w1': [
@@ -916,28 +933,28 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         for i in [-5, -2.5, 0, 2.5, 5]:
             pos = (11, 6.5, 0)
             Box(
-                position=(pos[0]-0.5, pos[1]-5.5, pos[2]+i),
+                position=(pos[0] - 0.5, pos[1] - 5.5, pos[2] + i),
                 texture='powerupPunch'
             )
             Box(
-                position=(pos[0]-0.5, pos[1]-3, pos[2]+i),
+                position=(pos[0] - 0.5, pos[1] - 3, pos[2] + i),
                 texture='powerupPunch'
             )
             Box(
-                position=(pos[0]-0.5, pos[1]-0.5, pos[2]+i),
+                position=(pos[0] - 0.5, pos[1] - 0.5, pos[2] + i),
                 texture='powerupPunch'
             )
             pos = (-11, 6.5, 0)
             Box(
-                position=(pos[0]+0.5, pos[1]-5.5, pos[2]+i),
+                position=(pos[0] + 0.5, pos[1] - 5.5, pos[2] + i),
                 texture='powerupIceBombs'
             )
             Box(
-                position=(pos[0]+0.5, pos[1]-3, pos[2]+i),
+                position=(pos[0] + 0.5, pos[1] - 3, pos[2] + i),
                 texture='powerupIceBombs'
             )
             Box(
-                position=(pos[0]+0.5, pos[1]-0.5, pos[2]+i),
+                position=(pos[0] + 0.5, pos[1] - 0.5, pos[2] + i),
                 texture='powerupIceBombs'
             )
 
@@ -986,7 +1003,9 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             ball = collision.sourcenode.getdelegate(Ball, True)
-            player = collision.opposingnode.getdelegate(PlayerSpaz, True).getplayer(Player, True)
+            player = collision.opposingnode.getdelegate(PlayerSpaz,
+                                                        True).getplayer(Player,
+                                                                        True)
         except bs.NotFoundError:
             return
 
@@ -1038,7 +1057,8 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
             self._ball._counter.color = (0, 0, 5)
         else:
             self._ball.node.color_texture = bs.gettexture('powerupPunch')
-            bs.animate_array(gnode, 'vignette_outer', 3, {1.0: (0.6, 0.45, 0.45)})
+            bs.animate_array(gnode, 'vignette_outer', 3,
+                             {1.0: (0.6, 0.45, 0.45)})
             self._ball.color_l = (2.5, 0, 0)
             self._ball._counter.color = (1.2, 0, 0)
 
@@ -1064,7 +1084,7 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
                 if (scoring_team.id in self._ball.last_players_to_touch
-                        and self._ball.last_players_to_touch[scoring_team.id]):
+                    and self._ball.last_players_to_touch[scoring_team.id]):
                     self.stats.player_scored(
                         self._ball.last_players_to_touch[scoring_team.id],
                         100,
@@ -1154,11 +1174,12 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
             else:
                 pos = (5, 2, 0)
 
-        color = (0, 0, 1*2) if pos[0] == 5 else (1*1.5, 0, 0)
+        color = (0, 0, 1 * 2) if pos[0] == 5 else (1 * 1.5, 0, 0)
         texture = 'powerupPunch' if pos[0] == -5 else 'powerupIceBombs'
         counter_color = (1, 0, 0) if pos[0] == -5 else (0, 0, 5)
         # self._flash_ball_spawn(pos,color)
-        self._ball = Ball(position=pos, timer=timer, d_time=self.damage_time, color=color)
+        self._ball = Ball(position=pos, timer=timer, d_time=self.damage_time,
+                          color=color)
         self._ball.node.color_texture = bs.gettexture(texture)
         self._ball._counter.color = counter_color
 
@@ -1220,6 +1241,7 @@ class HotBombGame(bs.TeamGameActivity[Player, Team]):
 
         return super().spawn_player_spaz(player, position, angle)
 
+
 ##### New-Bomb#####
 
 
@@ -1253,7 +1275,7 @@ class NewBomb(bs.Actor):
                 'and',
                 ('they_are_older_than', 200),
                 'and',
-                ('eval_colliding', ),
+                ('eval_colliding',),
                 'and',
                 (
                     ('they_have_material', shared.footing_material),
@@ -1356,7 +1378,7 @@ class NewBomb(bs.Actor):
         try:
             player = collision.opposingnode.getdelegate(PlayerSpaz,
                                                         True).getplayer(
-                                                            Player, True)
+                Player, True)
         except bs.NotFoundError:
             return
 
@@ -1369,7 +1391,7 @@ class NewBomb(bs.Actor):
                 return
             player.actor.node.handlemessage('knockout', 500.0)
             bs.animate_array(player.actor.node, 'color', 3, {
-                             0: color, 0.1: (1.5, 1, 0), 0.5: (1.5, 1, 0), 0.6: color})
+                0: color, 0.1: (1.5, 1, 0), 0.5: (1.5, 1, 0), 0.6: color})
 
     def _check(self) -> None:
         """Prevent the cube from annihilating."""
@@ -1385,6 +1407,7 @@ class NewBomb(bs.Actor):
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.node:
                 self.node.delete()
+
 
 ###### Object#####
 
@@ -1500,7 +1523,8 @@ class HealthBox(bs.Actor):
             'reflection': 'powerup',
             'reflection_scale': [0.5],
             'shadow_size': 0.0,
-            'materials': (shared.object_material, self.healthbox_material, factory.health_material)})
+            'materials': (shared.object_material, self.healthbox_material,
+                          factory.health_material)})
 
         self.light = bs.newnode('light', owner=self.node, attrs={
             'color': (1, 1, 1),
@@ -1526,7 +1550,8 @@ class HealthBox(bs.Actor):
         elif isinstance(msg, bs.HitMessage):
             try:
                 spaz = msg._source_player
-                spaz.actor.node.handlemessage(bs.PowerupMessage(poweruptype='health'))
+                spaz.actor.node.handlemessage(
+                    bs.PowerupMessage(poweruptype='health'))
                 t_color = spaz.team.color
                 spaz.actor.node.color = t_color
                 bs.getsound('healthPowerup').play(volume=0.5)
@@ -1629,6 +1654,7 @@ class Bone(bs.Actor):
             if self.node:
                 self.node.delete()
 
+
 ###### Object#####
 
 
@@ -1665,4 +1691,4 @@ class Box(bs.Actor):
             'reflection': 'soft',
             'reflection_scale': [0.25],
             'shadow_size': 0.0,
-            'materials': [self.dont_collide,]})
+            'materials': [self.dont_collide, ]})

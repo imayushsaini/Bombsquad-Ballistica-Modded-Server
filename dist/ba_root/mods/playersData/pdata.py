@@ -4,31 +4,34 @@
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
-import shutil
+
+import _thread
 import copy
+import datetime
+import json
+import os
+import shutil
+import time
+from datetime import datetime, timedelta
+
+import _bascenev1
+import setting
+from serverData import serverdata
+from tools.ServerUpdate import checkSpammer
+from tools.file_handle import OpenJson
 from typing import TYPE_CHECKING
 
-import time
-import os
-import _thread
 import babase
-from serverData import serverdata
-from tools.file_handle import OpenJson
 # pylint: disable=import-error
 import bascenev1 as bs
-import _bascenev1
-import json
-import datetime
-from tools.ServerUpdate import checkSpammer
-import setting
-from datetime import datetime, timedelta
+
 if TYPE_CHECKING:
     pass
 
 settings = setting.get_settings_data()
 
 PLAYERS_DATA_PATH = os.path.join(
-    babase.env()["python_directory_user"], "playersData" + os.sep
+    babase.env()["python_directory_user"], "playersdata" + os.sep
 )
 
 
@@ -72,7 +75,7 @@ def get_profiles() -> dict:
     """
     if CacheData.profiles == {}:
         try:
-            if os.stat(PLAYERS_DATA_PATH+"profiles.json").st_size > 1000000:
+            if os.stat(PLAYERS_DATA_PATH + "profiles.json").st_size > 1000000:
                 newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
                 profiles = {"pb-sdf": {}}
@@ -97,7 +100,8 @@ def get_profiles() -> dict:
 
 
 def get_profiles_archive_index():
-    return [x for x in os.listdir(PLAYERS_DATA_PATH) if x.startswith("profiles")]
+    return [x for x in os.listdir(PLAYERS_DATA_PATH) if
+            x.startswith("profiles")]
 
 
 def get_old_profiles(filename):
@@ -156,7 +160,8 @@ def get_detailed_info(pbid):
     dob = main_account["accountAge"]
     profiles = get_profiles()
     for key, value in profiles.items():
-        if ("lastIP" in value and value["lastIP"] == ip) or ("deviceUUID" in value and value["deviceUUID"] == deviceid):
+        if ("lastIP" in value and value["lastIP"] == ip) or (
+            "deviceUUID" in value and value["deviceUUID"] == deviceid):
             otheraccounts += ' '.join(value["display_string"])
     return f"Accounts:{linked_accounts} \n other accounts {otheraccounts} \n created on {dob}"
 
@@ -212,8 +217,9 @@ def add_profile(
     if (device_id == None):
         device_id = _bascenev1.get_client_device_uuid(cid)
     checkSpammer({'id': account_id, 'display': display_string,
-                 'ip': ip, 'device': device_id})
-    if device_id in get_blacklist()["ban"]["deviceids"] or account_id in get_blacklist()["ban"]["ids"]:
+                  'ip': ip, 'device': device_id})
+    if device_id in get_blacklist()["ban"]["deviceids"] or account_id in \
+        get_blacklist()["ban"]["ids"]:
         bs.disconnect_client(cid)
     serverdata.clients[account_id]["deviceUUID"] = device_id
 
@@ -275,7 +281,7 @@ def update_profile(
     commit_profiles()
 
 
-def ban_player(account_id: str,  duration_in_days: float, reason: str) -> None:
+def ban_player(account_id: str, duration_in_days: float, reason: str) -> None:
     """Bans the player.
 
     Parameters
@@ -296,8 +302,9 @@ def ban_player(account_id: str,  duration_in_days: float, reason: str) -> None:
         "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
     CacheData.blacklist["ban"]["ids"][account_id] = {
         "till": ban_time.strftime("%Y-%m-%d %H:%M:%S"), "reason": reason}
-    CacheData.blacklist["ban"]["deviceids"][device_id] = {"till": ban_time.strftime(
-        "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
+    CacheData.blacklist["ban"]["deviceids"][device_id] = {
+        "till": ban_time.strftime(
+            "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
     _thread.start_new_thread(update_blacklist, ())
 
 
@@ -317,8 +324,9 @@ def unban_player(account_id):
 
 def disable_kick_vote(account_id, duration, reason):
     ban_time = datetime.now() + timedelta(days=duration)
-    CacheData.blacklist["kick-vote-disabled"][account_id] = {"till": ban_time.strftime(
-        "%Y-%m-%d %H:%M:%S"), "reason": reason}
+    CacheData.blacklist["kick-vote-disabled"][account_id] = {
+        "till": ban_time.strftime(
+            "%Y-%m-%d %H:%M:%S"), "reason": reason}
     _thread.start_new_thread(update_blacklist, ())
 
 
@@ -597,8 +605,10 @@ def get_custom() -> dict:
             f.close()
             CacheData.custom = custom
         for account_id in custom["customeffects"]:
-            custom["customeffects"][account_id] = [custom["customeffects"][account_id]] if type(
-                custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
+            custom["customeffects"][account_id] = [
+                custom["customeffects"][account_id]] if type(
+                custom["customeffects"][account_id]) is str else \
+            custom["customeffects"][account_id]
 
     return CacheData.custom
 
@@ -616,7 +626,8 @@ def set_effect(effect: str, account_id: str) -> None:
     custom = get_custom()
     if account_id in custom["customeffects"]:
         effects = [custom["customeffects"][account_id]] if type(
-            custom["customeffects"][account_id]) is str else custom["customeffects"][account_id]
+            custom["customeffects"][account_id]) is str else \
+        custom["customeffects"][account_id]
         effects.append(effect)
         custom["customeffects"][account_id] = effects
     else:

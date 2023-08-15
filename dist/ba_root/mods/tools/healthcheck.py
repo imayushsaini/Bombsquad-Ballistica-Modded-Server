@@ -3,14 +3,13 @@ Simple utility to monitor current CPU,Network,RAM usage.
 
 Author:  ChatGpt
 """
+import asyncio
+from threading import Thread
 
+import psutil
 
 from . import logger
 
-import asyncio
-import psutil
-
-from threading import Thread
 
 async def monitor_network():
     elapsed_time = 60
@@ -23,20 +22,23 @@ async def monitor_network():
         net_io_counters = psutil.net_io_counters()
 
         # Calculate the upload and download speeds in bytes/sec
-          # seconds
-        upload_speed = (net_io_counters.bytes_sent - monitor_network.bytes_sent) / elapsed_time
-        download_speed = (net_io_counters.bytes_recv - monitor_network.bytes_recv) / elapsed_time
-
+        # seconds
+        upload_speed = (
+                               net_io_counters.bytes_sent - monitor_network.bytes_sent) / elapsed_time
+        download_speed = (
+                                 net_io_counters.bytes_recv - monitor_network.bytes_recv) / elapsed_time
 
         # Convert the speeds to human-readable format
-        upload_speed = f"{upload_speed/1024:.2f} KB/s"
-        download_speed = f"{download_speed/1024:.2f} KB/s"
+        upload_speed = f"{upload_speed / 1024:.2f} KB/s"
+        download_speed = f"{download_speed / 1024:.2f} KB/s"
 
-        logger.log(f"CPU: {psutil.cpu_percent()}% RAM: {psutil.virtual_memory().percent}% Upload: {upload_speed} Download: {download_speed}")
+        logger.log(
+            f"CPU: {psutil.cpu_percent()}% RAM: {psutil.virtual_memory().percent}% Upload: {upload_speed} Download: {download_speed}")
 
         # Update the counters
         monitor_network.bytes_sent = net_io_counters.bytes_sent
         monitor_network.bytes_recv = net_io_counters.bytes_recv
+
 
 async def reset_counters():
     while True:
@@ -45,6 +47,7 @@ async def reset_counters():
 
         # Reset the network counters for each network interface separately
         psutil.net_io_counters(pernic=True)
+
 
 def main():
     # Initialize the counters
@@ -62,4 +65,3 @@ def main():
     # Schedule the coroutines in the event loop
     asyncio.run_coroutine_threadsafe(monitor_network(), loop=loop)
     asyncio.run_coroutine_threadsafe(reset_counters(), loop=loop)
-

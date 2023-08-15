@@ -9,15 +9,18 @@
 
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
-import _babase
-import random
+
 import math
+import random
+
+from typing import TYPE_CHECKING
+
 import bascenev1 as bs
 from bascenev1lib.actor.flag import Flag, FlagPickedUpMessage
 from bascenev1lib.actor.playerspaz import PlayerSpaz
+
 if TYPE_CHECKING:
-    from typing import Any, Type, List, Dict, Tuple, Union, Sequence, Optional
+    from typing import Any, Type, List, Union, Sequence
 
 
 class Player(bs.Player['Team']):
@@ -39,7 +42,7 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Max Round Time',
@@ -89,7 +92,14 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
         self.should_die_occur = True
         self.round_time_textnode = bs.newnode('text',
                                               attrs={
-                                                  'text': "", 'flatness': 1.0, 'h_align': 'center', 'h_attach': 'center', 'v_attach': 'top', 'v_align': 'center', 'position': (0, -15), 'scale': 0.9, 'color': (1, 0.7, 0.9)})
+                                                  'text': "", 'flatness': 1.0,
+                                                  'h_align': 'center',
+                                                  'h_attach': 'center',
+                                                  'v_attach': 'top',
+                                                  'v_align': 'center',
+                                                  'position': (0, -15),
+                                                  'scale': 0.9,
+                                                  'color': (1, 0.7, 0.9)})
 
         self.slow_motion = self._epic_mode
         # A cool music, matching our gamemode theme
@@ -125,14 +135,16 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
         self.spawned = []
         if self.credit_text:
             t = bs.newnode('text',
-                           attrs={'text': "Ported by Freaku\nMade by MattZ45986",  # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
-                                  'scale': 0.7,
-                                  'position': (0, 0),
-                                  'shadow': 0.5,
-                                  'flatness': 1.2,
-                                  'color': (1, 1, 1),
-                                  'h_align': 'center',
-                                  'v_attach': 'bottom'})
+                           attrs={
+                               'text': "Ported by Freaku\nMade by MattZ45986",
+                               # Disable 'Enable Bottom Credits' when making playlist, No need to edit this lovely...
+                               'scale': 0.7,
+                               'position': (0, 0),
+                               'shadow': 0.5,
+                               'flatness': 1.2,
+                               'color': (1, 1, 1),
+                               'h_align': 'center',
+                               'v_attach': 'bottom'})
         self.makeRound()
         self._textRound.text = 'Round ' + str(self.roundNum)
         bs.timer(3, self.checkEnd)
@@ -148,10 +160,14 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
                     try:
                         player.survived = False
                         player.actor.handlemessage(bs.StandMessage((0, 3, -2)))
-                        bs.timer(0.5, bs.Call(player.actor.handlemessage, bs.FreezeMessage()))
-                        bs.timer(1.5, bs.Call(player.actor.handlemessage, bs.FreezeMessage()))
-                        bs.timer(2.5, bs.Call(player.actor.handlemessage, bs.FreezeMessage()))
-                        bs.timer(3, bs.Call(player.actor.handlemessage, bs.ShouldShatterMessage()))
+                        bs.timer(0.5, bs.Call(player.actor.handlemessage,
+                                              bs.FreezeMessage()))
+                        bs.timer(1.5, bs.Call(player.actor.handlemessage,
+                                              bs.FreezeMessage()))
+                        bs.timer(2.5, bs.Call(player.actor.handlemessage,
+                                              bs.FreezeMessage()))
+                        bs.timer(3, bs.Call(player.actor.handlemessage,
+                                            bs.ShouldShatterMessage()))
                     except:
                         pass
             bs.timer(3.5, self.killRound)
@@ -189,23 +205,26 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
             spacing = 360 // (c)
         except:
             self.checkEnd()
-        colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (0, 0, 0),
-                  (0.5, 0.8, 0), (0, 0.8, 0.5), (0.8, 0.25, 0.7), (0, 0.27, 0.55), (2, 2, 0.6), (0.4, 3, 0.85)]
+        colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1),
+                  (0, 1, 1), (0, 0, 0),
+                  (0.5, 0.8, 0), (0, 0.8, 0.5), (0.8, 0.25, 0.7),
+                  (0, 0.27, 0.55), (2, 2, 0.6), (0.4, 3, 0.85)]
 
         # Add support for more than 13 players
         if c > 12:
-            for i in range(c-12):
+            for i in range(c - 12):
                 colors.append((random.uniform(0.1, 1), random.uniform(
                     0.1, 1), random.uniform(0.1, 1)))
 
         # Smart Mathematics:
         # All Flags spawn same distance from the players
-        for i in range(c-1):
+        for i in range(c - 1):
             angle += spacing
             angle %= 360
             x = 6 * math.sin(math.degrees(angle))
             z = 6 * math.cos(math.degrees(angle))
-            flag = Flag(position=(x+.5, 5, z-4), color=colors[i]).autoretain()
+            flag = Flag(position=(x + .5, 5, z - 4),
+                        color=colors[i]).autoretain()
             self.flags.append(flag)
 
     def killRound(self):
@@ -221,9 +240,11 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
     def spawn_player(self, player: Player, pos: tuple = (0, 0, 0)) -> bs.Actor:
         spaz = self.spawn_player_spaz(player)
         if pos == (0, 0, 0):
-            pos = (-.5+random.random()*2, 3+random.random()*2, -5+random.random()*2)
+            pos = (-.5 + random.random() * 2, 3 + random.random() * 2,
+                   -5 + random.random() * 2)
         spaz.connect_controls_to_player(enable_punch=self.is_punch,
-                                        enable_bomb=False, enable_run=self.is_run)
+                                        enable_bomb=False,
+                                        enable_run=self.is_run)
         spaz.handlemessage(bs.StandMessage(pos))
         return spaz
 
@@ -240,7 +261,8 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
             bs.timer(0.5, self.checkEnd)
         elif isinstance(msg, FlagPickedUpMessage):
             self.numPickedUp += 1
-            msg.node.getdelegate(PlayerSpaz, True).getplayer(Player, True).done = True
+            msg.node.getdelegate(PlayerSpaz, True).getplayer(Player,
+                                                             True).done = True
             l = bs.newnode('light',
                            owner=None,
                            attrs={'color': msg.node.color,
@@ -257,10 +279,13 @@ class MFGame(bs.TeamGameActivity[Player, Team]):
                     if not player.done:
                         try:
                             player.survived = False
-                            bs.broadcastmessage("No Flag? "+player.getname())
-                            player.actor.handlemessage(bs.StandMessage((0, 3, -2)))
-                            bs.timer(0.5, bs.Call(player.actor.handlemessage, bs.FreezeMessage()))
-                            bs.timer(3, bs.Call(player.actor.handlemessage, bs.ShouldShatterMessage()))
+                            bs.broadcastmessage("No Flag? " + player.getname())
+                            player.actor.handlemessage(
+                                bs.StandMessage((0, 3, -2)))
+                            bs.timer(0.5, bs.Call(player.actor.handlemessage,
+                                                  bs.FreezeMessage()))
+                            bs.timer(3, bs.Call(player.actor.handlemessage,
+                                                bs.ShouldShatterMessage()))
                         except:
                             pass
                 bs.timer(3.5, self.killRound)

@@ -9,12 +9,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import babase
-import bauiv1 as bui
 import bascenev1 as bs
 from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory
+from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
@@ -77,7 +75,8 @@ class Puck(bs.Actor):
             self.node.handlemessage(
                 'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
                 msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
+                                                  1.0 * msg.velocity_magnitude,
+                msg.radius, 0,
                 msg.force_direction[0], msg.force_direction[1],
                 msg.force_direction[2])
 
@@ -199,7 +198,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         self.puck_material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(('call', 'at_connect',
-                      self._handle_puck_player_collide), ))
+                      self._handle_puck_player_collide),))
 
         # We want the puck to kill powerups; not get stopped by them
         self.puck_material.add_actions(
@@ -270,7 +269,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
             puck = collision.sourcenode.getdelegate(Puck, True)
             player = collision.opposingnode.getdelegate(PlayerSpaz,
                                                         True).getplayer(
-                                                            Player, True)
+                Player, True)
         except bs.NotFoundError:
             return
 
@@ -309,7 +308,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
                 if (scoring_team.id in self._puck.last_players_to_touch
-                        and self._puck.last_players_to_touch[scoring_team.id]):
+                    and self._puck.last_players_to_touch[scoring_team.id]):
                     self.stats.player_scored(
                         self._puck.last_players_to_touch[scoring_team.id],
                         100,
