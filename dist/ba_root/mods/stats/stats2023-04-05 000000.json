@@ -1,0 +1,44 @@
+{
+  "startDate": "05-04-2023",
+  "stats": {
+    "pb-IF4VAk4a": {
+      "rank": 1,
+      "name": "pb-IF4VAk4a",
+      "scores": 0,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 18,
+      "kd": 0.0,
+      "avg_score": 0.0,
+      "aid": "pb-IF4VAk4a",
+      "last_seen": "2022-04-26 17:01:13.715014"
+    },
+    "pb-IF4RU2ECAg==": {
+      "rank": 2,
+      "name": "PC452402",
+      "scores": 0,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 1,
+      "kd": 0.0,
+      "avg_score": 0.0,
+      "last_seen": "2023-04-07 13:06:19.905782",
+      "aid": "pb-IF4RU2ECAg=="
+    },
+    "pb-IF4CUGMfXA==": {
+      "rank": 3,
+      "name": "PC913901",
+      "scores": 56,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 3,
+      "kd": 0.0,
+      "avg_score": 18.666,
+      "last_seen": "2023-05-01 01:05:25.539996",
+      "aid": "pb-IF4CUGMfXA=="
+    }
+  }
+}

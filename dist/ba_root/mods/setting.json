@@ -1,0 +1,180 @@
+{
+  "Anti-IdRevealer": false,
+  "ChatCommands": {
+    "BrodcastCommand": true
+  },
+  "HostDeviceName": "v1.4",
+  "HostName": "BCS",
+  "KickVoteMsgType": "chat",
+  "ScoreScreenAnnouncement": {
+    "enable": true,
+    "msg": [
+      "click stats button to join discord",
+      "watch hey smoothy youtube channel",
+      "downlaod new mods from discord"
+    ]
+  },
+  "ShowKickVoteStarterName": true,
+  "StumbledScoreScreen": true,
+  "WarnCooldownMinutes": 30,
+  "afk_remover": {
+    "enable": false,
+    "ingame_idle_time_in_secs": 60,
+    "kick_idle_from_lobby": true,
+    "lobby_idle_time_in_secs": 10
+  },
+  "afterWarnKickMsg": "Enough warnings, Goodbye have a nice day :)",
+  "allowInGameChat": true,
+  "allowTeamChat": true,
+  "allowVotes": true,
+  "autoNightMode": {
+    "enable": true,
+    "endTime": "06:00",
+    "fireflies": true,
+    "fireflies_random_color": false,
+    "startTime": "18:30"
+  },
+  "autoTeamBalance": true,
+  "ballistica_web": {
+    "enable": false,
+    "server_password": "my_secerT_password_very_hard"
+  },
+  "character_chooser": {
+    "enable": true
+  },
+  "colorful_explosions": {
+    "enable": true
+  },
+  "colorfullMap": true,
+  "contributeData": true,
+  "coopModeWithLessPlayers": {
+    "enable": false,
+    "minPlayerToExitCoop": 3
+  },
+  "custom_characters": {
+    "enable": true
+  },
+  "discordWebHook": {
+    "enable": false,
+    "webhookURL": "https://discord.com/api/webhooks/82649239/e7s0zyBJIuczXL7_CGSO5WM"
+  },
+  "discordbot": {
+    "enable": false,
+    "liveChat": true,
+    "liveStatsChannelID": 925440043672285200,
+    "logsChannelID": 925440079843958800,
+    "token": "<secret-token-here>"
+  },
+  "elPatronPowerups": {
+    "Quantity": {
+      "Curse": 1,
+      "Fire Bombs": 3,
+      "Fly Bombs": 3,
+      "Goodbye": 2,
+      "Healing Damage": 1,
+      "Health": 1,
+      "Ice Bombs": 3,
+      "Ice Man": 1,
+      "Impact Bombs": 3,
+      "Impairment Bombs": 2,
+      "Mine Bombs": 2,
+      "Punch": 3,
+      "Shield": 2,
+      "Speed": 2,
+      "Sticky Bombs": 3,
+      "Tank Shield": 1,
+      "Triple": 3
+    },
+    "enable": false,
+    "settings": {
+      "Healing Damage PTG": 72,
+      "Powers Gravity": true,
+      "Powerup Name": true,
+      "Powerup Scale": 1,
+      "Powerup Style": "Auto",
+      "Powerup Time": false,
+      "Powerup With Shield": true,
+      "Powerups": {
+        "Curse": 1,
+        "Fire Bombs": 3,
+        "Fly Bombs": 3,
+        "Goodbye": 2,
+        "Healing Damage": 1,
+        "Health": 1,
+        "Ice Bombs": 3,
+        "Ice Man": 1,
+        "Impact Bombs": 3,
+        "Impairment Bombs": 2,
+        "Mine Bombs": 2,
+        "Punch": 3,
+        "Shield": 2,
+        "Speed": 2,
+        "Sticky Bombs": 3,
+        "Tank Shield": 1,
+        "Triple": 3
+      },
+      "Tank Shield PTG": 96
+    }
+  },
+  "enableHitTexts": true,
+  "enableTagAnimation": true,
+  "enableTop5effects": true,
+  "enableeffects": true,
+  "enablehptag": true,
+  "enablerank": true,
+  "enablestats": true,
+  "enabletags": true,
+  "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
+  "leaderboard": {
+    "barsBehindName": true,
+    "enable": true
+  },
+  "maxAccountPerIP": 3,
+  "maxPlayersPerDevice": 2,
+  "maxWarnCount": 2,
+  "mikirogQuickTurn": {
+    "enable": false
+  },
+  "minAgeToChatInHours": 78,
+  "minAgeToJoinInHours": 24,
+  "newResultBoard": true,
+  "playermod": {
+    "default_bomb": "normal",
+    "default_bomb_count": 1,
+    "default_boxing_gloves": true,
+    "default_shield": false
+  },
+  "playlists": {
+    "elim": 412172,
+    "epic": 412173,
+    "ffa": 412175,
+    "ffasmash": 412179,
+    "smash": 412151,
+    "soccer": 412160,
+    "team": 12345
+  },
+  "regularWelcomeMsg": "Welcome Back",
+  "sameCharacterForTeam": false,
+  "statsResetAfterDays": 31,
+  "textonmap": {
+    "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7.13",
+    "center highlights": {
+      "color": [
+        1,
+        0,
+        0
+      ],
+      "msg": [
+        "type end to start end vote",
+        "start msg with prefix .(dot) to send in game popup msg",
+        "start msg with prefix ,(comma) to send msg to teammates",
+        "BombSquad Community Server - BCS"
+      ],
+      "randomColor": true
+    },
+    "top watermark": "Welcome to server \nIP @IP PORT @PORT"
+  },
+  "useV2Account": false,
+  "warnMsg": "WARNING !!!",
+  "whitelist": false
+}
