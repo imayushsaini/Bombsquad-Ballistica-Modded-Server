@@ -1,6 +1,6 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modded server scripts to host ballistica (Bombsquad) server. Running on BS1.7.19.
+Modded server scripts to host ballistica (Bombsquad) server. Running on BS1.7.26
 
 # Prerequisites
 - Basic knowledge of Linux
@@ -21,7 +21,7 @@ Add python Deadsnakes PPA
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
 ```
-Install Python 3.10
+Install Python 3.11
 ```
 sudo apt install python3-pip python3.10-dev python3.10-venv
 ```
