@@ -2,6 +2,11 @@
 
 Modded server scripts to host ballistica (Bombsquad) server. Running on BS1.7.19.
 
+``
+We started working on API 8 , help us to test out and fix bugs 
+``
+[API8 BRANCH](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/tree/api8)
+
 # Prerequisites
 - Basic knowledge of Linux
 - A VPS (e.g. [Amazon Web Services](https://aws.amazon.com/), [Microsoft Azure](https://portal.azure.com/))
