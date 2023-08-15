@@ -342,6 +342,7 @@
     "titleText": "Ádzd Gámzé",
     "titleTextScale": 1.01
   },
+  "allText": "Alcllwerf",
   "allowText": "Alzéow",
   "alreadySignedInText": "Yr co wcowief woeijo wife ewf;\norc woeful oj ceofjwoejfowief\nocjwoef weofwocijweofw.",
   "apiVersionErrorText": "Cznt lzdz mdls ${NAME}; zt tarng faptr  ${VERSION_USED}; wz rojafoqrz ${VERSION_REQUIRED}.",
@@ -589,6 +590,7 @@
   "disableRemoteAppConnectionsText": "Disojf c woij ewof-app cowjf woejwe",
   "disableXInputDescriptionText": "Allow mor wow ejo4 cow oeicjwo cobu oaf woejfowie jowrj",
   "disableXInputText": "Dio cow eofwije",
+  "disabledText": "Dfewfczfwef",
   "doneText": "Dónz",
   "drawText": "Drawz",
   "duplicateText": "DSFcoiwjef",
@@ -662,6 +664,7 @@
     "useMusicFolderText": "Fldlzr ofz Mzlfic Flzlz"
   },
   "editText": "Edf",
+  "enabledText": "Efweecwef",
   "endText": "Enzf",
   "enjoyText": "Enfjofjw!",
   "epicDescriptionFilterText": "${DESCRIPTION} Ín ípic slúw mztíon.",
@@ -1318,6 +1321,8 @@
   "runText": "Rúun",
   "saveText": "Sávez",
   "scanScriptsErrorText": "Error(w) frolic weir ro; cj weowje ici woeijwer.",
+  "scanScriptsMultipleModulesNeedUpdatesText": "${PATH} dfsf ${NUM} w woeifjw fwjef webd weoifjwoef ${API}.",
+  "scanScriptsSingleModuleNeedsUpdatesText": "${PATH} fwejfwjef weoifjwefffefwwef ${API}.",
   "scoreChallengesText": "Scóre Chálléngúz",
   "scoreListUnavailableText": "Sczerl lzst unvnslfljblz.",
   "scoreText": "Szóre",

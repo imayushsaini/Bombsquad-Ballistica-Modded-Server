@@ -1,4 +1,4 @@
-# ported from ankit scripts 
+# ported from ankit scripts
 # need to update in future with easy to add custom list and more deep analysis .
 # working on other features rn, will update this later , for now lets use this
 import re
@@ -49,6 +49,7 @@ PATTERN = (
     r"po+r+n|"
     r"ni+p+le+"
 )
+
 
 def censor(message):
     censored_message = re.sub(

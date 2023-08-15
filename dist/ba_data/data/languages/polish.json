@@ -339,6 +339,7 @@
     "getMoreGamesText": "Więcej rozgrywek...",
     "titleText": "Dodaj grę"
   },
+  "allText": "Wszystko",
   "allowText": "Zezwól",
   "alreadySignedInText": "Twoje konto jest zalogowane z innego urządzenia;\nproszę zmienić konta lub zamknąć grę na innych\nurządzeniach i spróbować ponownie.",
   "apiVersionErrorText": "Nie mogę załadować modułu ${NAME}; wersja używana - ${VERSION_USED}; wymagana - ${VERSION_REQUIRED}.",
@@ -577,6 +578,7 @@
   "disableRemoteAppConnectionsText": "Wyłącz łączenia aplikacji BS-Remote",
   "disableXInputDescriptionText": "Pozwala na podłączenie 4 kontrolerów, ale może nie działać.",
   "disableXInputText": "Wyłącz XInput",
+  "disabledText": "Wyłączone",
   "doneText": "Gotowe",
   "drawText": "Remis",
   "duplicateText": "Duplikuj",
@@ -649,6 +651,7 @@
     "useMusicFolderText": "Katalog plików muzycznych"
   },
   "editText": "Edytuj",
+  "enabledText": "Włączone",
   "endText": "Koniec",
   "enjoyText": "Miłej zabawy!",
   "epicDescriptionFilterText": "${DESCRIPTION} Epickie zwolnione tempo.",
@@ -1279,7 +1282,7 @@
   "runBoldText": "URUCHOM",
   "runText": "Uruchom",
   "saveText": "Zapisz",
-  "scanScriptsErrorText": "Błąd w skanowaniu skryptów; sprawdź konsolę dla szczegółów",
+  "scanScriptsErrorText": "Błąd w skanowaniu skryptów; Sprawdź konsolę dla szczegółów",
   "scoreChallengesText": "Wyzwania Punktowe",
   "scoreListUnavailableText": "Lista wyników niedostępna.",
   "scoreText": "Wynik",

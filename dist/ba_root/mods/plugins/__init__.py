@@ -6,18 +6,19 @@ tests since they are widely used in live client and server code.
 license : MIT, see LICENSE for more details.
 """
 
-# ba_meta require api 7
+# ba_meta require api 8
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import ba
+import babase
 
 if TYPE_CHECKING:
     pass
 
+
 # ba_meta export plugin
-class Init(ba.Plugin):  # pylint: disable=too-few-public-methods
+class Init(babase.Plugin):  # pylint: disable=too-few-public-methods
     """Initializes all of the plugins in the directory."""

@@ -1,0 +1,31 @@
+{
+  "startDate": "30-01-2023",
+  "stats": {
+    "pb-IF4VAk4a": {
+      "rank": 1,
+      "name": "pb-IF4VAk4a",
+      "scores": 0,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 18,
+      "kd": 0.0,
+      "avg_score": 0.0,
+      "aid": "pb-IF4VAk4a",
+      "last_seen": "2022-04-26 17:01:13.715014"
+    },
+    "pb-IF4iU0QaEw==": {
+      "rank": 2,
+      "name": "BCS",
+      "scores": 672,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 21,
+      "games": 34,
+      "kd": 0.0,
+      "avg_score": 19.764,
+      "last_seen": "2023-02-18 21:40:41.074305",
+      "aid": "pb-IF4iU0QaEw=="
+    }
+  }
+}

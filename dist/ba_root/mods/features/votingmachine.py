@@ -1,12 +1,12 @@
 #  Electronic Voting Machine (EVM) by -mr.smoothy
 
-import _ba
-import ba
-import ba.internal
 import time
 
-game_started_on = 0
+import _babase
 
+import bascenev1 as bs
+
+game_started_on = 0
 
 vote_machine = {"end": {"last_vote_start_time": 0, "vote_duration": 50,
                         "min_game_duration_to_start_vote": 30, "voters": []},
@@ -23,59 +23,68 @@ def vote(pb_id, client_id, vote_type):
     voters = vote_machine[vote_type]["voters"]
     last_vote_start_time = vote_machine[vote_type]["last_vote_start_time"]
     vote_duration = vote_machine[vote_type]["vote_duration"]
-    min_game_duration_to_start_vote = vote_machine[vote_type]["min_game_duration_to_start_vote"]
+    min_game_duration_to_start_vote = vote_machine[vote_type][
+        "min_game_duration_to_start_vote"]
 
     now = time.time()
     if now > last_vote_start_time + vote_duration:
         voters = []
         vote_machine[vote_type]["last_vote_start_time"] = now
     if now < game_started_on + min_game_duration_to_start_vote:
-        _ba.screenmessage("Seems game just started, Try again after some time", transient=True,
-                          clients=[client_id])
+        bs.broadcastmessage(
+            "Seems game just started, Try again after some time",
+            transient=True,
+            clients=[client_id])
         return
     if len(voters) == 0:
-        ba.internal.chatmessage(f"{vote_type} vote started")
+        bs.chatmessage(f"{vote_type} vote started")
 
     # clean up voters list
     active_players = []
-    for player in ba.internal.get_game_roster():
+    for player in bs.get_game_roster():
         active_players.append(player['account_id'])
     for voter in voters:
         if voter not in active_players:
             voters.remove(voter)
     if pb_id not in voters:
         voters.append(pb_id)
-        _ba.screenmessage(f'Thanks for vote , encourage other players to type {vote_type} too.', transient=True,
-                          clients=[client_id])
+        bs.broadcastmessage(
+            f'Thanks for vote , encourage other players to type {vote_type} too.',
+            transient=True,
+            clients=[client_id])
         if vote_type == 'end':
             update_vote_text(max_votes_required(
                 len(active_players)) - len(voters))
         else:
-            activity = _ba.get_foreground_host_activity()
+            activity = bs.get_foreground_host_activity()
             if activity is not None:
-                with _ba.Context(activity):
-                    _ba.screenmessage(f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
-                                    image={"texture": ba.gettexture("achievementSharingIsCaring"),
-                                            "tint_texture": ba.gettexture("achievementSharingIsCaring"),
-                                                "tint_color": (0.5, 0.5, 0.5), "tint2_color": (0.7, 0.5, 0.9)},
-                                    top=True)
+                with _babase.Context(activity):
+                    bs.broadcastmessage(
+                        f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
+                        image={"texture": bs.gettexture(
+                            "achievementSharingIsCaring"),
+                               "tint_texture": bs.gettexture(
+                                   "achievementSharingIsCaring"),
+                               "tint_color": (0.5, 0.5, 0.5),
+                               "tint2_color": (0.7, 0.5, 0.9)},
+                        top=True)
     vote_machine[vote_type]["voters"] = voters
 
     if len(voters) >= max_votes_required(len(active_players)):
-        ba.internal.chatmessage(f"{vote_type} vote succeed")
+        bs.chatmessage(f"{vote_type} vote succeed")
         vote_machine[vote_type]["voters"] = []
         if vote_type == "end":
             try:
-                with _ba.Context(_ba.get_foreground_host_activity()):
-                    _ba.get_foreground_host_activity().end_game()
+                with _babase.Context(bs.get_foreground_host_activity()):
+                    bs.get_foreground_host_activity().end_game()
             except:
                 pass
         elif vote_type == "nv":
-            _ba.chatmessage("/nv")
+            _babase.chatmessage("/nv")
         elif vote_type == "dv":
-            _ba.chatmessage("/dv")
+            _babase.chatmessage("/dv")
         elif vote_type == "sm":
-            _ba.chatmessage("/sm")
+            _babase.chatmessage("/sm")
 
 
 def reset_votes():
@@ -106,13 +115,13 @@ def max_votes_required(players):
 
 
 def update_vote_text(votes_needed):
-    activity = _ba.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     try:
         activity.end_vote_text.node.text = "{} more votes to end this map\ntype 'end' to vote".format(
             votes_needed)
     except:
-        with _ba.Context(_ba.get_foreground_host_activity()):
-            node = ba.NodeActor(ba.newnode('text',
+        with _babase.Context(bs.get_foreground_host_activity()):
+            node = bs.NodeActor(bs.newnode('text',
                                            attrs={
                                                'v_attach': 'top',
                                                'h_attach': 'center',
@@ -126,10 +135,11 @@ def update_vote_text(votes_needed):
                                                    votes_needed)
                                            })).autoretain()
             activity.end_vote_text = node
-            ba.timer(20, remove_vote_text)
+            bs.timer(20, remove_vote_text)
 
 
 def remove_vote_text():
-    activity = _ba.get_foreground_host_activity()
-    if hasattr(activity, "end_vote_text") and activity.end_vote_text.node.exists():
+    activity = bs.get_foreground_host_activity()
+    if hasattr(activity,
+               "end_vote_text") and activity.end_vote_text.node.exists():
         activity.end_vote_text.node.delete()

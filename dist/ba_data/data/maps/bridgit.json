@@ -53,41 +53,41 @@
   "preview_texture": "bridgitPreview",
   "terrain_nodes": [
     {
-      "collide_model": "bridgitLevelBottom",
+      "collision_mesh": "bridgitLevelBottom",
       "color_texture": "bridgitLevelColor",
       "comment": "Top portion of bridge.",
       "materials": ["footing"],
-      "model": "bridgitLevelTop"
+      "mesh": "bridgitLevelTop"
     },
     {
       "color_texture": "bridgitLevelColor",
       "comment": "Bottom portion of bridge with no lighting effects.",
       "lighting": false,
-      "model": "bridgitLevelBottom"
+      "mesh": "bridgitLevelBottom"
     },
     {
       "background": true,
       "color_texture": "natureBackgroundColor",
       "comment": "Visible background.",
       "lighting": false,
-      "model": "natureBackground"
+      "mesh": "natureBackground"
     },
     {
       "background": true,
-      "color_texture": "model_bg_tex",
+      "color_texture": "mesh_bg_tex",
       "comment": "360 degree bg for vr.",
       "lighting": false,
-      "model": "bg_vr_fill_model",
+      "mesh": "bg_vr_fill_mesh",
       "vr_only": true
     },
     {
       "bumper": true,
-      "collide_model": "railing_collide_model",
+      "collision_mesh": "railing_collide_mesh",
       "comment": "Invisible railing to help prevent falls.",
       "materials": ["railing"]
     },
     {
-      "collide_model": "collide_bg",
+      "collision_mesh": "collide_bg",
       "comment": "Collision shape for bg",
       "materials": ["footing", "friction@10", "death"]
     }

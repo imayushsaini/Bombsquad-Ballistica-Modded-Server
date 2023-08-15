@@ -1,14 +1,15 @@
-
-import ba
-import _ba
-from bastd.gameutils import SharedObjects
 import random
-import weakref
-from ba._messages import DieMessage, DeathType, OutOfBoundsMessage, UNHANDLED
-on_begin_original = ba._activity.Activity.on_begin
+
+import babase
+import bascenev1 as bs
+from bascenev1._messages import DeathType, OutOfBoundsMessage
+from bascenev1lib.gameutils import SharedObjects
+
+on_begin_original = bs._activity.Activity.on_begin
 
 
 def fireflies_generator(activity, count, random_color: False):
+
     if random_color:
         color = (random.uniform(0, 1.2), random.uniform(
             0, 1.2), random.uniform(0, 1.2))
@@ -21,22 +22,22 @@ def fireflies_generator(activity, count, random_color: False):
         if not spawn_areas:
             return
         for _ in range(increment):
-            with ba.Context(activity):
+            with activity.context:
                 firefly = FireFly(random.choice(spawn_areas), color)
             activity.fireflies.append(firefly)
     else:
         for _ in range(abs(increment)):
             firefly = activity.fireflies.pop()
             try:
-                firefly.handlemessage(ba.DieMessage())
+                firefly.handlemessage(bs.DieMessage())
             except AttributeError:
                 pass
             firefly.timer = None
 
 
 def _calculate_spawn_areas():
-    activity = _ba.get_foreground_host_activity()
-    if not isinstance(activity, ba.GameActivity):
+    activity = bs.get_foreground_host_activity()
+    if not isinstance(activity, bs.GameActivity):
         return
     aoi_bounds = activity.map.get_def_bound_box("area_of_interest_bounds")
     # aoi_bounds = activity.map.get_def_bound_box("map_bounds")
@@ -49,31 +50,34 @@ def _calculate_spawn_areas():
     return spawn_areas
 
 
-class FireFly(ba.Actor):
+class FireFly(bs.Actor):
     def __init__(self, area, color, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.area = area
         self.color = color
         initial_timer = random.uniform(0.5, 6)
-        self.timer = ba.Timer(initial_timer, self.on)
+        self.timer = bs.Timer(initial_timer, self.on)
 
     def on(self):
         shared = SharedObjects.get()
-        self.mat = ba.Material()
+        self.mat = bs.Material()
         self.mat.add_actions(
             actions=(
                 ('modify_part_collision', 'collide', False),
                 ('modify_part_collision', 'physical', False),
             ))
-        self.node = ba.newnode('locator', attrs={'shape': 'circle', 'position': (0, .5, 0),
-                                                 'color': self.color, 'opacity': 0.5, 'draw_beauty': True, 'additive': False, 'size': [0.10]})
-        # ba.animate(
+        self.node = bs.newnode('locator',
+                               attrs={'shape': 'circle', 'position': (0, .5, 0),
+                                      'color': self.color, 'opacity': 0.5,
+                                      'draw_beauty': True, 'additive': False,
+                                      'size': [0.10]})
+        # bs.animate(
         #     self.node,
         #     'scale',
         #     {0:0, 1:0.004, 5:0.006, 10:0.0},
         #     loop=True,
         # )
-        ba.animate_array(
+        bs.animate_array(
             self.node,
             'position',
             3,
@@ -81,7 +85,7 @@ class FireFly(ba.Actor):
             loop=True
         )
 
-        self.light = ba.newnode(
+        self.light = bs.newnode(
             'light',
             owner=self.node,
             attrs={
@@ -90,7 +94,7 @@ class FireFly(ba.Actor):
                 'radius': 0.2,
                 'color': self.color
             })
-        ba.animate(
+        bs.animate(
             self.light,
             'radius',
             {0: 0.0, 20: 0.4, 70: 0.1, 100: 0.3, 150: 0},
@@ -100,25 +104,26 @@ class FireFly(ba.Actor):
 
     def off(self):
         death_secs = random.uniform(0.5, 3)
-        with ba.Context(self._activity()):
-            ba.animate(
+        with babase.Context(self._activity()):
+            bs.animate(
                 self.node,
-                'model_scale',
-                {0: self.node.model_scale, death_secs: 0}
+                'mesh_scale',
+                {0: self.node.mesh_scale, death_secs: 0}
             )
-            ba.animate(
+            bs.animate(
                 self.light,
                 'radius',
                 {0: self.light.radius, death_secs: 0}
             )
-            ba.timer(death_secs, self.node.delete)
+            bs.timer(death_secs, self.node.delete)
 
     def handlemessage(self, msg):
-        if isinstance(msg, ba.DieMessage):
+        if isinstance(msg, bs.DieMessage):
             self.off()
             return None
         elif isinstance(msg, OutOfBoundsMessage):
-            return self.handlemessage(ba.DieMessage(how=DeathType.OUT_OF_BOUNDS))
+            return self.handlemessage(
+                bs.DieMessage(how=DeathType.OUT_OF_BOUNDS))
         return super().handlemessage(msg)
 
     def generate_keys(self, m):
@@ -146,7 +151,7 @@ class FireFly(ba.Actor):
             return a
         while True:
             n = random.randrange(a, b)
-            if abs(z-n) < 6:
+            if abs(z - n) < 6:
                 return n
 
 
@@ -155,5 +160,5 @@ def on_begin(self, *args, **kwargs) -> None:
     return on_begin_original(self, *args, **kwargs)
 
 
-ba._activity.Activity.fireflies_generator = fireflies_generator
-ba._activity.Activity.on_begin = on_begin
+bs._activity.Activity.fireflies_generator = fireflies_generator
+bs._activity.Activity.on_begin = on_begin

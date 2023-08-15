@@ -2,4 +2,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .mypy_cache/
-
+dist/ba_root/mods/playerdata/*.json*
+dist/ba_root/mods/serverdata/*.log
+dist/ba_root/mods/serverdata/*.log*
+dist/ba_root/mods/serverdata/*.json

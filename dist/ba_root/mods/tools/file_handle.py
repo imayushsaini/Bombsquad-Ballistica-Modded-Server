@@ -1,6 +1,6 @@
 """Module to handle operations with file."""
 
-# ba_meta require api 7
+# ba_meta require api 8
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 
@@ -8,15 +8,13 @@ from __future__ import annotations
 
 __all__ = ["OpenJson", "JsonFile", "PathNotExistsError"]
 
-
-from typing import TYPE_CHECKING
-from dataclasses import dataclass
-
 import json
 import os
 import re
+from dataclasses import dataclass
 
 from filelock import FileLock
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass

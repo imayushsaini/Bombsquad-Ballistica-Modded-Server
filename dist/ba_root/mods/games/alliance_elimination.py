@@ -2,23 +2,24 @@
 #
 """Elimination mini-game."""
 
-# ba_meta require api 6
+# ba_meta require api 8
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import ba
-from bastd.actor.spazfactory import SpazFactory
-from bastd.actor.scoreboard import Scoreboard
+import babase
+import bascenev1 as bs
+from bascenev1lib.actor.scoreboard import Scoreboard
+from bascenev1lib.actor.spazfactory import SpazFactory
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Dict, Type, List, Sequence, Optional,
+    from typing import (Any, Tuple, Type, List, Sequence, Optional,
                         Union)
 
 
-class Icon(ba.Actor):
+class Icon(bs.Actor):
     """Creates in in-game icon on screen."""
 
     def __init__(self,
@@ -37,10 +38,10 @@ class Icon(ba.Actor):
         self._show_lives = show_lives
         self._show_death = show_death
         self._name_scale = name_scale
-        self._outline_tex = ba.gettexture('characterIconMask')
+        self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
-        self.node = ba.newnode('image',
+        self.node = bs.newnode('image',
                                delegate=self,
                                attrs={
                                    'texture': icon['texture'],
@@ -53,12 +54,12 @@ class Icon(ba.Actor):
                                    'absolute_scale': True,
                                    'attach': 'bottomCenter'
                                })
-        self._name_text = ba.newnode(
+        self._name_text = bs.newnode(
             'text',
             owner=self.node,
             attrs={
-                'text': ba.Lstr(value=player.getname()),
-                'color': ba.safecolor(player.team.color),
+                'text': babase.Lstr(value=player.getname()),
+                'color': babase.safecolor(player.team.color),
                 'h_align': 'center',
                 'v_align': 'center',
                 'vr_depth': 410,
@@ -69,7 +70,7 @@ class Icon(ba.Actor):
                 'v_attach': 'bottom'
             })
         if self._show_lives:
-            self._lives_text = ba.newnode('text',
+            self._lives_text = bs.newnode('text',
                                           owner=self.node,
                                           attrs={
                                               'text': 'x0',
@@ -125,7 +126,7 @@ class Icon(ba.Actor):
         if not self.node:
             return
         if self._show_death:
-            ba.animate(
+            bs.animate(
                 self.node, 'opacity', {
                     0.00: 1.0,
                     0.05: 0.0,
@@ -142,16 +143,16 @@ class Icon(ba.Actor):
                 })
             lives = self._player.lives
             if lives == 0:
-                ba.timer(0.6, self.update_for_lives)
+                bs.timer(0.6, self.update_for_lives)
 
     def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, ba.DieMessage):
+        if isinstance(msg, bs.DieMessage):
             self.node.delete()
             return None
         return super().handlemessage(msg)
 
 
-class Player(ba.Player['Team']):
+class Player(bs.Player['Team']):
     """Our player type for this game."""
 
     def __init__(self) -> None:
@@ -159,7 +160,7 @@ class Player(ba.Player['Team']):
         self.icons: List[Icon] = []
 
 
-class Team(ba.Team[Player]):
+class Team(bs.Team[Player]):
     """Our team type for this game."""
 
     def __init__(self) -> None:
@@ -167,37 +168,39 @@ class Team(ba.Team[Player]):
         self.spawn_order: List[Player] = []
 
 
-# ba_meta export game
-class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
+# ba_meta export bascenev1.GameActivity
+class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
     """Game type where last player(s) left alive win."""
 
     name = 'Alliance Elimination'
     description = 'Fight in groups of duo, trio, or more.\nLast remaining alive wins.'
-    scoreconfig = ba.ScoreConfig(label='Survived',
-                                 scoretype=ba.ScoreType.SECONDS,
+    scoreconfig = bs.ScoreConfig(label='Survived',
+                                 scoretype=bs.ScoreType.SECONDS,
                                  none_is_winner=True)
     # Show messages when players die since it's meaningful here.
     announce_player_deaths = True
 
+    allow_mid_activity_joins = False
+
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[ba.Session]) -> List[ba.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
-            ba.IntSetting(
+            bs.IntSetting(
                 'Lives Per Player',
                 default=1,
                 min_value=1,
                 max_value=10,
                 increment=1,
             ),
-            ba.IntSetting(
+            bs.IntSetting(
                 'Players Per Team In Arena',
                 default=2,
                 min_value=2,
                 max_value=10,
                 increment=1,
             ),
-            ba.IntChoiceSetting(
+            bs.IntChoiceSetting(
                 'Time Limit',
                 choices=[
                     ('None', 0),
@@ -209,7 +212,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
                 ],
                 default=0,
             ),
-            ba.FloatChoiceSetting(
+            bs.FloatChoiceSetting(
                 'Respawn Times',
                 choices=[
                     ('Shorter', 0.25),
@@ -220,27 +223,27 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
                 ],
                 default=1.0,
             ),
-            ba.BoolSetting('Epic Mode', default=False),
+            bs.BoolSetting('Epic Mode', default=False),
         ]
-        if issubclass(sessiontype, ba.DualTeamSession):
+        if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(
-                ba.BoolSetting('Balance Total Lives', default=False))
+                bs.BoolSetting('Balance Total Lives', default=False))
         return settings
 
     @classmethod
-    def supports_session_type(cls, sessiontype: Type[ba.Session]) -> bool:
-        return issubclass(sessiontype, ba.DualTeamSession)
+    def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
+        return issubclass(sessiontype, bs.DualTeamSession)
 
     @classmethod
-    def get_supported_maps(cls, sessiontype: Type[ba.Session]) -> List[str]:
-        return ba.getmaps('melee')
+    def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
+        return bs.app.classic.getmaps('melee')
 
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._scoreboard = Scoreboard()
         self._start_time: Optional[float] = None
-        self._vs_text: Optional[ba.Actor] = None
-        self._round_end_timer: Optional[ba.Timer] = None
+        self._vs_text: Optional[bs.Actor] = None
+        self._round_end_timer: Optional[bs.Timer] = None
         self._epic_mode = bool(settings['Epic Mode'])
         self._lives_per_player = int(settings['Lives Per Player'])
         self._time_limit = float(settings['Time Limit'])
@@ -251,16 +254,16 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
-        self.default_music = (ba.MusicType.EPIC
-                              if self._epic_mode else ba.MusicType.SURVIVAL)
+        self.default_music = (bs.MusicType.EPIC
+                              if self._epic_mode else bs.MusicType.SURVIVAL)
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Last team standing wins.' if isinstance(
-            self.session, ba.DualTeamSession) else 'Last one standing wins.'
+            self.session, bs.DualTeamSession) else 'Last one standing wins.'
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
         return 'last team standing wins' if isinstance(
-            self.session, ba.DualTeamSession) else 'last one standing wins'
+            self.session, bs.DualTeamSession) else 'last one standing wins'
 
     def on_player_join(self, player: Player) -> None:
 
@@ -271,11 +274,11 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
             # (otherwise blocked new ffa players are considered 'still alive'
             # in score tallying).
             if (self._get_total_team_lives(player.team) == 0
-                    and player.team.survival_seconds is None):
+                and player.team.survival_seconds is None):
                 player.team.survival_seconds = 0
-            ba.screenmessage(
-                ba.Lstr(resource='playerDelayedJoinText',
-                        subs=[('${PLAYER}', player.getname(full=True))]),
+            bs.broadcastmessage(
+                babase.Lstr(resource='playerDelayedJoinText',
+                            subs=[('${PLAYER}', player.getname(full=True))]),
                 color=(0, 1, 0),
             )
             return
@@ -291,11 +294,11 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
 
     def on_begin(self) -> None:
         super().on_begin()
-        self._start_time = ba.time()
+        self._start_time = bs.time()
         self.setup_standard_time_limit(self._time_limit)
         self.setup_standard_powerup_drops()
-        self._vs_text = ba.NodeActor(
-            ba.newnode('text',
+        self._vs_text = bs.NodeActor(
+            bs.newnode('text',
                        attrs={
                            'position': (0, 92),
                            'h_attach': 'center',
@@ -306,16 +309,16 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
                            'scale': 0.6,
                            'v_attach': 'bottom',
                            'color': (0.8, 0.8, 0.3, 1.0),
-                           'text': ba.Lstr(resource='vsText')
+                           'text': babase.Lstr(resource='vsText')
                        }))
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
-        if (isinstance(self.session, ba.DualTeamSession)
-                and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+        if (isinstance(self.session, bs.DualTeamSession)
+            and self._balance_total_lives and self.teams[0].players
+            and self.teams[1].players):
             if self._get_total_team_lives(
-                    self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:
@@ -331,7 +334,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
 
         # We could check game-over conditions at explicit trigger points,
         # but lets just do the simple thing and poll it.
-        ba.timer(1.0, self._update, repeat=True)
+        bs.timer(1.0, self._update, repeat=True)
 
     def _update_alliance_mode(self) -> None:
         # For both teams, find the first player on the spawn order list with
@@ -389,10 +392,10 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
                     nplayers -= 1
                 test_lives += 1
 
-    def _get_spawn_point(self, player: Player) -> Optional[ba.Vec3]:
+    def _get_spawn_point(self, player: Player) -> Optional[babase.Vec3]:
         return None
 
-    def spawn_player(self, player: Player) -> ba.Actor:
+    def spawn_player(self, player: Player) -> bs.Actor:
         actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
 
         # If we have any icons, update their state.
@@ -401,7 +404,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
         return actor
 
     def _print_lives(self, player: Player) -> None:
-        from bastd.actor import popuptext
+        from bascenev1lib.actor import popuptext
 
         # We get called in a timer so it's possible our player has left/etc.
         if not player or not player.is_alive() or not player.node:
@@ -424,20 +427,20 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
 
         # Update icons in a moment since our team will be gone from the
         # list then.
-        ba.timer(0, self._update_icons)
+        bs.timer(0, self._update_icons)
 
         # If the player to leave was the last in spawn order and had
         # their final turn currently in-progress, mark the survival time
         # for their team.
         if self._get_total_team_lives(player.team) == 0:
             assert self._start_time is not None
-            player.team.survival_seconds = int(ba.time() - self._start_time)
+            player.team.survival_seconds = int(bs.time() - self._start_time)
 
     def _get_total_team_lives(self, team: Team) -> int:
         return sum(player.lives for player in team.players)
 
     def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, ba.PlayerDiedMessage):
+        if isinstance(msg, bs.PlayerDiedMessage):
 
             # Augment standard behavior.
             super().handlemessage(msg)
@@ -445,7 +448,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
 
             player.lives -= 1
             if player.lives < 0:
-                ba.print_error(
+                babase.print_error(
                     "Got lives < 0 in Alliance Elimination; this shouldn't happen.")
                 player.lives = 0
 
@@ -456,14 +459,14 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
             # Play big death sound on our last death
             # or for every one.
             if player.lives == 0:
-                ba.playsound(SpazFactory.get().single_player_death_sound)
+                SpazFactory.get().single_player_death_sound.play()
 
             # If we hit zero lives, we're dead (and our team might be too).
             if player.lives == 0:
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
-                    player.team.survival_seconds = int(ba.time() -
+                    player.team.survival_seconds = int(bs.time() -
                                                        self._start_time)
 
             # Put ourself at the back of the spawn order.
@@ -491,7 +494,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
         # the game (allows the dust to settle and draws to occur if deaths
         # are close enough).
         if len(self._get_living_teams()) < 2:
-            self._round_end_timer = ba.Timer(0.5, self.end_game)
+            self._round_end_timer = bs.Timer(0.5, self.end_game)
 
     def _get_living_teams(self) -> List[Team]:
         return [
@@ -503,7 +506,7 @@ class AllianceEliminationGame(ba.TeamGameActivity[Player, Team]):
     def end_game(self) -> None:
         if self.has_ended():
             return
-        results = ba.GameResults()
+        results = bs.GameResults()
         self._vs_text = None  # Kill our 'vs' if its there.
         for team in self.teams:
             results.set_team_score(team, team.survival_seconds)

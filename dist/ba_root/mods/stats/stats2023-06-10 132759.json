@@ -1,0 +1,44 @@
+{
+  "startDate": "06-05-2023",
+  "stats": {
+    "pb-IF4VAk4a": {
+      "rank": 1,
+      "name": "pb-IF4VAk4a",
+      "scores": 0,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 18,
+      "kd": 0.0,
+      "avg_score": 0.0,
+      "aid": "pb-IF4VAk4a",
+      "last_seen": "2022-04-26 17:01:13.715014"
+    },
+    "pb-IF4iU0QaEw==": {
+      "rank": 2,
+      "name": "BCS",
+      "scores": 112,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 8,
+      "games": 5,
+      "kd": 0.0,
+      "avg_score": 22.4,
+      "last_seen": "2023-05-06 17:58:33.240303",
+      "aid": "pb-IF4iU0QaEw=="
+    },
+    "pb-IF4CUGMfXA==": {
+      "rank": 3,
+      "name": "PC913901",
+      "scores": 92,
+      "total_damage": 0.0,
+      "kills": 0,
+      "deaths": 0,
+      "games": 6,
+      "kd": 0.0,
+      "avg_score": 15.333,
+      "last_seen": "2023-05-29 19:05:46.803917",
+      "aid": "pb-IF4CUGMfXA=="
+    }
+  }
+}

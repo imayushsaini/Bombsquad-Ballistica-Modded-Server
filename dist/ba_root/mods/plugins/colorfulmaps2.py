@@ -2,9 +2,11 @@
 # Just edit Config before starting server
 # by: Lirik
 # Further edited/Fixed by:Freak
-import ba
-import random
 from random import choice
+
+import bascenev1 as bs
+from bascenev1._map import Map
+
 CONFIGS = {
     "Radius": 2.0,
     "Blinking": False,
@@ -53,7 +55,7 @@ def get_adaptive_pos(name: str) -> tuple:
 
 
 def Map___init__(func):
-    """Redefined method for ba.Map"""
+    """Redefined method for babase.Map"""
 
     def wrapper(self, vr_overlay_offset=None):
         func(self, vr_overlay_offset)
@@ -66,7 +68,7 @@ def Map___init__(func):
         left_color, right_color = get_colors()
         left_pos, right_pos = get_adaptive_pos(name)
 
-        self.left_light = ba.newnode(
+        self.left_light = bs.newnode(
             "light",
             attrs={
                 "position": left_pos,
@@ -77,7 +79,7 @@ def Map___init__(func):
             },
         )
 
-        self.right_light = ba.newnode(
+        self.right_light = bs.newnode(
             "light",
             attrs={
                 "position": right_pos,
@@ -88,13 +90,13 @@ def Map___init__(func):
             },
         )
 
-        ba.animate(
+        bs.animate(
             self.left_light,
             "radius",
             {0: 0, 1.5: 0.5, 3: CONFIGS["Radius"]},
             loop=True if CONFIGS["Blinking"] else False,
         )
-        ba.animate(
+        bs.animate(
             self.right_light,
             "radius",
             {0: 0, 1.5: 0.5, 3: CONFIGS["Radius"]},
@@ -102,7 +104,7 @@ def Map___init__(func):
         )
 
         if CONFIGS["Colors"]["Animate"]:
-            ba.animate_array(
+            bs.animate_array(
                 self.left_light,
                 "color",
                 3,
@@ -120,4 +122,4 @@ def Map___init__(func):
     return wrapper
 
 
-ba.Map.__init__ = Map___init__(ba.Map.__init__)
+Map.__init__ = Map___init__(Map.__init__)

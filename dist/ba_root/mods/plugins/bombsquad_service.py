@@ -1,20 +1,21 @@
-import ecdsa
-import base64
-import json
-import ba
-import _ba
-import ba.internal
-from stats import mystats
-from typing import Optional, Any, Dict, List, Type, Sequence
-from ba._gameactivity import GameActivity
-from playersData import pdata
-from serverData import serverdata
-from tools import servercheck, logger, notification_manager
-import setting
-from datetime import datetime
+import babase
 import _thread
 import os
+from datetime import datetime
+
+import _babase
+import setting
 import yaml
+from babase._gameactivity import GameActivity
+from playersData import pdata
+from serverData import serverdata
+from stats import mystats
+from typing import Type
+
+import babase
+import bascenev1 as bs
+from tools import servercheck, logger, notification_manager
+
 stats = {}
 leaderboard = {}
 top200 = {}
@@ -25,14 +26,16 @@ serverinfo = {}
 class BsDataThread(object):
     def __init__(self):
         global stats
-        stats["name"] = _ba.app.server._config.party_name
+        stats["name"] = _babase.app.server._config.party_name
         stats["discord"] = "https://discord.gg/ucyaesh"
         stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
-        self.refresh_stats_cache_timer = ba.Timer(8, ba.Call(self.refreshStats),
-                                                  timetype=ba.TimeType.REAL, repeat=True)
-        self.refresh_leaderboard_cache_timer = ba.Timer(10, ba.Call(
-            self.refreshLeaderboard), timetype=ba.TimeType.REAL, repeat=True)
+        self.refresh_stats_cache_timer = bs.Timer(8, babase.Call(
+            self.refreshStats),
+                                                  babase.TimeType.REAL,
+                                                  repeat=True)
+        self.refresh_leaderboard_cache_timer = bs.Timer(10, babase.Call(
+            self.refreshLeaderboard), babase.TimeType.REAL, repeat=True)
 
     def startThread(self):
         _thread.start_new_thread(self.refreshLeaderboard, ())
@@ -55,18 +58,21 @@ class BsDataThread(object):
         nextMap = ''
         currentMap = ''
 
-        for i in ba.internal.get_game_roster():
+        for i in babase.internal.get_game_roster():
             try:
                 liveplayers[i['account_id']] = {
-                    'name': i['players'][0]['name_full'], 'client_id': i['client_id'], 'device_id': i['display_string']}
+                    'name': i['players'][0]['name_full'],
+                    'client_id': i['client_id'],
+                    'device_id': i['display_string']}
             except:
                 liveplayers[i['account_id']] = {
-                    'name': "<in-lobby>", 'client_id': i['client_id'], 'device_id': i['display_string']}
+                    'name': "<in-lobby>", 'client_id': i['client_id'],
+                    'device_id': i['display_string']}
         try:
-            nextMap = ba.internal.get_foreground_host_session(
+            nextMap = bs.get_foreground_host_session(
             ).get_next_game_description().evaluate()
 
-            current_game_spec = ba.internal.get_foreground_host_session()._current_game_spec
+            current_game_spec = bs.get_foreground_host_session()._current_game_spec
             gametype: Type[GameActivity] = current_game_spec['resolved_type']
 
             currentMap = gametype.get_settings_display_string(
@@ -78,28 +84,30 @@ class BsDataThread(object):
         system = {'cpu': "null", 'ram': 'null'}
         stats['system'] = system
         stats['roster'] = liveplayers
-        stats['chats'] = ba.internal.get_chat_messages()
+        stats['chats'] = babase.internal.get_chat_messages()
         stats['playlist'] = current_games
         stats['teamInfo'] = self.getTeamInfo()
         stats["sessionType"] = type(
-            ba.internal.get_foreground_host_session()).__name__
+            babase.internal.get_foreground_host_session()).__name__
 
         # print(self.getTeamInfo());
 
     def getTeamInfo(self):
         data = {}
-        session = ba.internal.get_foreground_host_session()
+        session = bs.get_foreground_host_session()
         if session:
             teams = session.sessionteams
             for team in teams:
-                data[str(team.id)] = {'name': team.name if isinstance(team.name, str) else team.name.evaluate(),
+                data[str(team.id)] = {'name': team.name if isinstance(team.name,
+                                                                      str) else team.name.evaluate(),
                                       'color': list(team.color),
                                       'score': team.customdata['score'],
                                       'players': []
                                       }
                 for player in team.players:
                     teamplayer = {'name': player.getname(),
-                                  'device_id': player.inputdevice.get_v1_account_name(True),
+                                  'device_id': player.inputdevice.get_v1_account_name(
+                                      True),
                                   'inGame': player.in_game,
                                   'character': player.character,
                                   'account_id': player.get_v1_account_id()
@@ -139,8 +147,11 @@ def get_roles():
 
 def get_perks():
     # TODO wire with spaz_effects to fetch list of effects.
-    return {"perks": pdata.get_custom_perks(), "availableEffects": ["spark", "glow", "fairydust", "sparkground", "sweat", "sweatground", "distortion", "shine", "highlightshine", "scorch", "ice", "iceground",
-                                                                    "slime", "metal",  "splinter",  "rainbow"]}
+    return {"perks": pdata.get_custom_perks(),
+            "availableEffects": ["spark", "glow", "fairydust", "sparkground",
+                                 "sweat", "sweatground", "distortion", "shine",
+                                 "highlightshine", "scorch", "ice", "iceground",
+                                 "slime", "metal", "splinter", "rainbow"]}
 
 
 def update_perks(custom):
@@ -179,8 +190,9 @@ def search_player_profile(search_key: str, db: str):
     count = 0
     for key in selectedDB.keys():
         if (search_key == key or
-           any(search_key.lower() in s.lower() for s in selectedDB[key].get("display_string", [])) or
-                search_key.lower() in selectedDB[key].get("name", "").lower()):
+            any(search_key.lower() in s.lower() for s in
+                selectedDB[key].get("display_string", [])) or
+            search_key.lower() in selectedDB[key].get("name", "").lower()):
             matching_objects[key] = selectedDB[key]
             count += 1
             if count > 50:
@@ -204,14 +216,21 @@ def get_player_details(account_id: str):
     if haveBanReason:
         isBanned = True
         extra_info += " , Banned for > " + haveBanReason
-    if account_id in pdata.get_blacklist()["muted-ids"] and current_time < datetime.strptime(pdata.get_blacklist()["muted-ids"][account_id]["till"], "%Y-%m-%d %H:%M:%S"):
+    if account_id in pdata.get_blacklist()[
+        "muted-ids"] and current_time < datetime.strptime(
+        pdata.get_blacklist()["muted-ids"][account_id]["till"],
+        "%Y-%m-%d %H:%M:%S"):
         isMuted = True
-        extra_info += f', Muted for > { pdata.get_blacklist()["muted-ids"][account_id]["reason"] } , till > {pdata.get_blacklist()["muted-ids"][account_id]["till"]} ,'
-    if account_id in pdata.get_blacklist()["kick-vote-disabled"] and current_time < datetime.strptime(pdata.get_blacklist()["kick-vote-disabled"][account_id]["till"], "%Y-%m-%d %H:%M:%S"):
+        extra_info += f', Muted for > {pdata.get_blacklist()["muted-ids"][account_id]["reason"]} , till > {pdata.get_blacklist()["muted-ids"][account_id]["till"]} ,'
+    if account_id in pdata.get_blacklist()[
+        "kick-vote-disabled"] and current_time < datetime.strptime(
+        pdata.get_blacklist()["kick-vote-disabled"][account_id]["till"],
+        "%Y-%m-%d %H:%M:%S"):
         isKickVoteDisabled = True
-        extra_info += f', Kick vote disabled for > { pdata.get_blacklist()["kick-vote-disabled"][account_id]["reason"] } , till > {pdata.get_blacklist()["kick-vote-disabled"][account_id]["till"]} '
+        extra_info += f', Kick vote disabled for > {pdata.get_blacklist()["kick-vote-disabled"][account_id]["reason"]} , till > {pdata.get_blacklist()["kick-vote-disabled"][account_id]["till"]} '
 
-    return {"extra": extra_info, "isBan": isBanned, "isMuted": isMuted, "isKickVoteDisabled": isKickVoteDisabled}
+    return {"extra": extra_info, "isBan": isBanned, "isMuted": isMuted,
+            "isKickVoteDisabled": isKickVoteDisabled}
 
 
 def unban_player(account_id):
@@ -227,6 +246,7 @@ def unmute_player(account_id):
 def enable_kick_vote(account_id):
     logger.log(f'enabling kick vote for {account_id} , request from web')
     pdata.enable_kick_vote(account_id)
+
 
 # TODO take duration input
 
@@ -247,7 +267,7 @@ def disable_kick_vote(account_id, duration):
 
 
 def get_server_config():
-    return _ba.app.server._config.__dict__
+    return _babase.app.server._config.__dict__
 
 
 def update_server_config(config):
@@ -260,9 +280,10 @@ def update_server_config(config):
 
 def do_action(action, value):
     if action == "message":
-        _ba.pushcall(ba.Call(_ba.chatmessage, value), from_other_thread=True)
+        _babase.pushcall(babase.Call(_babase.chatmessage, value),
+                         from_other_thread=True)
     elif action == "quit":
-        _ba.pushcall(ba.Call(_ba.quit), from_other_thread=True)
+        _babase.pushcall(babase.Call(_babase.quit), from_other_thread=True)
 
 
 def subscribe_player(sub, account_id, name):
