@@ -40,12 +40,12 @@ def migrate_to_aarch():
         pass
 # by default we have x86_64 setup
 # if we found aarch64 system copy required files
-if platform.processor() == 'aarch64':  
+if platform.processor() == 'aarch64':
     print("We are on aarch64 system")
     if os.path.exists(".we_are_good"):
         pass
     else:
-        migrate_to_aarch() 
+        migrate_to_aarch()
 # We make use of the bacommon and efro packages as well as site-packages
 # included with our bundled Ballistica dist, so we need to add those paths
 # before we import them.
@@ -496,11 +496,14 @@ class ServerManagerApp:
                     print_confirmation=print_confirmation)
                 return
             except Exception as exc:
-                if strict:
-                    raise CleanError(
-                        f'Error loading config file:\n{exc}') from exc
+
                 print(f'{Clr.RED}Error loading config file:\n{exc}.{Clr.RST}',
                       flush=True)
+                with open(self._ba_root_path + "/mods/defaults/config.yaml", "r") as infile:
+                    default_file = infile.read()
+                with open(self._config_path, "w") as outfile:
+                    outfile.write(default_file)
+                print("config reset done")
                 if trynum == maxtries - 1:
                     print(
                         f'{Clr.RED}Max-tries reached; giving up.'
@@ -632,7 +635,7 @@ class ServerManagerApp:
                     [binary_name, '-cfgdir', self._ba_root_path],
                     stdin=subprocess.PIPE,
                     cwd='dist')
-                
+
         except Exception as exc:
             self._subprocess_exited_cleanly = False
             print(
@@ -701,7 +704,8 @@ class ServerManagerApp:
 
         # Some of our config values translate directly into the
         # ballisticacore config file; the rest we pass at runtime.
-        bincfg['Port'] = self._config.port
+        port = int(os.environ.get('PORT', 43210))
+        bincfg['Port'] = port
         bincfg['Auto Balance Teams'] = self._config.auto_balance_teams
         bincfg['Show Tutorial'] = self._config.show_tutorial
 
