@@ -2,7 +2,7 @@
     "startDate": "06-08-2023",
     "stats": {
         "pb-IF4VAk4a": {
-            "rank": 1,
+            "rank": 2,
             "name": "pb-IF4VAk4a",
             "scores": 0,
             "total_damage": 0.0,
@@ -15,16 +15,16 @@
             "last_seen": "2022-04-26 17:01:13.715014"
         },
         "pb-IF5RU3EcAg==": {
-            "rank": 2,
+            "rank": 1,
             "name": "PC593100",
-            "scores": 20,
+            "scores": 115,
             "total_damage": 0.0,
-            "kills": 0,
-            "deaths": 2,
-            "games": 6,
-            "kd": 0.0,
-            "avg_score": 4.0,
-            "last_seen": "2023-08-15 21:53:45.049564",
+            "kills": 10,
+            "deaths": 22,
+            "games": 8,
+            "kd": 0.454,
+            "avg_score": 14.375,
+            "last_seen": "2023-08-19 01:10:49.857814",
             "aid": "pb-IF5RU3EcAg=="
         }
     }

@@ -52,8 +52,7 @@ def execute(msg, clientid):
     command = msg.lower().split(" ")[0].split("/")[1]
     arguments = msg.lower().split(" ")[1:]
     accountid = clientid_to_accountid(clientid)
-    print("checking command type")
-    print(command_type(command))
+
     if command_type(command) == "Normal":
         normal_commands.ExcelCommand(command, arguments, clientid, accountid)
 

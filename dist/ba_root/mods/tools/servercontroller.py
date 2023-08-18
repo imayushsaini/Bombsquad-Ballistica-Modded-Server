@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 
 import bascenev1 as bs
 from efro.terminal import Clr
-
+import bauiv1 as bui
+import babase
 if TYPE_CHECKING:
     pass
 
@@ -52,10 +53,10 @@ def _fetch_public_servers():
     bui.app.plus.add_v1_account_transaction(
         {
             'type': 'PUBLIC_PARTY_QUERY',
-            'proto': babase.app.protocol_version,
+            'proto': bui.app.protocol_version,
             'lang': bs.app.lang.language,
         },
-        callback=babase.Call(_on_public_party_response),
+        callback=bui.WeakCall(_on_public_party_response),
     )
     bui.app.plus.run_v1_account_transactions()
 

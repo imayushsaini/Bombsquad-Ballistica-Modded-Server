@@ -22982,14 +22982,14 @@
         "lastSpam": 1692041275.3951833,
         "totaltimeplayer": 0,
         "warnCount": 0,
-        "lastWarned": 1692116320.3350005,
+        "lastWarned": 1692388455.527413,
         "verified": true,
         "rejoincount": 1,
-        "lastJoin": 1692116320.3350034,
+        "lastJoin": 1692388455.5274153,
         "lastIP": "axj~|h~}hhai",
         "deviceUUID": "26f30cfd3921c2d15574b534cb824c952b14f189",
-        "cMsgCount": 0,
-        "lastMsgTime": 1692092832.8181152,
+        "cMsgCount": 1,
+        "lastMsgTime": 1692388464.9424736,
         "lastMsg": "/ping all",
         "cSameMsg": 0
     }
