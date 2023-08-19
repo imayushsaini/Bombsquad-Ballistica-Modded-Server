@@ -35,8 +35,6 @@ def _cmd(command_data: bytes) -> None:
     assert babase.app.classic is not None
 
     command = pickle.loads(command_data)
-    print("server mode got command")
-    print(command)
     assert isinstance(command, ServerCommand)
 
     if isinstance(command, StartServerModeCommand):
