@@ -80,7 +80,7 @@ def fetchChangelogs():
 
 def checkChangelog():
     changelog = fetchChangelogs()
-    if changelog == None:
+    if changelog is None:
         print(
             f'{Clr.BRED} UNABLE TO CHECK UPDATES , CHECK MANUALLY FROM URL {Clr.RST}',
             flush=True)

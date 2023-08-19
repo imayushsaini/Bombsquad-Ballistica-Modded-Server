@@ -104,7 +104,7 @@ class FireFly(bs.Actor):
 
     def off(self):
         death_secs = random.uniform(0.5, 3)
-        with babase.Context(self._activity()):
+        with self._activity().context():
             bs.animate(
                 self.node,
                 'mesh_scale',

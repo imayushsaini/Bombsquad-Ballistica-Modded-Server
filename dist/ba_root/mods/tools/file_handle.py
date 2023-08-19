@@ -64,7 +64,7 @@ class JsonFile:
             output = json.dumps(data, indent=4)
             output2 = re.sub(r'": \[\s+', '": [', output)
             output3 = re.sub(r'",\s+', '", ', output2)
-            output4 = re.sub(r'"\s+\]', '"]', output3)
+            output4 = re.sub(r'"\s+]', '"]', output3)
 
             with open(self.path, mode="w", encoding="utf-8") as json_file:
                 json_file.write(output4)

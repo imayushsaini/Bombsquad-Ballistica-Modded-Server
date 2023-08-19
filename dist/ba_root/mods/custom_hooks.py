@@ -17,7 +17,6 @@ import time
 from datetime import datetime
 
 import _babase
-import _bascenev1
 from typing import TYPE_CHECKING
 
 import babase
@@ -65,13 +64,13 @@ class modSetup(babase.Plugin):
         bootstraping()
         servercheck.checkserver().start()
         ServerUpdate.check()
-        bs.AppTimer(5, account.updateOwnerIps)
+        bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):
 
-            if (babase.internal.get_v1_account_state() ==
-                'signed_in' and babase.internal.get_v1_account_type() == 'V2'):
+            if (plus.get_v1_account_state() ==
+                'signed_in' and plus.get_v1_account_type() == 'V2'):
                 logging.debug("Account V2 is active")
             else:
                 logging.warning("Account V2 login require ....stay tuned.")

@@ -4,10 +4,11 @@ from __future__ import annotations
 import _babase
 import math
 import random
-from babase._generated.enums import InputType
-from typing import TYPE_CHECKING
 
+from typing import TYPE_CHECKING
+from babase import InputType
 import bascenev1 as bs
+import babase
 from bascenev1lib.actor.bomb import Bomb
 from bascenev1lib.gameutils import SharedObjects
 
@@ -209,7 +210,7 @@ class Floater(bs.Actor):
 
 
 def assignFloInputs(clientID: int):
-    with babase.Context(_babase.get_foreground_host_activity()):
+    with bs.get_foreground_host_activity().context():
         activity = bs.getactivity()
         if not hasattr(activity, 'flo') or not activity.flo.node.exists():
             try:

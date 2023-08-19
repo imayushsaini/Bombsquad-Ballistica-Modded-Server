@@ -2,7 +2,7 @@ from random import randint
 
 import setting
 from spazmod import tag
-
+import babase
 import bascenev1 as bs
 
 _setting = setting.get_settings_data()
@@ -55,7 +55,7 @@ def getCharacter(player, character):
 
 
 def getRandomCharacter(otherthen):
-    characters = list(babase.app.spaz_appearances.keys())
+    characters = list(babase.app.classic.spaz_appearances.keys())
     invalid_characters = ["Snake Shadow", "Lee", "Zola", "Butch", "Witch",
                           "Middle-Man", "Alien", "OldLady", "Wrestler",
                           "Gretel", "Robot"]
@@ -71,7 +71,7 @@ def setTeamCharacter():
     if not _setting["sameCharacterForTeam"]:
         return
     used = []
-    teams = babase.internal.get_foreground_host_session().sessionteams
+    teams = bs.get_foreground_host_session().sessionteams
     if len(teams) < 10:
         for team in teams:
             character = getRandomCharacter(used)

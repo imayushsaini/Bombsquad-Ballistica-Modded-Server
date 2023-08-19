@@ -21,8 +21,7 @@ class checkIdle(object):
     def check(self):
         global cLastIdle
         global cIdle
-        current = bs.time(babase.TimeType.REAL,
-                          timeformat=babase.TimeFormat.MILLISECONDS)
+        current = bs.apptime() * 1000
         if not bs.get_foreground_host_session():
             return
         for player in bs.get_foreground_host_session().sessionplayers:
@@ -54,7 +53,7 @@ class checkIdle(object):
                     lobby_afk = int(
                         (current - self.lobbies[player['client_id']]) / 1000)
                     if lobby_afk in range(INLOBBY_TIME, INLOBBY_TIME + 10):
-                        _bs.broadcastmessage("Join game within " + str(
+                        bs.broadcastmessage("Join game within " + str(
                             INLOBBY_TIME + 10 - lobby_afk) + " secs",
                                              color=(1, 0, 0), transient=True,
                                              clients=[player['client_id']])

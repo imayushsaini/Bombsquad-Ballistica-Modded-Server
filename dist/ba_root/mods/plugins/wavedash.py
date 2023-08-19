@@ -41,7 +41,7 @@ class MikiWavedashTest:
         if self.node.knockout > 0.0 or self.frozen or self.node.hold_node:
             return
 
-        t_ms = bs.time(timeformat=babase.TimeFormat.MILLISECONDS)
+        t_ms = bs.time() * 1000
         assert isinstance(t_ms, int)
 
         if t_ms - self.last_wavedash_time_ms >= self._wavedash_cooldown:

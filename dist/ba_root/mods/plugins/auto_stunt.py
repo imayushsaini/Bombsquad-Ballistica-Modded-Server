@@ -17,11 +17,10 @@ import babase
 import bascenev1 as bs
 import bascenev1lib
 import bauiv1 as bui
-from bascenev1lib.actor import spaz
+from bascenev1lib.actor import spaz, playerspaz
 from bascenev1lib.actor.image import Image
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory
 from bascenev1lib.actor.spazfactory import SpazFactory
-from bascenev1lib.actor.text import Text
 from bascenev1lib.game.elimination import EliminationGame
 from bascenev1lib.gameutils import SharedObjects
 

@@ -1,4 +1,4 @@
-import babase
+
 import _thread
 import os
 from datetime import datetime
@@ -30,12 +30,10 @@ class BsDataThread(object):
         stats["discord"] = "https://discord.gg/ucyaesh"
         stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
-        self.refresh_stats_cache_timer = bs.Timer(8, babase.Call(
-            self.refreshStats),
-                                                  babase.TimeType.REAL,
-                                                  repeat=True)
-        self.refresh_leaderboard_cache_timer = bs.Timer(10, babase.Call(
-            self.refreshLeaderboard), babase.TimeType.REAL, repeat=True)
+        self.refresh_stats_cache_timer = bs.AppTimer(8, babase.Call(
+            self.refreshStats) , repeat=True)
+        self.refresh_leaderboard_cache_timer = bs.AppTimer(10, babase.Call(
+            self.refreshLeaderboard), repeat=True)
 
     def startThread(self):
         _thread.start_new_thread(self.refreshLeaderboard, ())
@@ -58,7 +56,7 @@ class BsDataThread(object):
         nextMap = ''
         currentMap = ''
 
-        for i in babase.internal.get_game_roster():
+        for i in bs.get_game_roster():
             try:
                 liveplayers[i['account_id']] = {
                     'name': i['players'][0]['name_full'],
@@ -84,11 +82,11 @@ class BsDataThread(object):
         system = {'cpu': "null", 'ram': 'null'}
         stats['system'] = system
         stats['roster'] = liveplayers
-        stats['chats'] = babase.internal.get_chat_messages()
+        stats['chats'] = bs.get_chat_messages()
         stats['playlist'] = current_games
         stats['teamInfo'] = self.getTeamInfo()
         stats["sessionType"] = type(
-            babase.internal.get_foreground_host_session()).__name__
+            bs.get_foreground_host_session()).__name__
 
         # print(self.getTeamInfo());
 

@@ -72,15 +72,15 @@ def kill(arguments, clientid):
 def heal(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.PowerupMessage(poweruptype='health'))
+        handlemsg(myself, bs.PowerupMessage(poweruptype='health'))
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.PowerupMessage(poweruptype='health'))
+        handlemsg_all(bs.PowerupMessage(poweruptype='health'))
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.PowerupMessage(poweruptype='health'))
+            handlemsg(req_player, bs.PowerupMessage(poweruptype='health'))
         except:
             return
 
@@ -88,15 +88,15 @@ def heal(arguments, clientid):
 def curse(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.PowerupMessage(poweruptype='curse'))
+        handlemsg(myself, bs.PowerupMessage(poweruptype='curse'))
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.PowerupMessage(poweruptype='curse'))
+        handlemsg_all(bs.PowerupMessage(poweruptype='curse'))
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.PowerupMessage(poweruptype='curse'))
+            handlemsg(req_player, bs.PowerupMessage(poweruptype='curse'))
         except:
             return
 
@@ -164,15 +164,15 @@ def super_punch(arguments, clientid):
 def gloves(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.PowerupMessage(poweruptype='punch'))
+        handlemsg(myself, bs.PowerupMessage(poweruptype='punch'))
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.PowerupMessage(poweruptype='punch'))
+        handlemsg_all(bs.PowerupMessage(poweruptype='punch'))
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.PowerupMessage(poweruptype='punch'))
+            handlemsg(req_player, bs.PowerupMessage(poweruptype='punch'))
         except:
             return
 
@@ -180,15 +180,15 @@ def gloves(arguments, clientid):
 def shield(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.PowerupMessage(poweruptype='shield'))
+        handlemsg(myself, bs.PowerupMessage(poweruptype='shield'))
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.PowerupMessage(poweruptype='shield'))
+        handlemsg_all(bs.PowerupMessage(poweruptype='shield'))
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.PowerupMessage(poweruptype='shield'))
+            handlemsg(req_player, bs.PowerupMessage(poweruptype='shield'))
         except:
             return
 
@@ -196,15 +196,15 @@ def shield(arguments, clientid):
 def freeze(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.FreezeMessage())
+        handlemsg(myself, bs.FreezeMessage())
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.FreezeMessage())
+        handlemsg_all(bs.FreezeMessage())
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.FreezeMessage())
+            handlemsg(req_player, bs.FreezeMessage())
         except:
             return
 
@@ -212,15 +212,15 @@ def freeze(arguments, clientid):
 def un_freeze(arguments, clientid):
     if arguments == [] or arguments == ['']:
         myself = clientid_to_myself(clientid)
-        handlemsg(myself, babase.ThawMessage())
+        handlemsg(myself, bs.ThawMessage())
 
     elif arguments[0] == 'all':
-        handlemsg_all(babase.ThawMessage())
+        handlemsg_all(bs.ThawMessage())
 
     else:
         try:
             req_player = int(arguments[0])
-            handlemsg(req_player, babase.ThawMessage())
+            handlemsg(req_player, bs.ThawMessage())
         except:
             return
 

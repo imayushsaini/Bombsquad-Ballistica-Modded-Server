@@ -304,7 +304,7 @@ def ban(arguments):
                 pdata.ban_player(
                     account["pbid"], duration, "by chat command")
                 logger.log(
-                    f'banned {ros["display_string"]} by chat command, recents')
+                    f'banned {account["pbid"]} by chat command, recents')
         kick(arguments)
     except:
         pass
@@ -350,7 +350,7 @@ def un_mute(arguments):
             if account['client_id'] == int(arguments[0]):
                 pdata.unmute(account["pbid"])
                 logger.log(
-                    f'unmuted {ros["display_string"]} by chat command, recents')
+                    f'unmuted {account["pbid"]} by chat command, recents')
     except:
         pass
 
@@ -377,7 +377,7 @@ def remove(arguments):
 def slow_motion():
     activity = _babase.get_foreground_host_activity()
 
-    if activity.globalsnode.slow_motion != True:
+    if not activity.globalsnode.slow_motion:
         activity.globalsnode.slow_motion = True
 
     else:
@@ -423,7 +423,7 @@ def dv(arguments):
 def pause():
     activity = _babase.get_foreground_host_activity()
 
-    if activity.globalsnode.paused != True:
+    if not activity.globalsnode.paused:
         activity.globalsnode.paused = True
 
     else:
@@ -437,7 +437,7 @@ def rotate_camera():
         activity.globalsnode.camera_mode = 'rotate'
 
     else:
-        activity.globalsnode.camera_mode == 'normal'
+        activity.globalsnode.camera_mode = 'normal'
 
 
 def create_role(arguments):

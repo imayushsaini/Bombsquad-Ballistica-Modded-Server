@@ -98,24 +98,24 @@ def check_queue():
 def on_update_response(response):
     allowed_to_join = response["c"]
     players_in_queue = response["e"]
-    max_allowed_in_server = _babase.app.server._config.max_party_size
-    current_players = len(_babase.get_game_roster())
+    max_allowed_in_server = babase.app.classic.server._config.max_party_size
+    current_players = len(bs.get_game_roster())
     # print(allowed_to_join)
     if allowed_to_join:
         #  looks good , yipee
-        _babase.set_public_party_queue_enabled(True)
+        bs.set_public_party_queue_enabled(True)
         return
     if not allowed_to_join and len(
         players_in_queue) > 1 and current_players < max_allowed_in_server:
         #  something is wrong , lets disable queue for some time
-        _babase.set_public_party_queue_enabled(False)
+        bs.set_public_party_queue_enabled(False)
 
 
 def simple_queue_checker():
-    max_allowed_in_server = _babase.app.server._config.max_party_size
-    current_players = len(_babase.get_game_roster())
+    max_allowed_in_server = babase.app.classic.server._config.max_party_size
+    current_players = len(bs.get_game_roster())
 
     if current_players < max_allowed_in_server:
-        _babase.set_public_party_queue_enabled(False)
+        bs.set_public_party_queue_enabled(False)
     else:
-        _babase.set_public_party_queue_enabled(True)
+        bs.set_public_party_queue_enabled(True)

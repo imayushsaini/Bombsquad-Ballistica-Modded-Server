@@ -16,16 +16,16 @@ def handle_hit(mag, pos):
             if mag >= 110:
                 PopupText("#PRO !", color=(1, 0.2, 0.2), scale=1.6,
                           position=pos).autoretain()
-            elif mag >= 93 and mag < 110:
+            elif 93 <= mag < 110:
                 PopupText("GOOD ONE!", color=(1, 0.3, 0.1), scale=1.6,
                           position=pos).autoretain()
-            elif mag >= 63 and mag < 93:
+            elif 63 <= mag < 93:
                 PopupText("OH! YEAH", color=(1, 0.5, 0.2), scale=1.6,
                           position=pos).autoretain()
-            elif mag >= 45 and mag < 63:
+            elif 45 <= mag < 63:
                 PopupText("WTF!", color=(0.7, 0.4, 0.2), scale=1.6,
                           position=pos).autoretain()
-            elif mag > 30 and mag < 45:
+            elif 30 < mag < 45:
                 PopupText("!!!", color=(1, 1, 1), scale=1.6,
                           position=pos).autoretain()
         except:

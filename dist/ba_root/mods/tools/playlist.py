@@ -7,7 +7,7 @@ import time
 
 import _babase
 import setting
-
+from bascenev1 import filter_playlist
 import babase
 import bascenev1 as bs
 import bauiv1 as bui
@@ -67,19 +67,19 @@ def updateSession(session, playlist):
 
 def updatePlaylist(playlist):
     session = bs.get_foreground_host_session()
-    content = babase._playlist.filter_playlist(
+    content = filter_playlist(
         playlist,
         sessiontype=type(session),
         add_resolved_type=True,
     )
-    playlist = babase._multiteamsession.ShuffleList(content, shuffle=False)
+    playlist = bs._multiteamsession.ShuffleList(content, shuffle=False)
     session._playlist = playlist
     set_next_map(session, playlist.pull_next())
 
 
 def set_next_map(session, game_map):
     session._next_game_spec = game_map
-    with babase.Context(session):
+    with session.context():
         session._instantiate_next_game()
 
 

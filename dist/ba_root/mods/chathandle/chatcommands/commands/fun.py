@@ -178,8 +178,8 @@ def creep(arguments):
 
             if node.head_mesh != None:
                 node.head_mesh = None
-                node.handlemessage(babase.PowerupMessage(poweruptype='punch'))
-                node.handlemessage(babase.PowerupMessage(poweruptype='shield'))
+                node.handlemessage(bs.PowerupMessage(poweruptype='punch'))
+                node.handlemessage(bs.PowerupMessage(poweruptype='shield'))
 
     else:
         try:
@@ -190,8 +190,8 @@ def creep(arguments):
 
             if node.head_mesh != None:
                 node.head_mesh = None
-                node.handlemessage(babase.PowerupMessage(poweruptype='punch'))
-                node.handlemessage(babase.PowerupMessage(poweruptype='shield'))
+                node.handlemessage(bs.PowerupMessage(poweruptype='punch'))
+                node.handlemessage(bs.PowerupMessage(poweruptype='shield'))
         except:
             return
 

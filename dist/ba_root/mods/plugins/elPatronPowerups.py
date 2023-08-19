@@ -504,7 +504,7 @@ class NewProfileBrowserWindow(browser.ProfileBrowserWindow):
         super().__init__(transition, in_main_menu, selected_profile,
                          origin_widget)
 
-        self.session = babase.internal.get_foreground_host_session()
+        self.session = bs.get_foreground_host_session()
         uiscale = bui.app.ui_v1.uiscale
         width = (100 if uiscale is
                         babase.UIScale.SMALL else -14)
@@ -688,7 +688,7 @@ def bomb_handlemessage(self, msg: Any) -> Any:
                           source_player=babase.existing(self._source_player)))
         if self.blast_type in ('ice', 'ice_bubble'):
             bomb.BombFactory.get().freeze_sound.play(10, position=nodepos)
-            node.handlemessage(babase.FreezeMessage())
+            node.handlemessage(bs.FreezeMessage())
 
     return None
 
@@ -949,7 +949,7 @@ def spaz_on_punch_release(self) -> None:
         pass
 
 
-def new_get_bomb_type_tex(self) -> babase.Texture:
+def new_get_bomb_type_tex(self):
     factory = NewPowerupBoxFactory.get()
     if self.bomb_type == 'sticky':
         return factory.tex_sticky_bombs
@@ -1002,12 +1002,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._multi_bomb_wear_off_timer = (bs.Timer(
                     (POWERUP_WEAR_OFF_TIME - 2000),
-                    babase.Call(self._multi_bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._multi_bomb_wear_off_flash)))
                 self._multi_bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    babase.Call(self._multi_bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._multi_bomb_wear_off)))
         elif msg.poweruptype == 'land_mines':
             self.set_land_mine_count(min(self.land_mine_count + 3, 3))
         elif msg.poweruptype == 'impact_bombs':
@@ -1023,12 +1021,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    babase.Call(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    babase.Call(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._bomb_wear_off)))
         elif msg.poweruptype == 'sticky_bombs':
             self.bomb_type = 'sticky'
             tex = self._get_bomb_type_tex()
@@ -1042,12 +1038,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    babase.Call(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    babase.Call(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(self._bomb_wear_off)))
         elif msg.poweruptype == 'punch':
             self._has_boxing_gloves = True
             tex = PowerupBoxFactory.get().tex_punch
@@ -1063,12 +1057,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._boxing_gloves_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    bs.WeakCall(self._gloves_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._gloves_wear_off_flash)))
                 self._boxing_gloves_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    bs.WeakCall(self._gloves_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._gloves_wear_off),))
         elif msg.poweruptype == 'shield':
             factory = SpazFactory.get()
             self.equip_shields(decay=factory.shield_decay_rate > 0)
@@ -1087,12 +1079,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    bs.WeakCall(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    bs.WeakCall(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off)))
         elif msg.poweruptype == 'health':
             if self.edg_eff:
                 f = self.color[0]
@@ -1151,12 +1141,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    bs.WeakCall(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    bs.WeakCall(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off)))
 
         elif msg.poweruptype == 'fire_bombs':
             self.bomb_type = 'fire'
@@ -1171,12 +1159,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    bs.WeakCall(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    bs.WeakCall(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off)))
 
         elif msg.poweruptype == 'impairment_bombs':
             self.bomb_type = 'impairment'
@@ -1191,12 +1177,10 @@ def new_handlemessage(self, msg: Any) -> Any:
                     t_ms + POWERUP_WEAR_OFF_TIME)
                 self._bomb_wear_off_flash_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME - 2000,
-                    bs.WeakCall(self._bomb_wear_off_flash),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off_flash)))
                 self._bomb_wear_off_timer = (bs.Timer(
                     POWERUP_WEAR_OFF_TIME,
-                    bs.WeakCall(self._bomb_wear_off),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    bs.WeakCall(self._bomb_wear_off)))
 
         elif msg.poweruptype == 'ice_man':
             tex = factory.tex_ice_man
@@ -1216,13 +1200,11 @@ def new_handlemessage(self, msg: Any) -> Any:
 
                 self.ice_man_flash_timer = (bs.Timer(
                     ice_man_time - 2000,
-                    babase.Call(_ice_man_off_flash, self),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(_ice_man_off_flash, self)))
 
                 self.ice_man_timer = (bs.Timer(ice_man_time,
                                                babase.Call(_ice_man_wear_off,
-                                                           self),
-                                               timeformat=babase.TimeFormat.MILLISECONDS))
+                                                           self)))
 
         elif msg.poweruptype == 'speed':
             self.node.hockey = True
@@ -1238,8 +1220,7 @@ def new_handlemessage(self, msg: Any) -> Any:
 
                 self.speed_flash_timer = (bs.Timer(
                     speed_time - 2000,
-                    babase.Call(_speed_off_flash, self),
-                    timeformat=babase.TimeFormat.MILLISECONDS))
+                    babase.Call(_speed_off_flash, self)))
 
                 self.speed_timer = (bs.apptimer(speed_time,
                                                 babase.Call(_speed_wear_off,
@@ -1265,11 +1246,11 @@ def new_handlemessage(self, msg: Any) -> Any:
             self.frozen = True
             self.node.frozen = True
             bs.timer(5.0, babase.Call(self.handlemessage,
-                                      babase.ThawMessage()))
+                                      bs.ThawMessage()))
             if self.hitpoints <= 0:
                 self.shatter()
         if self.freeze_punch:
-            self.handlemessage(babase.ThawMessage())
+            self.handlemessage(bs.ThawMessage())
 
     elif isinstance(msg, bs.ThawMessage):
         if self.frozen and not self.shattered and self.node:
@@ -1309,7 +1290,7 @@ def new_handlemessage(self, msg: Any) -> Any:
         def fire(time, damage):
             if not self.shield and not self._dead:
                 self.hitpoints -= damage
-                babase.show_damage_count(f'-{damage}HP',
+                bs.show_damage_count(f'-{damage}HP',
                                          self.node.position,
                                          msg.force_direction)
                 bs.getsound('fuse01').play()
@@ -1362,7 +1343,7 @@ def new_handlemessage(self, msg: Any) -> Any:
             else:
                 hitpoints = int(self.hitpoints * 0.80)
                 self.hitpoints -= int(hitpoints)
-                babase.show_damage_count((f'-{int(hitpoints / 10)}%'),
+                bs.show_damage_count((f'-{int(hitpoints / 10)}%'),
                                          self.node.position,
                                          msg.force_direction)
 
@@ -1446,7 +1427,7 @@ def new_handlemessage(self, msg: Any) -> Any:
             dism = int(damage * porcentaje)
             damage = int(damage - dism)
 
-            babase.show_damage_count('-' + str(int(damage / 10)) + '%',
+            bs.show_damage_count('-' + str(int(damage / 10)) + '%',
                                      msg.pos, msg.force_direction)
 
         self.node.handlemessage('hurt_sound')
@@ -1470,13 +1451,13 @@ def new_handlemessage(self, msg: Any) -> Any:
                 if msg.get_source_player(bs.Player).actor.freeze_punch:
                     self.node.color = (0, 1, 4)
                     bs.getsound('freeze').play()
-                    self.node.handlemessage(babase.FreezeMessage())
+                    self.node.handlemessage(bs.FreezeMessage())
             except:
                 pass
 
             if damage > 350:
                 assert msg.force_direction is not None
-                babase.show_damage_count('-' + str(int(damage / 10)) + '%',
+                bs.show_damage_count('-' + str(int(damage / 10)) + '%',
                                          msg.pos, msg.force_direction)
 
             if msg.hit_subtype == 'super_punch':
@@ -1562,7 +1543,7 @@ def new_handlemessage(self, msg: Any) -> Any:
                 self.shatter()
             elif self.hitpoints <= 0:
                 self.node.handlemessage(
-                    bs.DieMessage(how=babase.DeathType.IMPACT))
+                    bs.DieMessage(how=bs.DeathType.IMPACT))
 
         if self.hitpoints <= 0:
             damage_avg = self.node.damage_smoothed * damage_scale
@@ -1703,7 +1684,7 @@ class PowerupManagerWindow(PopupWindow):
         self._sub_height = 200
         self._scroll_width = self._width * 0.90
         self._scroll_height = self._height - 180
-        self._sub_width = self._scroll_width * 0.95;
+        self._sub_width = self._scroll_width * 0.95
         self.tab_buttons: set = {}
         self.list_cls_power: list = []
         self.default_powerups = default_powerups()
@@ -1856,7 +1837,7 @@ class PowerupManagerWindow(PopupWindow):
         if tab == 'Action 4':
             if self._scrollwidget:
                 self._scrollwidget.delete()
-            self._scrollwidget = babase.hscrollwidget(parent=self._root_widget,
+            self._scrollwidget = bui.hscrollwidget(parent=self._root_widget,
                                                       position=(
                                                       self._width * 0.08,
                                                       51 * 1.8), size=(

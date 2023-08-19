@@ -50,7 +50,7 @@ async def on_message(message):
     channel = message.channel
 
     if message.channel.id == logsChannelID:
-        _babase.pushcall(Call(babase.internal.chatmessage,
+        _babase.pushcall(Call(bs.chatmessage,
                               message.content), from_other_thread=True)
 
 
@@ -147,7 +147,7 @@ def get_chats():
 class BsDataThread(object):
     def __init__(self):
         self.refreshStats()
-        self.Timer = bs.Timer(8, babase.Call(self.refreshStats), repeat=True)
+        self.Timer = bs.AppTimer(8, babase.Call(self.refreshStats), repeat=True)
         # self.Timerr = bs.Timer( 10,babase.Call(self.refreshLeaderboard),timetype = babase.TimeType.REAL,repeat = True)
 
     # def refreshLeaderboard(self):
@@ -175,7 +175,7 @@ class BsDataThread(object):
         currentMap = ''
         global stats
 
-        for i in babase.internal.get_game_roster():
+        for i in bs.get_game_roster():
             try:
                 liveplayers[i['account_id']] = {
                     'name': i['players'][0]['name_full'],
@@ -186,11 +186,11 @@ class BsDataThread(object):
                     'name': "<in-lobby>", 'clientid': i['client_id'],
                     'device_id': i['display_string']}
         try:
-            nextMap = babase.internal.get_foreground_host_session(
+            nextMap = bs.get_foreground_host_session(
             ).get_next_game_description().evaluate()
 
-            current_game_spec = babase.internal.get_foreground_host_session()._current_game_spec
-            gametype: Type[GameActivity] = current_game_spec['resolved_type']
+            current_game_spec = bs.get_foreground_host_session()._current_game_spec
+            gametype = current_game_spec['resolved_type']
 
             currentMap = gametype.get_settings_display_string(
                 current_game_spec).evaluate()
@@ -201,7 +201,7 @@ class BsDataThread(object):
         # system={'cpu':80,'ram':34}
         # stats['system']=system
         stats['roster'] = liveplayers
-        stats['chats'] = babase.internal.get_chat_messages()
+        stats['chats'] = bs.get_chat_messages()
         stats['playlist'] = minigame
 
         # stats['teamInfo']=self.getTeamInfo()

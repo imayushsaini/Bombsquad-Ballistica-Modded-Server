@@ -41,7 +41,7 @@ class checkserver(object):
             ip = _bascenev1.get_client_ip(ros["client_id"])
             device_id = _bascenev1.get_client_public_device_uuid(
                 ros["client_id"])
-            if (device_id == None):
+            if device_id is None:
                 device_id = _bascenev1.get_client_device_uuid(ros["client_id"])
             if device_id not in deviceClientMap:
                 deviceClientMap[device_id] = [ros["client_id"]]
@@ -87,7 +87,7 @@ class checkserver(object):
                 except:
                     pass
                 if d_str2 != d_str:
-                    _bs.broadcastmessage(
+                    bs.broadcastmessage(
                         "Profanity in Id , change your ID and join back",
                         color=(1, 0, 0), transient=True,
                         clients=[ros['client_id']])
@@ -100,9 +100,9 @@ class checkserver(object):
                     bs.disconnect_client(ros['client_id'], 1)
                     return
 
-                if settings["whitelist"] and ros["account_id"] != None:
+                if settings["whitelist"] and ros["account_id"] is not None:
                     if ros["account_id"] not in pdata.CacheData.whitelist:
-                        _bs.broadcastmessage("Not in whitelist,contact admin",
+                        bs.broadcastmessage("Not in whitelist,contact admin",
                                              color=(1, 0, 0), transient=True,
                                              clients=[ros['client_id']])
                         logger.log(
@@ -111,7 +111,7 @@ class checkserver(object):
 
                         return
 
-                if ros['account_id'] != None:
+                if ros['account_id'] is not None:
                     if ros['account_id'] in serverdata.clients:
                         on_player_join_server(ros['account_id'],
                                               serverdata.clients[
@@ -140,7 +140,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
         if now - lastjoin < 15:
             joincount += 1
             if joincount > 2:
-                _bs.broadcastmessage("Joining too fast , slow down dude",
+                bs.broadcastmessage("Joining too fast , slow down dude",
                                      # its not possible now tho, network layer will catch it before reaching here
                                      color=(1, 0, 1), transient=True,
                                      clients=[clid])
@@ -158,7 +158,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
     if pbid in serverdata.clients:
         serverdata.clients[pbid]["lastJoin"] = now
 
-    if player_data != None:  # player data is in serevrdata or in local.json cache
+    if player_data is not None:  # player data is in serevrdata or in local.json cache
         serverdata.recents.append(
             {"client_id": clid, "deviceId": device_string, "pbid": pbid})
         serverdata.recents = serverdata.recents[-20:]
@@ -172,7 +172,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
             settings["minAgeToJoinInHours"]:
             for ros in bs.get_game_roster():
                 if ros['account_id'] == pbid:
-                    _bs.broadcastmessage(
+                    bs.broadcastmessage(
                         "New Accounts not allowed here , come back later",
                         color=(1, 0, 0), transient=True,
                         clients=[ros['client_id']])
@@ -199,7 +199,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
             serverdata.clients[pbid]["lastIP"] = ip
 
             device_id = _bascenev1.get_client_public_device_uuid(clid)
-            if (device_id == None):
+            if device_id is None:
                 device_id = _bascenev1.get_client_device_uuid(clid)
             serverdata.clients[pbid]["deviceUUID"] = device_id
             verify_account(pbid, player_data)  # checked for spoofed ids
@@ -209,7 +209,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
                 settings["regularWelcomeMsg"] + " " + device_string,
                 color=(0.60, 0.8, 0.6), transient=True,
                 clients=[clid])
-            if (settings["ballistica_web"]["enable"]):
+            if settings["ballistica_web"]["enable"]:
                 from . import notification_manager
                 notification_manager.player_joined(pbid)
     else:
@@ -224,7 +224,7 @@ def on_player_join_server(pbid, player_data, ip, device_id):
         thread.start()
         bs.broadcastmessage(settings["firstTimeJoinMsg"], color=(0.6, 0.8, 0.6),
                             transient=True, clients=[clid])
-        if (settings["ballistica_web"]["enable"]):
+        if settings["ballistica_web"]["enable"]:
             from . import notification_manager
             notification_manager.player_joined(pbid)
 
@@ -400,7 +400,7 @@ def save_ids(ids, pb_id, display_string):
 def kick_by_pb_id(pb_id, msg):
     for ros in bs.get_game_roster():
         if ros['account_id'] == pb_id:
-            _bs.broadcastmessage(msg, transient=True,
+            bs.broadcastmessage(msg, transient=True,
                                  clients=[ros['client_id']])
             bs.disconnect_client(ros['client_id'])
 
