@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .mypy_cache/
+.bsuuid
+.bsac2
 dist/ba_root/mods/playersdata/*.json*
 dist/ba_root/mods/serverdata/*.log
 dist/ba_root/mods/serverdata/*.log*
