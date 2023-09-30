@@ -53,7 +53,8 @@ class CoopGameActivity(GameActivity[PlayerT, TeamT]):
         super().on_begin()
 
         # Show achievements remaining.
-        if not (babase.app.demo_mode or babase.app.arcade_mode):
+        env = babase.app.env
+        if not (env.demo or env.arcade):
             _bascenev1.timer(
                 3.8, babase.WeakCall(self._show_remaining_achievements)
             )
@@ -108,7 +109,7 @@ class CoopGameActivity(GameActivity[PlayerT, TeamT]):
             )
             if not a.complete
         ]
-        vrmode = babase.app.vr_mode
+        vrmode = babase.app.env.vr
         if achievements:
             Text(
                 babase.Lstr(resource='achievementsRemainingText'),

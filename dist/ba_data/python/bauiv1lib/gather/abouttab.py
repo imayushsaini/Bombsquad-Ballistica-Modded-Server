@@ -32,11 +32,7 @@ class AboutGatherTab(GatherTab):
         plus = bui.app.plus
         assert plus is not None
 
-        party_button_label = (
-            'X'
-            if bui.app.iircade_mode
-            else bui.charstr(bui.SpecialChar.TOP_BUTTON)
-        )
+        party_button_label = bui.charstr(bui.SpecialChar.TOP_BUTTON)
         message = bui.Lstr(
             resource='gatherWindow.aboutDescriptionText',
             subs=[
@@ -47,7 +43,7 @@ class AboutGatherTab(GatherTab):
 
         # Let's not talk about sharing in vr-mode; its tricky to fit more
         # than one head in a VR-headset ;-)
-        if not bui.app.vr_mode:
+        if not bui.app.env.vr:
             message = bui.Lstr(
                 value='${A}\n\n${B}',
                 subs=[

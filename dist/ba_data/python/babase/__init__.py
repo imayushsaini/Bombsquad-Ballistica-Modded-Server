@@ -27,6 +27,7 @@ from _babase import (
     apptime,
     apptimer,
     AppTimer,
+    can_toggle_fullscreen,
     charstr,
     clipboard_get_text,
     clipboard_has_text,
@@ -39,6 +40,7 @@ from _babase import (
     DisplayTimer,
     do_once,
     env,
+    Env,
     fade_screen,
     fatal_error,
     get_display_resolution,
@@ -48,8 +50,9 @@ from _babase import (
     get_replays_dir,
     get_string_height,
     get_string_width,
+    get_v1_cloud_log_file_path,
     getsimplesound,
-    has_gamma_control,
+    has_user_run_commands,
     have_chars,
     have_permission,
     in_logic_thread,
@@ -83,7 +86,12 @@ from _babase import (
     set_thread_name,
     set_ui_input_device,
     show_progress_bar,
+    shutdown_suppress_begin,
+    shutdown_suppress_end,
+    shutdown_suppress_count,
     SimpleSound,
+    supports_max_fps,
+    supports_vsync,
     unlock_all_input,
     user_agent_string,
     Vec3,
@@ -96,12 +104,14 @@ from babase._appconfig import commit_app_config
 from babase._appintent import AppIntent, AppIntentDefault, AppIntentExec
 from babase._appmode import AppMode
 from babase._appsubsystem import AppSubsystem
+from babase._appmodeselector import AppModeSelector
 from babase._appconfig import AppConfig
 from babase._apputils import (
     handle_leftover_v1_cloud_log_file,
     is_browser_likely_available,
     garbage_collect,
     get_remote_app_name,
+    AppHealthMonitor,
 )
 from babase._cloud import CloudSubsystem
 from babase._emptyappmode import EmptyAppMode
@@ -135,7 +145,6 @@ from babase._general import (
     storagename,
     getclass,
     get_type_name,
-    json_prep,
 )
 from babase._keyboard import Keyboard
 from babase._language import Lstr, LanguageSubsystem
@@ -153,6 +162,7 @@ from babase._math import normalized_color, is_point_in_box, vec3validate
 from babase._meta import MetadataSubsystem
 from babase._net import get_ip_address_type, DEFAULT_REQUEST_TIMEOUT_SECONDS
 from babase._plugin import PluginSpec, Plugin, PluginSubsystem
+from babase._stringedit import StringEditAdapter, StringEditSubsystem
 from babase._text import timestring
 
 _babase.app = app = App()
@@ -169,12 +179,14 @@ __all__ = [
     'app',
     'App',
     'AppConfig',
+    'AppHealthMonitor',
     'AppIntent',
     'AppIntentDefault',
     'AppIntentExec',
     'AppMode',
     'appname',
     'appnameupper',
+    'AppModeSelector',
     'AppSubsystem',
     'apptime',
     'AppTime',
@@ -182,6 +194,7 @@ __all__ = [
     'apptimer',
     'AppTimer',
     'Call',
+    'can_toggle_fullscreen',
     'charstr',
     'clipboard_get_text',
     'clipboard_has_text',
@@ -200,6 +213,7 @@ __all__ = [
     'do_once',
     'EmptyAppMode',
     'env',
+    'Env',
     'Existable',
     'existing',
     'fade_screen',
@@ -214,11 +228,12 @@ __all__ = [
     'get_replays_dir',
     'get_string_height',
     'get_string_width',
+    'get_v1_cloud_log_file_path',
     'get_type_name',
     'getclass',
     'getsimplesound',
     'handle_leftover_v1_cloud_log_file',
-    'has_gamma_control',
+    'has_user_run_commands',
     'have_chars',
     'have_permission',
     'in_logic_thread',
@@ -231,7 +246,6 @@ __all__ = [
     'is_point_in_box',
     'is_running_on_fire_tv',
     'is_xcode_build',
-    'json_prep',
     'Keyboard',
     'LanguageSubsystem',
     'lock_all_input',
@@ -277,9 +291,16 @@ __all__ = [
     'set_thread_name',
     'set_ui_input_device',
     'show_progress_bar',
+    'shutdown_suppress_begin',
+    'shutdown_suppress_end',
+    'shutdown_suppress_count',
     'SimpleSound',
     'SpecialChar',
     'storagename',
+    'StringEditAdapter',
+    'StringEditSubsystem',
+    'supports_max_fps',
+    'supports_vsync',
     'TeamNotFoundError',
     'timestring',
     'UIScale',

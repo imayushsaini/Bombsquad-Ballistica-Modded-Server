@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class AdvancedSettingsWindow(bui.Window):
-    """Window for editing advanced game settings."""
+    """Window for editing advanced app settings."""
 
     def __init__(
         self,
@@ -61,6 +61,7 @@ class AdvancedSettingsWindow(bui.Window):
         self._spacing = 32
         self._menu_open = False
         top_extra = 10 if uiscale is bui.UIScale.SMALL else 0
+
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height + top_extra),
@@ -88,14 +89,12 @@ class AdvancedSettingsWindow(bui.Window):
 
         # In vr-mode, the internal keyboard is currently the *only* option,
         # so no need to show this.
-        self._show_always_use_internal_keyboard = (
-            not app.vr_mode and not app.iircade_mode
-        )
+        self._show_always_use_internal_keyboard = not app.env.vr
 
         self._scroll_width = self._width - (100 + 2 * x_inset)
         self._scroll_height = self._height - 115.0
         self._sub_width = self._scroll_width * 0.95
-        self._sub_height = 724.0
+        self._sub_height = 766.0
 
         if self._show_always_use_internal_keyboard:
             self._sub_height += 62
@@ -104,7 +103,7 @@ class AdvancedSettingsWindow(bui.Window):
         if self._show_disable_gyro:
             self._sub_height += 42
 
-        self._do_vr_test_button = app.vr_mode
+        self._do_vr_test_button = app.env.vr
         self._do_net_test_button = True
         self._extra_button_spacing = self._spacing * 2.5
 
@@ -180,14 +179,14 @@ class AdvancedSettingsWindow(bui.Window):
         # Fetch the list of completed languages.
         bui.app.classic.master_server_v1_get(
             'bsLangGetCompleted',
-            {'b': app.build_number},
+            {'b': app.env.build_number},
             callback=bui.WeakCall(self._completed_langs_cb),
         )
 
     # noinspection PyUnresolvedReferences
     @staticmethod
     def _preload_modules() -> None:
-        """Preload modules we use (called in bg thread)."""
+        """Preload modules we use; avoids hitches (called in bg thread)."""
         from babase import modutils as _unused2
         from bauiv1lib import config as _unused1
         from bauiv1lib.settings import vrtesting as _unused3
@@ -244,6 +243,7 @@ class AdvancedSettingsWindow(bui.Window):
 
         # Don't rebuild if the menu is open or if our language and
         # language-list hasn't changed.
+
         # NOTE - although we now support widgets updating their own
         # translations, we still change the label formatting on the language
         # menu based on the language so still need this. ...however we could
@@ -324,7 +324,10 @@ class AdvancedSettingsWindow(bui.Window):
 
             with open(
                 os.path.join(
-                    bui.app.data_directory, 'ba_data', 'data', 'langdata.json'
+                    bui.app.env.data_directory,
+                    'ba_data',
+                    'data',
+                    'langdata.json',
                 ),
                 encoding='utf-8',
             ) as infile:
@@ -469,6 +472,19 @@ class AdvancedSettingsWindow(bui.Window):
             size=(self._sub_width - 100, 30),
             configkey='Show Ping',
             displayname=bui.Lstr(resource=f'{self._r}.showInGamePingText'),
+            scale=1.0,
+            maxwidth=430,
+        )
+
+        v -= 42
+        self._show_dev_console_button_check_box = ConfigCheckBox(
+            parent=self._subcontainer,
+            position=(50, v),
+            size=(self._sub_width - 100, 30),
+            configkey='Show Dev Console Button',
+            displayname=bui.Lstr(
+                resource=f'{self._r}.showDevConsoleButtonText'
+            ),
             scale=1.0,
             maxwidth=430,
         )

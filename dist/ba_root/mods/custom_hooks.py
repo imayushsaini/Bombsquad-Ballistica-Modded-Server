@@ -64,7 +64,7 @@ class modSetup(babase.Plugin):
         bootstraping()
         servercheck.checkserver().start()
         ServerUpdate.check()
-        bs.apptimer(5, account.updateOwnerIps)
+        # bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
         if (settings["useV2Account"]):

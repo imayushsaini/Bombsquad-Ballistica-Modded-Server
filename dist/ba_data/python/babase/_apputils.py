@@ -48,7 +48,7 @@ def is_browser_likely_available() -> bool:
     # assume no browser.
     # FIXME: Might not be the case anymore; should make this definable
     #  at the platform level.
-    if app.vr_mode or (platform == 'android' and not hastouchscreen):
+    if app.env.vr or (platform == 'android' and not hastouchscreen):
         return False
 
     # Anywhere else assume we've got one.
@@ -103,8 +103,8 @@ def handle_v1_cloud_log() -> None:
 
             info = {
                 'log': _babase.get_v1_cloud_log(),
-                'version': app.version,
-                'build': app.build_number,
+                'version': app.env.version,
+                'build': app.env.build_number,
                 'userAgentString': classic.legacy_user_agent_string,
                 'session': sessionname,
                 'activity': activityname,
@@ -222,8 +222,7 @@ def garbage_collect() -> None:
 def print_corrupt_file_error() -> None:
     """Print an error if a corrupt file is found."""
 
-    # FIXME - filter this out for builds without bauiv1.
-    if not _babase.app.headless_mode:
+    if _babase.app.env.gui:
         _babase.apptimer(
             2.0,
             lambda: _babase.screenmessage(
@@ -279,7 +278,8 @@ def dump_app_state(
     # the dump in that case.
     try:
         mdpath = os.path.join(
-            os.path.dirname(_babase.app.config_file_path), '_appstate_dump_md'
+            os.path.dirname(_babase.app.env.config_file_path),
+            '_appstate_dump_md',
         )
         with open(mdpath, 'w', encoding='utf-8') as outfile:
             outfile.write(
@@ -297,7 +297,7 @@ def dump_app_state(
         return
 
     tbpath = os.path.join(
-        os.path.dirname(_babase.app.config_file_path), '_appstate_dump_tb'
+        os.path.dirname(_babase.app.env.config_file_path), '_appstate_dump_tb'
     )
 
     tbfile = open(tbpath, 'w', encoding='utf-8')
@@ -329,7 +329,8 @@ def log_dumped_app_state() -> None:
     try:
         out = ''
         mdpath = os.path.join(
-            os.path.dirname(_babase.app.config_file_path), '_appstate_dump_md'
+            os.path.dirname(_babase.app.env.config_file_path),
+            '_appstate_dump_md',
         )
         if os.path.exists(mdpath):
             # We may be hanging on to open file descriptors for use by
@@ -354,7 +355,7 @@ def log_dumped_app_state() -> None:
                 f'Time: {metadata.app_time:.2f}'
             )
             tbpath = os.path.join(
-                os.path.dirname(_babase.app.config_file_path),
+                os.path.dirname(_babase.app.env.config_file_path),
                 '_appstate_dump_tb',
             )
             if os.path.exists(tbpath):
@@ -377,6 +378,10 @@ class AppHealthMonitor(AppSubsystem):
         self._thread.start()
         self._response = False
         self._first_check = True
+
+    def on_app_loading(self) -> None:
+        # If any traceback dumps happened last run, log and clear them.
+        log_dumped_app_state()
 
     def _app_monitor_thread_main(self) -> None:
         try:

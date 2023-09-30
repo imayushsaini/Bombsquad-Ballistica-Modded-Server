@@ -52,8 +52,8 @@ if TYPE_CHECKING:
 
 # Build number and version of the ballistica binary we expect to be
 # using.
-TARGET_BALLISTICA_BUILD = 21213
-TARGET_BALLISTICA_VERSION = '1.7.26'
+TARGET_BALLISTICA_BUILD = 21397
+TARGET_BALLISTICA_VERSION = '1.7.28'
 
 
 @dataclass
@@ -461,11 +461,12 @@ def _modular_main() -> None:
     # First baenv sets up things like Python paths the way the engine
     # needs them, and then we import and run the engine.
     #
-    # Below we're doing a slightly fancier version of that. Namely we do
-    # some processing of command line args to allow overriding of paths
-    # or running explicit commands or whatever else. Our goal is that
-    # this modular form of the app should be basically indistinguishable
-    # from the monolithic form when used from the command line.
+    # Below we're doing a slightly fancier version of that. Namely, we
+    # do some processing of command line args to allow overriding of
+    # paths or running explicit commands or whatever else. Our goal is
+    # that this modular form of the app should be basically
+    # indistinguishable from the monolithic form when used from the
+    # command line.
 
     try:
         # Take note that we're running via modular-main. The native
@@ -476,7 +477,8 @@ def _modular_main() -> None:
         # Deal with a few key things here ourself before even running
         # configure.
 
-        # Extract stuff below modifies this so work with a copy.
+        # The extract_arg stuff below modifies this so we work with a
+        # copy.
         args = sys.argv.copy()
 
         # NOTE: We need to keep these arg long/short arg versions synced
@@ -496,8 +498,8 @@ def _modular_main() -> None:
         mods_dir = extract_arg(args, ['--mods-dir', '-m'], is_dir=True)
 
         # We run configure() BEFORE importing babase. (part of its job
-        # is to wrangle paths to determine where babase and everything
-        # else gets loaded from).
+        # is to wrangle paths which can affect where babase and
+        # everything else gets loaded from).
         configure(
             config_dir=config_dir,
             data_dir=data_dir,

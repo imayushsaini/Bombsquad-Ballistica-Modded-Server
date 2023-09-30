@@ -33,15 +33,11 @@ class JoinInfo:
         from bascenev1._nodeactor import NodeActor
 
         self._state = 0
-        self._press_to_punch: str | bascenev1.Lstr = (
-            'C'
-            if babase.app.iircade_mode
-            else babase.charstr(babase.SpecialChar.LEFT_BUTTON)
+        self._press_to_punch: str | bascenev1.Lstr = babase.charstr(
+            babase.SpecialChar.LEFT_BUTTON
         )
-        self._press_to_bomb: str | bascenev1.Lstr = (
-            'B'
-            if babase.app.iircade_mode
-            else babase.charstr(babase.SpecialChar.RIGHT_BUTTON)
+        self._press_to_bomb: str | bascenev1.Lstr = babase.charstr(
+            babase.SpecialChar.RIGHT_BUTTON
         )
         self._joinmsg = babase.Lstr(resource='pressAnyButtonToJoinText')
         can_switch_teams = len(lobby.sessionteams) > 1
@@ -53,7 +49,7 @@ class JoinInfo:
         if keyboard is not None:
             self._update_for_keyboard(keyboard)
 
-        flatness = 1.0 if babase.app.vr_mode else 0.0
+        flatness = 1.0 if babase.app.env.vr else 0.0
         self._text = NodeActor(
             _bascenev1.newnode(
                 'text',
@@ -69,7 +65,7 @@ class JoinInfo:
             )
         )
 
-        if babase.app.demo_mode or babase.app.arcade_mode:
+        if babase.app.env.demo or babase.app.env.arcade:
             self._messages = [self._joinmsg]
         else:
             msg1 = babase.Lstr(
@@ -438,6 +434,7 @@ class Chooser:
         """Reload all player profiles."""
 
         app = babase.app
+        env = app.env
         assert app.classic is not None
 
         # Re-construct our profile index and other stuff since the profile
@@ -465,7 +462,7 @@ class Chooser:
         # (non-unicode/non-json) version.
         # Make sure they conform to our standards
         # (unicode strings, no tuples, etc)
-        self._profiles = babase.json_prep(self._profiles)
+        self._profiles = app.classic.json_prep(self._profiles)
 
         # Filter out any characters we're unaware of.
         for profile in list(self._profiles.items()):
@@ -479,17 +476,13 @@ class Chooser:
         self._profiles['_random'] = {}
 
         # In kiosk mode we disable account profiles to force random.
-        if app.demo_mode or app.arcade_mode:
+        if env.demo or env.arcade:
             if '__account__' in self._profiles:
                 del self._profiles['__account__']
 
         # For local devices, add it an 'edit' option which will pop up
         # the profile window.
-        if (
-            not is_remote
-            and not is_test_input
-            and not (app.demo_mode or app.arcade_mode)
-        ):
+        if not is_remote and not is_test_input and not (env.demo or env.arcade):
             self._profiles['_edit'] = {}
 
         # Build a sorted name list we can iterate through.

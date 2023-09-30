@@ -64,7 +64,7 @@ class AccountV2Subsystem:
 
     def set_primary_credentials(self, credentials: str | None) -> None:
         """Set credentials for the primary app account."""
-        raise RuntimeError('This should be overridden.')
+        raise NotImplementedError('This should be overridden.')
 
     def have_primary_credentials(self) -> bool:
         """Are credentials currently set for the primary app account?
@@ -73,7 +73,7 @@ class AccountV2Subsystem:
         only that they exist. If/when credentials are validated, the 'primary'
         account handle will be set.
         """
-        raise RuntimeError('This should be overridden.')
+        raise NotImplementedError('This should be overridden.')
 
     @property
     def primary(self) -> AccountV2Handle | None:
@@ -128,7 +128,7 @@ class AccountV2Subsystem:
         # Ok; no workspace to worry about; carry on.
         if not self._initial_sign_in_completed:
             self._initial_sign_in_completed = True
-            _babase.app.on_initial_sign_in_completed()
+            _babase.app.on_initial_sign_in_complete()
 
     def on_active_logins_changed(self, logins: dict[LoginType, str]) -> None:
         """Should be called when logins for the active account change."""
@@ -163,7 +163,7 @@ class AccountV2Subsystem:
         """
         if not self._initial_sign_in_completed:
             self._initial_sign_in_completed = True
-            _babase.app.on_initial_sign_in_completed()
+            _babase.app.on_initial_sign_in_complete()
 
     @staticmethod
     def _hashstr(val: str) -> str:
@@ -409,7 +409,7 @@ class AccountV2Subsystem:
     def _on_set_active_workspace_completed(self) -> None:
         if not self._initial_sign_in_completed:
             self._initial_sign_in_completed = True
-            _babase.app.on_initial_sign_in_completed()
+            _babase.app.on_initial_sign_in_complete()
 
 
 class AccountV2Handle:

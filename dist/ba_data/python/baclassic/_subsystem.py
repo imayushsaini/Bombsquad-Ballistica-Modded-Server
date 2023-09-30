@@ -73,7 +73,7 @@ class ClassicSubsystem(babase.AppSubsystem):
         self.value_test_defaults: dict = {}
         self.special_offer: dict | None = None
         self.ping_thread_count = 0
-        self.allow_ticket_purchases: bool = not babase.app.iircade_mode
+        self.allow_ticket_purchases: bool = True
 
         # Main Menu.
         self.main_menu_did_initial_transition = False
@@ -128,6 +128,10 @@ class ClassicSubsystem(babase.AppSubsystem):
         assert isinstance(self._env['platform'], str)
         return self._env['platform']
 
+    def scene_v1_protocol_version(self) -> int:
+        """(internal)"""
+        return bascenev1.protocol_version()
+
     @property
     def subplatform(self) -> str:
         """String for subplatform.
@@ -153,6 +157,7 @@ class ClassicSubsystem(babase.AppSubsystem):
         plus = babase.app.plus
         assert plus is not None
 
+        env = babase.app.env
         cfg = babase.app.config
 
         self.music.on_app_loading()
@@ -161,11 +166,7 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         # Non-test, non-debug builds should generally be blessed; warn if not.
         # (so I don't accidentally release a build that can't play tourneys)
-        if (
-            not babase.app.debug_build
-            and not babase.app.test_build
-            and not plus.is_blessed()
-        ):
+        if not env.debug and not env.test and not plus.is_blessed():
             babase.screenmessage('WARNING: NON-BLESSED BUILD', color=(1, 0, 0))
 
         # FIXME: This should not be hard-coded.
@@ -219,7 +220,7 @@ class ClassicSubsystem(babase.AppSubsystem):
                 self.special_offer = cfg['pendingSpecialOffer']['o']
                 show_offer()
 
-        if not babase.app.headless_mode:
+        if babase.app.env.gui:
             babase.apptimer(3.0, check_special_offer)
 
         # If there's a leftover log file, attempt to upload it to the
@@ -464,6 +465,37 @@ class ClassicSubsystem(babase.AppSubsystem):
         from baclassic import _analytics
 
         _analytics.game_begin_analytics()
+
+    @classmethod
+    def json_prep(cls, data: Any) -> Any:
+        """Return a json-friendly version of the provided data.
+
+        This converts any tuples to lists and any bytes to strings
+        (interpreted as utf-8, ignoring errors). Logs errors (just once)
+        if any data is modified/discarded/unsupported.
+        """
+
+        if isinstance(data, dict):
+            return dict(
+                (cls.json_prep(key), cls.json_prep(value))
+                for key, value in list(data.items())
+            )
+        if isinstance(data, list):
+            return [cls.json_prep(element) for element in data]
+        if isinstance(data, tuple):
+            logging.exception('json_prep encountered tuple')
+            return [cls.json_prep(element) for element in data]
+        if isinstance(data, bytes):
+            try:
+                return data.decode(errors='ignore')
+            except Exception:
+                logging.exception('json_prep encountered utf-8 decode error')
+                return data.decode(errors='ignore')
+        if not isinstance(data, (str, float, bool, type(None), int)):
+            logging.exception(
+                'got unsupported type in json_prep: %s', type(data)
+            )
+        return data
 
     def master_server_v1_get(
         self,
@@ -750,7 +782,7 @@ class ClassicSubsystem(babase.AppSubsystem):
         from bauiv1lib.party import PartyWindow
         from babase import app
 
-        assert not app.headless_mode
+        assert app.env.gui
 
         bauiv1.getsound('swish').play()
 
@@ -773,7 +805,7 @@ class ClassicSubsystem(babase.AppSubsystem):
         if not in_main_menu:
             set_ui_input_device(device_id)
 
-            if not babase.app.headless_mode:
+            if babase.app.env.gui:
                 bauiv1.getsound('swish').play()
 
             babase.app.ui_v1.set_main_menu_window(

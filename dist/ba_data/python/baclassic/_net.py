@@ -4,13 +4,12 @@
 from __future__ import annotations
 
 import copy
-import threading
 import weakref
+import threading
 from enum import Enum
 from typing import TYPE_CHECKING
 
 import babase
-from babase import DEFAULT_REQUEST_TIMEOUT_SECONDS
 import bascenev1
 
 if TYPE_CHECKING:
@@ -36,7 +35,9 @@ class MasterServerV1CallThread(threading.Thread):
         callback: MasterServerCallback | None,
         response_type: MasterServerResponseType,
     ):
-        super().__init__()
+        # Set daemon=True so long-running requests don't keep us from
+        # quitting the app.
+        super().__init__(daemon=True)
         self._request = request
         self._request_type = request_type
         if not isinstance(response_type, MasterServerResponseType):
@@ -69,6 +70,7 @@ class MasterServerV1CallThread(threading.Thread):
 
     def run(self) -> None:
         # pylint: disable=consider-using-with
+        # pylint: disable=too-many-branches
         import urllib.request
         import urllib.parse
         import urllib.error
@@ -80,6 +82,13 @@ class MasterServerV1CallThread(threading.Thread):
         assert plus is not None
         response_data: Any = None
         url: str | None = None
+
+        # Tearing the app down while this is running can lead to
+        # rare crashes in LibSSL, so avoid that if at all possible.
+        if not babase.shutdown_suppress_begin():
+            # App is already shutting down, so we're a no-op.
+            return
+
         try:
             classic = babase.app.classic
             assert classic is not None
@@ -101,7 +110,7 @@ class MasterServerV1CallThread(threading.Thread):
                         {'User-Agent': classic.legacy_user_agent_string},
                     ),
                     context=babase.app.net.sslcontext,
-                    timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS,
+                    timeout=babase.DEFAULT_REQUEST_TIMEOUT_SECONDS,
                 )
             elif self._request_type == 'post':
                 url = plus.get_master_server_address() + '/' + self._request
@@ -113,7 +122,7 @@ class MasterServerV1CallThread(threading.Thread):
                         {'User-Agent': classic.legacy_user_agent_string},
                     ),
                     context=babase.app.net.sslcontext,
-                    timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS,
+                    timeout=babase.DEFAULT_REQUEST_TIMEOUT_SECONDS,
                 )
             else:
                 raise TypeError('Invalid request_type: ' + self._request_type)
@@ -146,6 +155,9 @@ class MasterServerV1CallThread(threading.Thread):
                 traceback.print_exc()
 
             response_data = None
+
+        finally:
+            babase.shutdown_suppress_end()
 
         if self._callback is not None:
             babase.pushcall(

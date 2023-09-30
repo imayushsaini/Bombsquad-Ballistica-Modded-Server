@@ -50,9 +50,8 @@ class MainMenuWindow(bui.Window):
         )
 
         # Grab this stuff in case it changes.
-        self._is_demo = bui.app.demo_mode
-        self._is_arcade = bui.app.arcade_mode
-        self._is_iircade = bui.app.iircade_mode
+        self._is_demo = bui.app.env.demo
+        self._is_arcade = bui.app.env.arcade
 
         self._tdelay = 0.0
         self._t_delay_inc = 0.02
@@ -93,7 +92,7 @@ class MainMenuWindow(bui.Window):
     # noinspection PyUnresolvedReferences
     @staticmethod
     def _preload_modules() -> None:
-        """Preload modules we use (called in bg thread)."""
+        """Preload modules we use; avoids hitches (called in bg thread)."""
         import bauiv1lib.getremote as _unused
         import bauiv1lib.confirm as _unused2
         import bauiv1lib.store.button as _unused3
@@ -118,7 +117,7 @@ class MainMenuWindow(bui.Window):
                 force_test = False
                 bs.get_local_active_input_devices_count()
                 if (
-                    (app.on_tv or app.classic.platform == 'mac')
+                    (app.env.tv or app.classic.platform == 'mac')
                     and bui.app.config.get('launchCount', 0) <= 1
                 ) or force_test:
 
@@ -220,8 +219,8 @@ class MainMenuWindow(bui.Window):
         self._have_store_button = not self._in_game
 
         self._have_settings_button = (
-            not self._in_game or not app.toolbar_test
-        ) and not (self._is_demo or self._is_arcade or self._is_iircade)
+            not self._in_game or not app.ui_v1.use_toolbars
+        ) and not (self._is_demo or self._is_arcade)
 
         self._input_device = input_device = bs.get_ui_input_device()
 
@@ -618,7 +617,7 @@ class MainMenuWindow(bui.Window):
                 )
             )
         # In kiosk mode, provide a button to get back to the kiosk menu.
-        if bui.app.demo_mode or bui.app.arcade_mode:
+        if bui.app.env.demo or bui.app.env.arcade:
             h, v, scale = positions[self._p_index]
             this_b_width = self._button_width * 0.4 * scale
             demo_menu_delay = (
@@ -635,7 +634,7 @@ class MainMenuWindow(bui.Window):
                 textcolor=(0.7, 0.8, 0.7),
                 label=bui.Lstr(
                     resource='modeArcadeText'
-                    if bui.app.arcade_mode
+                    if bui.app.env.arcade
                     else 'modeDemoText'
                 ),
                 transition_delay=demo_menu_delay,
