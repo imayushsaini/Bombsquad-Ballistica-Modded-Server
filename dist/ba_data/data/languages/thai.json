@@ -30,6 +30,7 @@
     "signInWithGooglePlayText": "ลงชื่อเข้าใช้ด้วยบัญชี Google Play",
     "signInWithTestAccountInfoText": "(บัญชีทดลอง;เลือกตัวเลือกนี้เพื่อไปต่อ)",
     "signInWithTestAccountText": "ลงชื่อเข้าใช้เพื่อทดลอง",
+    "signInWithText": "เข้าสู่ระบบด้วย ${SERVICE}",
     "signInWithV2InfoText": "(บัญชีที่ใช้งานได้กับทุกแพลตฟอร์ม)",
     "signInWithV2Text": "ลงชื่อเข้าใช้ด้วยบัญชี BombSquad",
     "signOutText": "ออกจากระบบ",
@@ -333,6 +334,7 @@
     "getMoreGamesText": "รับเกมเพิ่มเติม",
     "titleText": "เพิ่มเกม"
   },
+  "allText": "ทั้งหมด",
   "allowText": "ยอมรับ",
   "alreadySignedInText": "บัญชีของคุณลงชื่อเข้าใช้จากอุปกรณ์อื่น\nโปรดเปลี่ยนบัญชีหรือปิดเกมของคุณ\nอุปกรณ์อื่นและลองอีกครั้ง",
   "apiVersionErrorText": "ไม่สามารถโหลดโมดูล ${NAME} ได้; มันอยู่ในเวอร์ชั่น api ${VERSION_USED}; แต่เราต้องการเวอร์ชั่น ${VERSION_REQUIRED}",
@@ -445,6 +447,7 @@
     "swipeText": "การปัด",
     "titleText": "การตั้งค่าหน้าจอสัมผัส"
   },
+  "configureDeviceInSystemSettingsText": "",
   "configureItNowText": "จะตั้งค่ามันตอนนี้หรือไม่?",
   "configureText": "ตั้งค่า",
   "connectMobileDevicesWindow": {
@@ -1042,7 +1045,7 @@
   "nameSuicideKidFriendlyText": "${NAME} ตายจากอุบัติเหตุ",
   "nameSuicideText": "${NAME} ฆ่าตัวตาย",
   "nameText": "ชื่อ",
-  "nativeText": "พื้นเมือง",
+  "nativeText": "ดั้งเดิม",
   "newPersonalBestText": "ใหม่ส่วนตัวดีที่สุด!",
   "newTestBuildAvailableText": "มีการสร้างการทดสอบที่ใหม่กว่า! (${VERSION} บิลด์ ${BUILD})\nรับได้ที่ ${ADDRESS}",
   "newText": "ใหม่",
@@ -1054,6 +1057,7 @@
   "noExternalStorageErrorText": "ไม่พบที่จัดเก็บข้อมูลภายนอกในอุปกรณ์นี้",
   "noGameCircleText": "ข้อผิดพลาด: ไม่ได้ลงชื่อเข้าใช้ GameCircle",
   "noScoresYetText": "ไม่มีคะแนน",
+  "noServersFoundText": "ไม่พบเซิร์ฟเวอร์",
   "noThanksText": "ไม่เป็นไรขอบคุณ",
   "noTournamentsInTestBuildText": "คำเตือน: คะแนนการแข่งขันจากรุ่นทดสอบนี้จะถูกละเว้น",
   "noValidMapsErrorText": "ไม่พบแผนที่ที่ถูกต้องสำหรับเกมนี้",

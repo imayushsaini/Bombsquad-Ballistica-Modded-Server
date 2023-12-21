@@ -431,7 +431,9 @@ class GamepadSettingsWindow(bui.Window):
     def get_unassigned_buttons_run_value(self) -> bool:
         """(internal)"""
         assert self._settings is not None
-        return self._settings.get('unassignedButtonsRun', True)
+        val = self._settings.get('unassignedButtonsRun', True)
+        assert isinstance(val, bool)
+        return val
 
     def set_unassigned_buttons_run_value(self, value: bool) -> None:
         """(internal)"""
@@ -446,7 +448,9 @@ class GamepadSettingsWindow(bui.Window):
     def get_start_button_activates_default_widget_value(self) -> bool:
         """(internal)"""
         assert self._settings is not None
-        return self._settings.get('startButtonActivatesDefaultWidget', True)
+        val = self._settings.get('startButtonActivatesDefaultWidget', True)
+        assert isinstance(val, bool)
+        return val
 
     def set_start_button_activates_default_widget_value(
         self, value: bool
@@ -463,7 +467,9 @@ class GamepadSettingsWindow(bui.Window):
     def get_ui_only_value(self) -> bool:
         """(internal)"""
         assert self._settings is not None
-        return self._settings.get('uiOnly', False)
+        val = self._settings.get('uiOnly', False)
+        assert isinstance(val, bool)
+        return val
 
     def set_ui_only_value(self, value: bool) -> None:
         """(internal)"""
@@ -478,7 +484,9 @@ class GamepadSettingsWindow(bui.Window):
     def get_ignore_completely_value(self) -> bool:
         """(internal)"""
         assert self._settings is not None
-        return self._settings.get('ignoreCompletely', False)
+        val = self._settings.get('ignoreCompletely', False)
+        assert isinstance(val, bool)
+        return val
 
     def set_ignore_completely_value(self, value: bool) -> None:
         """(internal)"""
@@ -493,7 +501,9 @@ class GamepadSettingsWindow(bui.Window):
     def get_auto_recalibrate_analog_stick_value(self) -> bool:
         """(internal)"""
         assert self._settings is not None
-        return self._settings.get('autoRecalibrateAnalogStick', False)
+        val = self._settings.get('autoRecalibrateAnalogStick', False)
+        assert isinstance(val, bool)
+        return val
 
     def set_auto_recalibrate_analog_stick_value(self, value: bool) -> None:
         """(internal)"""
@@ -510,7 +520,9 @@ class GamepadSettingsWindow(bui.Window):
         assert self._settings is not None
         if not self._is_secondary:
             raise RuntimeError('Enable value only applies to secondary editor.')
-        return self._settings.get('enableSecondary', False)
+        val = self._settings.get('enableSecondary', False)
+        assert isinstance(val, bool)
+        return val
 
     def show_secondary_editor(self) -> None:
         """(internal)"""
@@ -533,20 +545,24 @@ class GamepadSettingsWindow(bui.Window):
                 if 'analogStickLR' + self._ext in self._settings
                 else 5
                 if self._is_secondary
-                else 1
+                else None
             )
             sval2 = (
                 self._settings['analogStickUD' + self._ext]
                 if 'analogStickUD' + self._ext in self._settings
                 else 6
                 if self._is_secondary
-                else 2
+                else None
             )
-            return (
-                self._input.get_axis_name(sval1)
-                + ' / '
-                + self._input.get_axis_name(sval2)
-            )
+            assert isinstance(sval1, (int, type(None)))
+            assert isinstance(sval2, (int, type(None)))
+            if sval1 is not None and sval2 is not None:
+                return (
+                    self._input.get_axis_name(sval1)
+                    + ' / '
+                    + self._input.get_axis_name(sval2)
+                )
+            return bui.Lstr(resource=self._r + '.unsetText')
 
         # If they're looking for triggers.
         if control in ['triggerRun1' + self._ext, 'triggerRun2' + self._ext]:
@@ -561,7 +577,7 @@ class GamepadSettingsWindow(bui.Window):
             return str(1.0)
 
         # For dpad buttons: show individual buttons if any are set.
-        # Otherwise show whichever dpad is set (defaulting to 1).
+        # Otherwise show whichever dpad is set.
         dpad_buttons = [
             'buttonLeft' + self._ext,
             'buttonRight' + self._ext,
@@ -576,24 +592,28 @@ class GamepadSettingsWindow(bui.Window):
                 return bui.Lstr(resource=self._r + '.unsetText')
 
             # No dpad buttons - show the dpad number for all 4.
-            return bui.Lstr(
-                value='${A} ${B}',
-                subs=[
-                    ('${A}', bui.Lstr(resource=self._r + '.dpadText')),
-                    (
-                        '${B}',
-                        str(
-                            self._settings['dpad' + self._ext]
-                            if 'dpad' + self._ext in self._settings
-                            else 2
-                            if self._is_secondary
-                            else 1
-                        ),
-                    ),
-                ],
+            dpadnum = (
+                self._settings['dpad' + self._ext]
+                if 'dpad' + self._ext in self._settings
+                else 2
+                if self._is_secondary
+                else None
             )
+            assert isinstance(dpadnum, (int, type(None)))
+            if dpadnum is not None:
+                return bui.Lstr(
+                    value='${A} ${B}',
+                    subs=[
+                        ('${A}', bui.Lstr(resource=self._r + '.dpadText')),
+                        (
+                            '${B}',
+                            str(dpadnum),
+                        ),
+                    ],
+                )
+            return bui.Lstr(resource=self._r + '.unsetText')
 
-        # other buttons..
+        # Other buttons.
         if control in self._settings:
             return self._input.get_button_name(self._settings[control])
         return bui.Lstr(resource=self._r + '.unsetText')
@@ -604,9 +624,7 @@ class GamepadSettingsWindow(bui.Window):
         event: dict[str, Any],
         dialog: AwaitGamepadInputWindow,
     ) -> None:
-        # pylint: disable=too-many-nested-blocks
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         assert self._settings is not None
         ext = self._ext
 
@@ -636,10 +654,6 @@ class GamepadSettingsWindow(bui.Window):
                         if btn in self._settings:
                             del self._settings[btn]
                     if event['hat'] == (2 if self._is_secondary else 1):
-                        # Exclude value in default case.
-                        if 'dpad' + ext in self._settings:
-                            del self._settings['dpad' + ext]
-                    else:
                         self._settings['dpad' + ext] = event['hat']
 
                 # Update the 4 dpad button txt widgets.
@@ -668,10 +682,6 @@ class GamepadSettingsWindow(bui.Window):
                 if abs(event['value']) > 0.5:
                     axis = event['axis']
                     if axis == (5 if self._is_secondary else 1):
-                        # Exclude value in default case.
-                        if 'analogStickLR' + ext in self._settings:
-                            del self._settings['analogStickLR' + ext]
-                    else:
                         self._settings['analogStickLR' + ext] = axis
                     bui.textwidget(
                         edit=self._textwidgets['analogStickLR' + ext],
@@ -701,10 +711,6 @@ class GamepadSettingsWindow(bui.Window):
                         lr_axis = 5 if self._is_secondary else 1
                     if axis != lr_axis:
                         if axis == (6 if self._is_secondary else 2):
-                            # Exclude value in default case.
-                            if 'analogStickUD' + ext in self._settings:
-                                del self._settings['analogStickUD' + ext]
-                        else:
                             self._settings['analogStickUD' + ext] = axis
                         bui.textwidget(
                             edit=self._textwidgets['analogStickLR' + ext],
@@ -783,11 +789,15 @@ class GamepadSettingsWindow(bui.Window):
                 ),
             )
 
-        bui.apptimer(0, doit)
+        bui.pushcall(doit)
         return btn
 
     def _cancel(self) -> None:
         from bauiv1lib.settings.controls import ControlsSettingsWindow
+
+        # no-op if our underlying widget is dead or on its way out.
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
 
         bui.containerwidget(
             edit=self._root_widget, transition=self._transition_out
@@ -795,12 +805,17 @@ class GamepadSettingsWindow(bui.Window):
         if self._is_main_menu:
             assert bui.app.classic is not None
             bui.app.ui_v1.set_main_menu_window(
-                ControlsSettingsWindow(transition='in_left').get_root_widget()
+                ControlsSettingsWindow(transition='in_left').get_root_widget(),
+                from_window=self._root_widget,
             )
 
     def _save(self) -> None:
         classic = bui.app.classic
         assert classic is not None
+
+        # no-op if our underlying widget is dead or on its way out.
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
 
         bui.containerwidget(
             edit=self._root_widget, transition=self._transition_out
@@ -846,7 +861,8 @@ class GamepadSettingsWindow(bui.Window):
 
             assert bui.app.classic is not None
             bui.app.ui_v1.set_main_menu_window(
-                ControlsSettingsWindow(transition='in_left').get_root_widget()
+                ControlsSettingsWindow(transition='in_left').get_root_widget(),
+                from_window=self._root_widget,
             )
 
 

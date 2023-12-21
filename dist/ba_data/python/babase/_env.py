@@ -40,6 +40,11 @@ def on_native_module_import() -> None:
     if envconfig.log_handler is not None:
         _feed_logs_to_babase(envconfig.log_handler)
 
+        # Also let's name the log-handler thread to help in profiling.
+        envconfig.log_handler.call_in_thread(
+            lambda: _babase.set_thread_name('ballistica logging')
+        )
+
     env = _babase.pre_env()
 
     # Give a soft warning if we're being used with a different binary
@@ -180,10 +185,8 @@ def _feed_logs_to_babase(log_handler: LogHandler) -> None:
     def _on_log(entry: LogEntry) -> None:
         # Forward this along to the engine to display in the in-app
         # console, in the Android log, etc.
-        _babase.display_log(
-            name=entry.name,
-            level=entry.level.name,
-            message=entry.message,
+        _babase.emit_log(
+            name=entry.name, level=entry.level.name, message=entry.message
         )
 
         # We also want to feed some logs to the old v1-cloud-log system.

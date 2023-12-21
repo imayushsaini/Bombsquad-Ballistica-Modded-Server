@@ -229,12 +229,12 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         self.accounts.on_app_loading()
 
-    def on_app_pause(self) -> None:
-        self.accounts.on_app_pause()
+    def on_app_suspend(self) -> None:
+        self.accounts.on_app_suspend()
 
-    def on_app_resume(self) -> None:
-        self.accounts.on_app_resume()
-        self.music.on_app_resume()
+    def on_app_unsuspend(self) -> None:
+        self.accounts.on_app_unsuspend()
+        self.music.on_app_unsuspend()
 
     def on_app_shutdown(self) -> None:
         self.music.on_app_shutdown()
@@ -451,15 +451,6 @@ class ClassicSubsystem(babase.AppSubsystem):
             if playtype in val.get_play_types()
         )
 
-    def show_online_score_ui(
-        self,
-        show: str = 'general',
-        game: str | None = None,
-        game_version: str | None = None,
-    ) -> None:
-        """(internal)"""
-        bauiv1.show_online_score_ui(show, game, game_version)
-
     def game_begin_analytics(self) -> None:
         """(internal)"""
         from baclassic import _analytics
@@ -627,15 +618,6 @@ class ClassicSubsystem(babase.AppSubsystem):
         """(internal)"""
         return bascenev1.get_foreground_host_activity()
 
-    def show_config_error_window(self) -> bool:
-        """(internal)"""
-        if self.platform in ('mac', 'linux', 'windows'):
-            from bauiv1lib.configerror import ConfigErrorWindow
-
-            babase.pushcall(ConfigErrorWindow)
-            return True
-        return False
-
     def value_test(
         self,
         arg: str,
@@ -701,11 +683,11 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         ShowURLWindow(address)
 
-    def quit_window(self) -> None:
+    def quit_window(self, quit_type: babase.QuitType) -> None:
         """(internal)"""
         from bauiv1lib.confirm import QuitWindow
 
-        QuitWindow()
+        QuitWindow(quit_type)
 
     def tournament_entry_window(
         self,
@@ -809,5 +791,6 @@ class ClassicSubsystem(babase.AppSubsystem):
                 bauiv1.getsound('swish').play()
 
             babase.app.ui_v1.set_main_menu_window(
-                MainMenuWindow().get_root_widget()
+                MainMenuWindow().get_root_widget(),
+                from_window=False,  # Disable check here.
             )

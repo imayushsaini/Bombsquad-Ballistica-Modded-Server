@@ -49,10 +49,10 @@ class AccountV1Subsystem:
 
         babase.pushcall(do_auto_sign_in)
 
-    def on_app_pause(self) -> None:
+    def on_app_suspend(self) -> None:
         """Should be called when app is pausing."""
 
-    def on_app_resume(self) -> None:
+    def on_app_unsuspend(self) -> None:
         """Should be called when the app is resumed."""
 
         # Mark our cached tourneys as invalid so anyone using them knows
@@ -302,6 +302,11 @@ class AccountV1Subsystem:
         """(internal)"""
         plus = babase.app.plus
         if plus is None:
+            import logging
+
+            logging.warning(
+                'Error adding pending promo code; plus not present.'
+            )
             babase.screenmessage(
                 babase.Lstr(resource='errorText'), color=(1, 0, 0)
             )

@@ -31,6 +31,7 @@
     "signInWithGooglePlayText": "ورود با اکانت گوگل پلی",
     "signInWithTestAccountInfoText": "(حساب میراثی؛ از حساب‌های دستگاه برای پیشروی استفاده می‌کند)",
     "signInWithTestAccountText": "ورود با حساب آزمایشی",
+    "signInWithText": "با ${SERVICE} وارد شوید",
     "signInWithV2InfoText": "یک اکانت که روی همه سیستم عامل ها کار میکنه",
     "signInWithV2Text": "ورود به سیستم با حساب بمب اسکواد",
     "signOutText": "خروج از حساب",
@@ -60,7 +61,7 @@
       "descriptionComplete": "بدون استفاده از بمب برنده شدی",
       "descriptionFull": "را بدون استفاده از هیچ بمبی کامل کن ${LEVEL} مرحلهٔ",
       "descriptionFullComplete": "را بدون استفاده از بمب کامل کردی ${LEVEL} مرحلهٔ",
-      "name": "بوکسر"
+      "name": "بوکسور!"
     },
     "Dual Wielding": {
       "descriptionFull": "(‏دو دستهٔ به بازی وصل کن ‏(سخت‌افزاری یا نرم‌افزاری",
@@ -124,7 +125,7 @@
       "descriptionComplete": "سه حریف را با مین زمینی از بین بردی",
       "descriptionFull": "با مین از بین ببر ${LEVEL} سه حریف را در مرحلهٔ",
       "descriptionFullComplete": "با مین از بین بردی ${LEVEL} سه حریف را در مرحلهٔ",
-      "name": "بازی مین"
+      "name": "مین بازی"
     },
     "Off You Go Then": {
       "description": "سه تا حریف از نقشه بنداز بیرون",
@@ -262,7 +263,7 @@
       "descriptionComplete": "فقط با یک مشت، یه نفرو کشتی",
       "descriptionFull": "فقط با یک مشت، یه نفر رو نابود کن ${LEVEL} در مرحله",
       "descriptionFullComplete": "فقط با یک مشت، یه نفر رو کشتی ${LEVEL} در مرحله",
-      "name": "مشت فوق‌العاده"
+      "name": "مشت خیلی فوق‌العاده"
     },
     "Super Punch": {
       "description": "با یک مشت، نصف جون یه نفر رو ببر",
@@ -334,12 +335,14 @@
     "getMoreGamesText": "...بازی های بیشتر",
     "titleText": "افزودن بازی"
   },
+  "addToFavoritesText": "اضافه کردن به مورد علاقه ها",
+  "addedToFavoritesText": "اضافه شد '${NAME}' به مورد علاقه ها",
   "allText": "همه",
   "allowText": "اجازه دادن",
   "alreadySignedInText": "این حساب کاربری توسط یک دستگاه دیگر در حال استفاده می باشد.\nلطفا از حساب کاربری دیگری استفاده کنید یا بازی را \nدر بقیه دستگاه هایتان ببندید و دوباره امتحان کنید.",
   "apiVersionErrorText": "نیاز داریم ${VERSION_REQUIRED} است. به ورژن ${VERSION_USED} بالا نمی آید. هدفش ${NAME} مدل",
   "audioSettingsWindow": {
-    "headRelativeVRAudioInfoText": "(به صورت اتوماتیک فعال شود وقتی که هدفون متصل است)",
+    "headRelativeVRAudioInfoText": "(به صورت خودکار فعال شود وقتی که هدفون متصل است)",
     "headRelativeVRAudioText": "(صدای واقعیت مجازی(مخصوص هدفون",
     "musicVolumeText": "صدای موسیقی",
     "soundVolumeText": "صدای بازی",
@@ -367,6 +370,7 @@
   "chatMutedText": "گفتگو بیصدا شد",
   "chatUnMuteText": "گفتگو رو صدادار کن",
   "choosingPlayerText": "<انتخاب بازیکن>",
+  "codesExplainText": "کدها توسط توسعه دهنده ارائه می شوند\n مشکلات حساب را تشخیص و تصحیح کنید.",
   "completeThisLevelToProceedText": "برای ادامه باید این مرحله را تمام کنید",
   "completionBonusText": "پاداش به اتمام رساندن",
   "configControllersWindow": {
@@ -448,6 +452,7 @@
     "swipeText": "حرکت جاروبی",
     "titleText": "پیکربندی صفحه لمسی"
   },
+  "configureDeviceInSystemSettingsText": "${DEVICE} می‌تواند در سیستم تنظیمات برنامه پیکربندی شود.",
   "configureItNowText": "همین الآن تنظیم شود ؟",
   "configureText": "پیکربندی",
   "connectMobileDevicesWindow": {
@@ -562,6 +567,8 @@
   "disableXInputDescriptionText": "اجازه می‌دهد به بیش از 4 کنترل کننده اما ممکن است کار نکند.",
   "disableXInputText": "غیرفعال کردن ورودی ایکس",
   "disabledText": "غیر فعال شده",
+  "discordFriendsText": "دنبال آدم‌های جدید می‌گردید تا با آنها بازی کنید؟\nبه دیسکورد ما بپیوندید و دوستان جدید پیدا کنید!",
+  "discordJoinText": "پیوستن به دیسکورد",
   "doneText": "انجام شد",
   "drawText": "برابر",
   "duplicateText": "تکراری",
@@ -747,6 +754,7 @@
     "manualYourLocalAddressText": ":آدرس محلی شما",
     "nearbyText": "افراد نزدیک",
     "noConnectionText": "<اتصال برقرار نیست>",
+    "noPartiesAddedText": "هیچ مهمانی ای اضافه نشده است",
     "otherVersionsText": "(نسخه های دیگر)",
     "partyCodeText": "کد گروه",
     "partyInviteAcceptText": "پذیرفتن",
@@ -818,10 +826,12 @@
     "alwaysText": "همیشه",
     "fullScreenCmdText": "تمام صفحه (Cmd-F)",
     "fullScreenCtrlText": "تمام صفحه (Ctrl-F)",
+    "fullScreenText": "تمام‌صفحه",
     "gammaText": "گاما",
     "highText": "زیاد",
     "higherText": "بالاتر",
     "lowText": "کم",
+    "maxFPSText": "حداکثر FPS",
     "mediumText": "معمولی",
     "neverText": "هرگز",
     "resolutionText": "رزولوشن",
@@ -1059,7 +1069,9 @@
   "noContinuesText": "(ادامه ندارد)",
   "noExternalStorageErrorText": "محل ذخیره سازی در این دستگاه یافت نشد",
   "noGameCircleText": "GameCircleخطا: وارد نشدید به",
+  "noPluginsInstalledText": "متاسفانه پلاگین ها نصب نشده",
   "noScoresYetText": "هیچ امتیازی نیست",
+  "noServersFoundText": "سروری (شبکه ای) یافت نشد",
   "noThanksText": "نه مرسی",
   "noTournamentsInTestBuildText": ".هشدار: امتیازات مسابقه از این نسخهٔ آزمایشی نادیده گرفته می‌شوند",
   "noValidMapsErrorText": "هیچ نقشه معتبری برای این نوع بازی یافت نشد.",
@@ -1269,6 +1281,7 @@
     "netTestingText": "تست شبکه",
     "resetText": "باز گرداندن",
     "showBombTrajectoriesText": "نمایش خط سیر بمب",
+    "showDevConsoleButtonText": "نشان دادن دکمه توسعه دهنده کنسول",
     "showInGamePingText": "نمایش پینگ در بازی",
     "showPlayerNamesText": "نمایش نام بازیکنان",
     "showUserModsText": "نمایش پوشهٔ سبک بازی‌ها",
@@ -1361,6 +1374,8 @@
   "storeText": "فروشگاه",
   "submitText": "ثبت",
   "submittingPromoCodeText": "...ثبت کردن کد",
+  "successText": "!موفقیت آمیز بود",
+  "supportEmailText": "اگر با هر گونه مشکلی مواجه هستید\n برنامه، لطفاً به ${EMAIL} ایمیل بزنید.",
   "teamNamesColorText": "نام/رنگ تیم...",
   "telnetAccessGrantedText": "شبکه ی در دسترس فعال",
   "telnetAccessText": "شبکه راه دور دردسترس است اجازه میدید؟",
@@ -1371,7 +1386,7 @@
   "thankYouText": "تشکر بخاطر حمایت از ما ! از بازی لذت ببرید",
   "threeKillText": "نابود کردن همزمان سه نفر",
   "timeBonusText": "پاداش سرعت عمل",
-  "timeElapsedText": "زمان سپری شده",
+  "timeElapsedText": "زمان گذشته",
   "timeExpiredText": "زمان تمام شده",
   "timeSuffixDaysText": "روز ${COUNT}",
   "timeSuffixHoursText": "ساعت ${COUNT}",
@@ -1737,7 +1752,7 @@
       "If you pick up a curse, your only hope for survival is to\nfind a health powerup in the next few seconds.": "اگه یه جعبه نابودگر رو به اشتباه گرفتین کارتون تمومه مگه اینکه ظرف چند\nثانیه یه جعبه ی درمان گیر بیارید",
       "If you stay in one place, you're toast. Run and dodge to survive..": "اگه فقط توی یه مکان ثابت بمونید کباب میشید پس بهتره مرتب توی زمین تحرک داشته باشی",
       "If you've got lots of players coming and going, turn on 'auto-kick-idle-players'\nunder settings in case anyone forgets to leave the game.": "اگر تعداد زیادی از بازیکنان در حال رفت و آمد هستند، بازیکنان \"بیروت انداختن بازیکنان غیرفعال\" را روشن کنید\nتحت تنظیمات در صورتی که کسی فراموش می‌کندپیش از خروج از بازی ترک بازی را بزند.",
-      "If your device gets too warm or you'd like to conserve battery power,\nturn down \"Visuals\" or \"Resolution\" in Settings->Graphics": "اگر دستگاه شما بیش از حد گرم می شود یا شما می خواهید برای حفظ قدرت باتری،\nکم کنید \"کیفیت\" یا \"وضوح تصویر\" رو در تنظیمات> گرافیک",
+      "If your device gets too warm or you'd like to conserve battery power,\nturn down \"Visuals\" or \"Resolution\" in Settings->Graphics": "اگر دستگاه شما بیش از حد گرم می شود یا شما می خواهید برای حفظ قدرت باتری،\n\"کیفیت\" یا \"وضوح تصویر\" رو در تنظیمات> گرافیک\nکم کنید",
       "If your framerate is choppy, try turning down resolution\nor visuals in the game's graphics settings.": "اگر دیدید که نرخ فریم تصویر کمی متلاطم است کاهش بدید رزولوشن \nیا کیفیت تصویر رو در تنظیمات گرافیک بازی",
       "In Capture-the-Flag, your own flag must be at your base to score, If the other\nteam is about to score, stealing their flag can be a good way to stop them.": "توی بازی رساندن پرچم ، باید پرچم تیم شما همون جا باقی بمونه\nاگه تیم حریف پرچم تیم شما رو برداشت باید از دستش کش بری",
       "In hockey, you'll maintain more speed if you turn gradually.": "روی زمین های یخی ، یه دفعه چرخیدن خیلی از سرعت بازیکن کم میکنه",
@@ -1816,6 +1831,7 @@
   "unlockThisInTheStoreText": ". این مورد باید در فروشگاه باز شود",
   "unlockThisProfilesText": "برای ایجاد بیش از ${NUM} پروفال٫ احتیاج به این موارد دارید:",
   "unlockThisText": ": برا باز کردن قفل این شما نیاز دارید که",
+  "unsupportedControllerText": "متاسفانه کنترلر \"${NAME}\" پشتیبانی نمی‌شود.",
   "unsupportedHardwareText": "با عرض پوزش، این سخت افزار توسط این ساخت بازی پشتیبانی نمی شود.",
   "upFirstText": "برای بار اول:",
   "upNextText": "${COUNT} بعدی در بازی",
@@ -1828,6 +1844,7 @@
   "usingItunesTurnRepeatAndShuffleOnText": "مطمین شید که شافل روشن است و تکرار کنید همه رو در آیتونز",
   "v2AccountLinkingInfoText": "برای پیوند دادن حساب‌های V2، از دکمه «مدیریت حساب» استفاده کنید.",
   "validatingTestBuildText": "... در حال بررسی حالت آزمایشی",
+  "viaText": "از طریق",
   "victoryText": "پیروز شدی!",
   "voteDelayText": ".ثانیه رای گیری کنید ${NUMBER} شما نمیتوانید به مدت",
   "voteInProgressText": ".یک رای گیری در حال انجام است",

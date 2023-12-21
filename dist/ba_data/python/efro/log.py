@@ -302,6 +302,10 @@ class LogHandler(logging.Handler):
             return all(cls._is_immutable_log_data(x) for x in data)
         return False
 
+    def call_in_thread(self, call: Callable[[], Any]) -> None:
+        """Submit a call to be run in the logging background thread."""
+        self._event_loop.call_soon_threadsafe(call)
+
     def emit(self, record: logging.LogRecord) -> None:
         # pylint: disable=too-many-branches
         if __debug__:
@@ -446,6 +450,11 @@ class LogHandler(logging.Handler):
     def file_write(self, name: str, output: str) -> None:
         """Send raw stdout/stderr output to the logger to be collated."""
 
+        # Note to self: it turns out that things like '^^^^^^^^^^^^^^'
+        # lines in stack traces get written as lots of individual '^'
+        # writes. It feels a bit dirty to be pushing a deferred call to
+        # another thread for each character. Perhaps should do some sort
+        # of basic accumulation here?
         self._event_loop.call_soon_threadsafe(
             tpartial(self._file_write_in_thread, name, output)
         )
@@ -505,12 +514,18 @@ class LogHandler(logging.Handler):
             traceback.print_exc(file=self._echofile)
 
     async def _ship_chunks_task(self, name: str) -> None:
+        # Note: it's important we sleep here for a moment. Otherwise,
+        # things like '^^^^^^^^^^^^' lines in stack traces, which come
+        # through as lots of individual '^' writes, tend to get broken
+        # into lots of tiny little lines by us.
+        await asyncio.sleep(0.01)
         self._ship_file_chunks(name, cancel_ship_task=False)
 
     def _ship_file_chunks(self, name: str, cancel_ship_task: bool) -> None:
         # Note: Raw print input generally ends in a newline, but that is
-        # redundant when we break things into log entries and results
-        # in extra empty lines. So strip off a single trailing newline.
+        # redundant when we break things into log entries and results in
+        # extra empty lines. So strip off a single trailing newline if
+        # one is present.
         text = ''.join(self._file_chunks[name]).removesuffix('\n')
 
         self._emit_entry(

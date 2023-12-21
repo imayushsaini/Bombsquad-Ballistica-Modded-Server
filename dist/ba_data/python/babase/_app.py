@@ -1,12 +1,10 @@
 # Released under the MIT License. See LICENSE for details.
 #
 """Functionality related to the high level state of the app."""
-# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import os
 import logging
-import warnings
 from enum import Enum
 from typing import TYPE_CHECKING
 from concurrent.futures import ThreadPoolExecutor
@@ -24,6 +22,7 @@ from babase._appcomponent import AppComponentSubsystem
 from babase._appmodeselector import AppModeSelector
 from babase._appintent import AppIntentDefault, AppIntentExec
 from babase._stringedit import StringEditSubsystem
+from babase._devconsole import DevConsoleSubsystem
 
 if TYPE_CHECKING:
     import asyncio
@@ -57,6 +56,8 @@ class App:
 
     # pylint: disable=too-many-public-methods
 
+    # A few things defined as non-optional values but not actually
+    # available until the app starts.
     plugins: PluginSubsystem
     lang: LanguageSubsystem
     health_monitor: AppHealthMonitor
@@ -71,7 +72,7 @@ class App:
 
         # The app has not yet begun starting and should not be used in
         # any way.
-        NOT_RUNNING = 0
+        NOT_STARTED = 0
 
         # The native layer is spinning up its machinery (screens,
         # renderers, etc.). Nothing should happen in the Python layer
@@ -91,13 +92,23 @@ class App:
         # All pieces are in place and the app is now doing its thing.
         RUNNING = 4
 
-        # The app is backgrounded or otherwise suspended.
-        PAUSED = 5
+        # Used on platforms such as mobile where the app basically needs
+        # to shut down while backgrounded. In this state, all event
+        # loops are suspended and all graphics and audio must cease
+        # completely. Be aware that the suspended state can be entered
+        # from any other state including NATIVE_BOOTSTRAPPING and
+        # SHUTTING_DOWN.
+        SUSPENDED = 5
 
-        # The app is shutting down.
+        # The app is shutting down. This process may involve sending
+        # network messages or other things that can take up to a few
+        # seconds, so ideally graphics and audio should remain
+        # functional (with fades or spinners or whatever to show
+        # something is happening).
         SHUTTING_DOWN = 6
 
-        # The app has completed shutdown.
+        # The app has completed shutdown. Any code running here should
+        # be basically immediate.
         SHUTDOWN_COMPLETE = 7
 
     class DefaultAppModeSelector(AppModeSelector):
@@ -140,9 +151,9 @@ class App:
     def __init__(self) -> None:
         """(internal)
 
-        Do not instantiate this class; access the single shared instance
-        of it as 'app' which is available in various Ballistica
-        feature-set modules such as babase.
+        Do not instantiate this class. You can access the single shared
+        instance of it through various high level packages: 'babase.app',
+        'bascenev1.app', 'bauiv1.app', etc.
         """
 
         # Hack for docs-generation: we can be imported with dummy modules
@@ -151,32 +162,35 @@ class App:
             return
 
         self.env: babase.Env = _babase.Env()
-        self.state = self.State.NOT_RUNNING
+        self.state = self.State.NOT_STARTED
 
         # Default executor which can be used for misc background
         # processing. It should also be passed to any additional asyncio
         # loops we create so that everything shares the same single set
         # of worker threads.
-        self.threadpool = ThreadPoolExecutor(thread_name_prefix='baworker')
+        self.threadpool = ThreadPoolExecutor(
+            thread_name_prefix='baworker',
+            initializer=self._thread_pool_thread_init,
+        )
 
         self.meta = MetadataSubsystem()
         self.net = NetworkSubsystem()
         self.workspaces = WorkspaceSubsystem()
         self.components = AppComponentSubsystem()
         self.stringedit = StringEditSubsystem()
+        self.devconsole = DevConsoleSubsystem()
 
         # This is incremented any time the app is backgrounded or
         # foregrounded; can be a simple way to determine if network data
         # should be refreshed/etc.
         self.fg_state = 0
-        self.config_file_healthy: bool = False
 
         self._subsystems: list[AppSubsystem] = []
         self._native_bootstrapping_completed = False
         self._init_completed = False
         self._meta_scan_completed = False
         self._native_start_called = False
-        self._native_paused = False
+        self._native_suspended = False
         self._native_shutdown_called = False
         self._native_shutdown_complete_called = False
         self._initial_sign_in_completed = False
@@ -194,8 +208,11 @@ class App:
         self._mode_selector: babase.AppModeSelector | None = None
         self._shutdown_task: asyncio.Task[None] | None = None
         self._shutdown_tasks: list[Coroutine[None, None, None]] = [
-            self._wait_for_shutdown_suppressions()
+            self._wait_for_shutdown_suppressions(),
+            self._fade_and_shutdown_graphics(),
+            self._fade_and_shutdown_audio(),
         ]
+        self._pool_thread_count = 0
 
     def postinit(self) -> None:
         """Called after we've been inited and assigned to babase.app.
@@ -211,6 +228,15 @@ class App:
 
         self.lang = LanguageSubsystem()
         self.plugins = PluginSubsystem()
+
+    @property
+    def active(self) -> bool:
+        """Whether the app is currently front and center.
+
+        This will be False when the app is hidden, other activities
+        are covering it, etc. (depending on the platform).
+        """
+        return _babase.app_is_active()
 
     @property
     def aioloop(self) -> asyncio.AbstractEventLoop:
@@ -311,7 +337,7 @@ class App:
     def add_shutdown_task(self, coro: Coroutine[None, None, None]) -> None:
         """Add a task to be run on app shutdown.
 
-        Note that tasks will be killed after
+        Note that shutdown tasks will be canceled after
         App.SHUTDOWN_TASK_TIMEOUT_SECONDS if they are still running.
         """
         if (
@@ -385,18 +411,18 @@ class App:
         self._native_bootstrapping_completed = True
         self._update_state()
 
-    def on_native_pause(self) -> None:
-        """Called by the native layer when the app pauses."""
+    def on_native_suspend(self) -> None:
+        """Called by the native layer when the app is suspended."""
         assert _babase.in_logic_thread()
-        assert not self._native_paused  # Should avoid redundant calls.
-        self._native_paused = True
+        assert not self._native_suspended  # Should avoid redundant calls.
+        self._native_suspended = True
         self._update_state()
 
-    def on_native_resume(self) -> None:
-        """Called by the native layer when the app resumes."""
+    def on_native_unsuspend(self) -> None:
+        """Called by the native layer when the app suspension ends."""
         assert _babase.in_logic_thread()
-        assert self._native_paused  # Should avoid redundant calls.
-        self._native_paused = False
+        assert self._native_suspended  # Should avoid redundant calls.
+        self._native_suspended = False
         self._update_state()
 
     def on_native_shutdown(self) -> None:
@@ -415,7 +441,7 @@ class App:
         """(internal)"""
         from babase._appconfig import read_app_config
 
-        self._config, self.config_file_healthy = read_app_config()
+        self._config = read_app_config()
 
     def handle_deep_link(self, url: str) -> None:
         """Handle a deep link URL."""
@@ -493,7 +519,7 @@ class App:
         except Exception:
             logging.exception('Error setting app intent to %s.', intent)
             _babase.pushcall(
-                tpartial(self._apply_intent_error, intent),
+                tpartial(self._display_set_intent_error, intent),
                 from_other_thread=True,
             )
 
@@ -538,10 +564,11 @@ class App:
                 'Error handling intent %s in app-mode %s.', intent, mode
             )
 
-    def _apply_intent_error(self, intent: AppIntent) -> None:
+    def _display_set_intent_error(self, intent: AppIntent) -> None:
+        """Show the *user* something went wrong setting an intent."""
         from babase._language import Lstr
 
-        del intent  # Unused.
+        del intent
         _babase.screenmessage(Lstr(resource='errorText'), color=(1, 0, 0))
         _babase.getsimplesound('error').play()
 
@@ -563,19 +590,6 @@ class App:
 
         self._aioloop = _asyncio.setup_asyncio()
         self.health_monitor = AppHealthMonitor()
-
-        # Only proceed if our config file is healthy so we don't
-        # overwrite a broken one or whatnot and wipe out data.
-        if not self.config_file_healthy:
-            if self.classic is not None:
-                handled = self.classic.show_config_error_window()
-                if handled:
-                    return
-
-            # For now on other systems we just overwrite the bum config.
-            # At this point settings are already set; lets just commit
-            # them to disk.
-            _appconfig.commit_app_config(force=True)
 
         # __FEATURESET_APP_SUBSYSTEM_CREATE_BEGIN__
         # This section generated by batools.appmodule; do not edit.
@@ -726,15 +740,15 @@ class App:
                 _babase.lifecyclelog('app state shutting down')
                 self._on_shutting_down()
 
-        elif self._native_paused:
-            # Entering paused state:
-            if self.state is not self.State.PAUSED:
-                self.state = self.State.PAUSED
-                self._on_pause()
+        elif self._native_suspended:
+            # Entering suspended state:
+            if self.state is not self.State.SUSPENDED:
+                self.state = self.State.SUSPENDED
+                self._on_suspend()
         else:
-            # Leaving paused state:
-            if self.state is self.State.PAUSED:
-                self._on_resume()
+            # Leaving suspended state:
+            if self.state is self.State.SUSPENDED:
+                self._on_unsuspend()
 
             # Entering or returning to running state
             if self._initial_sign_in_completed and self._meta_scan_completed:
@@ -768,7 +782,7 @@ class App:
                     self.state = self.State.NATIVE_BOOTSTRAPPING
                     _babase.lifecyclelog('app state native bootstrapping')
             else:
-                # Only logical possibility left is NOT_RUNNING, in which
+                # Only logical possibility left is NOT_STARTED, in which
                 # case we should not be getting called.
                 logging.warning(
                     'App._update_state called while in %s state;'
@@ -780,6 +794,7 @@ class App:
     async def _shutdown(self) -> None:
         import asyncio
 
+        _babase.lock_all_input()
         try:
             async with asyncio.TaskGroup() as task_group:
                 for task_coro in self._shutdown_tasks:
@@ -809,33 +824,33 @@ class App:
         try:
             await asyncio.wait_for(task, self.SHUTDOWN_TASK_TIMEOUT_SECONDS)
         except Exception:
-            logging.exception('Error in shutdown task.')
+            logging.exception('Error in shutdown task (%s).', coro)
 
-    def _on_pause(self) -> None:
-        """Called when the app goes to a paused state."""
+    def _on_suspend(self) -> None:
+        """Called when the app goes to a suspended state."""
         assert _babase.in_logic_thread()
 
-        # Pause all app subsystems in the opposite order they were inited.
+        # Suspend all app subsystems in the opposite order they were inited.
         for subsystem in reversed(self._subsystems):
             try:
-                subsystem.on_app_pause()
+                subsystem.on_app_suspend()
             except Exception:
                 logging.exception(
-                    'Error in on_app_pause for subsystem %s.', subsystem
+                    'Error in on_app_suspend for subsystem %s.', subsystem
                 )
 
-    def _on_resume(self) -> None:
-        """Called when resuming."""
+    def _on_unsuspend(self) -> None:
+        """Called when unsuspending."""
         assert _babase.in_logic_thread()
         self.fg_state += 1
 
-        # Resume all app subsystems in the same order they were inited.
+        # Unsuspend all app subsystems in the same order they were inited.
         for subsystem in self._subsystems:
             try:
-                subsystem.on_app_resume()
+                subsystem.on_app_unsuspend()
             except Exception:
                 logging.exception(
-                    'Error in on_app_resume for subsystem %s.', subsystem
+                    'Error in on_app_unsuspend for subsystem %s.', subsystem
                 )
 
     def _on_shutting_down(self) -> None:
@@ -875,10 +890,45 @@ class App:
         import asyncio
 
         # Spin and wait for anything blocking shutdown to complete.
+        starttime = _babase.apptime()
         _babase.lifecyclelog('shutdown-suppress wait begin')
         while _babase.shutdown_suppress_count() > 0:
             await asyncio.sleep(0.001)
         _babase.lifecyclelog('shutdown-suppress wait end')
+        duration = _babase.apptime() - starttime
+        if duration > 1.0:
+            logging.warning(
+                'Shutdown-suppressions lasted longer than ideal '
+                '(%.2f seconds).',
+                duration,
+            )
+
+    async def _fade_and_shutdown_graphics(self) -> None:
+        import asyncio
+
+        # Kick off a short fade and give it time to complete.
+        _babase.lifecyclelog('fade-and-shutdown-graphics begin')
+        _babase.fade_screen(False, time=0.15)
+        await asyncio.sleep(0.15)
+
+        # Now tell the graphics system to go down and wait until
+        # it has done so.
+        _babase.graphics_shutdown_begin()
+        while not _babase.graphics_shutdown_is_complete():
+            await asyncio.sleep(0.01)
+        _babase.lifecyclelog('fade-and-shutdown-graphics end')
+
+    async def _fade_and_shutdown_audio(self) -> None:
+        import asyncio
+
+        # Tell the audio system to go down and give it a bit of
+        # time to do so gracefully.
+        _babase.lifecyclelog('fade-and-shutdown-audio begin')
+        _babase.audio_shutdown_begin()
+        await asyncio.sleep(0.15)
+        while not _babase.audio_shutdown_is_complete():
+            await asyncio.sleep(0.01)
+        _babase.lifecyclelog('fade-and-shutdown-audio end')
 
     def _threadpool_no_wait_done(self, fut: Future) -> None:
         try:
@@ -888,243 +938,7 @@ class App:
                 'Error in work submitted via threadpool_submit_no_wait()'
             )
 
-    # --------------------------------------------------------------------
-    # THE FOLLOWING ARE DEPRECATED AND WILL BE REMOVED IN A FUTURE UPDATE.
-    # --------------------------------------------------------------------
-
-    @property
-    def build_number(self) -> int:
-        """Integer build number.
-
-        This value increases by at least 1 with each release of the engine.
-        It is independent of the human readable babase.App.version string.
-        """
-        warnings.warn(
-            'app.build_number is deprecated; use app.env.build_number',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.build_number
-
-    @property
-    def device_name(self) -> str:
-        """Name of the device running the app."""
-        warnings.warn(
-            'app.device_name is deprecated; use app.env.device_name',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.device_name
-
-    @property
-    def config_file_path(self) -> str:
-        """Where the app's config file is stored on disk."""
-        warnings.warn(
-            'app.config_file_path is deprecated;'
-            ' use app.env.config_file_path',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.config_file_path
-
-    @property
-    def version(self) -> str:
-        """Human-readable engine version string; something like '1.3.24'.
-
-        This should not be interpreted as a number; it may contain
-        string elements such as 'alpha', 'beta', 'test', etc.
-        If a numeric version is needed, use `build_number`.
-        """
-        warnings.warn(
-            'app.version is deprecated; use app.env.version',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.version
-
-    @property
-    def debug_build(self) -> bool:
-        """Whether the app was compiled in debug mode.
-
-        Debug builds generally run substantially slower than non-debug
-        builds due to compiler optimizations being disabled and extra
-        checks being run.
-        """
-        warnings.warn(
-            'app.debug_build is deprecated; use app.env.debug',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.debug
-
-    @property
-    def test_build(self) -> bool:
-        """Whether the app was compiled in test mode.
-
-        Test mode enables extra checks and features that are useful for
-        release testing but which do not slow the game down significantly.
-        """
-        warnings.warn(
-            'app.test_build is deprecated; use app.env.test',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.test
-
-    @property
-    def data_directory(self) -> str:
-        """Path where static app data lives."""
-        warnings.warn(
-            'app.data_directory is deprecated; use app.env.data_directory',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.data_directory
-
-    @property
-    def python_directory_user(self) -> str | None:
-        """Path where the app expects its user scripts (mods) to live.
-
-        Be aware that this value may be None if ballistica is running in
-        a non-standard environment, and that python-path modifications may
-        cause modules to be loaded from other locations.
-        """
-        warnings.warn(
-            'app.python_directory_user is deprecated;'
-            ' use app.env.python_directory_user',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.python_directory_user
-
-    @property
-    def python_directory_app(self) -> str | None:
-        """Path where the app expects its bundled modules to live.
-
-        Be aware that this value may be None if Ballistica is running in
-        a non-standard environment, and that python-path modifications may
-        cause modules to be loaded from other locations.
-        """
-        warnings.warn(
-            'app.python_directory_app is deprecated;'
-            ' use app.env.python_directory_app',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.python_directory_app
-
-    @property
-    def python_directory_app_site(self) -> str | None:
-        """Path where the app expects its bundled pip modules to live.
-
-        Be aware that this value may be None if Ballistica is running in
-        a non-standard environment, and that python-path modifications may
-        cause modules to be loaded from other locations.
-        """
-        warnings.warn(
-            'app.python_directory_app_site is deprecated;'
-            ' use app.env.python_directory_app_site',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.python_directory_app_site
-
-    @property
-    def api_version(self) -> int:
-        """The app's api version.
-
-        Only Python modules and packages associated with the current API
-        version number will be detected by the game (see the ba_meta tag).
-        This value will change whenever substantial backward-incompatible
-        changes are introduced to ballistica APIs. When that happens,
-        modules/packages should be updated accordingly and set to target
-        the newer API version number.
-        """
-        warnings.warn(
-            'app.api_version is deprecated; use app.env.api_version',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.api_version
-
-    @property
-    def on_tv(self) -> bool:
-        """Whether the app is currently running on a TV."""
-        warnings.warn(
-            'app.on_tv is deprecated; use app.env.tv',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.tv
-
-    @property
-    def vr_mode(self) -> bool:
-        """Whether the app is currently running in VR."""
-        warnings.warn(
-            'app.vr_mode is deprecated; use app.env.vr',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.vr
-
-    # __SPINOFF_REQUIRE_UI_V1_BEGIN__
-
-    @property
-    def toolbar_test(self) -> bool:
-        """(internal)."""
-        warnings.warn(
-            'app.toolbar_test is deprecated; use app.ui_v1.use_toolbars',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.ui_v1.use_toolbars
-
-    # __SPINOFF_REQUIRE_UI_V1_END__
-
-    @property
-    def arcade_mode(self) -> bool:
-        """Whether the app is currently running on arcade hardware."""
-        warnings.warn(
-            'app.arcade_mode is deprecated; use app.env.arcade',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.arcade
-
-    @property
-    def headless_mode(self) -> bool:
-        """Whether the app is running headlessly."""
-        warnings.warn(
-            'app.headless_mode is deprecated; use app.env.headless',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.headless
-
-    @property
-    def demo_mode(self) -> bool:
-        """Whether the app is targeting a demo experience."""
-        warnings.warn(
-            'app.demo_mode is deprecated; use app.env.demo',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.env.demo
-
-    # __SPINOFF_REQUIRE_SCENE_V1_BEGIN__
-
-    @property
-    def protocol_version(self) -> int:
-        """(internal)."""
-        # pylint: disable=cyclic-import
-        import bascenev1
-
-        warnings.warn(
-            'app.protocol_version is deprecated;'
-            ' use bascenev1.protocol_version()',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return bascenev1.protocol_version()
-
-    # __SPINOFF_REQUIRE_SCENE_V1_END__
+    def _thread_pool_thread_init(self) -> None:
+        # Help keep things clear in profiling tools/etc.
+        self._pool_thread_count += 1
+        _babase.set_thread_name(f'ballistica worker-{self._pool_thread_count}')

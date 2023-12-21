@@ -38,6 +38,27 @@ class InputType(Enum):
     DOWN_RELEASE = 26
 
 
+class QuitType(Enum):
+    """Types of input a controller can send to the game.
+
+    Category: Enums
+
+    'soft' may hide/reset the app but keep the process running, depending
+       on the platform.
+
+    'back' is a variant of 'soft' which may give 'back-button-pressed'
+       behavior depending on the platform. (returning to some previous
+       activity instead of dumping to the home screen, etc.)
+
+    'hard' leads to the process exiting. This generally should be avoided
+       on platforms such as mobile.
+    """
+
+    SOFT = 0
+    BACK = 1
+    HARD = 2
+
+
 class UIScale(Enum):
     """The overall scale the UI is being rendered for. Note that this is
     independent of pixel resolution. For example, a phone and a desktop PC

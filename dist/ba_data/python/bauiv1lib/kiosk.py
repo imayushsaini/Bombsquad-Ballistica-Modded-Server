@@ -21,7 +21,7 @@ class KioskWindow(bui.Window):
         self._height = 340.0
 
         def _do_cancel() -> None:
-            QuitWindow(swish=True, back=True)
+            QuitWindow(swish=True, quit_type=bui.QuitType.BACK)
 
         super().__init__(
             root_widget=bui.containerwidget(
@@ -501,9 +501,15 @@ class KioskWindow(bui.Window):
     def _do_full_menu(self) -> None:
         from bauiv1lib.mainmenu import MainMenuWindow
 
+        # no-op if our underlying widget is dead or on its way out.
+        if not self._root_widget or self._root_widget.transitioning_out:
+            return
+
         assert bui.app.classic is not None
 
         self._save_state()
         bui.containerwidget(edit=self._root_widget, transition='out_left')
         bui.app.classic.did_menu_intro = True  # prevent delayed transition-in
-        bui.app.ui_v1.set_main_menu_window(MainMenuWindow().get_root_widget())
+        bui.app.ui_v1.set_main_menu_window(
+            MainMenuWindow().get_root_widget(), from_window=self._root_widget
+        )

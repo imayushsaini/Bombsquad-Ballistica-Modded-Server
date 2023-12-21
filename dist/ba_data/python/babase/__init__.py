@@ -27,7 +27,10 @@ from _babase import (
     apptime,
     apptimer,
     AppTimer,
-    can_toggle_fullscreen,
+    fullscreen_control_available,
+    fullscreen_control_get,
+    fullscreen_control_key_shortcut,
+    fullscreen_control_set,
     charstr,
     clipboard_get_text,
     clipboard_has_text,
@@ -58,10 +61,8 @@ from _babase import (
     in_logic_thread,
     increment_analytics_count,
     is_os_playing_music,
-    is_running_on_fire_tv,
     is_xcode_build,
     lock_all_input,
-    mac_music_app_get_library_source,
     mac_music_app_get_playlists,
     mac_music_app_get_volume,
     mac_music_app_init,
@@ -72,7 +73,10 @@ from _babase import (
     music_player_set_volume,
     music_player_shutdown,
     music_player_stop,
+    native_review_request,
+    native_review_request_supported,
     native_stack_trace,
+    open_file_externally,
     print_load_info,
     pushcall,
     quit,
@@ -82,7 +86,6 @@ from _babase import (
     screenmessage,
     set_analytics_screen,
     set_low_level_config_value,
-    set_stress_testing,
     set_thread_name,
     set_ui_input_device,
     show_progress_bar,
@@ -114,6 +117,11 @@ from babase._apputils import (
     AppHealthMonitor,
 )
 from babase._cloud import CloudSubsystem
+from babase._devconsole import (
+    DevConsoleTab,
+    DevConsoleTabEntry,
+    DevConsoleSubsystem,
+)
 from babase._emptyappmode import EmptyAppMode
 from babase._error import (
     print_exception,
@@ -146,9 +154,8 @@ from babase._general import (
     getclass,
     get_type_name,
 )
-from babase._keyboard import Keyboard
 from babase._language import Lstr, LanguageSubsystem
-from babase._login import LoginAdapter
+from babase._login import LoginAdapter, LoginInfo
 
 # noinspection PyProtectedMember
 # (PyCharm inspection bug?)
@@ -157,6 +164,7 @@ from babase._mgen.enums import (
     SpecialChar,
     InputType,
     UIScale,
+    QuitType,
 )
 from babase._math import normalized_color, is_point_in_box, vec3validate
 from babase._meta import MetadataSubsystem
@@ -194,7 +202,10 @@ __all__ = [
     'apptimer',
     'AppTimer',
     'Call',
-    'can_toggle_fullscreen',
+    'fullscreen_control_available',
+    'fullscreen_control_get',
+    'fullscreen_control_key_shortcut',
+    'fullscreen_control_set',
     'charstr',
     'clipboard_get_text',
     'clipboard_has_text',
@@ -206,6 +217,9 @@ __all__ = [
     'ContextError',
     'ContextRef',
     'DelegateNotFoundError',
+    'DevConsoleTab',
+    'DevConsoleTabEntry',
+    'DevConsoleSubsystem',
     'DisplayTime',
     'displaytime',
     'displaytimer',
@@ -244,14 +258,12 @@ __all__ = [
     'is_browser_likely_available',
     'is_os_playing_music',
     'is_point_in_box',
-    'is_running_on_fire_tv',
     'is_xcode_build',
-    'Keyboard',
     'LanguageSubsystem',
     'lock_all_input',
     'LoginAdapter',
+    'LoginInfo',
     'Lstr',
-    'mac_music_app_get_library_source',
     'mac_music_app_get_playlists',
     'mac_music_app_get_volume',
     'mac_music_app_init',
@@ -264,10 +276,13 @@ __all__ = [
     'music_player_set_volume',
     'music_player_shutdown',
     'music_player_stop',
+    'native_review_request',
+    'native_review_request_supported',
     'native_stack_trace',
     'NodeNotFoundError',
     'normalized_color',
     'NotFoundError',
+    'open_file_externally',
     'Permission',
     'PlayerNotFoundError',
     'Plugin',
@@ -278,6 +293,7 @@ __all__ = [
     'print_load_info',
     'pushcall',
     'quit',
+    'QuitType',
     'reload_media',
     'request_permission',
     'safecolor',
@@ -287,7 +303,6 @@ __all__ = [
     'SessionTeamNotFoundError',
     'set_analytics_screen',
     'set_low_level_config_value',
-    'set_stress_testing',
     'set_thread_name',
     'set_ui_input_device',
     'show_progress_bar',
