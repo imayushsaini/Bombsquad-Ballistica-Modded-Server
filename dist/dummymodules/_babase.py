@@ -267,6 +267,112 @@ class DisplayTimer:
         pass
 
 
+class Env:
+    """Unchanging values for the current running app instance.
+    Access the single shared instance of this class at `babase.app.env`.
+    """
+
+    android: bool
+    """Is this build targeting an Android based OS?"""
+
+    api_version: int
+    """The app's api version.
+
+       Only Python modules and packages associated with the current API
+       version number will be detected by the game (see the ba_meta tag).
+       This value will change whenever substantial backward-incompatible
+       changes are introduced to Ballistica APIs. When that happens,
+       modules/packages should be updated accordingly and set to target
+       the newer API version number."""
+
+    arcade: bool
+    """Whether the app is targeting an arcade-centric experience."""
+
+    build_number: int
+    """Integer build number for the engine.
+
+       This value increases by at least 1 with each release of the engine.
+       It is independent of the human readable `version` string."""
+
+    config_file_path: str
+    """Where the app's config file is stored on disk."""
+
+    data_directory: str
+    """Where bundled static app data lives."""
+
+    debug: bool
+    """Whether the app is running in debug mode.
+
+       Debug builds generally run substantially slower than non-debug
+       builds due to compiler optimizations being disabled and extra
+       checks being run."""
+
+    demo: bool
+    """Whether the app is targeting a demo experience."""
+
+    device_name: str
+    """Human readable name of the device running this app."""
+
+    gui: bool
+    """Whether the app is running with a gui.
+
+       This is the opposite of `headless`."""
+
+    headless: bool
+    """Whether the app is running headlessly (without a gui).
+
+       This is the opposite of `gui`."""
+
+    python_directory_app: str | None
+    """Path where the app expects its bundled modules to live.
+
+       Be aware that this value may be None if Ballistica is running in
+       a non-standard environment, and that python-path modifications may
+       cause modules to be loaded from other locations."""
+
+    python_directory_app_site: str | None
+    """Path where the app expects its bundled pip modules to live.
+
+       Be aware that this value may be None if Ballistica is running in
+       a non-standard environment, and that python-path modifications may
+       cause modules to be loaded from other locations."""
+
+    python_directory_user: str | None
+    """Path where the app expects its user scripts (mods) to live.
+
+       Be aware that this value may be None if Ballistica is running in
+       a non-standard environment, and that python-path modifications may
+       cause modules to be loaded from other locations."""
+
+    supports_soft_quit: bool
+    """Whether the running app supports 'soft' quit options.
+
+       This generally applies to mobile derived OSs, where an act of
+       'quitting' may leave the app running in the background waiting
+       in case it is used again."""
+
+    test: bool
+    """Whether the app is running in test mode.
+
+       Test mode enables extra checks and features that are useful for
+       release testing but which do not slow the game down significantly."""
+
+    tv: bool
+    """Whether the app is targeting a TV-centric experience."""
+
+    version: str
+    """Human-readable version string for the engine; something like '1.3.24'.
+
+       This should not be interpreted as a number; it may contain
+       string elements such as 'alpha', 'beta', 'test', etc.
+       If a numeric version is needed, use `build_number`."""
+
+    vr: bool
+    """Whether the app is currently running in VR."""
+
+    pass
+
+
 class FeatureSetData:
     """Internal."""
 
@@ -415,6 +521,11 @@ def app_instance_uuid() -> str:
     return str()
 
 
+def app_is_active() -> bool:
+    """(internal)"""
+    return bool()
+
+
 def appname() -> str:
     """(internal)"""
     return str()
@@ -476,6 +587,21 @@ def apptimer(time: float, call: Callable[[], Any]) -> None:
     ...                       'hello from the future 2!'))
     """
     return None
+
+
+def asset_loads_allowed() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def audio_shutdown_begin() -> None:
+    """(internal)"""
+    return None
+
+
+def audio_shutdown_is_complete() -> bool:
+    """(internal)"""
+    return bool()
 
 
 def can_display_full_unicode() -> bool:
@@ -546,6 +672,11 @@ def commit_config(config: str) -> None:
     return None
 
 
+def complete_shutdown() -> None:
+    """Complete the shutdown process, triggering the app to exit."""
+    return None
+
+
 def contains_python_dist() -> bool:
     """(internal)"""
     return bool()
@@ -559,14 +690,63 @@ def debug_print_py_err() -> None:
     return None
 
 
-def display_log(name: str, level: str, message: str) -> None:
-    """(internal)
-
-    Sends a log message to the in-game console and any per-platform
-    log destinations (Android log, etc.). This generally is not called
-    directly and should instead be fed Python logging output.
-    """
+def dev_console_add_button(
+    label: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    call: Callable[[], Any] | None,
+    h_anchor: str,
+    label_scale: float,
+    corner_radius: float,
+    style: str,
+) -> None:
+    """(internal)"""
     return None
+
+
+def dev_console_add_python_terminal() -> None:
+    """(internal)"""
+    return None
+
+
+def dev_console_add_text(
+    text: str,
+    x: float,
+    y: float,
+    h_anchor: str,
+    h_align: str,
+    v_align: str,
+    scale: float,
+) -> None:
+    """(internal)"""
+    return None
+
+
+def dev_console_base_scale() -> float:
+    """(internal)"""
+    return float()
+
+
+def dev_console_input_adapter_finish() -> None:
+    """(internal)"""
+    return None
+
+
+def dev_console_request_refresh() -> None:
+    """(internal)"""
+    return None
+
+
+def dev_console_tab_height() -> float:
+    """(internal)"""
+    return float()
+
+
+def dev_console_tab_width() -> float:
+    """(internal)"""
+    return float()
 
 
 def displaytime() -> babase.DisplayTime:
@@ -652,13 +832,13 @@ def ehv() -> None:
     return None
 
 
-def empty_app_mode_activate() -> None:
-    """(internal)"""
-    return None
+def emit_log(name: str, level: str, message: str) -> None:
+    """(internal)
 
-
-def empty_app_mode_deactivate() -> None:
-    """(internal)"""
+    Sends a log message to the in-app console and any per-platform
+    log destinations (Android log, etc.). This generally is not called
+    directly and should instead be fed Python logging output.
+    """
     return None
 
 
@@ -716,6 +896,26 @@ def fatal_error(message: str) -> None:
     return None
 
 
+def fullscreen_control_available() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def fullscreen_control_get() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def fullscreen_control_key_shortcut() -> str | None:
+    """(internal)"""
+    return ''
+
+
+def fullscreen_control_set(val: bool) -> None:
+    """(internal)"""
+    return None
+
+
 def get_appconfig_builtin_keys() -> list[str]:
     """(internal)"""
     return ['blah', 'blah2']
@@ -744,6 +944,11 @@ def get_camera_target() -> tuple[float, ...]:
     tinkering.
     """
     return (0.0, 0.0, 0.0)
+
+
+def get_dev_console_input_text() -> str:
+    """(internal)"""
+    return str()
 
 
 def get_display_resolution() -> tuple[int, int] | None:
@@ -849,11 +1054,13 @@ def getsimplesound(name: str) -> SimpleSound:
     return SimpleSound()
 
 
-def has_gamma_control() -> bool:
-    """(internal)
+def graphics_shutdown_begin() -> None:
+    """(internal)"""
+    return None
 
-    Returns whether the system can adjust overall screen gamma)
-    """
+
+def graphics_shutdown_is_complete() -> bool:
+    """(internal)"""
     return bool()
 
 
@@ -915,18 +1122,8 @@ def is_os_playing_music() -> bool:
 
     Tells whether the OS is currently playing music of some sort.
 
-    (Used to determine whether the game should avoid playing its own)
+    (Used to determine whether the app should avoid playing its own)
     """
-    return bool()
-
-
-def is_running_on_fire_tv() -> bool:
-    """(internal)"""
-    return bool()
-
-
-def is_running_on_ouya() -> bool:
-    """(internal)"""
     return bool()
 
 
@@ -954,11 +1151,6 @@ def login_adapter_back_end_active_change(login_type: str, active: bool) -> None:
 
 
 def login_adapter_get_sign_in_token(login_type: str, attempt_id: int) -> None:
-    """(internal)"""
-    return None
-
-
-def mac_music_app_get_library_source() -> None:
     """(internal)"""
     return None
 
@@ -1030,6 +1222,16 @@ def music_player_stop() -> None:
     return None
 
 
+def native_review_request() -> None:
+    """(internal)"""
+    return None
+
+
+def native_review_request_supported() -> bool:
+    """(internal)"""
+    return bool()
+
+
 def native_stack_trace() -> str | None:
     """Return a native stack trace as a string, or None if not available.
 
@@ -1046,6 +1248,16 @@ def on_app_running() -> None:
     return None
 
 
+def on_empty_app_mode_activate() -> None:
+    """(internal)"""
+    return None
+
+
+def on_empty_app_mode_deactivate() -> None:
+    """(internal)"""
+    return None
+
+
 def on_initial_app_mode_set() -> None:
     """(internal)"""
     return None
@@ -1055,6 +1267,14 @@ def open_dir_externally(path: str) -> None:
     """(internal)
 
     Open the provided dir in the default external app.
+    """
+    return None
+
+
+def open_file_externally(path: str) -> None:
+    """(internal)
+
+    Open the provided file in the default external app.
     """
     return None
 
@@ -1110,13 +1330,17 @@ def pushcall(
 
 
 # noinspection PyShadowingBuiltins
-def quit(soft: bool = False, back: bool = False) -> None:
-    """Quit the game.
+def quit(
+    confirm: bool = False, quit_type: babase.QuitType | None = None
+) -> None:
+    """Quit the app.
 
     Category: **General Utility Functions**
 
-    On systems like Android, 'soft' will end the activity but keep the
-    app running.
+    If 'confirm' is True, a confirm dialog will be presented if conditions
+    allow; otherwise the quit will still be immediate.
+    See docs for babase.QuitType for explanations of the optional
+    'quit_type' arg.
     """
     return None
 
@@ -1227,6 +1451,11 @@ def set_camera_target(x: float, y: float, z: float) -> None:
     return None
 
 
+def set_dev_console_input_text(val: str) -> None:
+    """(internal)"""
+    return None
+
+
 def set_internal_language_keys(
     listobj: list[tuple[str, str]], random_names_list: list[tuple[str, str]]
 ) -> None:
@@ -1240,11 +1469,6 @@ def set_low_level_config_value(key: str, value: int) -> None:
 
 
 def set_platform_misc_read_vals(mode: str) -> None:
-    """(internal)"""
-    return None
-
-
-def set_stress_testing(testing: bool, player_count: int) -> None:
     """(internal)"""
     return None
 
@@ -1280,9 +1504,48 @@ def show_progress_bar() -> None:
     return None
 
 
+def shutdown_suppress_begin() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def shutdown_suppress_count() -> int:
+    """(internal)"""
+    return int()
+
+
+def shutdown_suppress_end() -> None:
+    """(internal)"""
+    return None
+
+
 def submit_analytics_counts() -> None:
     """(internal)"""
     return None
+
+
+def supports_max_fps() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def supports_open_dir_externally() -> bool:
+    """(internal)
+
+    Return whether the current app/platform supports opening dirs externally
+    (in the Mac Finder, Windows Explorer, etc.).
+    """
+    return bool()
+
+
+def supports_vsync() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def temp_testing() -> bool:
+    """(internal)"""
+    return bool()
 
 
 def unlock_all_input() -> None:
@@ -1301,6 +1564,16 @@ def user_agent_string() -> str:
 def user_ran_commands() -> None:
     """(internal)"""
     return None
+
+
+def using_game_center() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def using_google_play_game_services() -> bool:
+    """(internal)"""
+    return bool()
 
 
 def v1_cloud_log(message: str) -> None:

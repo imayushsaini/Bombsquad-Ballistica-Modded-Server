@@ -52,6 +52,11 @@ def add_v1_account_transaction(
     return None
 
 
+def can_show_ad() -> bool:
+    """(internal)"""
+    return bool()
+
+
 def game_service_has_leaderboard(game: str, config: str) -> bool:
     """(internal)
 
@@ -147,6 +152,16 @@ def get_v2_fleet() -> str:
     return str()
 
 
+def has_video_ads() -> bool:
+    """(internal)"""
+    return bool()
+
+
+def have_incentivized_ad() -> bool:
+    """(internal)"""
+    return bool()
+
+
 def have_outstanding_v1_account_transactions() -> bool:
     """(internal)"""
     return bool()
@@ -201,6 +216,29 @@ def restore_purchases() -> None:
 
 
 def run_v1_account_transactions() -> None:
+    """(internal)"""
+    return None
+
+
+def show_ad(
+    purpose: str, on_completion_call: Callable[[], None] | None = None
+) -> None:
+    """(internal)"""
+    return None
+
+
+def show_ad_2(
+    purpose: str, on_completion_call: Callable[[bool], None] | None = None
+) -> None:
+    """(internal)"""
+    return None
+
+
+def show_game_service_ui(
+    show: str = 'general',
+    game: str | None = None,
+    game_version: str | None = None,
+) -> None:
     """(internal)"""
     return None
 

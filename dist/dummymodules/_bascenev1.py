@@ -162,7 +162,12 @@ class InputDevice:
     """
 
     allows_configuring: bool
-    """Whether the input-device can be configured."""
+    """Whether the input-device can be configured in the app."""
+
+    allows_configuring_in_system_settings: bool
+    """Whether the input-device can be configured in the system.
+       setings app. This can be used to redirect the user to go there
+       if they attempt to configure the device."""
 
     has_meaningful_button_names: bool
     """Whether button names returned by this instance match labels
@@ -602,10 +607,6 @@ class Node:
         """
         return None
 
-    def changerotation(self, x: int, y: int, z: int) -> None:
-        """added by smoothy"""
-        return None
-
     def connectattr(self, srcattr: str, dstnode: Node, dstattr: str) -> None:
         """Connect one of this node's attributes to an attribute on another
         node. This will immediately set the target attribute's value to that
@@ -934,21 +935,6 @@ class Timer:
         pass
 
 
-def app_mode_activate() -> None:
-    """(internal)"""
-    return None
-
-
-def app_mode_deactivate() -> None:
-    """(internal)"""
-    return None
-
-
-def append_owner_ip(ip: str) -> None:
-    """(internal)"""
-    return None
-
-
 def basetime() -> bascenev1.BaseTime:
     """Return the base-time in seconds for the current scene-v1 context.
 
@@ -1088,11 +1074,6 @@ def connect_to_party(
     return None
 
 
-def disable_kickvote(id: str) -> None:
-    """(internal)id: pb-id who cant start a kick vote to anyone"""
-    return None
-
-
 def disconnect_client(client_id: int, ban_time: int = 300) -> bool:
     """(internal)"""
     return bool()
@@ -1141,21 +1122,6 @@ def get_chat_messages() -> list[str]:
     return ['blah', 'blah2']
 
 
-def get_client_device_uuid(client_id: float) -> str:
-    """(internal)"""
-    return str()
-
-
-def get_client_ip(client_id: float) -> str:
-    """(internal)"""
-    return str()
-
-
-def get_client_ping(client_id: float) -> str:
-    """(internal)"""
-    return str()
-
-
 def get_client_public_device_uuid(client_id: int) -> str | None:
     """(internal)
 
@@ -1194,6 +1160,13 @@ def get_configurable_game_pads() -> list:
 def get_connection_to_host_info() -> dict:
     """(internal)"""
     return dict()
+
+
+def get_connection_to_host_info_2() -> bascenev1.HostInfo | None:
+    """Return info about the host we are currently connected to."""
+    import bascenev1  # pylint: disable=cyclic-import
+
+    return bascenev1.HostInfo('dummyname', -1, 'dummy_addr', -1)
 
 
 def get_foreground_host_activity() -> bascenev1.Activity | None:
@@ -1501,11 +1474,6 @@ def have_touchscreen_input() -> bool:
     return bool()
 
 
-def hide_player_device_id(type: bool) -> None:
-    """(internal)hide player device spec from roster to clients"""
-    return None
-
-
 def host_scan_cycle() -> list:
     """(internal)"""
     return list()
@@ -1596,12 +1564,27 @@ def newnode(
     return bascenev1.Node()
 
 
+def on_app_mode_activate() -> None:
+    """(internal)"""
+    return None
+
+
+def on_app_mode_deactivate() -> None:
+    """(internal)"""
+    return None
+
+
 def printnodes() -> None:
     """Print various info about existing nodes; useful for debugging.
 
     Category: **Gameplay Functions**
     """
     return None
+
+
+def protocol_version() -> int:
+    """(internal)"""
+    return int()
 
 
 def register_activity(activity: bascenev1.Activity) -> bascenev1.ActivityData:
@@ -1662,23 +1645,10 @@ def set_enable_default_kick_voting(enable: bool) -> None:
     return None
 
 
-def set_game_speed(speed: int) -> None:
-    """(internal)
-
-    Sets the speed scale for the game.
-    """
-    return None
-
-
 def set_internal_music(
     music: babase.SimpleSound | None, volume: float = 1.0, loop: bool = True
 ) -> None:
     """(internal)."""
-    return None
-
-
-def set_kickvote_msg_type(name: str) -> None:
-    """(internal)set chat to show msg in chat"""
     return None
 
 
@@ -1730,18 +1700,8 @@ def set_replay_speed_exponent(speed: int) -> None:
     return None
 
 
-def set_server_name(name: str) -> None:
-    """(internal)set the host  name"""
-    return None
-
-
 def set_touchscreen_editing(editing: bool) -> None:
     """(internal)"""
-    return None
-
-
-def set_transparent_kickvote(type: bool) -> None:
-    """(internal)True to show kick vote starter name"""
     return None
 
 

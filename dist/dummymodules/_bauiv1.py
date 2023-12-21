@@ -78,8 +78,15 @@ class Widget:
 
     This class represents a weak reference to a widget object
     in the internal C++ layer. Currently, functions such as
-    babase.buttonwidget() must be used to instantiate or edit these.
+    bauiv1.buttonwidget() must be used to instantiate or edit these.
     """
+
+    transitioning_out: bool
+    """Whether this widget is in the process of dying (read only).
+
+       It can be useful to check this on a window's root widget to
+       prevent multiple window actions from firing simultaneously,
+       potentially leaving the UI in a broken state."""
 
     def __bool__(self) -> bool:
         """Support for bool evaluation."""
@@ -193,11 +200,6 @@ def buttonwidget(
     return bauiv1.Widget()
 
 
-def can_show_ad() -> bool:
-    """(internal)"""
-    return bool()
-
-
 def checkboxwidget(
     edit: bauiv1.Widget | None = None,
     parent: bauiv1.Widget | None = None,
@@ -260,16 +262,6 @@ def columnwidget(
     return bauiv1.Widget()
 
 
-def console_print(*args: Any) -> None:
-    """(internal)
-
-    Print the provided args to the game console (using str()).
-    For most debugging/info purposes you should just use Python's standard
-    print, which will show up in the game console as well.
-    """
-    return None
-
-
 def containerwidget(
     edit: bauiv1.Widget | None = None,
     parent: bauiv1.Widget | None = None,
@@ -316,14 +308,6 @@ def containerwidget(
     return bauiv1.Widget()
 
 
-def focus_window() -> None:
-    """(internal)
-
-    A workaround for some unintentional backgrounding that occurs on mac
-    """
-    return None
-
-
 def get_qrcode_texture(url: str) -> bauiv1.Texture:
     """Return a QR code texture.
 
@@ -360,16 +344,6 @@ def gettexture(name: str) -> bauiv1.Texture:
     import bauiv1  # pylint: disable=cyclic-import
 
     return bauiv1.Texture()
-
-
-def has_video_ads() -> bool:
-    """(internal)"""
-    return bool()
-
-
-def have_incentivized_ad() -> bool:
-    """(internal)"""
-    return bool()
 
 
 def hscrollwidget(
@@ -436,17 +410,14 @@ def imagewidget(
     return bauiv1.Widget()
 
 
-def is_party_icon_visible() -> bool:
+def is_available() -> bool:
     """(internal)"""
     return bool()
 
 
-def open_file_externally(path: str) -> None:
-    """(internal)
-
-    Open the provided file in the default external app.
-    """
-    return None
+def is_party_icon_visible() -> bool:
+    """(internal)"""
+    return bool()
 
 
 def open_url(address: str, force_internal: bool = False) -> None:
@@ -529,39 +500,6 @@ def set_party_window_open(value: bool) -> None:
     return None
 
 
-def show_ad(
-    purpose: str, on_completion_call: Callable[[], None] | None = None
-) -> None:
-    """(internal)"""
-    return None
-
-
-def show_ad_2(
-    purpose: str, on_completion_call: Callable[[bool], None] | None = None
-) -> None:
-    """(internal)"""
-    return None
-
-
-def show_app_invite(
-    title: str | bauiv1.Lstr, message: str | bauiv1.Lstr, code: str
-) -> None:
-    """(internal)
-
-    Category: **General Utility Functions**
-    """
-    return None
-
-
-def show_online_score_ui(
-    show: str = 'general',
-    game: str | None = None,
-    game_version: str | None = None,
-) -> None:
-    """(internal)"""
-    return None
-
-
 def textwidget(
     edit: bauiv1.Widget | None = None,
     parent: bauiv1.Widget | None = None,
@@ -598,6 +536,10 @@ def textwidget(
     big: bool | None = None,
     extra_touch_border_scale: float | None = None,
     res_scale: float | None = None,
+    query_max_chars: bauiv1.Widget | None = None,
+    query_description: bauiv1.Widget | None = None,
+    adapter_finished: bool | None = None,
+    glow_type: str | None = None,
 ) -> bauiv1.Widget:
     """Create or edit a text widget.
 
@@ -610,6 +552,11 @@ def textwidget(
     import bauiv1  # pylint: disable=cyclic-import
 
     return bauiv1.Widget()
+
+
+def toolbar_test() -> bool:
+    """(internal)"""
+    return bool()
 
 
 def uibounds() -> tuple[float, float, float, float]:

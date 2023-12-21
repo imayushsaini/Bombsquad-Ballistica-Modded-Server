@@ -45,6 +45,11 @@ def _uninferrable() -> Any:
     return _not_a_real_variable  # type: ignore
 
 
+def set_stress_testing(testing: bool, player_count: int) -> None:
+    """(internal)"""
+    return None
+
+
 def value_test(
     arg: str, change: float | None = None, absolute: float | None = None
 ) -> float:

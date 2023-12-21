@@ -48,7 +48,9 @@ def _uninferrable() -> Any:
 class Hello:
     """Simple example."""
 
-    pass
+    def testmethod(self, val: int = 0) -> None:
+        """Just testing."""
+        return None
 
 
 def hello_again_world() -> None:
