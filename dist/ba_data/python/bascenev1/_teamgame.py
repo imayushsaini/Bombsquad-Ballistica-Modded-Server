@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, TypeVar
 
+from typing_extensions import override
 import babase
 
 import _bascenev1
@@ -35,6 +36,7 @@ class TeamGameActivity(GameActivity[PlayerT, TeamT]):
     bascenev1.Player has their own bascenev1.Team)
     """
 
+    @override
     @classmethod
     def supports_session_type(
         cls, sessiontype: type[bascenev1.Session]
@@ -57,6 +59,7 @@ class TeamGameActivity(GameActivity[PlayerT, TeamT]):
         if isinstance(self.session, FreeForAllSession):
             self.show_kill_points = False
 
+    @override
     def on_transition_in(self) -> None:
         # pylint: disable=cyclic-import
         from bascenev1._coopsession import CoopSession
@@ -67,7 +70,9 @@ class TeamGameActivity(GameActivity[PlayerT, TeamT]):
         # On the first game, show the controls UI momentarily.
         # (unless we're being run in co-op mode, in which case we leave
         # it up to them)
-        if not isinstance(self.session, CoopSession):
+        if not isinstance(self.session, CoopSession) and getattr(
+            self, 'show_controls_guide', True
+        ):
             attrname = '_have_shown_ctrl_help_overlay'
             if not getattr(self.session, attrname, False):
                 delay = 4.0
@@ -83,6 +88,7 @@ class TeamGameActivity(GameActivity[PlayerT, TeamT]):
                 ).autoretain()
                 setattr(self.session, attrname, True)
 
+    @override
     def on_begin(self) -> None:
         super().on_begin()
         try:
@@ -102,6 +108,7 @@ class TeamGameActivity(GameActivity[PlayerT, TeamT]):
         except Exception:
             logging.exception('Error in on_begin.')
 
+    @override
     def spawn_player_spaz(
         self,
         player: PlayerT,

@@ -48,6 +48,7 @@ from _babase import (
     fatal_error,
     get_display_resolution,
     get_immediate_return_code,
+    get_input_idle_time,
     get_low_level_config_value,
     get_max_graphics_quality,
     get_replays_dir,
@@ -60,6 +61,7 @@ from _babase import (
     have_permission,
     in_logic_thread,
     increment_analytics_count,
+    invoke_main_menu,
     is_os_playing_music,
     is_xcode_build,
     lock_all_input,
@@ -116,7 +118,6 @@ from babase._apputils import (
     get_remote_app_name,
     AppHealthMonitor,
 )
-from babase._cloud import CloudSubsystem
 from babase._devconsole import (
     DevConsoleTab,
     DevConsoleTabEntry,
@@ -211,7 +212,6 @@ __all__ = [
     'clipboard_has_text',
     'clipboard_is_supported',
     'clipboard_set_text',
-    'CloudSubsystem',
     'commit_app_config',
     'ContextCall',
     'ContextError',
@@ -235,6 +235,7 @@ __all__ = [
     'garbage_collect',
     'get_display_resolution',
     'get_immediate_return_code',
+    'get_input_idle_time',
     'get_ip_address_type',
     'get_low_level_config_value',
     'get_max_graphics_quality',
@@ -254,6 +255,7 @@ __all__ = [
     'increment_analytics_count',
     'InputDeviceNotFoundError',
     'InputType',
+    'invoke_main_menu',
     'is_browser_likely_available',
     'is_browser_likely_available',
     'is_os_playing_music',

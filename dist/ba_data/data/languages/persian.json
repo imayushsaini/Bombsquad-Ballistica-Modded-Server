@@ -1281,6 +1281,7 @@
     "netTestingText": "تست شبکه",
     "resetText": "باز گرداندن",
     "showBombTrajectoriesText": "نمایش خط سیر بمب",
+    "showDemosWhenIdleText": "نشان دادن دمو ها در وقت بیکاری",
     "showDevConsoleButtonText": "نشان دادن دکمه توسعه دهنده کنسول",
     "showInGamePingText": "نمایش پینگ در بازی",
     "showPlayerNamesText": "نمایش نام بازیکنان",

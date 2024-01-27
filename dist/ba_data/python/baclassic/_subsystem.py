@@ -8,6 +8,7 @@ import random
 import logging
 import weakref
 
+from typing_extensions import override
 from efro.dataclassio import dataclass_from_dict
 import babase
 import bauiv1
@@ -69,7 +70,8 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         # Misc.
         self.tips: list[str] = []
-        self.stress_test_reset_timer: babase.AppTimer | None = None
+        self.stress_test_update_timer: babase.AppTimer | None = None
+        self.stress_test_update_timer_2: babase.AppTimer | None = None
         self.value_test_defaults: dict = {}
         self.special_offer: dict | None = None
         self.ping_thread_count = 0
@@ -148,6 +150,7 @@ class ClassicSubsystem(babase.AppSubsystem):
         assert isinstance(self._env['legacy_user_agent_string'], str)
         return self._env['legacy_user_agent_string']
 
+    @override
     def on_app_loading(self) -> None:
         from bascenev1lib.actor import spazappearance
         from bascenev1lib import maps as stdmaps
@@ -229,13 +232,16 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         self.accounts.on_app_loading()
 
+    @override
     def on_app_suspend(self) -> None:
         self.accounts.on_app_suspend()
 
+    @override
     def on_app_unsuspend(self) -> None:
         self.accounts.on_app_unsuspend()
         self.music.on_app_unsuspend()
 
+    @override
     def on_app_shutdown(self) -> None:
         self.music.on_app_shutdown()
 
@@ -555,11 +561,18 @@ class ClassicSubsystem(babase.AppSubsystem):
         playlist_name: str = '__default__',
         player_count: int = 8,
         round_duration: int = 30,
+        attract_mode: bool = False,
     ) -> None:
         """Run a stress test."""
         from baclassic._benchmark import run_stress_test as run
 
-        run(playlist_type, playlist_name, player_count, round_duration)
+        run(
+            playlist_type=playlist_type,
+            playlist_name=playlist_name,
+            player_count=player_count,
+            round_duration=round_duration,
+            attract_mode=attract_mode,
+        )
 
     def get_input_device_mapped_value(
         self, device: bascenev1.InputDevice, name: str

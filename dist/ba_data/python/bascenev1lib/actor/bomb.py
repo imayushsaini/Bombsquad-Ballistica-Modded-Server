@@ -10,7 +10,9 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, TypeVar
 
+from typing_extensions import override
 import bascenev1 as bs
+
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
@@ -661,6 +663,7 @@ class Blast(bs.Actor):
 
             bs.timer(0.4, _extra_debris_sound)
 
+    @override
     def handlemessage(self, msg: Any) -> Any:
         assert not self.expired
 
@@ -935,6 +938,7 @@ class Bomb(bs.Actor):
             else None
         )
 
+    @override
     def on_expire(self) -> None:
         super().on_expire()
 
@@ -1140,19 +1144,18 @@ class Bomb(bs.Actor):
         if msg.srcnode:
             pass
 
+    @override
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, ExplodeMessage):
             self.explode()
         elif isinstance(msg, ImpactMessage):
             self._handle_impact()
-        # Ok the logic below looks like it was backwards to me.
-        # Disabling for now; can bring back if need be.
-        # elif isinstance(msg, bs.PickedUpMessage):
-        #     # Change our source to whoever just picked us up *only* if it
-        #     # is None. This way we can get points for killing bots with their
-        #     # own bombs. Hmm would there be a downside to this?
-        #     if self._source_player is not None:
-        #         self._source_player = msg.node.source_player
+        elif isinstance(msg, bs.PickedUpMessage):
+            # Change our source to whoever just picked us up *only* if it
+            # is None. This way we can get points for killing bots with their
+            # own bombs. Hmm would there be a downside to this?
+            if self._source_player is None:
+                self._source_player = msg.node.source_player
         elif isinstance(msg, SplatMessage):
             self._handle_splat()
         elif isinstance(msg, bs.DroppedMessage):

@@ -1277,6 +1277,7 @@
     "netTestingText": "Network Testing",
     "resetText": "Reset",
     "showBombTrajectoriesText": "Show Bomb Trajectories",
+    "showDemosWhenIdleText": "Show Demos When Idle",
     "showDevConsoleButtonText": "Show Dev Console Button",
     "showInGamePingText": "Show In-Game Ping",
     "showPlayerNamesText": "Show Player Names",

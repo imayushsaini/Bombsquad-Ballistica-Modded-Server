@@ -334,6 +334,8 @@
     "getMoreGamesText": "รับเกมเพิ่มเติม",
     "titleText": "เพิ่มเกม"
   },
+  "addToFavoritesText": "เพื่มในรายการโปรด",
+  "addedToFavoritesText": "เพื่ม '${NAME}' ในรายการโปรดแล้ว",
   "allText": "ทั้งหมด",
   "allowText": "ยอมรับ",
   "alreadySignedInText": "บัญชีของคุณลงชื่อเข้าใช้จากอุปกรณ์อื่น\nโปรดเปลี่ยนบัญชีหรือปิดเกมของคุณ\nอุปกรณ์อื่นและลองอีกครั้ง",

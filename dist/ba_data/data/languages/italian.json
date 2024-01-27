@@ -1339,6 +1339,7 @@
     "netTestingText": "Collaudo Rete",
     "resetText": "Reset",
     "showBombTrajectoriesText": "Mostra le traiettorie delle bombe",
+    "showDemosWhenIdleText": "Riproduci Demo All'Inattività",
     "showDevConsoleButtonText": "mostra tasto console sviluppatore",
     "showInGamePingText": "Mostra il Ping in gioco",
     "showPlayerNamesText": "Mostra i nomi dei giocatori",

@@ -8,7 +8,9 @@ import random
 import logging
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
 import babase
+
 import _bascenev1
 from bascenev1._session import Session
 
@@ -69,6 +71,10 @@ class MultiTeamSession(Session):
         self._ffa_series_length: int = classic.ffa_series_length
 
         show_tutorial = cfg.get('Show Tutorial', True)
+
+        # Special case: don't show tutorial while stress testing.
+        if classic.stress_test_update_timer is not None:
+            show_tutorial = False
 
         self._tutorial_activity_instance: bascenev1.Activity | None
         if show_tutorial:
@@ -164,6 +170,7 @@ class MultiTeamSession(Session):
         """Returns which game in the series is currently being played."""
         return self._game_number
 
+    @override
     def on_team_join(self, team: bascenev1.SessionTeam) -> None:
         team.customdata['previous_score'] = team.customdata['score'] = 0
 
@@ -182,6 +189,7 @@ class MultiTeamSession(Session):
             self._next_game_spec['settings'],
         )
 
+    @override
     def on_activity_end(
         self, activity: bascenev1.Activity, results: Any
     ) -> None:
