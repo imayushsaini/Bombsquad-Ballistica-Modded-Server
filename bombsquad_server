@@ -704,7 +704,7 @@ class ServerManagerApp:
 
         # Some of our config values translate directly into the
         # ballisticacore config file; the rest we pass at runtime.
-        port = int(os.environ.get('PORT', 43210))
+        port = int(os.environ.get('PORT', self._config.port))
         bincfg['Port'] = port
         bincfg['Auto Balance Teams'] = self._config.auto_balance_teams
         bincfg['Show Tutorial'] = self._config.show_tutorial
