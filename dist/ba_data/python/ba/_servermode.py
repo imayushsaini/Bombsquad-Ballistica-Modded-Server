@@ -319,9 +319,11 @@ class ServerController:
     ) -> None:
         if result is None:
             print('Error fetching playlist; aborting.')
-            import _ba
-            _ba.quit()
-
+            print('Falling back to use default playlist')
+            self._config.session_type = 'teams'
+            self._prep_timer = None
+            _ba.pushcall(self._launch_server_session)
+            return
         # Once we get here, simply modify our config to use this playlist.
         typename = (
             'teams'
