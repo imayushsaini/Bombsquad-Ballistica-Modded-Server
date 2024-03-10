@@ -188,7 +188,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                         'scale': 1,
                         'vr_depth': -60,
                         'position': pos,
-                        'text': bs.Lstr(resource='testBuildText'),
+                        'text': 'BCS Build',
                     },
                 )
             )
