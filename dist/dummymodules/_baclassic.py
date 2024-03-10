@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar
 
+from typing_extensions import override
+
 if TYPE_CHECKING:
     from typing import Any, Callable
 
@@ -45,7 +47,9 @@ def _uninferrable() -> Any:
     return _not_a_real_variable  # type: ignore
 
 
-def set_stress_testing(testing: bool, player_count: int) -> None:
+def set_stress_testing(
+    testing: bool, player_count: int, attract_mode: bool
+) -> None:
     """(internal)"""
     return None
 

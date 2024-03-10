@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, overload, Sequence, TypeVar
 
+from typing_extensions import override
+
 if TYPE_CHECKING:
     from typing import Any, Callable
     from babase import App
@@ -461,13 +463,16 @@ class Vec3(Sequence[float]):
         return self
 
     # (for index access)
+    @override
     def __getitem__(self, typeargs: Any) -> Any:
         return 0.0
 
+    @override
     def __len__(self) -> int:
         return 3
 
     # (for iterator access)
+    @override
     def __iter__(self) -> Any:
         return self
 
@@ -749,6 +754,14 @@ def dev_console_tab_width() -> float:
     return float()
 
 
+def disable_custom_tint() -> None:
+    """(internal)
+
+    Disable custom tint overrride.
+    """
+    return None
+
+
 def displaytime() -> babase.DisplayTime:
     """Return the current display-time in seconds.
 
@@ -973,6 +986,11 @@ def get_immediate_return_code() -> int | None:
     return 0
 
 
+def get_input_idle_time() -> float:
+    """Return seconds since any local input occurred (touch, keypress, etc.)."""
+    return float()
+
+
 def get_low_level_config_value(key: str, default_value: int) -> int:
     """(internal)"""
     return int()
@@ -1109,6 +1127,14 @@ def increment_analytics_count_raw_2(
 
 def increment_analytics_counts_raw(name: str, increment: int = 1) -> None:
     """(internal)"""
+    return None
+
+
+def invoke_main_menu() -> None:
+    """High level call to bring up the main menu if it is not present.
+
+    This is essentially the same as pressing the menu button on a controller.
+    """
     return None
 
 
@@ -1453,6 +1479,14 @@ def set_camera_target(x: float, y: float, z: float) -> None:
 
 def set_dev_console_input_text(val: str) -> None:
     """(internal)"""
+    return None
+
+
+def set_global_tint(x: float, y: float, z: float) -> None:
+    """(internal)
+
+    This will override any tint set by game in local or netplay
+    """
     return None
 
 

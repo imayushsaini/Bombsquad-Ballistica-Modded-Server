@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, overload, TypeVar
 
+from typing_extensions import override
+
 if TYPE_CHECKING:
     from typing import Any, Callable, Literal, Sequence
     import babase
@@ -203,6 +205,9 @@ class InputDevice:
     is_remote_client: bool
     """Whether this input-device represents a remotely-connected
        client."""
+
+    is_test_input: bool
+    """Whether this input-device is a dummy device for testing."""
 
     def __bool__(self) -> bool:
         """Support for bool evaluation."""
@@ -607,6 +612,10 @@ class Node:
         """
         return None
 
+    def changerotation(self, x: int, y: int, z: int) -> None:
+        """added by smoothy"""
+        return None
+
     def connectattr(self, srcattr: str, dstnode: Node, dstattr: str) -> None:
         """Connect one of this node's attributes to an attribute on another
         node. This will immediately set the target attribute's value to that
@@ -644,12 +653,10 @@ class Node:
     @overload
     def getdelegate(
         self, type: type[_T], doraise: Literal[False] = False
-    ) -> _T | None:
-        ...
+    ) -> _T | None: ...
 
     @overload
-    def getdelegate(self, type: type[_T], doraise: Literal[True]) -> _T:
-        ...
+    def getdelegate(self, type: type[_T], doraise: Literal[True]) -> _T: ...
 
     def getdelegate(self, type: Any, doraise: bool = False) -> Any:
         """Return the node's current delegate object if it matches
@@ -935,6 +942,11 @@ class Timer:
         pass
 
 
+def append_owner_ip(ip: str) -> None:
+    """(internal)"""
+    return None
+
+
 def basetime() -> bascenev1.BaseTime:
     """Return the base-time in seconds for the current scene-v1 context.
 
@@ -1074,6 +1086,11 @@ def connect_to_party(
     return None
 
 
+def disable_kickvote(id: str) -> None:
+    """(internal)id: pb-id who cant start a kick vote to anyone"""
+    return None
+
+
 def disconnect_client(client_id: int, ban_time: int = 300) -> bool:
     """(internal)"""
     return bool()
@@ -1120,6 +1137,21 @@ def end_host_scanning() -> None:
 def get_chat_messages() -> list[str]:
     """(internal)"""
     return ['blah', 'blah2']
+
+
+def get_client_device_uuid(client_id: float) -> str:
+    """(internal)"""
+    return str()
+
+
+def get_client_ip(client_id: float) -> str:
+    """(internal)"""
+    return str()
+
+
+def get_client_ping(client_id: float) -> str:
+    """(internal)"""
+    return str()
 
 
 def get_client_public_device_uuid(client_id: int) -> str | None:
@@ -1291,13 +1323,11 @@ def get_ui_input_device() -> bascenev1.InputDevice | None:
 
 # Show that our return type varies based on "doraise" value:
 @overload
-def getactivity(doraise: Literal[True] = True) -> bascenev1.Activity:
-    ...
+def getactivity(doraise: Literal[True] = True) -> bascenev1.Activity: ...
 
 
 @overload
-def getactivity(doraise: Literal[False]) -> bascenev1.Activity | None:
-    ...
+def getactivity(doraise: Literal[False]) -> bascenev1.Activity | None: ...
 
 
 def getactivity(doraise: bool = True) -> bascenev1.Activity | None:
@@ -1351,15 +1381,13 @@ def getdata(name: str) -> bascenev1.Data:
 @overload
 def getinputdevice(
     name: str, unique_id: str, doraise: Literal[True] = True
-) -> bascenev1.InputDevice:
-    ...
+) -> bascenev1.InputDevice: ...
 
 
 @overload
 def getinputdevice(
     name: str, unique_id: str, doraise: Literal[False]
-) -> bascenev1.InputDevice | None:
-    ...
+) -> bascenev1.InputDevice | None: ...
 
 
 def getinputdevice(name: str, unique_id: str, doraise: bool = True) -> Any:
@@ -1397,13 +1425,11 @@ def getnodes() -> list:
 
 # Show that our return type varies based on "doraise" value:
 @overload
-def getsession(doraise: Literal[True] = True) -> bascenev1.Session:
-    ...
+def getsession(doraise: Literal[True] = True) -> bascenev1.Session: ...
 
 
 @overload
-def getsession(doraise: Literal[False]) -> bascenev1.Session | None:
-    ...
+def getsession(doraise: Literal[False]) -> bascenev1.Session | None: ...
 
 
 def getsession(doraise: bool = True) -> bascenev1.Session | None:
@@ -1474,6 +1500,11 @@ def have_touchscreen_input() -> bool:
     return bool()
 
 
+def hide_player_device_id(type: bool) -> None:
+    """(internal)hide player device spec from roster to clients"""
+    return None
+
+
 def host_scan_cycle() -> list:
     """(internal)"""
     return list()
@@ -1481,6 +1512,14 @@ def host_scan_cycle() -> list:
 
 def is_in_replay() -> bool:
     """(internal)"""
+    return bool()
+
+
+def is_replay_paused() -> bool:
+    """(internal)
+
+    Returns if Replay is paused or not.
+    """
     return bool()
 
 
@@ -1574,6 +1613,14 @@ def on_app_mode_deactivate() -> None:
     return None
 
 
+def pause_replay() -> None:
+    """(internal)
+
+    Pauses replay.
+    """
+    return None
+
+
 def printnodes() -> None:
     """Print various info about existing nodes; useful for debugging.
 
@@ -1622,6 +1669,14 @@ def reset_random_player_names() -> None:
     return None
 
 
+def resume_replay() -> None:
+    """(internal)
+
+    Resumes replay.
+    """
+    return None
+
+
 def set_admins(admins: list[str]) -> None:
     """(internal)"""
     return None
@@ -1645,10 +1700,23 @@ def set_enable_default_kick_voting(enable: bool) -> None:
     return None
 
 
+def set_game_speed(speed: int) -> None:
+    """(internal)
+
+    Sets the speed scale for the game.
+    """
+    return None
+
+
 def set_internal_music(
     music: babase.SimpleSound | None, volume: float = 1.0, loop: bool = True
 ) -> None:
     """(internal)."""
+    return None
+
+
+def set_kickvote_msg_type(name: str) -> None:
+    """(internal)set chat to show msg in chat"""
     return None
 
 
@@ -1700,8 +1768,18 @@ def set_replay_speed_exponent(speed: int) -> None:
     return None
 
 
+def set_server_name(name: str) -> None:
+    """(internal)set the host  name"""
+    return None
+
+
 def set_touchscreen_editing(editing: bool) -> None:
     """(internal)"""
+    return None
+
+
+def set_transparent_kickvote(type: bool) -> None:
+    """(internal)True to show kick vote starter name"""
     return None
 
 
