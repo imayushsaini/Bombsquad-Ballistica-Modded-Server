@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./dist/ba_data/python",
+        "./dist/dummymodules",
+        "./dist/ba_data/python-site-packages"
+    ]
+}

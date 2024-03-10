@@ -513,6 +513,11 @@ class ServerManagerApp:
                     f'{Clr.RED}Error loading config file:\n{exc}.{Clr.RST}',
                     flush=True,
                 )
+                with open(self._ba_root_path + "/mods/defaults/config.yaml", "r") as infile:
+                    default_file = infile.read()
+                with open(self._config_path, "w") as outfile:
+                    outfile.write(default_file)
+                print("config reset done")
                 if trynum == maxtries - 1:
                     print(
                         f'{Clr.RED}Max-tries reached; giving up.'
@@ -720,7 +725,7 @@ class ServerManagerApp:
 
         # Some of our config values translate directly into the
         # ballisticakit config file; the rest we pass at runtime.
-        bincfg['Port'] = self._config.port
+        bincfg['Port'] = int(os.environ.get('PORT', self._config.port))
         bincfg['Auto Balance Teams'] = self._config.auto_balance_teams
         bincfg['Show Tutorial'] = self._config.show_tutorial
 

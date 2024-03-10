@@ -304,7 +304,11 @@ class ServerController:
     ) -> None:
         if result is None:
             print('Error fetching playlist; aborting.')
-            sys.exit(-1)
+            print('Falling back to use default playlist.') #BCS
+            self._config.session_type = "teams"
+            self._prep_timer = None
+            babase.pushcall(self._launch_server_session)
+            return
 
         # Once we get here, simply modify our config to use this playlist.
         typename = (

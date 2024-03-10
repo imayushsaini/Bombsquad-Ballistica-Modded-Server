@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import _thread
 import copy
-import datetime
 import json
 import os
 import shutil
@@ -76,7 +75,7 @@ def get_profiles() -> dict:
     if CacheData.profiles == {}:
         try:
             if os.stat(PLAYERS_DATA_PATH + "profiles.json").st_size > 1000000:
-                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
+                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
                 profiles = {"pb-sdf": {}}
                 print("resetting profiles")

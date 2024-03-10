@@ -6,7 +6,7 @@ import shutil
 import string
 import time
 from datetime import datetime
-
+date_format = '%Y-%m-%d %H:%M:%S'
 import _babase
 import ecdsa
 
@@ -92,12 +92,10 @@ def subscribe(sub, account_id, name):
 def player_joined(pb_id):
     now = datetime.now()
     if pb_id in subscribed_players:
-        if "last_notification" in subscribed_players[pb_id] and (
-            now - subscribed_players[pb_id][
-            "last_notification"]).seconds < 15 * 60:
+        if "last_notification" in subscribed_players[pb_id] and (now - datetime.strptime(subscribed_players[pb_id]["last_notification"], date_format)).seconds < 15 * 60:
             pass
         else:
-            subscribed_players[pb_id]["last_notification"] = now
+            subscribed_players[pb_id]["last_notification"] = now.strftime(date_format)
             subscribes = subscribed_players[pb_id]["subscribers"]
             for subscriber_id in subscribes:
                 sub = subscriptions[subscriber_id]
