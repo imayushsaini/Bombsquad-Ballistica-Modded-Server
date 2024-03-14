@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-## Minigame Fall Guys ##
-## Created by: byANG3L ##
-## Ported to 1.6 by: Freaku / @[Just] Freak#4999 ##
+
+## Original creator: byANG3L ##
+## Made by: Freaku / @[Just] Freak#4999 ##
 
 ## From: BSWorld Modpack (https://youtu.be/1TN56NLlShE) ##
 
@@ -21,21 +21,14 @@ from __future__ import annotations
 
 
 
-# ba_meta require api 6
+# ba_meta require api 7
 from typing import TYPE_CHECKING, overload
 import _ba,ba,random
 from bastd.gameutils import SharedObjects
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Optional, List, Dict, Type, Type , Union, Any, Literal
+    from typing import Any, Sequence, Optional, List, Dict, Type, Union, Any, Literal
 
 
-## MoreMinigames.py support ##
-def ba_get_api_version():
-    return 6
-
-def ba_get_levels():
-    return [ba._level.Level('Memory Game',gametype=MGgame, settings={}, preview_texture_name = 'achievementOffYouGo')]
-## MoreMinigames.py support ##
 
 
 class OnTimer(ba.Actor):
@@ -167,9 +160,9 @@ class MGgame(ba.TeamGameActivity[Player, Team]):
             self.slow_motion = True
         shared = SharedObjects.get()
         self._collide_with_player=ba.Material()
-        self._collide_with_player.add_actions(conditions=('we_are_older_than', 1), actions=(('modify_part_collision', 'collide', True)))
+        self._collide_with_player.add_actions(actions=(('modify_part_collision', 'collide', True)))
         self.dont_collide=ba.Material()
-        self.dont_collide.add_actions(conditions=('we_are_older_than', 1), actions=(('modify_part_collision', 'collide', False)))
+        self.dont_collide.add_actions(actions=(('modify_part_collision', 'collide', False)))
         self._levelStage = 0
 
         self.announcePlayerDeaths = True
@@ -313,7 +306,7 @@ class MGgame(ba.TeamGameActivity[Player, Team]):
         self.coldel15 = True
         self.coldel16 = True
         import base64
-        exec(base64.b64decode("aWYgc2VsZi5jcmVkaXRfdGV4dDoKICAgICMjIFBlb3BsZSBzdGVhbGVkIGNyZWRpdHMgc28gdGhhdHMgd2h5IEkgZW5jb2RlZCB0aGlzLi4uCiAgICAjIyBFdmVuIHRobyB0aGVyZSBpcyBhIG9wdGlvbiwgdGhleSBjaGFuZ2VkIGNyZWF0ZWQgYnkKICAgICMjIGxpa2Ugd3RmIGlzIHRoaWVyIHByb2JsZW0/PwoKICAgICMjIEFueXdheXMgaGF2ZSBhIGdvb2QgZGF5IQogICAgdCA9IGJhLm5ld25vZGUoJ3RleHQnLAogICAgICAgICAgICAgICBhdHRycz17ICd0ZXh0JzoiUG9ydGVkIGJ5IO6BiEZyZWFrdVxuTWFkZSBmb3IgMS40IGJ5IGJ5QU5HM0wiLCAjIyBEaXNhYmxlICdFbmFibGUgQm90dG9tIENyZWRpdHMnIHdoZW4gbWFraW5nIHBsYXlsaXN0LCBObyBuZWVkIHRvIGVkaXQgdGhpcyBsb3ZlbHkuLi4KICAgICAgICAnc2NhbGUnOjAuNywKICAgICAgICAncG9zaXRpb24nOigwLDApLAogICAgICAgICdzaGFkb3cnOjAuNSwKICAgICAgICAnZmxhdG5lc3MnOjEuMiwKICAgICAgICAnY29sb3InOigxLCAxLCAxKSwKICAgICAgICAnaF9hbGlnbic6J2NlbnRlcicsCiAgICAgICAgJ3ZfYXR0YWNoJzonYm90dG9tJ30p").decode('UTF-8'))
+        exec(base64.b64decode("aWYgc2VsZi5jcmVkaXRfdGV4dDoKICAgICMjIFBlb3BsZSBzdGVhbGVkIGNyZWRpdHMgc28gdGhhdHMgd2h5IEkgZW5jb2RlZCB0aGlzLi4uCiAgICAjIyBFdmVuIHRobyB0aGVyZSBpcyBhIG9wdGlvbiwgdGhleSBjaGFuZ2VkIGNyZWF0ZWQgYnkKICAgICMjIGxpa2Ugd3RmIGlzIHRoaWVyIHByb2JsZW0/PwoKICAgICMjIEFueXdheXMgaGF2ZSBhIGdvb2QgZGF5IQogICAgdCA9IGJhLm5ld25vZGUoJ3RleHQnLAogICAgICAgICAgICAgICBhdHRycz17ICd0ZXh0JzoiTWFkZSBieSDugYhGcmVha3Vcbk9yaWdpbmFsbHkgZm9yIDEuNDogYnlBTkczTCIsICMjIERpc2FibGUgJ0VuYWJsZSBCb3R0b20gQ3JlZGl0cycgd2hlbiBtYWtpbmcgcGxheWxpc3QsIE5vIG5lZWQgdG8gZWRpdCB0aGlzIGxvdmVseS4uLgogICAgICAgICdzY2FsZSc6MC43LAogICAgICAgICdwb3NpdGlvbic6KDAsMCksCiAgICAgICAgJ3NoYWRvdyc6MC41LAogICAgICAgICdmbGF0bmVzcyc6MS4yLAogICAgICAgICdjb2xvcic6KDEsIDEsIDEpLAogICAgICAgICdoX2FsaWduJzonY2VudGVyJywKICAgICAgICAndl9hdHRhY2gnOidib3R0b20nfSk=").decode('UTF-8'))
         self.spawnAllMap()
         self.flashHide()
 
@@ -373,7 +366,7 @@ class MGgame(ba.TeamGameActivity[Player, Team]):
             ba.screenmessage(
                 ba.Lstr(resource='playerDelayedJoinText',
                         subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0))#,transient=True,clients=[player.inputdevice.client_id])
+                color=(0, 1, 0),transient=True,clients=[player.sessionplayer.inputdevice.client_id])
             # For score purposes, mark them as having died right as the
             # game started.
             assert self._timer is not None
@@ -691,114 +684,114 @@ class MGgame(ba.TeamGameActivity[Player, Team]):
         shared = SharedObjects.get()
         if self.coldel:
             self.mapFGP = ba.newnode('prop',
-                attrs={'body': 'puck', 'position': (3,1,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (3,2,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGPTex = None
-            self.mapFGPcol = ba.newnode('region',attrs={'position': (3,1,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGPcol = ba.newnode('region',attrs={'position': (3,2,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel = False
 
         if self.coldel2:
             self.mapFGP2 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (3,1,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (3,2,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP2Tex = None
-            self.mapFGP2col = ba.newnode('region',attrs={'position': (3,1,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP2col = ba.newnode('region',attrs={'position': (3,2,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel2 = False
 
         if self.coldel3:
             self.mapFGP3 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (3,1,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (3,2,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP3Tex = None
-            self.mapFGP3col = ba.newnode('region',attrs={'position': (3,1,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP3col = ba.newnode('region',attrs={'position': (3,2,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel3 = False
 
         if self.coldel4:
             self.mapFGP4 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (3,1,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (3,2,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP4Tex = None
-            self.mapFGP4col = ba.newnode('region',attrs={'position': (3,1,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP4col = ba.newnode('region',attrs={'position': (3,2,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel4 = False
 
         if self.coldel5:
             self.mapFGP5 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (0,1,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (0,2,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP5Tex = None
-            self.mapFGP5col = ba.newnode('region',attrs={'position': (0,1,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP5col = ba.newnode('region',attrs={'position': (0,2,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel5 = False
 
         if self.coldel6:
             self.mapFGP6 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (0,1,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (0,2,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP6Tex = None
-            self.mapFGP6col = ba.newnode('region',attrs={'position': (0,1,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP6col = ba.newnode('region',attrs={'position': (0,2,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel6 = False
 
         if self.coldel7:
             self.mapFGP7 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (0,1,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (0,2,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP7Tex = None
-            self.mapFGP7col = ba.newnode('region',attrs={'position': (0,1,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP7col = ba.newnode('region',attrs={'position': (0,2,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel7 = False
 
         if self.coldel8:
             self.mapFGP8 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (0,1,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (0,2,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP8Tex = None
-            self.mapFGP8col = ba.newnode('region',attrs={'position': (0,1,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP8col = ba.newnode('region',attrs={'position': (0,2,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel8 = False
 
         if self.coldel9:
             self.mapFGP9 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-3,1,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-3,2,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP9Tex = None
-            self.mapFGP9col = ba.newnode('region',attrs={'position': (-3,1,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP9col = ba.newnode('region',attrs={'position': (-3,2,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel9 = False
 
         if self.coldel10:
             self.mapFGP10 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-3,1,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-3,2,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP10Tex = None
-            self.mapFGP10col = ba.newnode('region',attrs={'position': (-3,1,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP10col = ba.newnode('region',attrs={'position': (-3,2,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel10 = False
 
         if self.coldel11:
             self.mapFGP11 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-3,1,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-3,2,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP11Tex = None
-            self.mapFGP11col = ba.newnode('region',attrs={'position': (-3,1,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP11col = ba.newnode('region',attrs={'position': (-3,2,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel11 = False
 
         if self.coldel12:
             self.mapFGP12 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-3,1,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-3,2,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP12Tex = None
-            self.mapFGP12col = ba.newnode('region',attrs={'position': (-3,1,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP12col = ba.newnode('region',attrs={'position': (-3,2,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel12 = False
 
         if self.coldel13:
             self.mapFGP13 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-6,1,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-6,2,-9), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP13Tex = None
-            self.mapFGP13col = ba.newnode('region',attrs={'position': (-6,1,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP13col = ba.newnode('region',attrs={'position': (-6,2,-9),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel13 = False
 
         if self.coldel14:
             self.mapFGP14 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-6,1,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-6,2,-6), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP14Tex = None
-            self.mapFGP14col = ba.newnode('region',attrs={'position': (-6,1,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP14col = ba.newnode('region',attrs={'position': (-6,2,-6),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel14 = False
 
         if self.coldel15:
             self.mapFGP15 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-6,1,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-6,2,-3), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP15Tex = None
-            self.mapFGP15col = ba.newnode('region',attrs={'position': (-6,1,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP15col = ba.newnode('region',attrs={'position': (-6,2,-3),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel15 = False
 
         if self.coldel16:
             self.mapFGP16 = ba.newnode('prop', 
-                attrs={'body': 'puck', 'position': (-6,1,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
+                attrs={'body': 'puck', 'position': (-6,2,0), 'model': self._mapFGPModel, 'model_scale': 3.8, 'body_scale': 3.8, 'shadow_size': 0.5, 'gravity_scale':0.0, 'color_texture': self._mapFGPDefaultTex, 'reflection': 'soft', 'reflection_scale': [1.0], 'is_area_of_interest': True, 'materials': [self.dont_collide]})
             self.mapFGP16Tex = None
-            self.mapFGP16col = ba.newnode('region',attrs={'position': (-6,1,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
+            self.mapFGP16col = ba.newnode('region',attrs={'position': (-6,2,0),'scale': (3.5,0.1,3.5),'type': 'box','materials': (self._collide_with_player, shared.footing_material)})
             self.coldel16 = False
 
     def _platformTexDefault(self):
@@ -936,3 +929,69 @@ class MGgame(ba.TeamGameActivity[Player, Team]):
 
 
 
+
+
+
+
+
+
+class MGdefs():
+    points = {}
+    boxes = {}
+    boxes['area_of_interest_bounds'] = (0.3544110667, 4.493562578, -2.518391331) + (0.0, 0.0, 0.0) + (16.64754831, 8.06138989, 18.5029888)
+    boxes['map_bounds'] = (0.2608783669, 4.899663734, -3.543675157) + (0.0, 0.0, 0.0) + (29.23565494, 14.19991443, 29.92689344)
+
+class MGmap(ba.Map):
+    defs = MGdefs()
+    name = 'Sky Tiles'
+
+    @classmethod
+    def get_play_types(cls) -> List[str]:
+        """Return valid play types for this map."""
+        return []
+
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'achievementOffYouGo'
+
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: Dict[str, Any] = {
+            'bgtex': ba.gettexture('menuBG'),
+            'bgmodel': ba.getmodel('thePadBG')
+        }
+        return data
+
+    def __init__(self) -> None:
+        super().__init__()
+        shared = SharedObjects.get()
+        self.node = ba.newnode(
+            'terrain',
+            attrs={
+                'model': self.preloaddata['bgmodel'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['bgtex']
+            })
+        gnode = ba.getactivity().globalsnode
+        gnode.tint = (1.3, 1.2, 1.0)
+        gnode.ambient_color = (1.3, 1.2, 1.0)
+        gnode.vignette_outer = (0.57, 0.57, 0.57)
+        gnode.vignette_inner = (0.9, 0.9, 0.9)
+        gnode.vr_camera_offset = (0, -0.8, -1.1)
+        gnode.vr_near_clip = 0.5
+
+
+
+
+
+ba._map.register_map(MGmap)
+
+
+
+
+# ba_meta export plugin
+class byFreaku(ba.Plugin):
+    def __init__(self):
+        ## Campaign support ##
+        ba.app.add_coop_practice_level(ba.Level(name='Memory Game', displayname='${GAME}', gametype=MGgame, settings={}, preview_texture_name='achievementOffYouGo'))
