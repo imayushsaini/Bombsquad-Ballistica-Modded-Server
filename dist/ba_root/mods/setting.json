@@ -85,7 +85,7 @@
       "Tank Shield": 1,
       "Triple": 3
     },
-    "enable": false,
+    "enable": true,
     "settings": {
       "Healing Damage PTG": 72,
       "Powers Gravity": true,
@@ -169,7 +169,7 @@
     },
     "top watermark": ""
   },
-  "useV2Account": false,
+  "useV2Account": true,
   "warnMsg": "WARNING !!!",
   "whitelist": false
 }
