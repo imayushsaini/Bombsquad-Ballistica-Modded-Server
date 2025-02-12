@@ -11,7 +11,9 @@
     "msg": [
       "https://discord.gg/RUzsHEKseq",
       "que dijiste de mi peru pe",
-      "perukistan by galaxym4"
+      "perukistan by galaxym4",
+      "unanse al discord",
+      "se vienen cositas"
     ]
   },
   "ShowKickVoteStarterName": true,
@@ -169,7 +171,7 @@
     },
     "top watermark": ""
   },
-  "useV2Account": true,
+  "useV2Account": false,
   "warnMsg": "WARNING !!!",
   "whitelist": false
 }
