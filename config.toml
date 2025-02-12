@@ -21,7 +21,7 @@ party_is_public = true
 # IDs of server admins. Server admins are not kickable through the default
 # kick vote system and they are able to kick players without a vote. To get
 # your account id, enter 'getaccountid' in settings->advanced->enter-code.
-admins = ["a-147"]
+admins = ["pb-IF5VV1k5Lg=="]
 
 # Whether the default kick-voting system is enabled.
 #enable_default_kick_voting = true
