@@ -59,7 +59,7 @@ max_party_size = 11
 # Max players that can join a session. If present this will override
 # the session's preferred max_players. if a value below 0 is given
 # player limit will be removed.
-session_max_players_override = 0
+session_max_players_override = 10
 
 # Options here are 'ffa' (free-for-all), 'teams' and 'coop'
 # (cooperative) This value is ignored if you supply a playlist_code
