@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 def getlanguage(text, subs: str = None, almacen: list = []):
     if almacen == []: almacen = list(range(1000))
-    lang = bui.app.lang.language
+    lang = 'Spanish'
     translate = {"Reset":
                      {"Spanish": "Reiniciar",
                       "English": "Reset",
