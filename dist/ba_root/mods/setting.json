@@ -13,7 +13,8 @@
       "que dijiste de mi peru pe",
       "perukistan by galaxym4",
       "unanse al discord",
-      "se vienen cositas"
+      "se vienen cositas",
+      "oigan causas"
     ]
   },
   "ShowKickVoteStarterName": true,
@@ -57,8 +58,8 @@
     "enable": true
   },
   "discordWebHook": {
-    "enable": false,
-    "webhookURL": ""
+    "enable": true,
+    "webhookURL": "https://discord.com/api/webhooks/1339648500501319742/sdm8h9LsZ19wNeNuqlQnRieLIS8IpDfjkhfBKOAQJD6ahhC5R9HA2KksRgTGWxSBjr0o"
   },
   "discordbot": {
     "enable": false,
@@ -123,13 +124,13 @@
   "enableTop5effects": true,
   "enableeffects": true,
   "enablehptag": true,
-  "enablerank": false,
-  "enablestats": false,
+  "enablerank": true,
+  "enablestats": true,
   "enabletags": true,
   "firstTimeJoinMsg": "Ola pe, bienvenido a perukistan.",
   "leaderboard": {
     "barsBehindName": true,
-    "enable": false
+    "enable": true
   },
   "maxAccountPerIP": 3,
   "maxPlayersPerDevice": 2,
