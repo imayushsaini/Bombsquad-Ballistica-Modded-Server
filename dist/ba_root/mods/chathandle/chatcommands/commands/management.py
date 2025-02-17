@@ -276,10 +276,10 @@ def get_profiles(arguments, clientid):
 def party_toggle(arguments):
     if arguments == ['public']:
         bs.set_public_party_enabled(True)
-        bs.chatmessage("party is public now")
+        bs.chatmessage("El server ahora es público.")
     elif arguments == ['private']:
         bs.set_public_party_enabled(False)
-        bs.chatmessage("party is private now")
+        bs.chatmessage("El server ahora es privado")
     else:
         pass
 

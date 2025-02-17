@@ -311,17 +311,17 @@ def night_mode() -> None:
 
 def kick_vote_started(started_by: str, started_to: str) -> None:
     """Logs the kick vote."""
-    logger.log(f"{started_by} started kick vote for {started_to}.")
+    logger.log(f"{started_by} inició votación para expulsar a {started_to}.")
 
 
 def on_kicked(account_id: str) -> None:
     """Runs when someone is kicked by kickvote."""
-    logger.log(f"{account_id} kicked by kickvotes.")
+    logger.log(f"{account_id} expulsado por kickvotes.")
 
 
 def on_kick_vote_end():
     """Runs when kickvote is ended."""
-    logger.log("Kick vote End")
+    logger.log("Votación para expulsar finalizada.")
 
 
 def on_join_request(ip):

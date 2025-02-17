@@ -8,9 +8,9 @@ import bascenev1 as bs
 from babase._general import Call
 from .handlers import send
 
-Commands = ['me', 'list', 'uniqeid', 'ping']
+Commands = ['me', 'list', 'uniqeid', 'ping', 'discord']
 CommandAliases = ['stats', 'score', 'rank',
-                  'myself', 'l', 'id', 'pb-id', 'pb', 'accountid']
+                  'myself', 'l', 'id', 'pb-id', 'pb', 'accountid', 'ds', 'dc', 'dis']
 
 
 def ExcelCommand(command, arguments, clientid, accountid):
@@ -38,10 +38,20 @@ def ExcelCommand(command, arguments, clientid, accountid):
     elif command in ['ping']:
         get_ping(arguments, clientid)
 
+    elif command in ['discord', 'dc', 'ds', 'dis']:
+        show_discord()
+
+
+def show_discord():
+    try:
+        send('https://discord.gg/RUzsHEKseq')
+    except:
+        pass
+
 
 def get_ping(arguments, clientid):
     if arguments == [] or arguments == ['']:
-        send(f"Your ping {_bascenev1.get_client_ping(clientid)}ms ", clientid)
+        send(f"Tu ping es {_bascenev1.get_client_ping(clientid)}ms ", clientid)
     elif arguments[0] == 'all':
         pingall(clientid)
     else:
