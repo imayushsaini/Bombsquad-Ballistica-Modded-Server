@@ -119,7 +119,7 @@
       "Tank Shield PTG": 96
     }
   },
-  "enableHitTexts": true,
+  "enableHitTexts": false,
   "enableTagAnimation": true,
   "enableTop5effects": true,
   "enableeffects": true,
@@ -150,7 +150,7 @@
   "playlists": {
     "elim": 412172,
     "epic": 412173,
-    "ffa": 412175,
+    "ffa": 501330,
     "ffasmash": 412179,
     "smash": 412151,
     "soccer": 412160,

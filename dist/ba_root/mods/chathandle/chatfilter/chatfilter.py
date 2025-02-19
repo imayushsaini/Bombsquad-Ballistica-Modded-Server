@@ -24,7 +24,7 @@ def check_permissions(accountid):
 
 
 def filter(msg, pb_id, client_id):
-    new_msg = profanity.censor(msg)
+    new_msg = msg
     if new_msg != msg:
         bs.broadcastmessage("Don\'t ABUSE!", color=(1, 0, 0), transient=True,
                             clients=[client_id])
@@ -39,57 +39,10 @@ def filter(msg, pb_id, client_id):
     if pb_id not in serverdata.clients:
         return None
 
-    if "lastMsgTime" in serverdata.clients[pb_id]:
-        count = serverdata.clients[pb_id]["cMsgCount"]
-        smsgcount = serverdata.clients[pb_id]['cSameMsg']
-        if now - serverdata.clients[pb_id]["lastMsgTime"] < 8:
-            count += 1
-            if count == 2:  # when 3 msgs
-                bs.broadcastmessage("Sending messages too fast, cool down...",
-                                    color=(1, 0.40, 0.50), transient=True,
-                                    clients=[client_id])
-            elif count >= 3:  # when 4 msgs
-                bs.broadcastmessage("Don\'t SPAM!", color=(1, 0, 0),
-                                    transient=True, clients=[client_id])
-                if not check_permissions(pb_id):
-                    addWarn(pb_id, client_id)
-                else:
-                    bs.broadcastmessage("Special role found, Warn BYPASSED!",
-                                        color=(0, 1, 0), transient=True,
-                                        clients=[client_id])
-                count = 0
-        elif now - serverdata.clients[pb_id]["lastMsgTime"] < 20:
-            # < 30
-            if serverdata.clients[pb_id]["lastMsg"] == msg:
-                if len(msg) > 5:
-                    smsgcount += 1
-                    if smsgcount >= 3:
-                        logger.log(pb_id + " | kicked for chat spam")
-                        bs.disconnect_client(client_id)
-                        smsgcount = 0
-                bs.broadcastmessage("Don\'t SPAM!", color=(1, 0, 0),
-                                    transient=True, clients=[client_id])
-                if not check_permissions(pb_id):
-                    addWarn(pb_id, client_id)
-                else:
-                    bs.broadcastmessage("Special role found, Warn BYPASSED!",
-                                        color=(0, 1, 0), transient=True,
-                                        clients=[client_id])
-            else:
-                smsgcount = 0
-        else:
-            count = 0
-            smsgcount = 0
-
-        serverdata.clients[pb_id]['cMsgCount'] = count
-        serverdata.clients[pb_id]['lastMsgTime'] = now
-        serverdata.clients[pb_id]['lastMsg'] = msg
-        serverdata.clients[pb_id]['cSameMsg'] = smsgcount
-    else:
-        serverdata.clients[pb_id]['cMsgCount'] = 0
-        serverdata.clients[pb_id]['lastMsgTime'] = now
-        serverdata.clients[pb_id]['lastMsg'] = msg
-        serverdata.clients[pb_id]['cSameMsg'] = 0
+    serverdata.clients[pb_id]['cMsgCount'] = 0
+    serverdata.clients[pb_id]['lastMsgTime'] = now
+    serverdata.clients[pb_id]['lastMsg'] = msg
+    serverdata.clients[pb_id]['cSameMsg'] = 0
     return new_msg
 
 
