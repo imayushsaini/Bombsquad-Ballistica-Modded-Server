@@ -39,12 +39,12 @@ def ExcelCommand(command, arguments, clientid, accountid):
         get_ping(arguments, clientid)
 
     elif command in ['discord', 'dc', 'ds', 'dis']:
-        show_discord()
+        show_discord(clientid)
 
 
-def show_discord():
+def show_discord(clientid):
     try:
-        send('https://discord.gg/RUzsHEKseq')
+        send('https://discord.gg/RUzsHEKseq', clientid)
     except:
         pass
 
@@ -62,7 +62,7 @@ def get_ping(arguments, clientid):
                 name = player.getname(full=True, icon=False),
                 if player.inputdevice.client_id == int(arguments[0]):
                     ping = _bascenev1.get_client_ping(int(arguments[0]))
-                    send(f" {name}'s ping {ping}ms", clientid)
+                    send(f"El ping de {name} es {ping}ms", clientid)
         except:
             return
 
@@ -121,7 +121,7 @@ def accountid_request(arguments, clientid, accountid):
     """Returns The Account Id Of Players"""
 
     if arguments == [] or arguments == ['']:
-        send(f"Your account id is {accountid} ", clientid)
+        send(f"La id de tu cuenta es: {accountid} ", clientid)
 
     else:
         try:
@@ -131,6 +131,6 @@ def accountid_request(arguments, clientid, accountid):
             name = player.getname(full=True, icon=True)
             accountid = player.get_v1_account_id()
 
-            send(f" {name}'s account id is '{accountid}' ", clientid)
+            send(f"La id de la cuenta de {name} es: '{accountid}' ", clientid)
         except:
             return

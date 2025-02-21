@@ -334,11 +334,11 @@ def shutdown(func) -> None:
     def wrapper(*args, **kwargs):
         # add screen text and tell players we are going to restart soon.
         bs.chatmessage(
-            "Server will restart on next opportunity. (series end)")
+            "El server se reiniciará al final de la serie.")
         _babase.restart_scheduled = True
         bs.get_foreground_host_activity().restart_msg = bs.newnode('text',
                                                                         attrs={
-                                                                            'text': "Server going to restart after this series.",
+                                                                            'text': "El server se reiniciará al final de la serie.",
                                                                             'flatness': 1.0,
                                                                             'h_align': 'right',
                                                                             'v_attach': 'bottom',

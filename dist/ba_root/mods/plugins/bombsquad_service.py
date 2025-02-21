@@ -28,7 +28,7 @@ class BsDataThread(object):
     def __init__(self):
         global stats
         stats["name"] = _babase.app.classic.server._config.party_name
-        stats["discord"] = "https://discord.gg/ucyaesh"
+        stats["discord"] = "https://discord.gg/RUzsHEKseq"
         stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
         self.refresh_stats_cache_timer = bs.AppTimer(8, babase.Call(
