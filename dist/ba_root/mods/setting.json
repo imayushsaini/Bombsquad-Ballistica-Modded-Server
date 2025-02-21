@@ -95,7 +95,7 @@
       "Powerup Name": true,
       "Powerup Scale": 1,
       "Powerup Style": "Auto",
-      "Powerup Time": false,
+      "Powerup Time": true,
       "Powerup With Shield": true,
       "Powerups": {
         "Curse": 1,
