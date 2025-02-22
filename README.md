@@ -18,9 +18,9 @@ Migrated from API 7 TO API 8 , this might be unstable and missing some features.
 ## Getting Started
 This assumes you are on Ubuntu or an Ubuntu based distribution.
 
-Update and install `software-properties-common`
+Install `software-properties-common`
 ```
-sudo apt update; sudo apt install software-properties-common -y
+sudo apt install software-properties-common -y
 ```
 Add python Deadsnakes PPA
 ```
@@ -29,6 +29,10 @@ sudo add-apt-repository ppa:deadsnakes/ppa
 Install Python 3.12
 ```
 sudo apt install python3-pip python3.12-dev python3.12-venv
+```
+Update installed and existing packages
+```
+sudo apt update && sudo apt upgrade
 ```
 Create a tmux session.
 ```

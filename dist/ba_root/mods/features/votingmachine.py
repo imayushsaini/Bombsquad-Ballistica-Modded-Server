@@ -58,7 +58,7 @@ def vote(pb_id, client_id, vote_type):
         else:
             activity = bs.get_foreground_host_activity()
             if activity is not None:
-                with _babase.Context(activity):
+                with activity.context:
                     bs.broadcastmessage(
                         f"{max_votes_required(len(active_players)) - len(voters)} votes required for {vote_type}",
                         image={"texture": bs.gettexture(
@@ -75,7 +75,8 @@ def vote(pb_id, client_id, vote_type):
         vote_machine[vote_type]["voters"] = []
         if vote_type == "end":
             try:
-                with _babase.Context(bs.get_foreground_host_activity()):
+                activity = bs.get_foreground_host_activity()
+                with activity.context:
                     bs.get_foreground_host_activity().end_game()
             except:
                 pass
@@ -120,7 +121,8 @@ def update_vote_text(votes_needed):
         activity.end_vote_text.node.text = "{} more votes to end this map\ntype 'end' to vote".format(
             votes_needed)
     except:
-        with _babase.Context(bs.get_foreground_host_activity()):
+        activity = bs.get_foreground_host_activity()
+        with activity.context:
             node = bs.NodeActor(bs.newnode('text',
                                            attrs={
                                                'v_attach': 'top',
