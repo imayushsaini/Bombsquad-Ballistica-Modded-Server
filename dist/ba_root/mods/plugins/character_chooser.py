@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 
 '''
 Character Chooser by Mr.Smoothy
@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING
 
 import babase
 import bauiv1 as bui
-from babase._error import print_error
+import logging
 from babase._language import Lstr
 
 if TYPE_CHECKING:
