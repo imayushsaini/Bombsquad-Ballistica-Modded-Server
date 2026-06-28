@@ -2,13 +2,12 @@
 #
 """UI functionality for entering promo codes."""
 
-from __future__ import annotations
-
 import time
 import logging
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -206,7 +205,6 @@ class SendInfoWindowLegacyModal(bui.Window):
         transition: str | None = 'in_scale',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals
 
         # Need to wrangle our own transition-out in modal mode.
         if origin_widget is not None:
@@ -364,7 +362,7 @@ class SendInfoWindowLegacyModal(bui.Window):
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
         else:
             plus.add_v1_account_transaction(
                 {
@@ -394,7 +392,7 @@ async def _send_info(description: str) -> None:
                 bui.Lstr(resource='internal.unavailableNoConnectionText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Pause root ui updates so stuff like token counts don't change
@@ -432,7 +430,7 @@ async def _send_info(description: str) -> None:
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Push it along to v1 as an old style code. Allow v2 response to
@@ -452,7 +450,7 @@ async def _send_info(description: str) -> None:
     except Exception:
         logging.exception('Error sending promo code.')
         bui.screenmessage('Error sending code (see log).', color=(1, 0, 0))
-        bui.getsound('error').play()
+        builtinassets.audio.error.get().play()
     finally:
         # Make sure ui-pause is dead even if something is holding
         # on to this stack frame.

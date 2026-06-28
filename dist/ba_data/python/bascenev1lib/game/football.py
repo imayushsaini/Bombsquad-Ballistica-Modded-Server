@@ -7,14 +7,13 @@
 # ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
-from __future__ import annotations
-
 import math
 import random
 import logging
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+from bascenev1 import stdassets
 
 from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.playerspaz import PlayerSpaz
@@ -150,11 +149,11 @@ class FootballTeamGame(bs.TeamGameActivity[Player, Team]):
         self._scoreboard: Scoreboard | None = Scoreboard()
 
         # Load some media we need.
-        self._cheer_sound = bs.getsound('cheer')
-        self._chant_sound = bs.getsound('crowdChant')
-        self._score_sound = bs.getsound('score')
-        self._swipsound = bs.getsound('swip')
-        self._whistle_sound = bs.getsound('refWhistle')
+        self._cheer_sound = stdassets.audio.cheer
+        self._chant_sound = stdassets.audio.crowd_chant
+        self._score_sound = stdassets.audio.score
+        self._swipsound = stdassets.audio.swip
+        self._whistle_sound = stdassets.audio.ref_whistle
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', FlagFactory.get().flagmaterial),
@@ -435,12 +434,12 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
         self._preset = settings.get('preset', 'rookie')
 
         # Load some media we need.
-        self._cheer_sound = bs.getsound('cheer')
-        self._boo_sound = bs.getsound('boo')
-        self._chant_sound = bs.getsound('crowdChant')
-        self._score_sound = bs.getsound('score')
-        self._swipsound = bs.getsound('swip')
-        self._whistle_sound = bs.getsound('refWhistle')
+        self._cheer_sound = stdassets.audio.cheer
+        self._boo_sound = stdassets.audio.boo
+        self._chant_sound = stdassets.audio.crowd_chant
+        self._score_sound = stdassets.audio.score
+        self._swipsound = stdassets.audio.swip
+        self._whistle_sound = stdassets.audio.ref_whistle
         self._score_to_win = 21
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
@@ -518,7 +517,6 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
 
     @override
     def on_begin(self) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
 
         from bascenev1lib.actor import controlsguide

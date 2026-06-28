@@ -2,12 +2,11 @@
 #
 """UI functionality for running the game in kiosk mode."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
 
 
 class KioskWindow(bui.MainWindow):
@@ -18,7 +17,7 @@ class KioskWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals, too-many-statements
+        # pylint: disable=too-many-statements
         from bauiv1lib.confirm import QuitWindow
 
         assert bui.app.classic is not None
@@ -57,9 +56,11 @@ class KioskWindow(bui.MainWindow):
             t_delay_base = 1.0
             t_delay_scale = 1.0
 
-        mesh_opaque = bui.getmesh('level_select_button_opaque')
-        mesh_transparent = bui.getmesh('level_select_button_transparent')
-        mask_tex = bui.gettexture('mapPreviewMask')
+        mesh_opaque = stdassets.meshes.level_select_button_opaque.get()
+        mesh_transparent = (
+            stdassets.meshes.level_select_button_transparent.get()
+        )
+        mask_tex = stdassets.textures.map_preview_mask.get()
 
         y_extra = 130.0 + (0.0 if self._show_multiplayer else -130.0)
         b_width = 250.0
@@ -138,7 +139,7 @@ class KioskWindow(bui.MainWindow):
             size=(img_width, 0.5 * img_width),
             transition_delay=tdelay,
             position=(h - img_width * 0.5, img_v),
-            texture=bui.gettexture('doomShroomPreview'),
+            texture=stdassets.textures.doom_shroom_preview.get(),
             mesh_opaque=mesh_opaque,
             mesh_transparent=mesh_transparent,
             mask_texture=mask_tex,
@@ -173,7 +174,7 @@ class KioskWindow(bui.MainWindow):
             size=(img_width, 0.5 * img_width),
             transition_delay=tdelay,
             position=(h - img_width * 0.5, img_v),
-            texture=bui.gettexture('footballStadiumPreview'),
+            texture=stdassets.textures.football_stadium_preview.get(),
             mesh_opaque=mesh_opaque,
             mesh_transparent=mesh_transparent,
             mask_texture=mask_tex,
@@ -208,7 +209,7 @@ class KioskWindow(bui.MainWindow):
             transition_delay=tdelay,
             size=(img_width, 0.5 * img_width),
             position=(h - img_width * 0.5, img_v),
-            texture=bui.gettexture('courtyardPreview'),
+            texture=stdassets.textures.courtyard_preview.get(),
             mesh_opaque=mesh_opaque,
             mesh_transparent=mesh_transparent,
             mask_texture=mask_tex,
@@ -263,7 +264,7 @@ class KioskWindow(bui.MainWindow):
                 size=(img_width, 0.5 * img_width),
                 transition_delay=tdelay,
                 position=(h - img_width * 0.5, img_v),
-                texture=bui.gettexture('bridgitPreview'),
+                texture=stdassets.textures.bridgit_preview.get(),
                 mesh_opaque=mesh_opaque,
                 mesh_transparent=mesh_transparent,
                 mask_texture=mask_tex,
@@ -299,7 +300,7 @@ class KioskWindow(bui.MainWindow):
                 size=(img_width, 0.5 * img_width),
                 transition_delay=tdelay,
                 position=(h - img_width * 0.5, img_v),
-                texture=bui.gettexture('hockeyStadiumPreview'),
+                texture=stdassets.textures.hockey_stadium_preview.get(),
                 mesh_opaque=mesh_opaque,
                 mesh_transparent=mesh_transparent,
                 mask_texture=mask_tex,
@@ -334,7 +335,7 @@ class KioskWindow(bui.MainWindow):
                 transition_delay=tdelay,
                 size=(img_width, 0.5 * img_width),
                 position=(h - img_width * 0.5, img_v),
-                texture=bui.gettexture('tipTopPreview'),
+                texture=stdassets.textures.tip_top_preview.get(),
                 mesh_opaque=mesh_opaque,
                 mesh_transparent=mesh_transparent,
                 mask_texture=mask_tex,

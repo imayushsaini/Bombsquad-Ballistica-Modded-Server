@@ -15,8 +15,6 @@ order to integrate it in arbitrary Python environments, but this may
 cause some features to be disabled or behave differently than expected.
 """
 
-from __future__ import annotations
-
 import os
 import sys
 import time
@@ -57,8 +55,8 @@ logger = logging.getLogger('ba.env')
 
 # Build number and version of the ballistica binary we expect to be
 # using.
-TARGET_BALLISTICA_BUILD = 22714
-TARGET_BALLISTICA_VERSION = '1.7.61'
+TARGET_BALLISTICA_BUILD = 22919
+TARGET_BALLISTICA_VERSION = '1.8.0a32'
 
 
 @dataclass
@@ -176,19 +174,25 @@ def configure(
     setup_logging: bool = True,
     setup_pycache_prefix: bool = False,
     strict_threads_atexit: Callable[[Callable[[], None]], None] | None = None,
+    launch_time: float | None = None,
 ) -> None:
     """Set up the environment for running a Ballistica app.
 
     This includes things such as Python path wrangling and app directory
     creation. This must be called before any actual Ballistica modules
     are imported; the environment is locked in as soon as that happens.
-    """
-    # pylint: disable=too-many-locals
 
-    # Measure when we start doing this stuff. We plug this in to show
-    # relative times in our log timestamp displays and also pass this to
-    # the engine to do the same there.
-    launch_time = time.time()
+    ``launch_time`` is an optional epoch-seconds value (from
+    :func:`time.time`) captured earlier in startup — typically at C++
+    ``main()`` entry — used as the anchor for relative log timestamps.
+    If not supplied, we fall back to sampling :func:`time.time` here.
+    """
+
+    # Prefer a caller-supplied launch_time (captured earlier in startup)
+    # over our own sample so that log-timestamp 'relative time' reflects
+    # real process start.
+    if launch_time is None:
+        launch_time = time.time()
 
     envglobals = _EnvGlobals.get()
 
@@ -322,9 +326,17 @@ def _cache_ninja_rampage(cache_dir: str) -> None:
             if random.random() < 0.001:
                 fullpath = os.path.join(basename, fname)
                 logging.getLogger('ba.cache').debug(
-                    "Cache-ninja assasinated '%s'.", fullpath
+                    "Cache-ninja assassinated '%s'.", fullpath
                 )
-                os.unlink(fullpath)
+                # The whole point of this feature is that downstream
+                # code must handle missing cache files; the kill itself
+                # is not load-bearing. Swallow OSError so a read-only
+                # cache (sandboxed envs, restrictive perms) or a file
+                # that vanished mid-walk doesn't fatal startup.
+                try:
+                    os.unlink(fullpath)
+                except OSError:
+                    pass
 
 
 def _read_app_config(config_file_path: str) -> dict:
@@ -418,6 +430,14 @@ def _set_log_levels(app_config: dict) -> None:
     from bacommon.loggercontrol import LoggerControlConfig
 
     try:
+        # If BA_LOG_LEVELS env var is set, it completely overrides any
+        # stored config. Format: 'logger=LEVEL,logger=LEVEL,...'
+        # Example: 'ba.net=DEBUG,ba.connectivity=DEBUG'
+        env_log_levels = os.environ.get('BA_LOG_LEVELS')
+        if env_log_levels is not None:
+            _apply_env_log_levels(env_log_levels)
+            return
+
         config = app_config.get('Log Levels', None)
 
         if config is None:
@@ -449,6 +469,49 @@ def _set_log_levels(app_config: dict) -> None:
 
     except Exception:
         logger.exception('Error setting log levels.')
+
+
+def _apply_env_log_levels(env_val: str) -> None:
+    """Apply log levels from the BA_LOG_LEVELS env var.
+
+    Completely overrides stored config. Base defaults are applied
+    first, then env var values are layered on top.
+    """
+    from bacommon.logging import get_base_logger_control_config_client
+    from bacommon.loggercontrol import LoggerControlConfig
+
+    level_names = {
+        'NOTSET': logging.NOTSET,
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARNING': logging.WARNING,
+        'ERROR': logging.ERROR,
+        'CRITICAL': logging.CRITICAL,
+    }
+
+    levels: dict[str, int] = {}
+    for entry in env_val.split(','):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = entry.split('=', 1)
+        if len(parts) != 2:
+            raise ValueError(
+                f'Invalid BA_LOG_LEVELS entry: {entry!r}'
+                ' (expected logger=LEVEL)'
+            )
+        logname, levelstr = parts[0].strip(), parts[1].strip().upper()
+        if levelstr not in level_names:
+            valid = ', '.join(level_names)
+            raise ValueError(
+                f'Invalid log level {levelstr!r} in BA_LOG_LEVELS'
+                f' (expected one of {valid})'
+            )
+        levels[logname] = level_names[levelstr]
+
+    get_base_logger_control_config_client().apply_diff(
+        LoggerControlConfig(levels=levels)
+    ).apply()
 
 
 def _setup_certs(contains_python_dist: bool) -> None:

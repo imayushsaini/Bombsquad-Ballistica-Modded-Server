@@ -8,8 +8,6 @@
   it in mod code.
 """
 
-from __future__ import annotations
-
 import datetime
 from enum import Enum
 from dataclasses import dataclass, field
@@ -44,6 +42,12 @@ class Effect(IOMultiType[EffectTypeID]):
         # full type registry/lookup here it would require us to import
         # everything and would prevent lazy loading.
         raise NotImplementedError()
+
+    @override
+    @classmethod
+    def get_type_id_storage_name(cls) -> str:
+        # Pin to the original default for back-compat with stored data.
+        return '_dciotype'
 
     @override
     @classmethod

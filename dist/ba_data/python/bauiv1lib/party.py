@@ -2,13 +2,12 @@
 #
 """Provides party related UI."""
 
-from __future__ import annotations
-
 import math
 import logging
 from typing import TYPE_CHECKING, cast
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
 import bascenev1 as bs
 from bauiv1lib.popup import PopupMenuWindow
 
@@ -93,6 +92,7 @@ class PartyWindow(bui.Window):
             color=(0.55, 0.73, 0.25),
             iconscale=1.2,
         )
+        self._menu_popup: PopupMenuWindow | None = None
 
         info = bs.get_connection_to_host_info_2()
 
@@ -276,7 +276,7 @@ class PartyWindow(bui.Window):
             choices.append('add_to_favorites')
             choices_display.append(bui.Lstr(resource='addToFavoritesText'))
 
-        PopupMenuWindow(
+        self._menu_popup = PopupMenuWindow(
             position=self._menu_button.get_screen_space_center(),
             scale=(
                 2.3
@@ -291,9 +291,7 @@ class PartyWindow(bui.Window):
         self._popup_type = 'menu'
 
     def _update(self) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-nested-blocks
 
         # update muted state
@@ -489,7 +487,7 @@ class PartyWindow(bui.Window):
         del popup_window  # unused
         if self._popup_type == 'partyMemberPress':
             if self._popup_party_member_is_host:
-                bui.getsound('error').play()
+                builtinassets.audio.error.get().play()
                 bui.screenmessage(
                     bui.Lstr(resource='internal.cantKickHostError'),
                     color=(1, 0, 0),
@@ -502,7 +500,7 @@ class PartyWindow(bui.Window):
                     self._popup_party_member_client_id, ban_time=5 * 60
                 )
                 if not result:
-                    bui.getsound('error').play()
+                    builtinassets.audio.error.get().play()
                     bui.screenmessage(
                         bui.Lstr(resource='getTicketsWindow.unavailableText'),
                         color=(1, 0, 0),
@@ -528,7 +526,7 @@ class PartyWindow(bui.Window):
                     bui.screenmessage(
                         bui.Lstr(resource='errorText'), color=(1, 0, 0)
                     )
-                    bui.getsound('error').play()
+                    builtinassets.audio.error.get().play()
         else:
             print(f'unhandled popup type: {self._popup_type}')
 
@@ -541,7 +539,7 @@ class PartyWindow(bui.Window):
                 bui.Lstr(resource='internal.invalidAddressErrorText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         port = port_num if port_num is not None else -1
         if port > 65535 or port < 0:
@@ -549,7 +547,7 @@ class PartyWindow(bui.Window):
                 bui.Lstr(resource='internal.invalidPortErrorText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Avoid empty names.
@@ -567,7 +565,7 @@ class PartyWindow(bui.Window):
                 'name': name,
             }
             config.commit()
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
             bui.screenmessage(
                 bui.Lstr(
                     resource='addedToFavoritesText', subs=[('${NAME}', name)]
@@ -579,10 +577,11 @@ class PartyWindow(bui.Window):
                 bui.Lstr(resource='internal.invalidAddressErrorText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
-    def popup_menu_closing(self, popup_window: PopupWindow) -> None:
+    def popup_menu_closing(self, _popup_window: PopupWindow) -> None:
         """Called when the popup is closing."""
+        self._menu_popup = None
 
     def _on_party_member_press(
         self, client_id: int, is_host: bool, widget: bui.Widget
@@ -598,7 +597,7 @@ class PartyWindow(bui.Window):
             kick_str = bui.Lstr(resource='kickVoteText')
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
-        PopupMenuWindow(
+        self._menu_popup = PopupMenuWindow(
             position=widget.get_screen_space_center(),
             scale=(
                 2.3
@@ -622,6 +621,10 @@ class PartyWindow(bui.Window):
 
     def close(self) -> None:
         """Close the window."""
+        # exit our menu widget if it's up (likely from a hotkey press)
+        if self._menu_popup is not None:
+            self._menu_popup.on_popup_cancel()
+
         # no-op if our underlying widget is dead or on its way out.
         if not self._root_widget or self._root_widget.transitioning_out:
             return
@@ -634,5 +637,5 @@ class PartyWindow(bui.Window):
         if not self._root_widget or self._root_widget.transitioning_out:
             return
 
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self.close()

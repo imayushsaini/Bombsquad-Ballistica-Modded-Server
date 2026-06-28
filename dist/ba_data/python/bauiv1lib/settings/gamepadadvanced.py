@@ -2,11 +2,10 @@
 #
 """UI functionality related to advanced gamepad configuring."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -21,7 +20,6 @@ class GamepadAdvancedSettingsWindow(bui.Window):
 
     def __init__(self, parent_window: GamepadSettingsWindow):
         # pylint: disable=too-many-statements
-        # pylint: disable=too-many-locals
         self._parent_window = parent_window
 
         app = bui.app
@@ -558,7 +556,7 @@ class GamepadAdvancedSettingsWindow(bui.Window):
                                 control
                             ),
                         )
-                    bui.getsound('gunCocking').play()
+                    builtinassets.audio.gun_cocking.get().play()
                     dialog.die()
         else:
             if event['type'] == 'BUTTONDOWN':
@@ -572,7 +570,7 @@ class GamepadAdvancedSettingsWindow(bui.Window):
                             control
                         ),
                     )
-                bui.getsound('gunCocking').play()
+                builtinassets.audio.gun_cocking.get().play()
                 dialog.die()
 
     def _done(self) -> None:

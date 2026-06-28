@@ -2,14 +2,14 @@
 #
 """UI related to waiting in line for a party."""
 
-from __future__ import annotations
-
 import time
 import random
 import logging
 from typing import TYPE_CHECKING
 
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 import bascenev1 as bs
 
 if TYPE_CHECKING:
@@ -239,31 +239,33 @@ class PartyQueueWindow(bui.Window):
         self._line_left = 40.0
         self._line_width = self._width - 190
         self._line_bottom = self._height * 0.4
-        self.lineup_tex: bui.Texture = bui.gettexture('playerLineup')
+        self.lineup_tex: bui.Texture = stdassets.textures.player_lineup.get()
         self._smoothing = 0.0
         self._initial_offset = 0.0
         self._boost_tickets = 0
         self._boost_strength = 0.0
-        self._angry_computer_transparent_mesh = bui.getmesh(
-            'angryComputerTransparent'
+        self._angry_computer_transparent_mesh = (
+            stdassets.meshes.angry_computer_transparent.get()
         )
         self._angry_computer_image: bui.Widget | None = None
-        self.lineup_1_transparent_mesh: bui.Mesh = bui.getmesh(
-            'playerLineup1Transparent'
+        self.lineup_1_transparent_mesh: bui.Mesh = (
+            stdassets.meshes.player_lineup1_transparent.get()
         )
-        self._lineup_2_transparent_mesh: bui.Mesh = bui.getmesh(
-            'playerLineup2Transparent'
+        self._lineup_2_transparent_mesh: bui.Mesh = (
+            stdassets.meshes.player_lineup2_transparent.get()
         )
 
-        self._lineup_3_transparent_mesh = bui.getmesh(
-            'playerLineup3Transparent'
+        self._lineup_3_transparent_mesh = (
+            stdassets.meshes.player_lineup3_transparent.get()
         )
-        self._lineup_4_transparent_mesh = bui.getmesh(
-            'playerLineup4Transparent'
+        self._lineup_4_transparent_mesh = (
+            stdassets.meshes.player_lineup4_transparent.get()
         )
         self._line_image: bui.Widget | None = None
-        self.eyes_mesh: bui.Mesh = bui.getmesh('plasticEyesTransparent')
-        self._white_tex = bui.gettexture('white')
+        self.eyes_mesh: bui.Mesh = (
+            stdassets.meshes.plastic_eyes_transparent.get()
+        )
+        self._white_tex = builtinassets.textures.white.get()
         uiscale = bui.app.ui_v1.uiscale
         super().__init__(
             root_widget=bui.containerwidget(
@@ -353,7 +355,7 @@ class PartyQueueWindow(bui.Window):
         from bauiv1lib.account.viewer import AccountViewerWindow
 
         if account_id is None:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         AccountViewerWindow(
             account_id=account_id,
@@ -454,7 +456,6 @@ class PartyQueueWindow(bui.Window):
 
     def on_update_response(self, response: dict[str, Any] | None) -> None:
         """We've received a response from an update to the server."""
-        # pylint: disable=too-many-branches
         if not self._root_widget:
             return
 
@@ -577,14 +578,14 @@ class PartyQueueWindow(bui.Window):
             return
 
         if classic.tickets < self._boost_tickets:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource='notEnoughTicketsText'),
                 color=(1, 0, 0),
             )
             return
 
-        bui.getsound('laserReverse').play()
+        stdassets.audio.laser_reverse.get().play()
         plus.add_v1_account_transaction(
             {
                 'type': 'PARTY_QUEUE_BOOST',

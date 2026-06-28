@@ -86,6 +86,7 @@ from _bascenev1 import (
     emitfx,
     end_host_scanning,
     get_chat_messages,
+    get_client_ping,
     get_connection_to_host_info,
     get_connection_to_host_info_2,
     get_foreground_host_activity,
@@ -164,12 +165,6 @@ from bascenev1._collision import Collision, getcollision
 from bascenev1._coopgame import CoopGameActivity
 from bascenev1._coopsession import CoopSession
 from bascenev1._debug import print_live_object_warnings
-from bascenev1._dependency import (
-    Dependency,
-    DependencyComponent,
-    DependencySet,
-    AssetPackage,
-)
 from bascenev1._dualteamsession import DualTeamSession
 from bascenev1._freeforallsession import FreeForAllSession
 from bascenev1._gameactivity import GameActivity
@@ -271,7 +266,6 @@ __all__ = [
     'apptime',
     'apptimer',
     'AppTimer',
-    'AssetPackage',
     'basetime',
     'BaseTime',
     'basetimer',
@@ -301,9 +295,6 @@ __all__ = [
     'DeathType',
     'DEFAULT_TEAM_COLORS',
     'DEFAULT_TEAM_NAMES',
-    'Dependency',
-    'DependencyComponent',
-    'DependencySet',
     'DieMessage',
     'disconnect_client',
     'disconnect_from_host',
@@ -329,6 +320,7 @@ __all__ = [
     'GameResults',
     'GameTip',
     'get_chat_messages',
+    'get_client_ping',
     'get_connection_to_host_info',
     'get_connection_to_host_info_2',
     'get_default_free_for_all_playlist',

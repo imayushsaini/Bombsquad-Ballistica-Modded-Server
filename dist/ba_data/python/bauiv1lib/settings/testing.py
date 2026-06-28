@@ -2,8 +2,6 @@
 #
 """Provides UI for test settings."""
 
-from __future__ import annotations
-
 import copy
 from typing import TYPE_CHECKING, override
 
@@ -23,7 +21,6 @@ class TestingWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         self._width = 1200 if uiscale is bui.UIScale.SMALL else 600

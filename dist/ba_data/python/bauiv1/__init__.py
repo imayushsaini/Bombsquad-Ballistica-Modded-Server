@@ -10,8 +10,6 @@
 # Code within our package should import things directly from their
 # submodules.
 
-from __future__ import annotations
-
 # pylint: disable=redefined-builtin
 
 from babase import (
@@ -56,12 +54,14 @@ from babase import (
     DisplayTime,
     displaytimer,
     DisplayTimer,
+    discord_sign_in,
     do_once,
     existing,
     fade_screen,
     get_display_resolution,
     get_input_idle_time,
     get_ip_address_type,
+    get_legacy_langdata,
     get_low_level_config_value,
     get_max_graphics_quality,
     get_remote_app_name,
@@ -213,12 +213,14 @@ __all__ = [
     'DisplayTime',
     'displaytimer',
     'DisplayTimer',
+    'discord_sign_in',
     'do_once',
     'existing',
     'fade_screen',
     'get_display_resolution',
     'get_input_idle_time',
     'get_ip_address_type',
+    'get_legacy_langdata',
     'get_low_level_config_value',
     'get_max_graphics_quality',
     'get_qrcode_texture',

@@ -4,7 +4,6 @@
 
 # (most of these are self-explanatory)
 # pylint: disable=missing-function-docstring
-from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
@@ -36,8 +35,10 @@ def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     try:
+        print("importing custom_hooks")
         import custom_hooks as chooks
-    except:
+    except Exception as e:
+        print(e)
         pass
     """Intercept/filter chat messages.
 

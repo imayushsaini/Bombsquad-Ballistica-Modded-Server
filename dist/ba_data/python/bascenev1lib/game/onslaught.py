@@ -8,8 +8,6 @@
 # ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
-from __future__ import annotations
-
 import math
 import random
 import logging
@@ -18,6 +16,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+from bascenev1 import builtinassets
+from bascenev1 import stdassets
 
 from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.bomb import TNTSpawner
@@ -180,9 +180,9 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
         super().__init__(settings)
 
-        self._new_wave_sound = bs.getsound('scoreHit01')
-        self._winsound = bs.getsound('score')
-        self._cashregistersound = bs.getsound('cashRegister')
+        self._new_wave_sound = stdassets.audio.score_hit01
+        self._winsound = stdassets.audio.score
+        self._cashregistersound = builtinassets.audio.cash_register
         self._a_player_has_been_hurt = False
         self._player_has_dropped_bomb = False
 
@@ -206,8 +206,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._score = 0
         self._time_bonus = 0
         self._spawn_info_text: bs.NodeActor | None = None
-        self._dingsound = bs.getsound('dingSmall')
-        self._dingsoundhigh = bs.getsound('dingSmallHigh')
+        self._dingsound = stdassets.audio.ding_small
+        self._dingsoundhigh = stdassets.audio.ding_small_high
         self._have_tnt = False
         self._excluded_powerups: list[str] | None = None
         self._waves: list[Wave] = []
@@ -238,8 +238,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 self.tips = [
                     bs.GameTip(
                         'Land-mines are a good way to stop speedy enemies.',
-                        icon=bs.gettexture('powerupLandMines'),
-                        sound=bs.getsound('ding'),
+                        icon=stdassets.textures.powerup_land_mines,
+                        sound=builtinassets.audio.ding,
                     )
                 ]
 
@@ -252,8 +252,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     bs.GameTip(
                         'Take out a group of enemies by\n'
                         'setting off a bomb near a TNT box.',
-                        icon=bs.gettexture('tnt'),
-                        sound=bs.getsound('ding'),
+                        icon=stdassets.textures.tnt,
+                        sound=builtinassets.audio.ding,
                     )
                 ]
 
@@ -266,8 +266,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     bs.GameTip(
                         'Curse boxes turn you into a ticking time bomb.\n'
                         'The only cure is to quickly grab a health-pack.',
-                        icon=bs.gettexture('powerupCurse'),
-                        sound=bs.getsound('ding'),
+                        icon=stdassets.textures.powerup_curse,
+                        sound=builtinassets.audio.ding,
                     )
                 ]
 

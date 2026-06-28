@@ -2,8 +2,6 @@
 #
 """Playlist related functionality."""
 
-from __future__ import annotations
-
 import copy
 import logging
 from typing import Any, TYPE_CHECKING
@@ -27,15 +25,14 @@ def filter_playlist(
     mark_unowned: bool = False,
     name: str = '?',
 ) -> PlaylistType:
+    # pylint: disable=too-many-statements
     """Return a filtered version of a playlist.
 
     Strips out or replaces invalid or unowned game types, makes sure all
     settings are present, and adds in a 'resolved_type' which is the actual
     type.
     """
-    # pylint: disable=too-many-locals
     # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
     from bascenev1._map import get_filtered_map_name
     from bascenev1._gameactivity import GameActivity
 

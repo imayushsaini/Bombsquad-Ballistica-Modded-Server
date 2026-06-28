@@ -8,8 +8,6 @@
 # ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
-from __future__ import annotations
-
 import random
 import logging
 from enum import Enum
@@ -17,6 +15,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, Sequence, override
 
 import bascenev1 as bs
+from bascenev1 import builtinassets
+from bascenev1 import stdassets
 
 from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.bomb import TNTSpawner
@@ -138,14 +138,14 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         shared = SharedObjects.get()
         self._preset = Preset(settings.get('preset', 'pro'))
 
-        self._player_death_sound = bs.getsound('playerDeath')
-        self._new_wave_sound = bs.getsound('scoreHit01')
-        self._winsound = bs.getsound('score')
-        self._cashregistersound = bs.getsound('cashRegister')
-        self._bad_guy_score_sound = bs.getsound('shieldDown')
-        self._heart_tex = bs.gettexture('heart')
-        self._heart_mesh_opaque = bs.getmesh('heartOpaque')
-        self._heart_mesh_transparent = bs.getmesh('heartTransparent')
+        self._player_death_sound = stdassets.audio.player_death
+        self._new_wave_sound = stdassets.audio.score_hit01
+        self._winsound = stdassets.audio.score
+        self._cashregistersound = builtinassets.audio.cash_register
+        self._bad_guy_score_sound = stdassets.audio.shield_down
+        self._heart_tex = stdassets.textures.heart
+        self._heart_mesh_opaque = stdassets.meshes.heart_opaque
+        self._heart_mesh_transparent = stdassets.meshes.heart_transparent
 
         self._a_player_has_been_killed = False
         self._spawn_center = self._map_type.defs.points['spawn1'][0:3]
@@ -175,8 +175,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         self._score = 0
         self._time_bonus = 0
         self._score_region: bs.Actor | None = None
-        self._dingsound = bs.getsound('dingSmall')
-        self._dingsoundhigh = bs.getsound('dingSmallHigh')
+        self._dingsound = stdassets.audio.ding_small
+        self._dingsoundhigh = stdassets.audio.ding_small_high
         self._exclude_powerups: list[str] | None = None
         self._have_tnt: bool | None = None
         self._waves: list[Wave] | None = None
@@ -733,7 +733,6 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         )
 
     def _update_waves(self) -> None:
-        # pylint: disable=too-many-branches
 
         # If we have no living bots, go to the next wave.
         if (
@@ -894,10 +893,10 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         )
 
     def _start_next_wave(self) -> None:
+        # pylint: disable=too-many-statements
         # FIXME: Need to split this up.
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         self.show_zoom_message(
             bs.Lstr(
                 value='${A} ${B}',

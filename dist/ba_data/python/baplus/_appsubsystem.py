@@ -2,8 +2,6 @@
 #
 """Provides plus app subsystem."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 from babase import AppSubsystem
@@ -86,8 +84,10 @@ class PlusAppSubsystem(AppSubsystem):
         return _baplus.get_bootstrap_server_addresses()
 
     @staticmethod
-    def get_bootstrap_server_address() -> str:
-        """Return address we can use to establish regional connection.
+    def get_bootstrap_server_address() -> str | None:
+        """Return the most recent successful bootstrap server address.
+
+        Returns ``None`` if none has been set yet.
 
         :meta private:
         """

@@ -2,8 +2,6 @@
 #
 """Provides UI for editing a game config."""
 
-from __future__ import annotations
-
 import copy
 import random
 import logging
@@ -11,6 +9,7 @@ from typing import TYPE_CHECKING, cast, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -30,9 +29,9 @@ class PlaylistEditGameWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
         edit_info: dict[str, Any] | None = None,
     ):
+        # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-positional-arguments
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
         from bascenev1 import (
             get_filtered_map_name,
@@ -237,14 +236,15 @@ class PlaylistEditGameWindow(bui.MainWindow):
             v_align='center',
         )
 
+        mesh_trans = stdassets.meshes.level_select_button_transparent.get()
         bui.imagewidget(
             parent=self._subcontainer,
             size=(256 * 0.7, 125 * 0.7),
             position=(h + 261 - 128 + 128.0 * 0.56, v - 90),
             texture=map_tex,
-            mesh_opaque=bui.getmesh('level_select_button_opaque'),
-            mesh_transparent=bui.getmesh('level_select_button_transparent'),
-            mask_texture=bui.gettexture('mapPreviewMask'),
+            mesh_opaque=stdassets.meshes.level_select_button_opaque.get(),
+            mesh_transparent=mesh_trans,
+            mask_texture=stdassets.textures.map_preview_mask.get(),
         )
         map_button = btn = bui.buttonwidget(
             parent=self._subcontainer,

@@ -2,8 +2,6 @@
 #
 """Functionality related to running the game in server-mode."""
 
-from __future__ import annotations
-
 import sys
 import time
 import logging
@@ -354,8 +352,6 @@ class ServerController:
 
     def _launch_server_session(self) -> None:
         """Kick off a host-session based on the current server config."""
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         app = babase.app
         classic = app.classic
         plus = app.plus

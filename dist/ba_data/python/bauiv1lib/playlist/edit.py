@@ -2,13 +2,13 @@
 #
 """Provides a window for editing individual game playlists."""
 
-from __future__ import annotations
-
 import logging
 from typing import TYPE_CHECKING, cast, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from bauiv1lib.playlist.editcontroller import PlaylistEditController
@@ -23,8 +23,6 @@ class PlaylistEditWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-locals
         prev_selection: str | None
         self._editcontroller = editcontroller
         self._r = 'editGameListWindow'
@@ -304,7 +302,7 @@ class PlaylistEditWindow(bui.MainWindow):
         if not self._root_widget or self._root_widget.transitioning_out:
             return
 
-        bui.getsound('powerdown01').play()
+        builtinassets.audio.powerdown01.get().play()
         self.main_window_back()
 
     def _add(self) -> None:
@@ -345,16 +343,16 @@ class PlaylistEditWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantSaveAlreadyExistsText')
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         if not new_name:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         if not self._editcontroller.get_playlist():
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantSaveEmptyListText')
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # We couldn't actually replace the default list anyway, but disallow
@@ -363,7 +361,7 @@ class PlaylistEditWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantOverwriteDefaultText')
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # If we had an old one, delete it.
@@ -388,12 +386,12 @@ class PlaylistEditWindow(bui.MainWindow):
         )
         plus.run_v1_account_transactions()
 
-        bui.getsound('gunCocking').play()
+        builtinassets.audio.gun_cocking.get().play()
 
         self.main_window_back()
 
     def _save_press_with_sound(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._save_press()
 
     def _select(self, index: int) -> None:
@@ -476,5 +474,5 @@ class PlaylistEditWindow(bui.MainWindow):
             index = len(playlist) - 1
         self._editcontroller.set_playlist(playlist)
         self._editcontroller.set_selected_index(index)
-        bui.getsound('shieldDown').play()
+        stdassets.audio.shield_down.get().play()
         self._refresh()

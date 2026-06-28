@@ -2,12 +2,11 @@
 #
 """Provides a popup window for viewing trophies."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib import popup
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -215,5 +214,5 @@ class TrophiesWindow(popup.PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()

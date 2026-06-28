@@ -2,14 +2,14 @@
 #
 """Provides UI for viewing/creating/editing playlists."""
 
-from __future__ import annotations
-
 import copy
 import time
 
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -27,8 +27,6 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
         select_playlist: str | None = None,
     ):
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         # pylint: disable=cyclic-import
         from bauiv1lib import playlist
 
@@ -447,7 +445,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
                 ),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # In case they cancel so we can return to this state.
@@ -463,7 +461,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
         if self._selected_playlist_name is None:
             return
         if self._selected_playlist_name == '__default__':
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantEditDefaultText')
             )
@@ -486,7 +484,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
             }
         )
         plus.run_v1_account_transactions()
-        bui.getsound('shieldDown').play()
+        stdassets.audio.shield_down.get().play()
 
         # (we don't use len()-1 here because the default list adds one)
         assert self._selected_playlist_index is not None
@@ -508,7 +506,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         share.SharePlaylistImportWindow(
@@ -530,7 +528,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
                 bui.Lstr(resource='internal.unavailableNoConnectionText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         share.SharePlaylistResultsWindow(name, response)
 
@@ -543,10 +541,10 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         if self._selected_playlist_name == '__default__':
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantShareDefaultText'),
                 color=(1, 0, 0),
@@ -576,7 +574,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
         if self._selected_playlist_name is None:
             return
         if self._selected_playlist_name == '__default__':
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantDeleteDefaultText')
             )
@@ -614,7 +612,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
                 self._selected_playlist_name
             )
             if plst is None:
-                bui.getsound('error').play()
+                builtinassets.audio.error.get().play()
                 return
 
         # Clamp at our max playlist number.
@@ -628,7 +626,7 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
                 ),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         copy_text = bui.Lstr(resource='copyOfText').evaluate()
@@ -667,5 +665,5 @@ class PlaylistCustomizeBrowserWindow(bui.MainWindow):
         )
         plus.run_v1_account_transactions()
 
-        bui.getsound('gunCocking').play()
+        builtinassets.audio.gun_cocking.get().play()
         self._refresh(select_playlist=test_name)

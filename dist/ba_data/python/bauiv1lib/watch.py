@@ -2,8 +2,6 @@
 #
 """Provides UI functionality for watching replays."""
 
-from __future__ import annotations
-
 import os
 import logging
 from enum import Enum
@@ -11,6 +9,8 @@ from typing import TYPE_CHECKING, cast, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -30,7 +30,6 @@ class WatchWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals
         from bauiv1lib.tabs import TabRow
 
         bui.set_analytics_screen('Watch Window')
@@ -171,8 +170,8 @@ class WatchWindow(bui.MainWindow):
                 self._width * 0.5 - self._scroll_width * 0.5,
                 self._scroll_y,
             ),
-            texture=bui.gettexture('scrollWidget'),
-            mesh_transparent=bui.getmesh('softEdgeOutside'),
+            texture=builtinassets.textures.scroll_widget.get(),
+            mesh_transparent=builtinassets.meshes.soft_edge_outside.get(),
             opacity=0.4,
         )
         self._tab_container: bui.Widget | None = None
@@ -198,7 +197,6 @@ class WatchWindow(bui.MainWindow):
         return True
 
     def _set_tab(self, tab_id: TabID) -> None:
-        # pylint: disable=too-many-locals
 
         if self._current_tab == tab_id:
             return
@@ -375,7 +373,7 @@ class WatchWindow(bui.MainWindow):
             bui.Lstr(resource=f'{self._r}.noReplaySelectedErrorText'),
             color=(1, 0, 0),
         )
-        bui.getsound('error').play()
+        builtinassets.audio.error.get().play()
 
     def _on_my_replay_play_press(self) -> None:
         if self._my_replay_selected is None:
@@ -507,7 +505,7 @@ class WatchWindow(bui.MainWindow):
                 # False alarm; bui.textwidget can return non-None val.
                 # pylint: disable=unsupported-membership-test
                 if os.path.exists(new_name_full):
-                    bui.getsound('error').play()
+                    builtinassets.audio.error.get().play()
                     bui.screenmessage(
                         bui.Lstr(
                             resource=self._r
@@ -516,7 +514,7 @@ class WatchWindow(bui.MainWindow):
                         color=(1, 0, 0),
                     )
                 elif any(char in new_name_raw for char in ['/', '\\', ':']):
-                    bui.getsound('error').play()
+                    builtinassets.audio.error.get().play()
                     bui.screenmessage(
                         bui.Lstr(
                             resource=f'{self._r}.replayRenameErrorInvalidName'
@@ -527,12 +525,12 @@ class WatchWindow(bui.MainWindow):
                     bui.increment_analytics_count('Replay rename')
                     os.rename(old_name_full, new_name_full)
                     self._refresh_my_replays()
-                    bui.getsound('gunCocking').play()
+                    builtinassets.audio.gun_cocking.get().play()
         except Exception:
             logging.exception(
                 "Error renaming replay '%s' to '%s'.", replay, new_name
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.replayRenameErrorText'),
                 color=(1, 0, 0),
@@ -575,12 +573,12 @@ class WatchWindow(bui.MainWindow):
             bui.increment_analytics_count('Replay delete')
             os.remove((bui.get_replays_dir() + '/' + replay).encode('utf-8'))
             self._refresh_my_replays()
-            bui.getsound('shieldDown').play()
+            stdassets.audio.shield_down.get().play()
             if replay == self._my_replay_selected:
                 self._my_replay_selected = None
         except Exception:
             logging.exception("Error deleting replay '%s'.", replay)
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.replayDeleteErrorText'),
                 color=(1, 0, 0),

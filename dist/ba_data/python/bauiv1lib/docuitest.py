@@ -3,7 +3,6 @@
 """Examples/tests for using DocUI to build UIs."""
 
 # pylint: disable=too-many-lines
-from __future__ import annotations
 
 import time
 import copy
@@ -11,14 +10,27 @@ from typing import TYPE_CHECKING, override
 
 from efro.error import CleanError
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 from bauiv1lib.docui import DocUIWindow, DocUIController
 
 if TYPE_CHECKING:
     from bacommon.docui import DocUIRequest, DocUIResponse
     import bacommon.docui.v1
+    import bacommon.docui.v2
 
     from bauiv1lib.docui import DocUILocalAction
+
+
+def _btex(name: str) -> str:
+    """Qualified ref for a texture in the builtin asset-package."""
+    return f'{builtinassets.__asset_package__}:textures/{name}'
+
+
+def _stex(name: str) -> str:
+    """Qualified stdassets texture ref."""
+    return f'{stdassets.__asset_package__}:textures/{name}'
 
 
 def show_test_doc_ui_window() -> None:
@@ -32,6 +44,123 @@ def show_test_doc_ui_window() -> None:
             TestDocUIController().create_window, dui1.Request('/')
         ),
         win_extra_type_id=TestDocUIController.get_window_extra_type_id(),
+    )
+
+
+def show_test_doc_ui_v2_window() -> None:
+    """Bust out a v2 (l-string) doc-ui window built locally on the client.
+
+    Unlike the cloud-fetched milestone-1 demo, this authors a
+    language-agnostic v2 page *on the client* using the bauiv1 asset-package
+    wrappers (``bamvpstrings`` / ``bamvpstrings2``), proving that doc-ui-v2
+    documents can be created locally. A 'Server Version' button fetches the
+    equivalent page from bamaster's ``docuitestv2`` domain so the full
+    cloud resolve -> decode -> render path stays exercised too.
+    """
+    import bacommon.docui.v2 as dui2
+
+    bui.app.ui_v1.auxiliary_window_activate(
+        win_type=DocUIWindow,
+        win_create_call=bui.CallStrict(
+            TestDocUIV2Controller().create_window, dui2.Request('/')
+        ),
+        win_extra_type_id=TestDocUIV2Controller.get_window_extra_type_id(),
+    )
+
+
+class TestDocUIV2Controller(DocUIController):
+    """Builds a v2 (l-string) doc-ui page locally on the client.
+
+    The root page is authored client-side; the ``/server`` path fetches the
+    equivalent page from bamaster so both paths get exercised.
+    """
+
+    @override
+    def fulfill_request(self, request: DocUIRequest) -> DocUIResponse:
+        """Fulfill a v2 request (called in a background thread)."""
+        import bacommon.docui.v2 as dui2
+
+        if not isinstance(request, dui2.Request):
+            raise CleanError('Invalid request version.')
+
+        # The root page is built right here on the client.
+        if request.path == '/':
+            return _test_v2_page_root()
+
+        # The '/server' path fetches the equivalent page from bamaster's
+        # 'docuitestv2' domain (the cloud-authored counterpart).
+        if request.path == '/server':
+            return self.fulfill_request_cloud(request, 'docuitestv2')
+
+        raise CleanError('Invalid request path.')
+
+
+def _test_v2_page_root() -> bacommon.docui.v2.Response:
+    """Author the v2 (l-string) test page purely on the client.
+
+    All text is authored as ``Lstr`` from the bamvpstrings test package and
+    all textures/meshes as apverid-pinned references from bamvpstrings2 -- the
+    same content bamaster's ``docuitestv2`` domain produces, but built locally
+    here. The client resolves those packages in its own locale and decodes, so
+    this single response renders in any language.
+    """
+    import bacommon.docui.v2 as dui2
+
+    from bauiv1.bamvpstrings import strings as mvp
+    from bauiv1.bamvpstrings2 import textures as mvptex, meshes as mvpmesh
+
+    return dui2.Response(
+        page=dui2.Page(
+            title=mvp.strings.mvpgreeting,
+            center_vertically=True,
+            rows=[
+                dui2.ButtonRow(
+                    title=mvp.strings.mvphello(player='Bo'),
+                    subtitle=mvp.strings.mvpcolor,
+                    center_content=True,
+                    buttons=[
+                        dui2.Button(
+                            label=mvp.strings.mvpfarewell,
+                            action=dui2.Local(close_window=True),
+                            size=(180, 200),
+                            style=dui2.ButtonStyle.MEDIUM,
+                            default=True,
+                            selected=True,
+                            decorations=[
+                                # NOTE: decorations must sit within the button
+                                # bounds (here +-90 x, +-100 y) or they get
+                                # culled.
+                                #
+                                # An apverid-pinned texture + mesh, authored
+                                # type-safely from the client wrappers
+                                # (resolved + drawn after the resolve phase).
+                                # mesh_transparent (not _opaque): UI images
+                                # draw in the transparent pass.
+                                dui2.Image(
+                                    texture=mvptex.v2tex,
+                                    mesh_transparent=mvpmesh.v2diamond,
+                                    position=(0, 45),
+                                    size=(90, 90),
+                                ),
+                                dui2.Text(
+                                    text=mvp.strings.mvpbananacount(bananas=5),
+                                    position=(0, -70),
+                                    size=(160, 30),
+                                    scale=0.7,
+                                ),
+                            ],
+                        ),
+                        dui2.Button(
+                            label=mvp.strings.mvpgreeting,
+                            action=dui2.Browse(dui2.Request('/server')),
+                            size=(160, 80),
+                            style=dui2.ButtonStyle.MEDIUM,
+                            texture=mvptex.v2tex,
+                        ),
+                    ],
+                ),
+            ],
+        )
     )
 
 
@@ -271,7 +400,7 @@ def _test_page_root(
                             debug=debug,
                         ),
                         dui1.Image(
-                            'nub', position=(0, -58 + 20), size=(60, 60)
+                            _btex('nub'), position=(0, -58 + 20), size=(60, 60)
                         ),
                     ],
                     header_decorations_right=[
@@ -440,13 +569,13 @@ def _test_page_root(
                             size=(180, 200),
                             decorations=[
                                 dui1.Image(
-                                    'powerupPunch',
+                                    _stex('powerup_punch'),
                                     position=(-70, 0),
                                     size=(40, 40),
                                     h_align=dui1.HAlign.LEFT,
                                 ),
                                 dui1.Image(
-                                    'powerupSpeed',
+                                    _stex('powerup_speed'),
                                     position=(0, 75),
                                     size=(35, 35),
                                     v_align=dui1.VAlign.TOP,
@@ -502,13 +631,13 @@ def _test_page_root(
                             debug=debug,  # Show bounds.
                             decorations=[
                                 dui1.Image(
-                                    'powerupPunch',
+                                    _stex('powerup_punch'),
                                     position=(-70, 0),
                                     size=(40, 40),
                                     h_align=dui1.HAlign.LEFT,
                                 ),
                                 dui1.Image(
-                                    'powerupSpeed',
+                                    _stex('powerup_speed'),
                                     position=(0, 75),
                                     size=(35, 35),
                                     v_align=dui1.VAlign.TOP,
@@ -550,7 +679,7 @@ def _test_page_root(
                         # Testing custom button images and opacity.
                         dui1.Button(
                             label='Test3',
-                            texture='buttonSquareWide',
+                            texture=_btex('button_square_wide'),
                             padding_left=10.0,
                             padding_right=10.0,
                             color=(1, 1, 1, 0.3),
@@ -559,7 +688,7 @@ def _test_page_root(
                         # Testing image drawing vs bounds
                         dui1.Button(
                             label='BoundsTest',
-                            texture='white',
+                            texture=_btex('white'),
                             color=(1, 1, 1, 0.3),
                             size=(150, 100),
                             debug=debug,
@@ -595,13 +724,13 @@ def _test_page_root(
                             size=(150, 100),
                             decorations=[
                                 dui1.Image(
-                                    'zoeIcon',
+                                    _stex('zoe_icon'),
                                     position=(0, 0),
                                     size=(70, 70),
-                                    tint_texture='zoeIconColorMask',
+                                    tint_texture=_stex('zoe_icon_color_mask'),
                                     tint_color=(1, 0, 0),
                                     tint2_color=(0, 1, 0),
-                                    mask_texture='characterIconMask',
+                                    mask_texture=_btex('character_icon_mask'),
                                 ),
                             ],
                         ),
@@ -609,10 +738,10 @@ def _test_page_root(
                             size=(150, 100),
                             decorations=[
                                 dui1.Image(
-                                    'bridgitPreview',
+                                    _stex('bridgit_preview'),
                                     position=(0, 10),
                                     size=(120, 60),
-                                    mask_texture='mapPreviewMask',
+                                    mask_texture=_stex('map_preview_mask'),
                                     mesh_opaque='level_select_button_opaque',
                                     mesh_transparent=(
                                         'level_select_button_transparent'
@@ -659,7 +788,7 @@ def _test_page_root(
                             size=(300, 80),
                             style=dui1.ButtonStyle.MEDIUM,
                             color=(0.8, 0.8, 0.8, 1),
-                            icon='buttonPunch',
+                            icon=_stex('button_punch'),
                             icon_color=(0.5, 0.3, 1.0, 1.0),
                             icon_scale=1.2,
                         ),
@@ -906,21 +1035,21 @@ def _test_bounds(
                         dui1.Button(
                             'Hello',
                             size=(300, 300),
-                            texture='white',
+                            texture=_btex('white'),
                             color=(1, 0, 0, 0.3),
                             debug=True,
                         ),
                         dui1.Button(
                             'Hello',
                             size=(200, 200),
-                            texture='white',
+                            texture=_btex('white'),
                             color=(1, 0, 0, 0.3),
                             debug=True,
                         ),
                         dui1.Button(
                             'Hello',
                             size=(100, 100),
-                            texture='white',
+                            texture=_btex('white'),
                             color=(1, 0, 0, 0.3),
                             debug=True,
                         ),

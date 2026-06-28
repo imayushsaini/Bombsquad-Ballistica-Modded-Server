@@ -2,12 +2,11 @@
 #
 """Provides a popup for displaying info about any account."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 import logging
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 from bauiv1lib.popup import PopupWindow, PopupMenuWindow
 
@@ -220,10 +219,10 @@ class AccountViewerWindow(PopupWindow):
         )
 
     def _on_query_response(self, data: dict[str, Any] | None) -> None:
+        # pylint: disable=too-many-statements
         # FIXME: Tidy this up.
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-nested-blocks
         assert bui.app.classic is not None
         if data is None:
@@ -293,9 +292,8 @@ class AccountViewerWindow(PopupWindow):
                                 )
                                 icon_tex = character.icon_texture
                                 tint_tex = character.icon_mask_texture
-                                mask_texture = bui.gettexture(
-                                    'characterIconMask'
-                                )
+                                btex = builtinassets.textures
+                                mask_texture = btex.character_icon_mask.get()
                                 bui.imagewidget(
                                     parent=self._subcontainer,
                                     position=(sub_width * center - 40, v - 80),
@@ -600,5 +598,5 @@ class AccountViewerWindow(PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()

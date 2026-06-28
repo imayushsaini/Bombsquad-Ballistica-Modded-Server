@@ -2,9 +2,8 @@
 #
 """UI for upgrading V1 accounts to V2."""
 
-from __future__ import annotations
-
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 
 class V2UpgradeWindow(bui.Window):
@@ -31,7 +30,7 @@ class V2UpgradeWindow(bui.Window):
                 ),
             )
         )
-        bui.getsound('error').play()
+        builtinassets.audio.error.get().play()
 
         bui.textwidget(
             parent=self._root_widget,

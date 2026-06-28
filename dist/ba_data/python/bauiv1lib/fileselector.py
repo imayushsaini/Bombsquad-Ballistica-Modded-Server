@@ -2,8 +2,6 @@
 #
 """UI functionality for selecting files."""
 
-from __future__ import annotations
-
 import os
 import time
 import logging
@@ -11,6 +9,8 @@ from threading import Thread
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -110,9 +110,9 @@ class FileSelectorWindow(bui.MainWindow):
             on_activate_call=self._on_back_press,
         )
 
-        self._folder_tex = bui.gettexture('folder')
+        self._folder_tex = stdassets.textures.folder.get()
         self._folder_color = (1.1, 0.8, 0.2)
-        self._file_tex = bui.gettexture('file')
+        self._file_tex = stdassets.textures.file.get()
         self._file_color = (1, 1, 1)
         self._use_folder_button: bui.Widget | None = None
         self._folder_center = self._width * 0.5 + 15
@@ -174,11 +174,11 @@ class FileSelectorWindow(bui.MainWindow):
 
     def _on_back_press(self) -> None:
         if len(self._recent_paths) > 1:
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
             self._recent_paths.pop()
             self._set_path(self._recent_paths.pop())
         else:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
     def _on_folder_entry_activated(self) -> None:
         if self._callback is not None:
@@ -186,7 +186,6 @@ class FileSelectorWindow(bui.MainWindow):
             self._callback(self._path)
 
     def _on_entry_activated(self, entry: str) -> None:
-        # pylint: disable=too-many-branches
         new_path = None
         try:
             assert self._path is not None
@@ -197,22 +196,22 @@ class FileSelectorWindow(bui.MainWindow):
                     if new_path == '':
                         new_path = '/'
                 else:
-                    bui.getsound('error').play()
+                    builtinassets.audio.error.get().play()
             else:
                 if self._path == '/':
                     test_path = self._path + entry
                 else:
                     test_path = self._path + '/' + entry
                 if os.path.isdir(test_path):
-                    bui.getsound('swish').play()
+                    builtinassets.audio.swish.get().play()
                     new_path = test_path
                 elif os.path.isfile(test_path):
                     if self._is_valid_file_path(test_path):
-                        bui.getsound('swish').play()
+                        builtinassets.audio.swish.get().play()
                         if self._callback is not None:
                             self._callback(test_path)
                     else:
-                        bui.getsound('error').play()
+                        builtinassets.audio.error.get().play()
                 else:
                     print(
                         (
@@ -269,9 +268,7 @@ class FileSelectorWindow(bui.MainWindow):
         self._RefreshThread(path, self._refresh).start()
 
     def _refresh(self, file_names: list[str], error: str | None) -> None:
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
         if not self._root_widget:
             return
 

@@ -2,8 +2,6 @@
 #
 """Provides help related ui."""
 
-from __future__ import annotations
-
 import random
 
 from typing import override, TYPE_CHECKING
@@ -11,6 +9,8 @@ from typing import override, TYPE_CHECKING
 from efro.util import asserttype
 import bacommon.docui.v1 as dui1
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 from bauiv1lib.docui import DocUIController
 
@@ -20,6 +20,16 @@ if TYPE_CHECKING:
     from bacommon.docui import DocUIRequest, DocUIResponse
 
     from bauiv1lib.docui import DocUILocalAction, DocUIWindow
+
+
+def _stex(name: str) -> str:
+    """Qualified stdassets texture ref."""
+    return f'{stdassets.__asset_package__}:textures/{name}'
+
+
+def _btex(name: str) -> str:
+    """Qualified ref for a texture in the builtin asset-package."""
+    return f'{builtinassets.__asset_package__}:textures/{name}'
 
 
 class InventoryUIController(DocUIController):
@@ -80,7 +90,7 @@ class InventoryUIController(DocUIController):
                                             else inv_only_online_t
                                         ),
                                         label_is_lstr=True,
-                                        texture='white',
+                                        texture=_btex('white'),
                                         size=(600, 100),
                                         color=(1, 1, 1, 0.0),
                                         label_scale=0.7,
@@ -133,7 +143,7 @@ class InventoryUIController(DocUIController):
                             default_sound=False,
                             immediate_local_action='new_profile',
                         ),
-                        icon='plusButton',
+                        icon=_stex('plus_button'),
                         icon_scale=1.3,
                         icon_color=(0.7, 0.6, 0.9, 1),
                         label_is_lstr=True,
@@ -161,7 +171,7 @@ class InventoryUIController(DocUIController):
             bui.screenmessage(
                 f'Invalid local-action "{action.name}".', color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
     @override
     def restore_window_shared_state(
@@ -225,7 +235,6 @@ class InventoryUIController(DocUIController):
             session.handlemessage(bs.PlayerProfilesChangedMessage())
 
     def _get_profile_buttons(self) -> list[dui1.Button]:
-        # pylint: disable=too-many-locals
 
         plus = bui.app.plus
         assert plus is not None
@@ -267,7 +276,7 @@ class InventoryUIController(DocUIController):
 
             buttons.append(
                 dui1.Button(
-                    texture='white',
+                    texture=_btex('white'),
                     size=(145, 175),
                     action=dui1.Local(
                         default_sound=False,
@@ -282,7 +291,7 @@ class InventoryUIController(DocUIController):
                             appearance.icon_texture,
                             position=(0, 15),
                             size=(140, 140),
-                            mask_texture='characterIconMask',
+                            mask_texture=_btex('character_icon_mask'),
                             tint_texture=appearance.icon_mask_texture,
                             tint_color=color,
                             tint2_color=highlight,
@@ -305,7 +314,7 @@ class InventoryUIController(DocUIController):
         # pylint: disable=cyclic-import
         from bauiv1lib.profile.edit import EditProfileWindow
 
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
 
         plus = bui.app.plus
         assert plus is not None
@@ -323,7 +332,7 @@ class InventoryUIController(DocUIController):
                 ),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         action.window.main_window_replace(
@@ -338,7 +347,7 @@ class InventoryUIController(DocUIController):
         # pylint: disable=cyclic-import
         from bauiv1lib.profile.edit import EditProfileWindow
 
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
 
         profile = action.args.get('profile')
         assert isinstance(profile, str)

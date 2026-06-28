@@ -5,13 +5,9 @@
 # Not too concerned with keeping this old module pretty;
 # don't expect to be revisiting it.
 # pylint: disable=too-many-branches
-# pylint: disable=too-many-statements
 # pylint: disable=too-many-lines
 # pylint: disable=missing-function-docstring, missing-class-docstring
-# pylint: disable=too-many-locals
 # pylint: disable=unused-argument
-
-from __future__ import annotations
 
 import math
 import logging
@@ -19,6 +15,8 @@ from collections import deque
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+from bascenev1 import stdassets
+from bascenev1 import builtinassets
 
 from bascenev1lib.actor.spaz import Spaz
 
@@ -616,14 +614,14 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self._issued_warning = False
         self._map_type = Rampage
         self._map_type.preload()
-        self._jump_button_tex = bs.gettexture('buttonJump')
-        self._pick_up_button_tex = bs.gettexture('buttonPickUp')
-        self._bomb_button_tex = bs.gettexture('buttonBomb')
-        self._punch_button_tex = bs.gettexture('buttonPunch')
+        self._jump_button_tex = stdassets.textures.button_jump
+        self._pick_up_button_tex = stdassets.textures.button_pick_up
+        self._bomb_button_tex = stdassets.textures.button_bomb
+        self._punch_button_tex = stdassets.textures.button_punch
         self._r = 'tutorial'
         self._have_skipped = False
         self.stick_image_position_x = self.stick_image_position_y = 0.0
-        self.spawn_sound = bs.getsound('spawn')
+        self.spawn_sound = stdassets.audio.spawn
         self.map: bs.Map | None = None
         self.text: bs.Node | None = None
         self._skip_text: bs.Node | None = None
@@ -754,7 +752,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.punch_image = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('buttonPunch'),
+                'texture': stdassets.textures.button_punch,
                 'absolute_scale': True,
                 'vr_depth': -20,
                 'position': p,
@@ -767,7 +765,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.bomb_image = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('buttonBomb'),
+                'texture': stdassets.textures.button_bomb,
                 'absolute_scale': True,
                 'vr_depth': -20,
                 'position': p,
@@ -782,7 +780,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.pickup_image = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('buttonPickUp'),
+                'texture': stdassets.textures.button_pick_up,
                 'absolute_scale': True,
                 'vr_depth': -20,
                 'position': p,
@@ -796,7 +794,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self._stick_base_image = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('nub'),
+                'texture': builtinassets.textures.nub,
                 'absolute_scale': True,
                 'vr_depth': -40,
                 'position': p,
@@ -809,7 +807,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self._stick_nub_image = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('nub'),
+                'texture': builtinassets.textures.nub,
                 'absolute_scale': True,
                 'position': p,
                 'scale': (nub_size, nub_size),
@@ -2476,7 +2474,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
             bs.increment_analytics_count('Tutorial skip')
             bs.set_analytics_screen('Tutorial Skip')
             self._have_skipped = True
-            bs.getsound('swish').play()
+            builtinassets.audio.swish.play()
             # self._skip_count_text.text = self._r.skippingText
             self._skip_count_text.text = bs.Lstr(
                 resource=f'{self._r}.skippingText'

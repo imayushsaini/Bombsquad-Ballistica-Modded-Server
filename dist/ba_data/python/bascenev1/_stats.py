@@ -2,8 +2,6 @@
 #
 """Functionality related to scores and statistics."""
 
-from __future__ import annotations
-
 import random
 import weakref
 import logging
@@ -132,7 +130,6 @@ class PlayerRecord:
     def submit_kill(self, showpoints: bool = True) -> None:
         """Submit a kill for this player entry."""
         # FIXME Clean this up.
-        # pylint: disable=too-many-statements
 
         self._multi_kill_count += 1
         stats = self._stats()
@@ -281,10 +278,15 @@ class Stats:
         return self._activity()
 
     def _load_activity_media(self) -> None:
-        self.orchestrahitsound1 = _bascenev1.getsound('orchestraHit')
-        self.orchestrahitsound2 = _bascenev1.getsound('orchestraHit2')
-        self.orchestrahitsound3 = _bascenev1.getsound('orchestraHit3')
-        self.orchestrahitsound4 = _bascenev1.getsound('orchestraHit4')
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
+        self.orchestrahitsound1 = stdassets.audio.orchestra_hit
+        self.orchestrahitsound2 = stdassets.audio.orchestra_hit2
+        self.orchestrahitsound3 = stdassets.audio.orchestra_hit3
+        self.orchestrahitsound4 = stdassets.audio.orchestra_hit4
 
     def reset(self) -> None:
         """Reset the stats instance completely."""
@@ -354,7 +356,6 @@ class Stats:
         # FIXME: Tidy this up.
         # pylint: disable=cyclic-import
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
         from bascenev1lib.actor.popuptext import PopupText
 
         from bascenev1._gameactivity import GameActivity
