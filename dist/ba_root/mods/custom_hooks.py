@@ -62,7 +62,7 @@ class modSetup(babase.Plugin):
         """Runs when app is launched."""
         plus = bui.app.plus
         bootstraping()
-        servercheck.checkserver().start()
+        servercheck.ServerCheck()
         server_update.check()
         # bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
@@ -176,14 +176,14 @@ def bootstraping():
 
             # Install pip using python3.10
             python_process = subprocess.Popen(
-                ["python3.10"], stdin=curl_process.stdout)
+                ["python3.14"], stdin=curl_process.stdout)
 
             # Wait for the processes to finish
             curl_process.stdout.close()
             python_process.wait()
 
             subprocess.check_call(
-                ["python3.10", "-m", "pip", "install", "psutil"])
+                ["python3.14", "-m", "pip", "install", "psutil"])
             # restart after installation
             print("dependency installed , restarting server")
             _babase.quit()

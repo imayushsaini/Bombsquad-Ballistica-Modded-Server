@@ -86,7 +86,7 @@ class NewPlayerSpaz(PlayerSpaz):
         self._activations = []
         self.effects = []
 
-        babase._asyncio._asyncio_event_loop.create_task(self.set_effects())
+        babase._asyncio._g_asyncio_event_loop.create_task(self.set_effects())
 
     async def set_effects(self):
         try:
