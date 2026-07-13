@@ -275,6 +275,13 @@ org_player_join = bs._activity.Activity.on_player_join
 def on_player_join(self, player) -> None:
     """Runs when player joins the game."""
     team_balancer.on_player_join()
+    try:
+        from shop.shop_system import preload_player
+        account_id = player.get_v1_account_id()
+        if account_id:
+            preload_player(account_id)
+    except Exception as e:
+        print(f"Error preloading player shop cache: {e}")
     org_player_join(self, player)
 
 

@@ -128,7 +128,8 @@
   "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
   "leaderboard": {
     "barsBehindName": true,
-    "enable": true
+    "enable": true,
+    "range": 3
   },
   "maxAccountPerIP": 3,
   "maxPlayersPerDevice": 2,

@@ -5,20 +5,21 @@ from typing import Callable, List, Dict, Optional
 
 class Command:
     """Represents a registered chat command."""
-    def __init__(self, names: List[str], category: str, handler: Callable):
+    def __init__(self, names: List[str], category: str, handler: Callable, shop_cost: int = 0):
         self.names = [name.lower() for name in names]
         self.category = category
         self.handler = handler
+        self.shop_cost = shop_cost
 
 class CommandRegistry:
     """Registry to manage and look up chat commands."""
     def __init__(self) -> None:
         self._commands: Dict[str, Command] = {}
 
-    def register(self, names: List[str], category: str) -> Callable:
+    def register(self, names: List[str], category: str, shop_cost: int = 0) -> Callable:
         """Decorator to register a list of command names/aliases under a category."""
         def decorator(func: Callable) -> Callable:
-            cmd = Command(names, category, func)
+            cmd = Command(names, category, func, shop_cost)
             for name in cmd.names:
                 self._commands[name] = cmd
             return func

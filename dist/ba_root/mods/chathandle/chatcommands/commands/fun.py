@@ -8,7 +8,7 @@ from .handlers import get_target_actors
 from .registry import registry
 
 
-@registry.register(['speed'], category='Fun')
+@registry.register(['speed'], category='Fun', shop_cost=200)
 def speed(arguments: list[str], clientid: int, accountid: str) -> None:
     """Set the game speed."""
     if not arguments or arguments == ['']:
@@ -19,7 +19,7 @@ def speed(arguments: list[str], clientid: int, accountid: str) -> None:
         pass
 
 
-@registry.register(['fly'], category='Fun')
+@registry.register(['fly'], category='Fun', shop_cost=300)
 def fly(arguments: list[str], clientid: int, accountid: str) -> None:
     """Toggle fly mode for target players."""
     for actor in get_target_actors(arguments, clientid):
@@ -28,7 +28,7 @@ def fly(arguments: list[str], clientid: int, accountid: str) -> None:
             node.fly = not getattr(node, 'fly', False)
 
 
-@registry.register(['invisible', 'inv'], category='Fun')
+@registry.register(['invisible', 'inv'], category='Fun', shop_cost=250)
 def invisible(arguments: list[str], clientid: int, accountid: str) -> None:
     """Make target players invisible."""
     for actor in get_target_actors(arguments, clientid):
@@ -46,7 +46,7 @@ def invisible(arguments: list[str], clientid: int, accountid: str) -> None:
             node.style = 'cyborg'
 
 
-@registry.register(['headless', 'hl'], category='Fun')
+@registry.register(['headless', 'hl'], category='Fun', shop_cost=150)
 def headless(arguments: list[str], clientid: int, accountid: str) -> None:
     """Remove head mesh from target players."""
     for actor in get_target_actors(arguments, clientid):
@@ -56,7 +56,7 @@ def headless(arguments: list[str], clientid: int, accountid: str) -> None:
             node.style = 'cyborg'
 
 
-@registry.register(['creepy', 'creep'], category='Fun')
+@registry.register(['creepy', 'creep'], category='Fun', shop_cost=150)
 def creepy(arguments: list[str], clientid: int, accountid: str) -> None:
     """Make target players creepy (remove head, add punch and shield)."""
     for actor in get_target_actors(arguments, clientid):
@@ -67,7 +67,7 @@ def creepy(arguments: list[str], clientid: int, accountid: str) -> None:
             actor.handlemessage(bs.PowerupMessage(poweruptype='shield'))
 
 
-@registry.register(['celebrate', 'celeb'], category='Fun')
+@registry.register(['celebrate', 'celeb'], category='Fun', shop_cost=100)
 def celebrate(arguments: list[str], clientid: int, accountid: str) -> None:
     """Force target players to celebrate."""
     for actor in get_target_actors(arguments, clientid):
@@ -80,7 +80,7 @@ def spaz(arguments: list[str], clientid: int, accountid: str) -> None:
     return
 
 
-@registry.register(['floater', 'flo'], category='Fun')
+@registry.register(['floater', 'flo'], category='Fun', shop_cost=200)
 def floater(arguments: list[str], clientid: int, accountid: str) -> None:
     """Assign floater controls to a client."""
     try:

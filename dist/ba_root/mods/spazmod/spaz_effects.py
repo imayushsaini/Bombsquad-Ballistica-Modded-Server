@@ -93,20 +93,26 @@ class NewPlayerSpaz(PlayerSpaz):
             account_id = self._player._sessionplayer.get_v1_account_id()
         except:
             return
-        custom_effects = pdata.get_custom()['customeffects']
 
-        if account_id in custom_effects:
-            self.effects = [custom_effects[account_id]] if type(
-                custom_effects[account_id]) is str else custom_effects[
-                account_id]
+        from shop import get_equipped_effect
+        equipped_effect = get_equipped_effect(account_id)
+
+        if equipped_effect:
+            self.effects = [equipped_effect]
         else:
-            #  check if we have any effect for his rank.
-            if _settings['enablestats']:
-                stats = mystats.get_cached_stats()
-                if account_id in stats and _settings['enableTop5effects']:
-                    rank = stats[account_id]["rank"]
-                    self.effects = RANK_EFFECT_MAP[
-                        rank] if rank in RANK_EFFECT_MAP else []
+            custom_effects = pdata.get_custom()['customeffects']
+            if account_id in custom_effects:
+                self.effects = [custom_effects[account_id]] if type(
+                    custom_effects[account_id]) is str else custom_effects[
+                    account_id]
+            else:
+                #  check if we have any effect for his rank.
+                if _settings['enablestats']:
+                    stats = mystats.get_cached_stats()
+                    if account_id in stats and _settings['enableTop5effects']:
+                        rank = stats[account_id]["rank"]
+                        self.effects = RANK_EFFECT_MAP[
+                            rank] if rank in RANK_EFFECT_MAP else []
 
         if len(self.effects) == 0:
             return
@@ -129,6 +135,13 @@ class NewPlayerSpaz(PlayerSpaz):
             "rainbow": self._add_rainbow,
             "fairydust": self._add_fairydust,
             "firespark": self._add_firespark,
+            "smoketrail": self._add_smoketrail,
+            "frosty": self._add_frosty,
+            "hyper": self._add_hyper,
+            "magical": self._add_magical,
+            "toxic": self._add_toxic,
+            "heavymetal": self._add_heavymetal,
+            "meteor": self._add_meteor,
             "noeffect": lambda: None,
         }
 
@@ -392,6 +405,148 @@ class NewPlayerSpaz(PlayerSpaz):
             count=900, spread=0.7, 
             chunk_type='spark'
         )
+
+    @effect(repeat_interval=0.15)
+    def _add_smoketrail(self):
+        # A trail of thin smoke puffing out behind the player
+        bs.emitfx(
+            position=self.node.position,
+            velocity=(self.node.velocity[0] * 0.4, 0.5, self.node.velocity[2] * 0.4),
+            count=2,
+            scale=0.8,
+            spread=0.1,
+            emit_type="tendrils",
+            tendril_type="thin_smoke",
+        )
+
+    @effect(repeat_interval=0.2)
+    def _add_frosty(self):
+        # Cool ice trail combining ice chunks and ice tendrils
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=random.randint(1, 3),
+            scale=0.5,
+            spread=0.15,
+            chunk_type="ice",
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=1,
+            scale=0.6,
+            spread=0.05,
+            emit_type="tendrils",
+            tendril_type="ice",
+        )
+
+    @effect(repeat_interval=0.25)
+    def _add_hyper(self):
+        # High-voltage look using space/light distortion and electrical sparks
+        bs.emitfx(
+            position=self.node.position,
+            scale=0.8,
+            spread=0.3,
+            emit_type="distortion"
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=(self.node.velocity[0] + random.uniform(-1, 1),
+                      self.node.velocity[1] + random.uniform(0.1, 1),
+                      self.node.velocity[2] + random.uniform(-1, 1)),
+            count=random.randint(2, 5),
+            scale=0.3,
+            spread=0.2,
+            chunk_type="spark",
+        )
+
+    @effect(repeat_interval=0.75)
+    def _add_magical(self):
+        # Pure magic: fairy dust trails and a mystical light burst
+        bs.emitfx(
+            position=self.node.position,
+            emit_type="flag_stand",
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=6,
+            scale=0.6,
+            spread=0.2,
+            emit_type="fairydust",
+        )
+
+    @effect(repeat_interval=0.2)
+    def _add_toxic(self):
+        # Radioactive dripping slime and noxious fumes
+        bs.emitfx(
+            position=self.node.position,
+            velocity=(self.node.velocity[0], -0.8, self.node.velocity[2]),
+            count=random.randint(1, 3),
+            scale=random.uniform(0.3, 0.7),
+            spread=0.1,
+            chunk_type="slime",
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=(0.0, 0.4, 0.0),
+            count=1,
+            scale=0.5,
+            spread=0.1,
+            emit_type="tendrils",
+            tendril_type="smoke",
+        )
+
+    @effect(repeat_interval=0.3)
+    def _add_heavymetal(self):
+        # A clanking cyborg style trail emitting steel chunks and yellow sparks
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=random.randint(1, 2),
+            scale=0.4,
+            spread=0.15,
+            chunk_type="metal",
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=random.randint(2, 4),
+            scale=0.3,
+            spread=0.1,
+            chunk_type="spark",
+        )
+
+    @effect(repeat_interval=0.15)
+    def _add_meteor(self):
+        # Falling burning meteor trail with rock shards, sparks, and hot smoke
+        bs.emitfx(
+            position=self.node.position,
+            velocity=(self.node.velocity[0] * 0.5,
+                      self.node.velocity[1] - 0.4,
+                      self.node.velocity[2] * 0.5),
+            count=random.randint(1, 2),
+            scale=random.uniform(0.3, 0.6),
+            spread=0.2,
+            chunk_type="rock",
+        )
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=random.randint(3, 7),
+            scale=0.4,
+            spread=0.15,
+            chunk_type="spark",
+        )
+        if random.random() < 0.4:
+            bs.emitfx(
+                position=self.node.position,
+                velocity=(0.0, 0.3, 0.0),
+                count=1,
+                scale=0.6,
+                emit_type="tendrils",
+                tendril_type="smoke",
+            )
 
 def apply() -> None:
     bascenev1lib.actor.playerspaz.PlayerSpaz = NewPlayerSpaz
