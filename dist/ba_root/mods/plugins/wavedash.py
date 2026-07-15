@@ -4,7 +4,7 @@
 
 """
 
-# ba_meta require api 8
+# ba_meta require api 9
 
 from __future__ import annotations
 

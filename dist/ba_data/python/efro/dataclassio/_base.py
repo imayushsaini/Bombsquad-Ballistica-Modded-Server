@@ -2,6 +2,8 @@
 #
 """Core components of dataclassio."""
 
+from __future__ import annotations
+
 import dataclasses
 import typing
 import warnings
@@ -10,6 +12,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, get_args, override, final
 
 from typing import _AnnotatedAlias  # type: ignore
+
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Literal, ClassVar, Self
@@ -20,8 +23,8 @@ SIMPLE_TYPES = {int, bool, str, float, type(None)}
 # Attr name for dict of extra attributes included on dataclass
 # instances. Note that this is only added if extra attributes are
 # present.
-EXTRA_ATTRS_ATTR = '_DCIOEXATTRS'
-
+EXTRA_ATTRS_ATTR = '_DCIOEXATTRS' fgb
+ 
 # Attr name for a bool attr for flagging data as lossy, which means it
 # may have been modified in some way during load and should generally
 # not be written back out.

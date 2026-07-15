@@ -6,6 +6,8 @@
 # pylint: disable=too-many-lines
 """Small handy bits of functionality."""
 
+from __future__ import annotations
+
 import os
 import time
 import random
