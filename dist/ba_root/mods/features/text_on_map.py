@@ -41,7 +41,7 @@ class textonmap:
                 self.season_reset(_babase.season_ends_in_days)
         if setti["leaderboard"]["enable"]:
             self.leaderBoard()
-        self.timer = bs.timer(8, babase.Call(self.highlights_), repeat=True)
+        self.timer = bs.timer(8, babase.CallStrict(self.highlights_), repeat=True)
 
     def highlights_(self):
         if setti["textonmap"]['center highlights']["randomColor"]:

@@ -57,7 +57,7 @@ class ServerCheck:
         self.ip_client_map: Dict[str, List[int]] = {}
         self.device_client_map: Dict[str, List[int]] = {}
         self.ip_join: Dict[str, IPJoin] = {}
-        self.timer = bs.AppTimer(1, babase.Call(self.check), repeat=True)
+        self.timer = bs.AppTimer(1, babase.CallStrict(self.check), repeat=True)
 
     def check(self) -> None:
         """

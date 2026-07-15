@@ -15,7 +15,7 @@ cLastIdle = 0
 
 class checkIdle(object):
     def start(self):
-        self.t1 = babase.AppTimer(2, babase.Call(self.check), repeat=True)
+        self.t1 = babase.AppTimer(2, babase.CallStrict(self.check), repeat=True)
         self.lobbies = {}
 
     def check(self):
