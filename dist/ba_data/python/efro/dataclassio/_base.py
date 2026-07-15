@@ -23,8 +23,8 @@ SIMPLE_TYPES = {int, bool, str, float, type(None)}
 # Attr name for dict of extra attributes included on dataclass
 # instances. Note that this is only added if extra attributes are
 # present.
-EXTRA_ATTRS_ATTR = '_DCIOEXATTRS' fgb
- 
+EXTRA_ATTRS_ATTR = '_DCIOEXATTRS'
+
 # Attr name for a bool attr for flagging data as lossy, which means it
 # may have been modified in some way during load and should generally
 # not be written back out.
