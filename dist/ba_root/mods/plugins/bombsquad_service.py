@@ -111,7 +111,7 @@ class BsDataThread(object):
                                       True),
                                   'inGame': player.in_game,
                                   'character': player.character,
-                                  'account_id': player.get_v1_account_id()
+                                  'account_id': player.get_account_id()
                                   }
                     data[str(team.id)]['players'].append(teamplayer)
 

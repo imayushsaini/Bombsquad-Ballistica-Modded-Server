@@ -191,7 +191,7 @@ def update(score_set):
             player = p_entry.player
             if player is None:
                 continue
-            account_id = player.get_v1_account_id()
+            account_id = player.get_account_id()
             if account_id is None:
                 continue
             name = player.getname(True)

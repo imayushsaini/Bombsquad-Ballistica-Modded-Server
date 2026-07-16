@@ -9,4 +9,7 @@ dist/ba_root/mods/serverdata/*.log
 dist/ba_root/mods/serverdata/*.log*
 dist/ba_root/mods/serverdata/*.json
 dist/ba_root/mods/stats/*.json
-
+dist/ba_root/cache/*
+dist/ba_root/*.json
+dist/ba_root/config.json
+dist/*.keys

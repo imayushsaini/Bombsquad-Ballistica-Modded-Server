@@ -277,7 +277,7 @@ def on_player_join(self, player) -> None:
     team_balancer.on_player_join()
     try:
         from shop.shop_system import preload_player
-        account_id = player.get_v1_account_id()
+        account_id = player.get_account_id()
         if account_id:
             preload_player(account_id)
     except Exception as e:
@@ -366,12 +366,12 @@ def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
         player = args[1]
         count = 0
-        if not (player.get_v1_account_id(
+        if not (player.get_account_id(
         ) in serverdata.clients and
-                serverdata.clients[player.get_v1_account_id()]["verified"]):
+                serverdata.clients[player.get_account_id()]["verified"]):
             return False
         for current_player in args[0].sessionplayers:
-            if current_player.get_v1_account_id() == player.get_v1_account_id():
+            if current_player.get_account_id() == player.get_account_id():
                 count += 1
         if count >= settings["maxPlayersPerDevice"]:
             bs.broadcastmessage("Reached max players limit per device",

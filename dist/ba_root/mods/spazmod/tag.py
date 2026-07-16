@@ -10,7 +10,7 @@ sett = setting.get_settings_data()
 
 def addtag(node, player):
     session_player = player.sessionplayer
-    account_id = session_player.get_v1_account_id()
+    account_id = session_player.get_account_id()
     customtag_ = pdata.get_custom()
     customtag = customtag_['customtag']
     roles = pdata.get_roles()
@@ -33,7 +33,7 @@ def addtag(node, player):
 
 def addrank(node, player):
     session_player = player.sessionplayer
-    account_id = session_player.get_v1_account_id()
+    account_id = session_player.get_account_id()
     rank = mystats.getRank(account_id)
 
     if rank:
@@ -48,7 +48,7 @@ def addhp(node, spaz):
                      position=(0, 1.75, 0), shad=1.4)
         else:
             spaz.hptimer = None
-    spaz.hptimer = bs.Timer(2, babase.Call(
+    spaz.hptimer = bs.Timer(2, babase.CallStrict(
         showHP), repeat=True)
 
 
@@ -164,5 +164,4 @@ class HitPoint(object):
             self._Text.delete()
             m.delete()
 
-        self.timer = bs.Timer(2, babase.Call(
-            a))
+        self.timer = bs.Timer(2, babase.CallStrict(a))

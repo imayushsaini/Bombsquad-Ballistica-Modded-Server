@@ -39,7 +39,8 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         # 'First to 4'.
         session = self.session
         assert isinstance(session, bs.MultiTeamSession)
-        if bs.app.lang.get_resource('bestOfUseFirstToInstead'):
+        best_of_use_first_to_instead = 0
+        if best_of_use_first_to_instead:
             best_txt = babase.Lstr(resource='firstToSeriesText',
                                    subs=[('${COUNT}',
                                           str(session.get_series_length() / 2 + 1))

@@ -38,7 +38,7 @@ class checkIdle(object):
                 cLastIdle = current
 
             if afk_time in range(INGAME_TIME, INGAME_TIME + 20):
-                self.warn_player(player.get_v1_account_id(),
+                self.warn_player(player.get_account_id(),
                                  "Press any button within " + str(
                                      INGAME_TIME + 20 - afk_time) + " secs")
             if afk_time > INGAME_TIME + 20:
