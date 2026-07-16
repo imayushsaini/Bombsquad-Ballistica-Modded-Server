@@ -368,7 +368,7 @@ def remove(arguments):
 
 
 def slow_motion():
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
 
     if not activity.globalsnode.slow_motion:
         activity.globalsnode.slow_motion = True
@@ -414,7 +414,7 @@ def tint(arguments):
 
 
 def pause():
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
 
     if not activity.globalsnode.paused:
         activity.globalsnode.paused = True
@@ -424,7 +424,7 @@ def pause():
 
 
 def rotate_camera():
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
 
     if activity.globalsnode.camera_mode != 'rotate':
         activity.globalsnode.camera_mode = 'rotate'
