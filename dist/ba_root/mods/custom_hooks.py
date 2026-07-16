@@ -368,7 +368,7 @@ def on_player_request(func) -> bool:
         count = 0
         if not (player.get_account_id(
         ) in serverdata.clients and
-                serverdata.clients[player.get_account_id()]["verified"]):
+                serverdata.clients[player.get_v1_account_id()]["verified"]):
             return False
         for current_player in args[0].sessionplayers:
             if current_player.get_account_id() == player.get_account_id():

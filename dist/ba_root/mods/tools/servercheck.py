@@ -28,7 +28,9 @@ blacklist = pdata.get_blacklist()
 # Get settings
 settings = setting.get_settings_data()
 
-ipjoin = {}
+# Track IP join statistics for rate limiting/spam protection
+ipjoin: Dict[str, IPJoin] = {}
+
 
 @dataclass
 class PlayerData:
