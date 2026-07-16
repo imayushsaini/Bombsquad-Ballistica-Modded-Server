@@ -37,6 +37,46 @@ def init_db():
     )
     """)
 
+    # Schema migration helper: ensure all required columns are present in case the table existed previously
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(profiles)")
+        existing_cols = {row[1] for row in cur.fetchall()}
+        conn.close()
+    except Exception as e:
+        print(f"Error checking table schema: {e}")
+        existing_cols = set()
+
+    if existing_cols:
+        expected_columns = {
+            "account_id": "TEXT",
+            "display_string": "TEXT",
+            "profiles": "TEXT",
+            "name": "TEXT",
+            "isBan": "INTEGER",
+            "isMuted": "INTEGER",
+            "accountAge": "TEXT",
+            "creationDate": "TEXT",
+            "registerOn": "REAL",
+            "canStartKickVote": "INTEGER",
+            "spamCount": "INTEGER",
+            "lastSpam": "REAL",
+            "totaltimeplayer": "REAL",
+            "warnCount": "INTEGER",
+            "lastWarned": "REAL",
+            "verified": "INTEGER",
+            "rejoincount": "INTEGER",
+            "lastJoin": "REAL",
+            "deviceUUID": "TEXT"
+        }
+        for col_name, col_type in expected_columns.items():
+            if col_name not in existing_cols:
+                try:
+                    run_query(f"ALTER TABLE profiles ADD COLUMN {col_name} {col_type}")
+                except Exception as e:
+                    print(f"Error adding column {col_name} to profiles: {e}")
+
     # Ensure v2Tag and account_id have unique indices for conflict resolution
     run_query("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_v2Tag ON profiles(v2Tag)")
     run_query("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_account_id ON profiles(account_id)")

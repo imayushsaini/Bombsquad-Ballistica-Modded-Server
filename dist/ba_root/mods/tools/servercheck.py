@@ -189,8 +189,9 @@ def on_player_join_server(pbid: str, player_data: Optional[Dict[str, Any]], ip: 
         return
 
     if ip in ipjoin:
-        last_join = ipjoin[ip]["lastJoin"]
-        join_count = ipjoin[ip]["count"]
+        ip_info = ipjoin[ip]
+        last_join = ip_info.last_join
+        join_count = ip_info.count
         if now - last_join < 15:
             join_count += 1
             if join_count > 2:
@@ -206,10 +207,10 @@ def on_player_join_server(pbid: str, player_data: Optional[Dict[str, Any]], ip: 
                 return
         else:
             join_count = 0
-        ipjoin[ip]["count"] = join_count
-        ipjoin[ip]["lastJoin"] = now
+        ip_info.count = join_count
+        ip_info.last_join = now
     else:
-        ipjoin[ip] = {"lastJoin": now, "count": 0}
+        ipjoin[ip] = IPJoin(last_join=now, count=0)
 
     if pbid in serverdata.clients:
         serverdata.clients[pbid]["lastJoin"] = now
@@ -238,12 +239,12 @@ def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, devi
     serverdata.recents = serverdata.recents[-20:]
 
     if check_ban(ip, device_id, pbid):
-        _babase.chatmessage(
+        _bascenev1.chatmessage(
             'sad, your account is flagged contact server owner for unban', clients=[client_id])
         bs.disconnect_client(client_id)
         return
 
-    if get_account_age(player_data["accountAge"]) < settings["minAgeToJoinInHours"]:
+    if get_account_age(player_data["creationDate"]) < settings["minAgeToJoinInHours"]:
         bs.broadcastmessage(
             "New Accounts not allowed here, come back later",
             color=(1, 0, 0),
@@ -287,6 +288,7 @@ def handle_new_player_data(pbid: str, display_string: str, client_id: int) -> No
     """
     Handles the joining process for a player with no existing data.
     """
+
     thread = FetchThread(
         target=my_acc_age,
         callback=save_age,
@@ -378,18 +380,21 @@ def get_account_creation_date(pb_id: str) -> Optional[str]:
     Gets the account creation date for a given player ID.
     """
     if _bascenev1.protocol_version() > 35:
+
         try:
             req = urllib.request.Request(
-                f"https://www.ballistica.net/api/v1/accounts?ids={pb_id}",
+                f"https://www.ballistica.net/api/v1/accounts/{pb_id}",
                 headers={
                     "Authorization": f"Bearer {settings['accountApiToken']}"
                 },
             )
             with urllib.request.urlopen(req) as response:
                 response_json_str = response.read().decode('utf-8')
-                accounts = json.loads(response_json_str)
-                if accounts:
-                    account = dataclass_from_json(AccountResponse, accounts[0])
+                account = json.loads(response_json_str)
+
+                if account:
+                    account = dataclass_from_json(
+                        AccountResponse, response_json_str)
                     return str(account.create_time)
         except (urllib.error.URLError, ValueError) as e:
             logger.log(

@@ -13,6 +13,19 @@
             "avg_score": 0.0,
             "aid": "pb-IF4VAk4a",
             "last_seen": "2022-04-26 17:01:13.715014"
+        },
+        "a-1828": {
+            "rank": 2,
+            "name": "Smoothy",
+            "scores": 0,
+            "total_damage": 0.0,
+            "kills": 0,
+            "deaths": 0,
+            "games": 1,
+            "kd": 0.0,
+            "avg_score": 0.0,
+            "last_seen": "2026-07-15 08:46:34.946691",
+            "aid": "a-1828"
         }
     }
 }
