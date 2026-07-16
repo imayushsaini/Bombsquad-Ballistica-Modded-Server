@@ -7,6 +7,8 @@
 #
 # pylint: disable=unidiomatic-typecheck
 
+from __future__ import annotations
+
 import logging
 from enum import Enum
 import dataclasses

@@ -2,6 +2,8 @@
 #
 """Functionality related to terminal IO."""
 
+from __future__ import annotations
+
 import sys
 import os
 from enum import Enum, unique
