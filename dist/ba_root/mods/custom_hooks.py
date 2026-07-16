@@ -330,7 +330,7 @@ def on_player_join(self, player) -> None:
 
     try:
         from shop.shop_system import preload_player
-        account_id = player.get_account_id()
+        account_id = player.sessionplayer.get_account_id()
         if account_id:
             preload_player(account_id)
     except Exception as e:
@@ -417,11 +417,11 @@ ServerController.shutdown = shutdown(ServerController.shutdown)
 
 def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
-        player = args[1]
+        player: bs.SessionPlayer = args[1]
         count = 0
         if not (player.get_account_id(
         ) in serverdata.clients and
-                serverdata.clients[player.get_v1_account_id()]["verified"]):
+                serverdata.clients[player.get_account_id()]["verified"]):
 
             return False
         for current_player in args[0].sessionplayers:

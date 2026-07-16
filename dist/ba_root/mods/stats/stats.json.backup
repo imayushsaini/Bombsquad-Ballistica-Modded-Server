@@ -26,6 +26,19 @@
             "avg_score": 0.0,
             "last_seen": "2026-07-15 08:46:34.946691",
             "aid": "a-1828"
+        },
+        "pb-IF5cVXEyAA==": {
+            "rank": 3,
+            "name": "Vishyyy",
+            "scores": 93,
+            "total_damage": 0.0,
+            "kills": 0,
+            "deaths": 0,
+            "games": 3,
+            "kd": 0.0,
+            "avg_score": 31.0,
+            "last_seen": "2026-07-16 15:27:54.340453",
+            "aid": "pb-IF5cVXEyAA=="
         }
     }
 }

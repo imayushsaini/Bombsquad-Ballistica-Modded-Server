@@ -216,7 +216,6 @@ def on_player_join_server(pbid: str, player_data: Optional[Dict[str, Any]], ip: 
         serverdata.clients[pbid]["lastJoin"] = now
 
     if player_data is not None:
-        print(player_data)
         handle_existing_player(pbid, player_data, ip,
                                device_id, client_id, display_string)
     else:
