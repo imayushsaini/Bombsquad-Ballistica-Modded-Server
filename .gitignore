@@ -13,3 +13,4 @@ dist/ba_root/cache/*
 dist/ba_root/*.json
 dist/ba_root/config.json
 dist/*.keys
+dist/ba_data/*
