@@ -206,16 +206,26 @@
  "Fleet Zone Ping Last Flush Time": 1784128904,
  "Fleet Zone Pings": {
   "prod": {
-   "bangkok.v4": 79.76979999511968,
-   "delhi.v4": 52.73921035118477,
-   "hyderabad.v4": 27.893118701544765,
-   "kolkata.v4": 52.23812143063419,
-   "mumbai.v4": 105.13554275932287,
-   "singapore.v4": 47.26909899909515
+   "bangkok.v4": 81.62017577624344,
+   "delhi.v4": 63.964672644626035,
+   "helsinki.v4": 178.44603499997902,
+   "hong_kong.v4": 84.84311700021863,
+   "hyderabad.v4": 169.17364551628094,
+   "jakarta.v4": 120.16353614961386,
+   "kolkata.v4": 171.5810691091089,
+   "kuala_lampur.v4": 97.94705339403097,
+   "manila.v4": 85.0717169996642,
+   "mumbai.v4": 53.889843160696806,
+   "seoul.v4": 113.3862230003615,
+   "singapore.v4": 89.7048506555974,
+   "taipei.v4": 91.55671799999254,
+   "tel_aviv.v4": 227.04064399977142,
+   "tokyo.v4": 119.68682299993816,
+   "warsaw.v4": 190.9533369998826
   }
  },
  "Fleet Zone Pings Updated Time": {
-  "prod": 1784199269
+  "prod": 1784222852
  },
  "Free-for-All Playlist Randomize": true,
  "Free-for-All Playlist Selection": "__default__",
@@ -285,7 +295,7 @@
  "Team Tournament Playlist Selection": "\u041a\u043e\u043f\u0438\u044f \u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u043f\u043b\u0435\u0439-\u043b\u0438\u0441\u0442 \u0440\u0435\u0436\u0438\u043c\u0430 \u041a\u043e\u043c\u0430\u043d\u0434\u044b",
  "Team Tournament Playlists": {},
  "Teams Series Length": 7,
- "launchCount": 153,
+ "launchCount": 155,
  "lc14173": 1,
  "lc14292": 1
 }

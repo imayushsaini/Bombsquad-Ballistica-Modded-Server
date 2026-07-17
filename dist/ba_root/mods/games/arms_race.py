@@ -1,10 +1,4 @@
-# Ported by your friend: Freaku
-
-# Join BCS:
-# https://discord.gg/ucyaesh
-
-
-# ba_meta require api 8
+# ba_meta require api 9
 
 from __future__ import annotations
 
@@ -37,7 +31,7 @@ class State:
                                         enable_bomb=self.bomb,
                                         enable_pickup=self.grab)
         if self.curse:
-            spaz.curse_time = -1
+            spaz.curse_time = None
             spaz.curse()
         if self.bomb:
             spaz.bomb_type = self.bomb
@@ -82,7 +76,7 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[bs.Setting]:
         settings = [
             bs.IntChoiceSetting(
                 'Time Limit',
@@ -149,11 +143,10 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self.setup_standard_time_limit(self._time_limit)
-        # self.setup_standard_powerup_drops()
 
     def on_player_join(self, player):
         if player.state is None:
-            player.state = self.states[0]
+            player.state = self.states[5]
         self.spawn_player(player)
 
     # overriding the default character spawning..

@@ -33,11 +33,11 @@
             "scores": 93,
             "total_damage": 0.0,
             "kills": 0,
-            "deaths": 0,
-            "games": 3,
+            "deaths": 1,
+            "games": 4,
             "kd": 0.0,
-            "avg_score": 31.0,
-            "last_seen": "2026-07-16 15:27:54.340453",
+            "avg_score": 23.25,
+            "last_seen": "2026-07-16 16:21:28.671836",
             "aid": "pb-IF5cVXEyAA=="
         }
     }

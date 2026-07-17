@@ -2,12 +2,13 @@
 #
 """Elimination mini-game."""
 
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+import logging
 
 import babase
 import bascenev1 as bs
@@ -184,7 +185,7 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]) -> List[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -448,7 +449,7 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
 
             player.lives -= 1
             if player.lives < 0:
-                babase.print_error(
+                logging.error(
                     "Got lives < 0 in Alliance Elimination; this shouldn't happen.")
                 player.lives = 0
 
@@ -472,6 +473,7 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             # Put ourself at the back of the spawn order.
             player.team.spawn_order.remove(player)
             player.team.spawn_order.append(player)
+            player.node.delete()
 
     def _update(self) -> None:
         # For both teams, find the first player on the spawn order
