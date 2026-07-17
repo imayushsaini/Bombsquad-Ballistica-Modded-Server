@@ -1,515 +1,419 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Elimination mini-game."""
-
-# ba_meta require api 9
-# (see https://ballistica.net/wiki/meta-tag-system)
+"""Functionality related to the end screen in dual-team mode."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-import logging
 
 import babase
 import bascenev1 as bs
-from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.spazfactory import SpazFactory
+from bascenev1lib.activity.multiteamscore import MultiTeamScoreScreenActivity
+from bascenev1lib.actor.image import Image
+from bascenev1lib.actor.text import Text
+from bascenev1lib.actor.zoomtext import ZoomText
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Type, List, Sequence, Optional,
-                        Union)
+    pass
 
 
-class Icon(bs.Actor):
-    """Creates in in-game icon on screen."""
-
-    def __init__(self,
-                 player: Player,
-                 position: Tuple[float, float],
-                 scale: float,
-                 show_lives: bool = True,
-                 show_death: bool = True,
-                 name_scale: float = 1.0,
-                 name_maxwidth: float = 115.0,
-                 flatness: float = 1.0,
-                 shadow: float = 1.0):
-        super().__init__()
-
-        self._player = player
-        self._show_lives = show_lives
-        self._show_death = show_death
-        self._name_scale = name_scale
-        self._outline_tex = bs.gettexture('characterIconMask')
-
-        icon = player.get_icon()
-        self.node = bs.newnode('image',
-                               delegate=self,
-                               attrs={
-                                   'texture': icon['texture'],
-                                   'tint_texture': icon['tint_texture'],
-                                   'tint_color': icon['tint_color'],
-                                   'vr_depth': 400,
-                                   'tint2_color': icon['tint2_color'],
-                                   'mask_texture': self._outline_tex,
-                                   'opacity': 1.0,
-                                   'absolute_scale': True,
-                                   'attach': 'bottomCenter'
-                               })
-        self._name_text = bs.newnode(
-            'text',
-            owner=self.node,
-            attrs={
-                'text': babase.Lstr(value=player.getname()),
-                'color': babase.safecolor(player.team.color),
-                'h_align': 'center',
-                'v_align': 'center',
-                'vr_depth': 410,
-                'maxwidth': name_maxwidth,
-                'shadow': shadow,
-                'flatness': flatness,
-                'h_attach': 'center',
-                'v_attach': 'bottom'
-            })
-        if self._show_lives:
-            self._lives_text = bs.newnode('text',
-                                          owner=self.node,
-                                          attrs={
-                                              'text': 'x0',
-                                              'color': (1, 1, 0.5),
-                                              'h_align': 'left',
-                                              'vr_depth': 430,
-                                              'shadow': 1.0,
-                                              'flatness': 1.0,
-                                              'h_attach': 'center',
-                                              'v_attach': 'bottom'
-                                          })
-        self.set_position_and_scale(position, scale)
-
-    def set_position_and_scale(self, position: Tuple[float, float],
-                               scale: float) -> None:
-        """(Re)position the icon."""
-        assert self.node
-        self.node.position = position
-        self.node.scale = [70.0 * scale]
-        self._name_text.position = (position[0], position[1] + scale * 52.0)
-        self._name_text.scale = 1.0 * scale * self._name_scale
-        if self._show_lives:
-            self._lives_text.position = (position[0] + scale * 10.0,
-                                         position[1] - scale * 43.0)
-            self._lives_text.scale = 1.0 * scale
-
-    def update_for_lives(self) -> None:
-        """Update for the target player's current lives."""
-        if self._player:
-            lives = self._player.lives
-        else:
-            lives = 0
-        if self._show_lives:
-            if lives > 0:
-                self._lives_text.text = 'x' + str(lives - 1)
-            else:
-                self._lives_text.text = ''
-        if lives == 0:
-            self._name_text.opacity = 0.2
-            assert self.node
-            self.node.color = (0.7, 0.3, 0.3)
-            self.node.opacity = 0.2
-
-    def handle_player_spawned(self) -> None:
-        """Our player spawned; hooray!"""
-        if not self.node:
-            return
-        self.node.opacity = 1.0
-        self.update_for_lives()
-
-    def handle_player_died(self) -> None:
-        """Well poo; our player died."""
-        if not self.node:
-            return
-        if self._show_death:
-            bs.animate(
-                self.node, 'opacity', {
-                    0.00: 1.0,
-                    0.05: 0.0,
-                    0.10: 1.0,
-                    0.15: 0.0,
-                    0.20: 1.0,
-                    0.25: 0.0,
-                    0.30: 1.0,
-                    0.35: 0.0,
-                    0.40: 1.0,
-                    0.45: 0.0,
-                    0.50: 1.0,
-                    0.55: 0.2
-                })
-            lives = self._player.lives
-            if lives == 0:
-                bs.timer(0.6, self.update_for_lives)
-
-    def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, bs.DieMessage):
-            self.node.delete()
-            return None
-        return super().handlemessage(msg)
-
-
-class Player(bs.Player['Team']):
-    """Our player type for this game."""
-
-    def __init__(self) -> None:
-        self.lives = 0
-        self.icons: List[Icon] = []
-
-
-class Team(bs.Team[Player]):
-    """Our team type for this game."""
-
-    def __init__(self) -> None:
-        self.survival_seconds: Optional[int] = None
-        self.spawn_order: List[Player] = []
-
-
-# ba_meta export bascenev1.GameActivity
-class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
-    """Game type where last player(s) left alive win."""
-
-    name = 'Alliance Elimination'
-    description = 'Fight in groups of duo, trio, or more.\nLast remaining alive wins.'
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.SECONDS,
-                                 none_is_winner=True)
-    # Show messages when players die since it's meaningful here.
-    announce_player_deaths = True
-
-    allow_mid_activity_joins = False
-
-    @classmethod
-    def get_available_settings(
-        cls, sessiontype: Type[bs.Session]) -> List[bs.Setting]:
-        settings = [
-            bs.IntSetting(
-                'Lives Per Player',
-                default=1,
-                min_value=1,
-                max_value=10,
-                increment=1,
-            ),
-            bs.IntSetting(
-                'Players Per Team In Arena',
-                default=2,
-                min_value=2,
-                max_value=10,
-                increment=1,
-            ),
-            bs.IntChoiceSetting(
-                'Time Limit',
-                choices=[
-                    ('None', 0),
-                    ('1 Minute', 60),
-                    ('2 Minutes', 120),
-                    ('5 Minutes', 300),
-                    ('10 Minutes', 600),
-                    ('20 Minutes', 1200),
-                ],
-                default=0,
-            ),
-            bs.FloatChoiceSetting(
-                'Respawn Times',
-                choices=[
-                    ('Shorter', 0.25),
-                    ('Short', 0.5),
-                    ('Normal', 1.0),
-                    ('Long', 2.0),
-                    ('Longer', 4.0),
-                ],
-                default=1.0,
-            ),
-            bs.BoolSetting('Epic Mode', default=False),
-        ]
-        if issubclass(sessiontype, bs.DualTeamSession):
-            settings.append(
-                bs.BoolSetting('Balance Total Lives', default=False))
-        return settings
-
-    @classmethod
-    def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return issubclass(sessiontype, bs.DualTeamSession)
-
-    @classmethod
-    def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
-        return bs.app.classic.getmaps('melee')
+class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
+    """Scorescreen between rounds of a dual-team session."""
 
     def __init__(self, settings: dict):
-        super().__init__(settings)
-        self._scoreboard = Scoreboard()
-        self._start_time: Optional[float] = None
-        self._vs_text: Optional[bs.Actor] = None
-        self._round_end_timer: Optional[bs.Timer] = None
-        self._epic_mode = bool(settings['Epic Mode'])
-        self._lives_per_player = int(settings['Lives Per Player'])
-        self._time_limit = float(settings['Time Limit'])
-        self._balance_total_lives = bool(
-            settings.get('Balance Total Lives', False))
-        self._players_per_team_in_arena = int(
-            settings['Players Per Team In Arena'])
-
-        # Base class overrides:
-        self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
-
-    def get_instance_description(self) -> Union[str, Sequence]:
-        return 'Last team standing wins.' if isinstance(
-            self.session, bs.DualTeamSession) else 'Last one standing wins.'
-
-    def get_instance_description_short(self) -> Union[str, Sequence]:
-        return 'last team standing wins' if isinstance(
-            self.session, bs.DualTeamSession) else 'last one standing wins'
-
-    def on_player_join(self, player: Player) -> None:
-
-        # No longer allowing mid-game joiners here; too easy to exploit.
-        if self.has_begun():
-
-            # Make sure their team has survival seconds set if they're all dead
-            # (otherwise blocked new ffa players are considered 'still alive'
-            # in score tallying).
-            if (self._get_total_team_lives(player.team) == 0
-                and player.team.survival_seconds is None):
-                player.team.survival_seconds = 0
-            bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0),
-            )
-            return
-
-        player.lives = self._lives_per_player
-
-        player.team.spawn_order.append(player)
-        self._update_alliance_mode()
-
-        # Don't waste time doing this until begin.
-        if self.has_begun():
-            self._update_icons()
+        super().__init__(settings=settings)
+        self._winner: bs.SessionTeam = settings['winner']
+        assert isinstance(self._winner, bs.SessionTeam)
 
     def on_begin(self) -> None:
+        babase.set_analytics_screen('Teams Score Screen')
         super().on_begin()
-        self._start_time = bs.time()
-        self.setup_standard_time_limit(self._time_limit)
-        self.setup_standard_powerup_drops()
-        self._vs_text = bs.NodeActor(
-            bs.newnode('text',
-                       attrs={
-                           'position': (0, 92),
-                           'h_attach': 'center',
-                           'h_align': 'center',
-                           'maxwidth': 200,
-                           'shadow': 0.5,
-                           'vr_depth': 390,
-                           'scale': 0.6,
-                           'v_attach': 'bottom',
-                           'color': (0.8, 0.8, 0.3, 1.0),
-                           'text': babase.Lstr(resource='vsText')
-                       }))
 
-        # If balance-team-lives is on, add lives to the smaller team until
-        # total lives match.
-        if (isinstance(self.session, bs.DualTeamSession)
-            and self._balance_total_lives and self.teams[0].players
-            and self.teams[1].players):
-            if self._get_total_team_lives(
-                self.teams[0]) < self._get_total_team_lives(self.teams[1]):
-                lesser_team = self.teams[0]
-                greater_team = self.teams[1]
-            else:
-                lesser_team = self.teams[1]
-                greater_team = self.teams[0]
-            add_index = 0
-            while (self._get_total_team_lives(lesser_team) <
-                   self._get_total_team_lives(greater_team)):
-                lesser_team.players[add_index].lives += 1
-                add_index = (add_index + 1) % len(lesser_team.players)
+        height = 130
+        active_team_count = len(self.teams)
+        vval = (height * active_team_count) / 2 - height / 2
+        i = 0
+        shift_time = 2.5
 
-        self._update_icons()
+        # Usually we say 'Best of 7', but if the language prefers we can say
+        # 'First to 4'.
+        session = self.session
+        assert isinstance(session, bs.MultiTeamSession)
+        best_of_use_first_to_instead = 0
+        if best_of_use_first_to_instead:
+            best_txt = babase.Lstr(resource='firstToSeriesText',
+                                   subs=[('${COUNT}',
+                                          str(session.get_series_length() / 2 + 1))
+                                         ])
+        else:
+            best_txt = babase.Lstr(resource='bestOfSeriesText',
+                                   subs=[('${COUNT}',
+                                          str(session.get_series_length()))])
+        if len(self.teams) != 2:
+            ZoomText(best_txt,
+                     position=(0, 175),
+                     shiftposition=(-250, 175),
+                     shiftdelay=2.5,
+                     flash=False,
+                     trail=False,
+                     h_align='center',
+                     scale=0.25,
+                     color=(0.5, 0.5, 0.5, 1.0),
+                     jitter=3.0).autoretain()
+        for team in self.session.sessionteams:
+            bs.timer(
+                i * 0.15 + 0.15,
+                bs.WeakCallPartial(self._show_team_name, vval - i * height, team,
+                            i * 0.2, shift_time - (i * 0.150 + 0.150)))
+            bs.timer(i * 0.150 + 0.5, self._score_display_sound_small.play)
+            scored = (team is self._winner)
+            delay = 0.2
+            if scored:
+                delay = 1.2
+                bs.timer(
+                    i * 0.150 + 0.2,
+                    bs.WeakCallPartial(self._show_team_old_score, vval - i * height,
+                                team, shift_time - (i * 0.15 + 0.2)))
+                bs.timer(i * 0.15 + 1.5, self._score_display_sound.play)
 
-        # We could check game-over conditions at explicit trigger points,
-        # but lets just do the simple thing and poll it.
-        bs.timer(1.0, self._update, repeat=True)
+            bs.timer(
+                i * 0.150 + delay,
+                bs.WeakCallPartial(self._show_team_score, vval - i * height, team,
+                            scored, i * 0.2 + 0.1,
+                            shift_time - (i * 0.15 + delay)))
+            i += 1
+        self.show_player_scores()
 
-    def _update_alliance_mode(self) -> None:
-        # For both teams, find the first player on the spawn order list with
-        # lives remaining and spawn them if they're not alive.
-        for team in self.teams:
-            # Prune dead players from the spawn order.
-            players_spawned = 0
-            team.spawn_order = [p for p in team.spawn_order if p]
-            for player in team.spawn_order:
-                assert isinstance(player, Player)
-                if player.lives > 0:
-                    if not player.is_alive():
-                        self.spawn_player(player)
-                        self._update_icons()
-                    players_spawned += 1
-                    if players_spawned >= self._players_per_team_in_arena:
-                        break
+    def _show_team_name(self, pos_v: float, team: bs.SessionTeam,
+                        kill_delay: float, shiftdelay: float) -> None:
+        del kill_delay  # Unused arg.
+        if len(self.teams) != 2:
+            ZoomText(
+                babase.Lstr(value='${A}:', subs=[('${A}', team.name)]),
+                position=(100, pos_v),
+                shiftposition=(-150, pos_v),
+                shiftdelay=shiftdelay,
+                flash=False,
+                trail=False,
+                h_align='right',
+                maxwidth=300,
+                color=team.color,
+                jitter=1.0,
+            ).autoretain()
+        else:
+            ZoomText(babase.Lstr(value='${A}', subs=[('${A}', team.name)]),
+                     position=(-250, 260) if pos_v == 65 else (250, 260),
+                     shiftposition=(-250, 260) if pos_v == 65 else (250, 260),
+                     shiftdelay=shiftdelay,
+                     flash=False,
+                     trail=False,
+                     h_align='center',
+                     maxwidth=300,
+                     scale=0.45,
+                     color=team.color,
+                     jitter=1.0).autoretain()
 
-    def _update_icons(self) -> None:
-        # pylint: disable=too-many-branches
-        # First off, clear out all icons.
-        for player in self.players:
-            player.icons = []
+    def _show_team_old_score(self, pos_v: float, sessionteam: bs.SessionTeam,
+                             shiftdelay: float) -> None:
 
-        # Now for each team, cycle through our available players
-        # adding icons.
-        for team in self.teams:
-            if team.id == 0:
-                xval = -60
-                x_offs = -78
-            else:
-                xval = 60
-                x_offs = 78
-            nplayers = self._players_per_team_in_arena
-            test_lives = 1
-            while True:
-                players_with_lives = [
-                    p for p in team.spawn_order
-                    if p and p.lives >= test_lives
-                ]
-                if not players_with_lives:
-                    break
-                for player in players_with_lives:
-                    player.icons.append(
-                        Icon(player,
-                             position=(xval, (36 if nplayers > 0 else 25)),
-                             scale=0.9 if nplayers > 0 else 0.5,
-                             name_maxwidth=85 if nplayers > 0 else 75,
-                             name_scale=0.8 if nplayers > 0 else 1.0,
-                             flatness=0.0 if nplayers > 0 else 1.0,
-                             shadow=0.5 if nplayers > 0 else 1.0,
-                             show_death=True if nplayers > 0 else False,
-                             show_lives=False))
-                    xval += x_offs * (0.85 if nplayers > 0 else 0.56)
-                    nplayers -= 1
-                test_lives += 1
+        if len(self.teams) != 2:
+            ZoomText(
+                str(sessionteam.customdata['score'] - 1),
+                position=(150, pos_v),
+                maxwidth=100,
+                color=(0.6, 0.6, 0.7),
+                shiftposition=(-100, pos_v),
+                shiftdelay=shiftdelay,
+                flash=False,
+                trail=False,
+                lifespan=1.0,
+                h_align='left',
+                jitter=1.0,
+            ).autoretain()
+        else:
+            ZoomText(str(sessionteam.customdata['score'] - 1),
+                     position=(-250, 190) if pos_v == 65 else (250, 190),
+                     maxwidth=100,
+                     color=(0.6, 0.6, 0.7),
+                     shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
+                     shiftdelay=shiftdelay,
+                     flash=False,
+                     trail=False,
+                     lifespan=1.0,
+                     scale=0.56,
+                     h_align='center',
+                     jitter=1.0).autoretain()
 
-    def _get_spawn_point(self, player: Player) -> Optional[babase.Vec3]:
-        return None
+    def _show_team_score(self, pos_v: float, sessionteam: bs.SessionTeam,
+                         scored: bool, kill_delay: float,
+                         shiftdelay: float) -> None:
+        del kill_delay  # Unused arg.
+        if len(self.teams) != 2:
+            ZoomText(
+                str(sessionteam.customdata['score']),
+                position=(150, pos_v),
+                maxwidth=100,
+                color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
+                shiftposition=(-100, pos_v),
+                shiftdelay=shiftdelay,
+                flash=scored,
+                trail=scored,
+                h_align='left',
+                jitter=1.0,
+                trailcolor=(1, 0.8, 0.0, 0),
+            ).autoretain()
+        else:
+            ZoomText(str(sessionteam.customdata['score']),
+                     position=(-250, 190) if pos_v == 65 else (250, 190),
+                     maxwidth=100,
+                     color=(1.0, 0.9, 0.5) if scored else (0.6, 0.6, 0.7),
+                     shiftposition=(-250, 190) if pos_v == 65 else (250, 190),
+                     shiftdelay=shiftdelay,
+                     flash=scored,
+                     trail=scored,
+                     scale=0.56,
+                     h_align='center',
+                     jitter=1.0,
+                     trailcolor=(1, 0.8, 0.0, 0)).autoretain()
 
-    def spawn_player(self, player: Player) -> bs.Actor:
-        actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
 
-        # If we have any icons, update their state.
-        for icon in player.icons:
-            icon.handle_player_spawned()
-        return actor
+# ===================================================================================================
 
-    def _print_lives(self, player: Player) -> None:
-        from bascenev1lib.actor import popuptext
+#                                 score board
+# ====================================================================================================
 
-        # We get called in a timer so it's possible our player has left/etc.
-        if not player or not player.is_alive() or not player.node:
-            return
+def show_player_scores(self,
+                       delay: float = 2.5,
+                       results: bs.GameResults | None = None,
+                       scale: float = 1.0,
+                       x_offset: float = 0.0,
+                       y_offset: float = 0.0) -> None:
+    """Show scores for individual players."""
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
 
-        popuptext.PopupText('x' + str(player.lives - 1),
-                            color=(1, 1, 0, 1),
-                            offset=(0, -0.8, 0),
-                            random_offset=0.0,
-                            scale=1.8,
-                            position=player.node.position).autoretain()
+    ts_v_offset = 150.0 + y_offset
+    ts_h_offs = 80.0 + x_offset
+    tdelay = delay
+    spacing = 40
 
-    def on_player_leave(self, player: Player) -> None:
-        super().on_player_leave(player)
-        player.icons = []
+    is_free_for_all = isinstance(self.session, bs.FreeForAllSession)
 
-        # Remove us from spawn-order.
-        if player in player.team.spawn_order:
-            player.team.spawn_order.remove(player)
+    is_two_team = True if len(self.session.sessionteams) == 2 else False
 
-        # Update icons in a moment since our team will be gone from the
-        # list then.
-        bs.timer(0, self._update_icons)
+    def _get_prec_score(p_rec: bs.PlayerRecord) -> int | None:
+        if is_free_for_all and results is not None:
+            assert isinstance(results, bs.GameResults)
+            assert p_rec.team.activityteam is not None
+            val = results.get_sessionteam_score(p_rec.team)
+            return val
+        return p_rec.accumscore
 
-        # If the player to leave was the last in spawn order and had
-        # their final turn currently in-progress, mark the survival time
-        # for their team.
-        if self._get_total_team_lives(player.team) == 0:
-            assert self._start_time is not None
-            player.team.survival_seconds = int(bs.time() - self._start_time)
+    def _get_prec_score_str(p_rec: bs.PlayerRecord) -> str | bs.Lstr:
+        if is_free_for_all and results is not None:
+            assert isinstance(results, bs.GameResults)
+            assert p_rec.team.activityteam is not None
+            val = results.get_sessionteam_score_str(p_rec.team)
+            assert val is not None
+            return val
+        return str(p_rec.accumscore)
 
-    def _get_total_team_lives(self, team: Team) -> int:
-        return sum(player.lives for player in team.players)
+    # stats.get_records() can return players that are no longer in
+    # the game.. if we're using results we have to filter those out
+    # (since they're not in results and that's where we pull their
+    # scores from)
+    if results is not None:
+        assert isinstance(results, bs.GameResults)
+        player_records = []
+        assert self.stats
+        valid_players = list(self.stats.get_records().items())
 
-    def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, bs.PlayerDiedMessage):
+        def _get_player_score_set_entry(
+            player: bs.SessionPlayer) -> bs.PlayerRecord | None:
+            for p_rec in valid_players:
+                if p_rec[1].player is player:
+                    return p_rec[1]
+            return None
 
-            # Augment standard behavior.
-            super().handlemessage(msg)
-            player: Player = msg.getplayer(Player)
-
-            player.lives -= 1
-            if player.lives < 0:
-                logging.error(
-                    "Got lives < 0 in Alliance Elimination; this shouldn't happen.")
-                player.lives = 0
-
-            # If we have any icons, update their state.
-            for icon in player.icons:
-                icon.handle_player_died()
-
-            # Play big death sound on our last death
-            # or for every one.
-            if player.lives == 0:
-                SpazFactory.get().single_player_death_sound.play()
-
-            # If we hit zero lives, we're dead (and our team might be too).
-            if player.lives == 0:
-                # If the whole team is now dead, mark their survival time.
-                if self._get_total_team_lives(player.team) == 0:
-                    assert self._start_time is not None
-                    player.team.survival_seconds = int(bs.time() -
-                                                       self._start_time)
-
-            # Put ourself at the back of the spawn order.
-            player.team.spawn_order.remove(player)
-            player.team.spawn_order.append(player)
-            player.node.delete()
-
-    def _update(self) -> None:
-        # For both teams, find the first player on the spawn order
-        # list with lives remaining and spawn them if they're not alive.
-        for team in self.teams:
-            # Prune dead players from the spawn order.
-            team.spawn_order = [p for p in team.spawn_order if p]
-            players_spawned = 0
-            for player in team.spawn_order:
-                assert isinstance(player, Player)
-                if player.lives > 0:
-                    if not player.is_alive():
-                        self.spawn_player(player)
-                        self._update_icons()
-                    players_spawned += 1
-                    if players_spawned >= self._players_per_team_in_arena:
-                        break
-
-        # If we're down to 1 or fewer living teams, start a timer to end
-        # the game (allows the dust to settle and draws to occur if deaths
-        # are close enough).
-        if len(self._get_living_teams()) < 2:
-            self._round_end_timer = bs.Timer(0.5, self.end_game)
-
-    def _get_living_teams(self) -> List[Team]:
-        return [
-            team for team in self.teams
-            if len(team.players) > 0 and any(player.lives > 0
-                                             for player in team.players)
+        # Results is already sorted; just convert it into a list of
+        # score-set-entries.
+        for winnergroup in results.winnergroups:
+            for team in winnergroup.teams:
+                if len(team.players) == 1:
+                    player_entry = _get_player_score_set_entry(
+                        team.players[0])
+                    if player_entry is not None:
+                        player_records.append(player_entry)
+    else:
+        player_records = []
+        player_records_scores = [
+            (_get_prec_score(p), name, p)
+            for name, p in list(self.stats.get_records().items())
         ]
+        player_records_scores.sort(reverse=True)
 
-    def end_game(self) -> None:
-        if self.has_ended():
-            return
-        results = bs.GameResults()
-        self._vs_text = None  # Kill our 'vs' if its there.
-        for team in self.teams:
-            results.set_team_score(team, team.survival_seconds)
-        self.end(results=results)
+        # Just want living player entries.
+        player_records = [p[2] for p in player_records_scores if p[2]]
+
+    voffs = -140.0 + spacing * 5 * 0.5
+
+    voffs_team0 = voffs
+    tdelay_team0 = tdelay
+
+    def _txt(xoffs: float,
+             yoffs: float,
+             text: babase.Lstr,
+             h_align: Text.HAlign = Text.HAlign.RIGHT,
+             extrascale: float = 1.0,
+             maxwidth: float | None = 120.0) -> None:
+        Text(text,
+             color=(0.5, 0.5, 0.6, 0.5),
+             position=(ts_h_offs + xoffs * scale,
+                       ts_v_offset + (voffs + yoffs + 4.0) * scale),
+             h_align=h_align,
+             v_align=Text.VAlign.CENTER,
+             scale=0.8 * scale * extrascale,
+             maxwidth=maxwidth,
+             transition=Text.Transition.IN_LEFT,
+             transition_delay=tdelay).autoretain()
+
+    session = self.session
+    assert isinstance(session, bs.MultiTeamSession)
+    if is_two_team:
+        tval = "Game " + str(session.get_game_number()) + " Results"
+        _txt(-75,
+             160,
+             tval,
+             h_align=Text.HAlign.CENTER,
+             extrascale=1.4,
+             maxwidth=None)
+    else:
+        tval = babase.Lstr(
+            resource='gameLeadersText',
+            subs=[('${COUNT}', str(session.get_game_number()))],
+        )
+        _txt(
+            180,
+            43,
+            tval,
+            h_align=Text.HAlign.CENTER,
+            extrascale=1.4,
+            maxwidth=None,
+        )
+    _txt(-15, 4, babase.Lstr(resource='playerText'), h_align=Text.HAlign.LEFT)
+    _txt(180, 4, babase.Lstr(resource='killsText'))
+    _txt(280, 4, babase.Lstr(resource='deathsText'), maxwidth=100)
+
+    score_label = 'Score' if results is None else results.score_label
+    translated = babase.Lstr(translate=('scoreNames', score_label))
+
+    _txt(390, 0, translated)
+
+    if is_two_team:
+        _txt(-595, 4, babase.Lstr(resource='playerText'),
+             h_align=Text.HAlign.LEFT)
+        _txt(-400, 4, babase.Lstr(resource='killsText'))
+        _txt(-300, 4, babase.Lstr(resource='deathsText'), maxwidth=100)
+        _txt(-190, 0, translated)
+
+    topkillcount = 0
+    topkilledcount = 99999
+    top_score = 0 if not player_records else _get_prec_score(
+        player_records[0])
+
+    for prec in player_records:
+        topkillcount = max(topkillcount, prec.accum_kill_count)
+        topkilledcount = min(topkilledcount, prec.accum_killed_count)
+
+    def _scoretxt(text: str | bs.Lstr,
+                  x_offs: float,
+                  highlight: bool,
+                  delay2: float,
+                  maxwidth: float = 70.0, team_id=1) -> None:
+
+        Text(text,
+             position=(ts_h_offs + x_offs * scale,
+                       ts_v_offset + (
+                               voffs + 15) * scale) if team_id == 1 else (
+             ts_h_offs + x_offs * scale,
+             ts_v_offset + (voffs_team0 + 15) * scale),
+             scale=scale,
+             color=(1.0, 0.9, 0.5, 1.0) if highlight else
+             (0.5, 0.5, 0.6, 0.5),
+             h_align=Text.HAlign.RIGHT,
+             v_align=Text.VAlign.CENTER,
+             maxwidth=maxwidth,
+             transition=Text.Transition.IN_LEFT,
+             transition_delay=(tdelay + delay2) if team_id == 1 else (
+                     tdelay_team0 + delay2)).autoretain()
+
+    for playerrec in player_records:
+        if is_two_team and playerrec.team.id == 0:
+            tdelay_team0 += 0.05
+            voffs_team0 -= spacing
+            x_image = 617
+            x_text = -595
+            y = ts_v_offset + (voffs_team0 + 15.0) * scale
+
+        else:
+            tdelay += 0.05
+            voffs -= spacing
+            x_image = 12
+            x_text = 10.0
+            y = ts_v_offset + (voffs + 15.0) * scale
+
+        Image(playerrec.get_icon(),
+              position=(ts_h_offs - x_image * scale,
+                        y),
+              scale=(30.0 * scale, 30.0 * scale),
+              transition=Image.Transition.IN_LEFT,
+              transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
+        Text(babase.Lstr(value=playerrec.getname(full=True)),
+             maxwidth=160,
+             scale=0.75 * scale,
+             position=(ts_h_offs + x_text * scale,
+                       y),
+             h_align=Text.HAlign.LEFT,
+             v_align=Text.VAlign.CENTER,
+             color=babase.safecolor(playerrec.team.color + (1,)),
+             transition=Text.Transition.IN_LEFT,
+             transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
+
+        if is_two_team and playerrec.team.id == 0:
+            _scoretxt(str(playerrec.accum_kill_count), -400,
+                      playerrec.accum_kill_count == topkillcount, 0.1,
+                      team_id=0)
+            _scoretxt(str(playerrec.accum_killed_count), -300,
+                      playerrec.accum_killed_count == topkilledcount, 0.1,
+                      team_id=0)
+            _scoretxt(_get_prec_score_str(playerrec), -190,
+                      _get_prec_score(playerrec) == top_score, 0.2, team_id=0)
+        else:
+            _scoretxt(str(playerrec.accum_kill_count), 180,
+                      playerrec.accum_kill_count == topkillcount, 0.1)
+            _scoretxt(str(playerrec.accum_killed_count), 280,
+                      playerrec.accum_killed_count == topkilledcount, 0.1)
+            _scoretxt(_get_prec_score_str(playerrec), 390,
+                      _get_prec_score(playerrec) == top_score, 0.2)
+
+
+# ======================== draw screen =============
+class DrawScoreScreenActivity(MultiTeamScoreScreenActivity):
+    """Score screen shown after a draw."""
+
+    default_music = None  # Awkward silence...
+
+    def on_begin(self) -> None:
+        babase.set_analytics_screen('Draw Score Screen')
+        super().on_begin()
+        ZoomText(babase.Lstr(resource='drawText'),
+                 position=(0, 200),
+                 maxwidth=400,
+                 shiftposition=(0, 200),
+                 shiftdelay=2.0,
+                 flash=False,
+                 scale=0.7,
+                 trail=False,
+                 jitter=1.0).autoretain()
+        bs.timer(0.35, self._score_display_sound.play)
+        self.show_player_scores(results=self.settings_raw.get('results', None))
