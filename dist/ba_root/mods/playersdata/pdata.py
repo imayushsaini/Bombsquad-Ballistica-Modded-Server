@@ -203,42 +203,6 @@ def add_profile(
         "lastSpam": time.time(),
         "totaltimeplayer": 0,
     }
-
-    serverdata.clients[account_id] = profiles[account_id]
-    serverdata.clients[account_id].update({
-        "warnCount": 0,
-        "lastWarned": time.time(),
-        "verified": False,
-        "rejoincount": 1,
-        "lastJoin": time.time()
-    })
-
-    cid = -1
-    for ros in bs.get_game_roster():
-        if ros.get('account_id') == account_id:
-            cid = ros.get('client_id', -1)
-            break
-
-    if cid != -1:
-        ip = _bascenev1.get_client_ip(cid)
-        serverdata.clients[account_id]["lastIP"] = ip
-        device_id = _bascenev1.get_client_public_device_uuid(
-            cid) or _bascenev1.get_client_device_uuid(cid)
-        serverdata.clients[account_id]["deviceUUID"] = device_id
-
-        serverdata.recents.append(
-            {"client_id": cid, "deviceId": display_string,
-                "pbid": account_id, "ip": ip, "device_uuid": device_id}
-        )
-        serverdata.recents = serverdata.recents[-20:]
-
-        checkSpammer({'id': account_id, 'display': display_string,
-                     'ip': ip, 'device': device_id})
-
-        blacklist = get_blacklist()
-        if device_id in blacklist["ban"]["deviceids"] or account_id in blacklist["ban"]["ids"]:
-            bs.disconnect_client(cid)
-
     CacheData.profiles = profiles
 
 

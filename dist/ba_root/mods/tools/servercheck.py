@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 from __future__ import annotations
-from bacommon.restapi.v1.accounts import AccountResponse
+
 import _thread
 import json
 import threading
@@ -8,13 +8,17 @@ import time
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
 from efro.dataclassio import dataclass_from_json
+from bacommon.restapi.v1.accounts import AccountResponse
+
 import _babase
 import _bascenev1
 import babase
 import bascenev1 as bs
 from babase._general import Call
+
 from features import profanity
 from playersdata import pdata
 from repository import profiles
@@ -55,7 +59,7 @@ class IPJoin:
 class ServerCheck:
     """A class to check for new players and handle their joining process."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.players: List[str] = []
         self.ip_client_map: Dict[str, List[int]] = {}
         self.device_client_map: Dict[str, List[int]] = {}
@@ -66,7 +70,7 @@ class ServerCheck:
         """
         Checks for new players, handles their joining process, and performs various checks.
         """
-        new_players = []
+        new_players: List[str] = []
         self.ip_client_map.clear()
         self.device_client_map.clear()
 
@@ -89,7 +93,7 @@ class ServerCheck:
 
         self.players = new_players
 
-    def _get_device_id(self, client_id: int) -> Optional[str]:
+    def _get_device_id(self, client_id: int) -> str:
         """
         Returns the public or private device UUID for a given client_id.
         """
@@ -127,12 +131,9 @@ class ServerCheck:
 
     def _disconnect_player(self, client_id: int, message: str, log_message: str) -> None:
         """
-
         Disconnects a player with a given message and logs the disconnection.
         """
-        bs.chatmessage(message, clients=[client_id])
-        bs.disconnect_client(client_id)
-        logger.log(log_message, "playerjoin")
+        kick_client(client_id, message, log_message, use_chat=True, chat_func=bs.chatmessage)
 
     def _handle_new_player(self, ros: Dict[str, Any], ip: str, device_id: str) -> None:
         """
@@ -159,73 +160,75 @@ class ServerCheck:
             )
             return
 
-        logger.log(
-            f'{display_string}  || {account_id} || joined server', "playerjoin")
+        logger.log(f'{display_string}  || {account_id} || joined server', "playerjoin")
         logger.log(f'{account_id} {ip} {device_id}')
 
-        if account_id in serverdata.clients:
-            on_player_join_server(
-                account_id, serverdata.clients[account_id], ip, device_id)
-        else:
-            LoadProfile(account_id, ip, device_id).start()
+        on_player_join_server(account_id, ip, device_id)
 
 
-def on_player_join_server(pbid: str, player_data: Optional[Dict[str, Any]], ip: str, device_id: str) -> None:
-    """
-    Handles the joining process for a player on the server.
-    """
-    global ipjoin
-    now = time.time()
-    client_id = -1
-    display_string = ""
-
+def get_roster_by_pb_id(pb_id: str) -> Optional[Dict[str, Any]]:
+    """Returns the game roster entry for the given player ID if currently connected."""
     for ros in bs.get_game_roster():
-        if ros["account_id"] == pbid:
-            client_id = ros["client_id"]
-            display_string = ros['display_string']
-            break
+        if ros.get("account_id") == pb_id:
+            return ros
+    return None
 
-    if client_id == -1:
-        return
 
-    if ip in ipjoin:
-        ip_info = ipjoin[ip]
-        last_join = ip_info.last_join
-        join_count = ip_info.count
-        if now - last_join < 15:
-            join_count += 1
-            if join_count > 2:
-                bs.broadcastmessage(
-                    "Joining too fast, slow down dude",
-                    color=(1, 0, 1),
-                    transient=True,
-                    clients=[client_id],
-                )
-                logger.log(f'{pbid} || kicked for joining too fast')
-                bs.disconnect_client(client_id)
-                _thread.start_new_thread(report_spam, (pbid,))
-                return
+def kick_client(
+    client_id: int,
+    message: str,
+    log_message: Optional[str] = None,
+    log_category: Optional[str] = None,
+    use_chat: bool = False,
+    chat_func: Optional[Callable] = None,
+    color: Optional[tuple] = None,
+) -> None:
+    """Disconnects a client with a message, log, and optional display parameters."""
+    if use_chat:
+        fn = chat_func or bs.chatmessage
+        fn(message, clients=[client_id])
+    else:
+        if color is not None:
+            bs.broadcastmessage(message, color=color, transient=True, clients=[client_id])
         else:
-            join_count = 0
-        ip_info.count = join_count
-        ip_info.last_join = now
-    else:
-        ipjoin[ip] = IPJoin(last_join=now, count=0)
+            bs.broadcastmessage(message, transient=True, clients=[client_id])
 
-    if pbid in serverdata.clients:
-        serverdata.clients[pbid]["lastJoin"] = now
+    bs.disconnect_client(client_id)
 
-    if player_data is not None:
-        handle_existing_player(pbid, player_data, ip,
-                               device_id, client_id, display_string)
-    else:
-        handle_new_player_data(pbid, display_string, client_id)
+    if log_message:
+        if log_category:
+            logger.log(log_message, log_category)
+        else:
+            logger.log(log_message)
 
 
-def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, device_id: str, client_id: int, display_string: str) -> None:
-    """
-    Handles the joining process for an existing player.
-    """
+def kick_by_pb_id(pb_id: str, msg: str) -> None:
+    """Kicks a player by their account/PB ID."""
+    ros = get_roster_by_pb_id(pb_id)
+    if ros is not None and ros.get("client_id", -1) != -1:
+        kick_client(ros["client_id"], msg)
+
+
+def notify_web_player_joined(pb_id: str) -> None:
+    """Helper to notify the web service about a player joining if enabled."""
+    if settings.get("ballistica_web", {}).get("enable"):
+        from . import notification_manager
+        notification_manager.player_joined(pb_id)
+
+
+def _fetch_and_verify_device_accounts(pb_id: str, display_string: str) -> None:
+    """Helper to fetch device accounts and start verification callback."""
+    thread = FetchThread(
+        target=get_device_accounts,
+        callback=save_ids,
+        pb_id=pb_id,
+        display_string=display_string,
+    )
+    thread.start()
+
+
+def _add_to_recents(client_id: int, display_string: str, pbid: str, ip: str, device_id: str) -> None:
+    """Helper to record the recently joined player."""
     serverdata.recents.append(
         {
             "client_id": client_id,
@@ -237,23 +240,9 @@ def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, devi
     )
     serverdata.recents = serverdata.recents[-20:]
 
-    if check_ban(ip, device_id, pbid):
-        _bascenev1.chatmessage(
-            'sad, your account is flagged contact server owner for unban', clients=[client_id])
-        bs.disconnect_client(client_id)
-        return
 
-    if get_account_age(player_data["creationDate"]) < settings["minAgeToJoinInHours"]:
-        bs.broadcastmessage(
-            "New Accounts not allowed here, come back later",
-            color=(1, 0, 0),
-            transient=True,
-            clients=[client_id],
-        )
-        logger.log(pbid + " | kicked > reason:Banned account")
-        bs.disconnect_client(client_id)
-        return
-
+def _setup_client_data_structures(pbid: str, player_data: Dict[str, Any], ip: str, device_id: str) -> None:
+    """Helper to initialize server cache metadata for the player."""
     current_time = datetime.now()
     if pbid not in serverdata.clients:
         serverdata.clients[pbid] = player_data
@@ -262,48 +251,183 @@ def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, devi
         serverdata.clients[pbid]["verified"] = False
         serverdata.clients[pbid]["rejoincount"] = 1
         serverdata.clients[pbid]["lastJoin"] = time.time()
-        if pbid in blacklist["kick-vote-disabled"] and current_time < datetime.strptime(
-            blacklist["kick-vote-disabled"][pbid]["till"], "%Y-%m-%d %H:%M:%S"
-        ):
-            _bascenev1.disable_kickvote(pbid)
+        
+        # Check kick-vote disabled from blacklist
+        kv_blacklist = blacklist.get("kick-vote-disabled", {})
+        if pbid in kv_blacklist:
+            try:
+                till_time = datetime.strptime(kv_blacklist[pbid]["till"], "%Y-%m-%d %H:%M:%S")
+                if current_time < till_time:
+                    _bascenev1.disable_kickvote(pbid)
+            except (ValueError, TypeError):
+                pass
 
     serverdata.clients[pbid]["lastIP"] = ip
     serverdata.clients[pbid]["deviceUUID"] = device_id
-    verify_account(pbid, player_data)
-    logger.log(
-        f'{pbid} ip: {serverdata.clients[pbid]["lastIP"]}, Device id: {device_id}')
-    bs.broadcastmessage(
-        settings["regularWelcomeMsg"] + " " + display_string,
-        color=(0.6, 0.8, 0.6),
-        transient=True,
-        clients=[client_id],
-    )
-    if settings["ballistica_web"]["enable"]:
-        from . import notification_manager
-        notification_manager.player_joined(pbid)
 
 
-def handle_new_player_data(pbid: str, display_string: str, client_id: int) -> None:
+def _check_ip_join_rate_limit(ip: str, pbid: str, client_id: int) -> bool:
+    """Checks and updates IP join rate limits. Returns True if allowed, False if kicked."""
+    global ipjoin
+    now = time.time()
+
+    if ip in ipjoin:
+        ip_info = ipjoin[ip]
+        if now - ip_info.last_join < 15:
+            ip_info.count += 1
+            if ip_info.count > 2:
+                kick_client(
+                    client_id,
+                    "Joining too fast, slow down dude",
+                    log_message=f"{pbid} || kicked for joining too fast",
+                    color=(1, 0, 1),
+                )
+                _thread.start_new_thread(report_spam, (pbid,))
+                return False
+        else:
+            ip_info.count = 0
+        ip_info.last_join = now
+    else:
+        ipjoin[ip] = IPJoin(last_join=now, count=0)
+
+    return True
+
+
+def on_player_join_server(pbid: str, ip: str, device_id: str) -> None:
     """
-    Handles the joining process for a player with no existing data.
+    Stage 1: Ingress / Initial Checks.
+    This is called when a player connects.
     """
+    ros = get_roster_by_pb_id(pbid)
+    if ros is None or ros.get("client_id", -1) == -1:
+        return
 
-    thread = FetchThread(
-        target=my_acc_age,
-        callback=save_age,
-        pb_id=pbid,
-        display_string=display_string,
-    )
-    thread.start()
+    client_id = ros["client_id"]
+    display_string = ros["display_string"]
+
+    # 1. IP rate limiting check
+    if not _check_ip_join_rate_limit(ip, pbid, client_id):
+        return
+
+    # 2. Ban checking (applies to all players, new and existing)
+    if check_ban(ip, device_id, pbid):
+        kick_client(
+            client_id,
+            "sad, your account is flagged contact server owner for unban",
+            use_chat=True,
+            chat_func=_bascenev1.chatmessage,
+        )
+        return
+
+    # 3. Transition to database loading or verification
+    if pbid in serverdata.clients:
+        # Fast path: Already cached in memory, proceed directly to Stage 3
+        _setup_and_verify_player(pbid, serverdata.clients[pbid], ip, device_id, client_id, display_string, is_new=False)
+    else:
+        # Slow path: Not cached, load profile from database in background
+        LoadProfile(pbid, ip, device_id, client_id, display_string).start()
+
+
+def _on_profile_loaded(pbid: str, player_data: Optional[Dict[str, Any]], ip: str, device_id: str, client_id: int, display_string: str) -> None:
+    """
+    Stage 2: Database Load Result.
+    Processes the loaded profile, routing to creation/API fetch if missing.
+    """
+    ros = get_roster_by_pb_id(pbid)
+    if ros is None or ros.get("client_id", -1) == -1:
+        return
+
+    if player_data is not None:
+        # Profile exists in database, proceed directly to Stage 3
+        _setup_and_verify_player(pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
+    else:
+        # Profile doesn't exist, proceed to Stage 2b (Account creation date fetch)
+        _fetch_and_register_new_player(pbid, ip, device_id, client_id, display_string)
+
+
+def _fetch_and_register_new_player(pbid: str, ip: str, device_id: str, client_id: int, display_string: str) -> None:
+    """
+    Stage 2b: API creation date fetch & database registration.
+    """
+    # Print first time welcome message
     bs.broadcastmessage(
         settings["firstTimeJoinMsg"],
         color=(0.6, 0.8, 0.6),
         transient=True,
         clients=[client_id],
     )
-    if settings["ballistica_web"]["enable"]:
-        from . import notification_manager
-        notification_manager.player_joined(pbid)
+    notify_web_player_joined(pbid)
+
+    # Start API call to fetch registration date
+    def api_callback(account_creation_date: Optional[str], pb_id: str, display_name: str) -> None:
+        if not account_creation_date:
+            return
+        
+        # Register new profile in database
+        register_new_profile(pb_id, display_name, account_creation_date)
+        
+        # Load the newly created profile data
+        new_player_data = pdata.get_info(pb_id)
+        if new_player_data is not None:
+            # Profile successfully registered, proceed to Stage 3
+            _setup_and_verify_player(pb_id, new_player_data, ip, device_id, client_id, display_name, is_new=True)
+
+    thread = FetchThread(
+        target=get_account_creation_date,
+        callback=api_callback,
+        pb_id=pbid,
+        display_string=display_string,
+    )
+    thread.start()
+
+
+def _setup_and_verify_player(pbid: str, player_data: Dict[str, Any], ip: str, device_id: str, client_id: int, display_string: str, is_new: bool = False) -> None:
+    """
+    Stage 3: Verification, Age Checks, Caching & Welcoming.
+    Runs for all players (cached, uncached existing, and brand-new after creation).
+    """
+    # 1. Update recents & server client caching
+    _add_to_recents(client_id, display_string, pbid, ip, device_id)
+    _setup_client_data_structures(pbid, player_data, ip, device_id)
+
+    # 2. Enforce the minimum account age requirement
+    if get_account_age(player_data.get("creationDate", "")) < settings["minAgeToJoinInHours"]:
+        kick_client(
+            client_id,
+            "New Accounts not allowed here, come back later",
+            log_message=f"{pbid} | kicked > reason:Banned account",
+            color=(1, 0, 0),
+        )
+        return
+
+    # 3. Verify display name authenticity
+    verify_account(pbid, player_data)
+
+    logger.log(f'{pbid} ip: {ip}, Device id: {device_id}')
+
+    # 4. Display welcome message for returning/existing players
+    if not is_new:
+        bs.broadcastmessage(
+            settings["regularWelcomeMsg"] + " " + display_string,
+            color=(0.6, 0.8, 0.6),
+            transient=True,
+            clients=[client_id],
+        )
+        notify_web_player_joined(pbid)
+
+
+# Keep compatibility aliases for legacy external calls (if any exist)
+def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, device_id: str, client_id: int, display_string: str) -> None:
+    _setup_and_verify_player(pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
+
+
+def handle_new_player_data(pbid: str, display_string: str, client_id: int) -> None:
+    # Retrieve connection info to pass along
+    ros = get_roster_by_pb_id(pbid)
+    if ros is not None:
+        ip = _bascenev1.get_client_ip(client_id)
+        device_id = _bascenev1.get_client_public_device_uuid(client_id) or _bascenev1.get_client_device_uuid(client_id)
+        _fetch_and_register_new_player(pbid, ip, device_id, client_id, display_string)
 
 
 def check_ban(ip: str, device_id: str, pbid: str, log: bool = True) -> bool | str:
@@ -313,10 +437,13 @@ def check_ban(ip: str, device_id: str, pbid: str, log: bool = True) -> bool | st
     current_time = datetime.now()
 
     def check_ban_list(ban_list: Dict[str, Any], key: str, ban_type: str) -> Optional[str]:
-        if key in ban_list and current_time < datetime.strptime(
-            ban_list[key]["till"], "%Y-%m-%d %H:%M:%S"
-        ):
-            return f'reason: matched {ban_type} | {ban_list[key]["reason"]}, Till: {ban_list[key]["till"]}'
+        if key in ban_list:
+            try:
+                till_time = datetime.strptime(ban_list[key]["till"], "%Y-%m-%d %H:%M:%S")
+                if current_time < till_time:
+                    return f'reason: matched {ban_type} | {ban_list[key]["reason"]}, Till: {ban_list[key]["till"]}'
+            except (ValueError, TypeError):
+                pass
         return None
 
     ban_msg = check_ban_list(blacklist["ban"]["ips"], ip, "IP")
@@ -339,25 +466,20 @@ def verify_account(pb_id: str, p_data: Dict[str, Any]) -> None:
     Verifies a player's account by checking their display string against their device accounts.
     """
     if _bascenev1.protocol_version() > 35:
-        serverdata.clients[pb_id]["verified"] = True
+        if pb_id in serverdata.clients:
+            serverdata.clients[pb_id]["verified"] = True
         return
 
-    display_string = ""
-    for ros in bs.get_game_roster():
-        if ros['account_id'] == pb_id:
-            display_string = ros['display_string']
-            break
+    ros = get_roster_by_pb_id(pb_id)
+    if ros is None:
+        return
+    display_string = ros["display_string"]
 
     if display_string not in p_data.get('display_string', []):
-        thread2 = FetchThread(
-            target=get_device_accounts,
-            callback=save_ids,
-            pb_id=pb_id,
-            display_string=display_string,
-        )
-        thread2.start()
+        _fetch_and_verify_device_accounts(pb_id, display_string)
     else:
-        serverdata.clients[pb_id]["verified"] = True
+        if pb_id in serverdata.clients:
+            serverdata.clients[pb_id]["verified"] = True
 
 
 def _make_request_safe(request: Callable, retries: int = 2, raise_err: bool = True) -> Any:
@@ -379,7 +501,6 @@ def get_account_creation_date(pb_id: str) -> Optional[str]:
     Gets the account creation date for a given player ID.
     """
     if _bascenev1.protocol_version() > 35:
-
         try:
             req = urllib.request.Request(
                 f"https://www.ballistica.net/api/v1/accounts/{pb_id}",
@@ -434,11 +555,13 @@ class LoadProfile(threading.Thread):
     A thread to load a player's profile from pdata.
     """
 
-    def __init__(self, pb_id: str, ip: str, device_id: str):
+    def __init__(self, pb_id: str, ip: str, device_id: str, client_id: int, display_string: str) -> None:
         super().__init__()
         self.pbid = pb_id
         self.ip = ip
         self.device_id = device_id
+        self.client_id = client_id
+        self.display_string = display_string
 
     def run(self) -> None:
         player_data = pdata.get_info(self.pbid)
@@ -453,7 +576,7 @@ class FetchThread(threading.Thread):
     A thread to fetch data from a URL and execute a callback with the result.
     """
 
-    def __init__(self, target: Callable, callback: Optional[Callable] = None, pb_id: str = "ji", display_string: str = "XXX"):
+    def __init__(self, target: Callable, callback: Optional[Callable] = None, pb_id: str = "ji", display_string: str = "XXX") -> None:
         super().__init__(target=self.target_with_callback, args=(pb_id, display_string))
         self.callback = callback
         self.method = target
@@ -471,42 +594,51 @@ def my_acc_age(pb_id: str) -> Optional[str]:
     return get_account_creation_date(pb_id)
 
 
-def save_age(age: Optional[str], pb_id: str, display_string: str) -> None:
-    if age:
-        pdata.add_profile(pb_id, display_string, display_string, age)
-        if _bascenev1.protocol_version() <= 35:
-            time.sleep(2)
-            thread2 = FetchThread(
-                target=get_device_accounts,
-                callback=save_ids,
-                pb_id=pb_id,
-                display_string=display_string,
-            )
-            thread2.start()
-        if get_account_age(age) < settings["minAgeToJoinInHours"]:
-            msg = "New Accounts not allowed to play here, come back tmrw."
-            logger.log(f"{pb_id} || kicked > new account")
-            kick_by_pb_id(pb_id, msg)
+def register_new_profile(pb_id: str, display_string: str, creation_date: str) -> None:
+    """Registers a new profile in the database/player data cache."""
+    pdata.add_profile(pb_id, display_string, display_string, creation_date)
+
+
+def check_and_enforce_account_age(pb_id: str, creation_date: str) -> None:
+    """Kicks the player if their account age is below the configured threshold."""
+    if get_account_age(creation_date) < settings["minAgeToJoinInHours"]:
+        msg = "New Accounts not allowed to play here, come back tmrw."
+        logger.log(f"{pb_id} || kicked > new account")
+        kick_by_pb_id(pb_id, msg)
+
+
+def on_account_creation_date_fetched(account_creation_date: Optional[str], pb_id: str, display_string: str) -> None:
+    """Legacy callback for account creation date."""
+    if not account_creation_date:
+        return
+    ros = get_roster_by_pb_id(pb_id)
+    if ros is not None:
+        ip = _bascenev1.get_client_ip(ros["client_id"])
+        device_id = _bascenev1.get_client_public_device_uuid(ros["client_id"]) or _bascenev1.get_client_device_uuid(ros["client_id"])
+        
+        register_new_profile(pb_id, display_string, account_creation_date)
+        new_player_data = pdata.get_info(pb_id)
+        if new_player_data is not None:
+            _setup_and_verify_player(pb_id, new_player_data, ip, device_id, ros["client_id"], display_string, is_new=True)
+
+
+def save_age(account_creation_date: Optional[str], pb_id: str, display_string: str) -> None:
+    """Compatibility alias for on_account_creation_date_fetched."""
+    on_account_creation_date_fetched(account_creation_date, pb_id, display_string)
 
 
 def save_ids(ids: List[str], pb_id: str, display_string: str) -> None:
     pdata.update_display_string(pb_id, ids)
-    if display_string not in ids:
+    
+    is_spoofed = display_string not in ids
+    
+    if pb_id in serverdata.clients:
+        serverdata.clients[pb_id]["verified"] = not is_spoofed
+        
+    if is_spoofed:
         msg = "Spoofed Id detected, Goodbye"
         kick_by_pb_id(pb_id, msg)
-        serverdata.clients[pb_id]["verified"] = False
         logger.log(f"{pb_id} || kicked, for using spoofed id {display_string}")
-    else:
-        serverdata.clients[pb_id]["verified"] = True
-
-
-def kick_by_pb_id(pb_id: str, msg: str) -> None:
-    for ros in bs.get_game_roster():
-        if ros['account_id'] == pb_id:
-            bs.broadcastmessage(msg, transient=True,
-                                clients=[ros['client_id']])
-            bs.disconnect_client(ros['client_id'])
-            break
 
 
 def get_account_age(ct: str) -> float:
@@ -519,10 +651,10 @@ def get_account_age(ct: str) -> float:
 
 def report_spam(pbid: str) -> None:
     now = time.time()
-    profiles = pdata.get_profiles()
-    if pbid in profiles:
-        spam_count = profiles[pbid].get("spamCount", 0)
-        last_spam = profiles[pbid].get("lastSpam", 0)
+    profiles_dict = pdata.get_profiles()
+    if pbid in profiles_dict:
+        spam_count = profiles_dict[pbid].get("spamCount", 0)
+        last_spam = profiles_dict[pbid].get("lastSpam", 0)
         if now - last_spam < 2 * 24 * 3600:
             spam_count += 1
             if spam_count > 3:
@@ -530,8 +662,8 @@ def report_spam(pbid: str) -> None:
                 pdata.ban_player(pbid, 1, "auto ban exceed warn count")
         else:
             spam_count = 0
-        profiles[pbid]["spamCount"] = spam_count
-        profiles[pbid]["lastSpam"] = now
+        profiles_dict[pbid]["spamCount"] = spam_count
+        profiles_dict[pbid]["lastSpam"] = now
 
 
 def on_join_request(ip: str) -> None:
