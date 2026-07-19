@@ -2,10 +2,9 @@
 #
 """Core components of dataclassio."""
 
-from __future__ import annotations
-
 import dataclasses
 import typing
+import warnings
 import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, get_args, override, final
@@ -40,6 +39,12 @@ class Codec(Enum):
     #: as-is instead of converting them to json-friendly types.
     FIRESTORE = 'firestore'
 
+    #: Output-only codec for human-readable dicts. Uses Python attribute
+    #: names as keys, enum ``.name`` as values, and ISO 8601 format for
+    #: all datetime/date values. NOT suitable for round-trip parsing;
+    #: decoding with this codec raises a ``ValueError``.
+    HUMAN = 'human'
+
 
 class IOExtendedData:
     """A class types can inherit from for extra functionality."""
@@ -48,7 +53,10 @@ class IOExtendedData:
         """Called before data is sent to an outputter.
 
         Can be overridden to validate or filter data before
-        sending it on its way.
+        sending it on its way. Fires on every dataclass instance in
+        the object graph (not just the top level), in top-down order.
+        Mutations made here are visible to the caller after output,
+        since this runs on the caller's own instance.
         """
 
     @classmethod
@@ -56,13 +64,19 @@ class IOExtendedData:
         """Called on data before a class instance is created from it.
 
         Can be overridden to migrate old data formats to new, etc.
+        Fires on every dataclass-shaped dict in the input (not just
+        the top level), in top-down order. Mutations to ``data`` are
+        applied in place and are visible to the caller.
         """
 
     def did_input(self) -> None:
         """Called on a class instance after created from data.
 
         Can be useful to correct values from the db, etc. in the
-        type-safe form.
+        type-safe form. Fires on every dataclass instance in the
+        object graph (not just the top level), in bottom-up order
+        (children are fully constructed and have had their own
+        ``did_input`` called before their parent's runs).
         """
 
     # pylint: disable=useless-return
@@ -154,13 +168,14 @@ class IOMultiType[EnumT: Enum]:
     def get_type_id_storage_name(cls) -> str:
         """Return the key used to store type id in serialized data.
 
-        The default is an obscure value so that it does not conflict
-        with members of individual type attrs, but in some cases one
-        might prefer to serialize it to something simpler like 'type' by
-        overriding this call. One just needs to make sure that no
-        encompassed types serialize anything to 'type' themself.
+        The default is a short obscure value so that it is unlikely to
+        conflict with members of individual type attrs, but in some
+        cases one might prefer to serialize it to something simpler like
+        'type' by overriding this call. One just needs to make sure that
+        no encompassed types serialize anything to that same name
+        themself (dataclassio will error if they do).
         """
-        return '_dciotype'
+        return '_t'
 
     # NOTE: Currently (Jan 2025) mypy complains if overrides annotate
     # return type of 'Self | None'. Substituting their own explicit type
@@ -193,6 +208,17 @@ class IOAttrs:
 
     Providing fixed storagenames for all fields can allow the freedom to
     rename fields later without worrying about breaking existing data.
+
+    .. note::
+
+       Any dataclass using ``IOAttrs`` in its field annotations should
+       be decorated with ``@ioprepped`` (or ``@will_ioprep``). This
+       ensures annotations are evaluated at runtime, which is required
+       by systems such as ``FormDataclass`` that inspect type hints.
+       It also satisfies the project's pylint plugin, which only
+       preserves annotations on ``@ioprepped`` classes when deferred
+       annotation evaluation (``from __future__ import annotations``)
+       is active.
     """
 
     # A sentinel object to detect if a parameter is supplied or not. Use
@@ -237,7 +263,27 @@ class IOAttrs:
     #: ints. This is more concise but introduces the possibility of
     #: restored values varying slightly from originals due to
     #: floating-point precision limitations.
+    #:
+    #: .. deprecated::
+    #:     Use :attr:`time_format` instead.
     float_times: bool = False
+
+    #: Controls the wire format used for ``datetime.datetime`` and
+    #: ``datetime.timedelta`` values under the JSON codec. Has no effect
+    #: under the Firestore codec, which always stores datetime objects
+    #: natively. Does not apply to ``datetime.date`` fields, which are
+    #: always serialized as ``YYYY-MM-DD`` strings.
+    #:
+    #: - ``'ints'`` (default): lossless list of integers
+    #:   (``[year, month, day, hour, minute, second, microsecond]`` for
+    #:   datetime; ``[days, seconds, microseconds]`` for timedelta).
+    #: - ``'float'``: single float value (Unix timestamp for datetime;
+    #:   total seconds for timedelta). Compact but subject to
+    #:   floating-point precision loss.
+    #: - ``'iso'``: RFC 3339 / ISO 8601 UTC string with ``Z`` suffix
+    #:   (e.g. ``"2024-03-15T14:30:45.123456Z"``). JSON codec only;
+    #:   not valid for ``timedelta`` fields.
+    time_format: Literal['ints', 'float', 'iso'] = 'ints'
 
     #: If passed, injects a default value into dataclass instantiation
     #: when the field is not present in the input data. This allows
@@ -273,7 +319,29 @@ class IOAttrs:
     #: editing the value. Does not actually affect value input/output.
     edit_as_options: bool | None = None
 
-    def __init__(
+    #: If ``True`` for a string field, hints that the value is a literal
+    #: identifier (e.g. a slug, filename, or code token) and should be
+    #: edited without autocapitalization, autocorrect, or spellcheck.
+    #: Does not actually affect value input/output.
+    text_literal: bool | None = None
+
+    #: If provided for a string field, supplies placeholder/hint text
+    #: shown in the input when its value is empty. Can be referenced
+    #: when creating UI for editing the value. Does not actually affect
+    #: value input/output.
+    placeholder: str | None = None
+
+    #: If provided for a string field, caps the maximum length of the
+    #: value at the form/UI layer. This is a *form-only* hint — it is
+    #: NOT enforced by dataclassio at serialization (read or write)
+    #: time. Form builders (e.g. ``FormDataclass``) read this to emit
+    #: an HTML ``maxlength`` attribute and reject oversize submissions
+    #: server-side. Existing in-DB data exceeding the cap continues to
+    #: deserialize normally. Only meaningful for ``str`` fields; ignored
+    #: for sequence/collection types.
+    max_length: int | None = None
+
+    def __init__(  # pylint: disable=too-many-branches
         self,
         storagename: str | None = storagename,
         *,
@@ -283,13 +351,16 @@ class IOAttrs:
         whole_minutes: bool = whole_minutes,
         whole_seconds: bool = whole_seconds,
         float_times: bool = float_times,
+        time_format: Literal['ints', 'float', 'iso'] = 'ints',
         soft_default: Any = MISSING,
         soft_default_factory: Callable[[], Any] | _MissingType = MISSING,
         enum_fallback: Enum | None = None,
         multiline: bool | None = None,
         edit_as_options: bool | None = None,
+        text_literal: bool | None = None,
+        placeholder: str | None = None,
+        max_length: int | None = None,
     ):
-        # pylint: disable=too-many-branches
 
         # Only store values that differ from class defaults to keep
         # our instances nice and lean.
@@ -306,8 +377,17 @@ class IOAttrs:
             self.whole_minutes = whole_minutes
         if whole_seconds != cls.whole_seconds:
             self.whole_seconds = whole_seconds
-        if float_times != cls.float_times:
-            self.float_times = float_times
+        if float_times:
+            warnings.warn(
+                "IOAttrs 'float_times' is deprecated;"
+                " use time_format='float' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            # Coerce to the new flag when caller did not also set time_format.
+            time_format = 'float' if time_format == 'ints' else time_format
+        if time_format != cls.time_format:
+            self.time_format = time_format
         if soft_default is not cls.soft_default:
             # Do what dataclasses does with its default types and
             # tell the user to use factory for mutable ones.
@@ -329,6 +409,12 @@ class IOAttrs:
             self.multiline = multiline
         if edit_as_options is not cls.multiline:
             self.edit_as_options = edit_as_options
+        if text_literal is not cls.text_literal:
+            self.text_literal = text_literal
+        if placeholder is not cls.placeholder:
+            self.placeholder = placeholder
+        if max_length is not cls.max_length:
+            self.max_length = max_length
 
     def validate_for_field(self, cls: type, field: dataclasses.Field) -> None:
         """Ensure the IOAttrs is ok to use with provided field."""

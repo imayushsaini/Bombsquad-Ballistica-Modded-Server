@@ -2,13 +2,13 @@
 #
 """Provides help related ui."""
 
-from __future__ import annotations
-
 from typing import override
 
 import random
 
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 
 class HelpWindow(bui.MainWindow):
@@ -25,8 +25,6 @@ class HelpWindow(bui.MainWindow):
         bui.set_analytics_screen('Help Window')
 
         self._r = 'helpWindow'
-
-        getres = bui.app.lang.get_resource
 
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
@@ -129,13 +127,10 @@ class HelpWindow(bui.MainWindow):
         inline_title_height = 50
 
         self._sub_width = 660
-        self._sub_height = (
-            1590
-            + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
-            + bui.app.lang.get_resource(
-                f'{self._r}.orPunchingSomethingExtraSpace'
-            )
-        )
+        # NOTE: someDaysExtraSpace + orPunchingSomethingExtraSpace were
+        # per-language layout tweaks (English value 0); hard-coded for the
+        # strings migration (revisit in Step B; see followups.md).
+        self._sub_height = 1590.0
 
         # Make space for our title when we're stuffing it inline.
         if uiscale is bui.UIScale.SMALL:
@@ -181,7 +176,7 @@ class HelpWindow(bui.MainWindow):
         if uiscale is bui.UIScale.SMALL:
             v -= inline_title_height
 
-        logo_tex = bui.gettexture('logo')
+        logo_tex = stdassets.textures.logo.get()
         icon_buffer = 1.1
         header = (0.7, 1.0, 0.7, 1.0)
         header2 = (0.8, 0.8, 1.0, 1.0)
@@ -238,7 +233,8 @@ class HelpWindow(bui.MainWindow):
             v_align='center',
             flatness=1.0,
         )
-        v -= spacing * 25.0 + getres(f'{self._r}.someDaysExtraSpace')
+        # (+ someDaysExtraSpace, English value 0; see followups.md)
+        v -= spacing * 25.0
         txt_scale = 0.66
         txt = bui.Lstr(resource=f'{self._r}.orPunchingSomethingText').evaluate()
         bui.textwidget(
@@ -253,7 +249,8 @@ class HelpWindow(bui.MainWindow):
             v_align='center',
             flatness=1.0,
         )
-        v -= spacing * 27.0 + getres(f'{self._r}.orPunchingSomethingExtraSpace')
+        # (+ orPunchingSomethingExtraSpace, English value 0; see followups.md)
+        v -= spacing * 27.0
         txt_scale = 1.0
         txt = bui.Lstr(
             resource=f'{self._r}.canHelpText',
@@ -443,7 +440,7 @@ class HelpWindow(bui.MainWindow):
             label='',
             size=(icon_size, icon_size),
             position=(hval2 - 0.5 * icon_size, vval2 - 0.5 * icon_size),
-            texture=bui.gettexture('buttonPunch'),
+            texture=stdassets.textures.button_punch.get(),
             color=(1, 0.7, 0.3),
             selectable=False,
             enable_sound=False,
@@ -452,7 +449,7 @@ class HelpWindow(bui.MainWindow):
             ),
         )
 
-        txt_scale = getres(f'{self._r}.punchInfoTextScale')
+        txt_scale = 0.6  # punchInfoTextScale (English value; see followups.md)
         txt = bui.Lstr(resource=f'{self._r}.punchInfoText').evaluate()
         bui.textwidget(
             parent=self._subcontainer,
@@ -473,7 +470,7 @@ class HelpWindow(bui.MainWindow):
             label='',
             size=(icon_size, icon_size),
             position=(hval2 - 0.5 * icon_size, vval2 - 0.5 * icon_size),
-            texture=bui.gettexture('buttonBomb'),
+            texture=stdassets.textures.button_bomb.get(),
             color=(1, 0.3, 0.3),
             selectable=False,
             enable_sound=False,
@@ -483,7 +480,7 @@ class HelpWindow(bui.MainWindow):
         )
 
         txt = bui.Lstr(resource=f'{self._r}.bombInfoText').evaluate()
-        txt_scale = getres(f'{self._r}.bombInfoTextScale')
+        txt_scale = 0.6  # bombInfoTextScale (English value; see followups.md)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h + sep + 50 + 60, v - 35),
@@ -504,7 +501,7 @@ class HelpWindow(bui.MainWindow):
             label='',
             size=(icon_size, icon_size),
             position=(hval2 - 0.5 * icon_size, vval2 - 0.5 * icon_size),
-            texture=bui.gettexture('buttonPickUp'),
+            texture=stdassets.textures.button_pick_up.get(),
             color=(0.5, 0.5, 1),
             selectable=False,
             enable_sound=False,
@@ -514,7 +511,7 @@ class HelpWindow(bui.MainWindow):
         )
 
         txtl = bui.Lstr(resource=f'{self._r}.pickUpInfoText')
-        txt_scale = getres(f'{self._r}.pickUpInfoTextScale')
+        txt_scale = 0.6  # pickUpInfoTextScale (English value; see followups.md)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h + 60 + 120, v + sep + 50),
@@ -534,7 +531,7 @@ class HelpWindow(bui.MainWindow):
             label='',
             size=(icon_size, icon_size),
             position=(hval2 - 0.5 * icon_size, vval2 - 0.5 * icon_size),
-            texture=bui.gettexture('buttonJump'),
+            texture=stdassets.textures.button_jump.get(),
             color=(0.4, 1, 0.4),
             selectable=False,
             enable_sound=False,
@@ -544,7 +541,7 @@ class HelpWindow(bui.MainWindow):
         )
 
         txt = bui.Lstr(resource=f'{self._r}.jumpInfoText').evaluate()
-        txt_scale = getres(f'{self._r}.jumpInfoTextScale')
+        txt_scale = 0.6  # jumpInfoTextScale (English value; see followups.md)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h - 250 + 75, v - sep - 15 + 30),
@@ -558,7 +555,7 @@ class HelpWindow(bui.MainWindow):
         )
 
         txt = bui.Lstr(resource=f'{self._r}.runInfoText').evaluate()
-        txt_scale = getres(f'{self._r}.runInfoTextScale')
+        txt_scale = 0.6  # runInfoTextScale (English value; see followups.md)
         bui.textwidget(
             parent=self._subcontainer,
             position=(h, v - sep - 100),
@@ -607,7 +604,8 @@ class HelpWindow(bui.MainWindow):
         h = baseh + 20
 
         v -= spacing * 50.0
-        txt_scale = getres(f'{self._r}.powerupsSubtitleTextScale')
+        # powerupsSubtitleTextScale (English value; see followups.md)
+        txt_scale = 0.8
         txt = bui.Lstr(resource=f'{self._r}.powerupsSubtitleText').evaluate()
         bui.textwidget(
             parent=self._subcontainer,
@@ -636,21 +634,27 @@ class HelpWindow(bui.MainWindow):
         t_big = 1.1
         t_small = 0.65
 
-        shadow_tex = bui.gettexture('shadowSharp')
+        shadow_tex = builtinassets.textures.shadow_sharp.get()
 
-        for tex in [
-            'powerupPunch',
-            'powerupShield',
-            'powerupBomb',
-            'powerupHealth',
-            'powerupIceBombs',
-            'powerupImpactBombs',
-            'powerupStickyBombs',
-            'powerupLandMines',
-            'powerupCurse',
+        for reskey, tex in [
+            ('powerupPunch', stdassets.textures.powerup_punch.get()),
+            ('powerupShield', stdassets.textures.powerup_shield.get()),
+            ('powerupBomb', stdassets.textures.powerup_bomb.get()),
+            ('powerupHealth', stdassets.textures.powerup_health.get()),
+            ('powerupIceBombs', stdassets.textures.powerup_ice_bombs.get()),
+            (
+                'powerupImpactBombs',
+                stdassets.textures.powerup_impact_bombs.get(),
+            ),
+            (
+                'powerupStickyBombs',
+                stdassets.textures.powerup_sticky_bombs.get(),
+            ),
+            ('powerupLandMines', stdassets.textures.powerup_land_mines.get()),
+            ('powerupCurse', stdassets.textures.powerup_curse.get()),
         ]:
-            name = bui.Lstr(resource=f'{self._r}.' + tex + 'NameText')
-            desc = bui.Lstr(resource=f'{self._r}.' + tex + 'DescriptionText')
+            name = bui.Lstr(resource=f'{self._r}.' + reskey + 'NameText')
+            desc = bui.Lstr(resource=f'{self._r}.' + reskey + 'DescriptionText')
 
             v -= spacing * 60.0
 
@@ -669,7 +673,7 @@ class HelpWindow(bui.MainWindow):
                 parent=self._subcontainer,
                 size=(icon_size, icon_size),
                 position=(h + mm1 - 0.5 * icon_size, v - 0.5 * icon_size),
-                texture=bui.gettexture(tex),
+                texture=tex,
             )
 
             txt_scale = t_big

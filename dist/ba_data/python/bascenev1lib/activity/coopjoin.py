@@ -2,8 +2,6 @@
 #
 """Functionality related to the co-op join screen."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bascenev1 as bs
@@ -46,7 +44,6 @@ class CoopJoinActivity(bs.JoinActivity):
         bs.pushcall(self._show_remaining_achievements)
 
     def _show_remaining_achievements(self) -> None:
-        # pylint: disable=too-many-locals
         from bascenev1lib.actor.text import Text
 
         app = bs.app

@@ -1,132 +1,119 @@
 # Released under the MIT License. See LICENSE for details.
-
+"""Command execution logic for chat commands."""
 
 from datetime import datetime
-
 import _babase
 import setting
+import bascenev1 as bs
 from playersdata import pdata
 from serverdata import serverdata
-from .commands import normal_commands , management, fun , cheats
-import bascenev1 as bs
-from .handlers import check_permissions
-from .handlers import clientid_to_accountid
+from .handlers import check_permissions, clientid_to_accountid
+from .commands import registry
 
 settings = setting.get_settings_data()
 
 
-def command_type(command):
+def command_type(command: str) -> str | None:
+    """Checks the command type.
+
+    Returns the category name (e.g. 'Normal', 'Manage', 'Fun', 'Cheats')
+    or None if the command is not found.
     """
-    Checks The Command Type
-
-    Parameters:
-        command : str
-
-    Returns:
-        any
-    """
-    if command in normal_commands.Commands or command in normal_commands.CommandAliases:
-        return "Normal"
-
-    if command in management.Commands or command in management.CommandAliases:
-        return "Manage"
-
-    if command in fun.Commands or command in fun.CommandAliases:
-        return "Fun"
-
-    if command in cheats.Commands or command in cheats.CommandAliases:
-        return "Cheats"
+    cmd = registry.get_command(command)
+    return cmd.category if cmd else None
 
 
-def execute(msg, clientid):
-    """
-    Command Execution
+def execute(msg: str, clientid: int) -> str | None:
+    """Parses and executes a chat command if valid."""
+    try:
+        command = msg.lower().split(" ")[0].split("/")[1]
+    except IndexError:
+        return msg
 
-    Parameters:
-        msg : str
-        clientid : int
-
-    Returns:
-        any
-    """
-    command = msg.lower().split(" ")[0].split("/")[1]
     arguments = msg.lower().split(" ")[1:]
     accountid = clientid_to_accountid(clientid)
 
-    if command_type(command) == "Normal":
-        normal_commands.ExcelCommand(command, arguments, clientid, accountid)
-
-    elif command_type(command) == "Manage":
-        if check_permissions(accountid, command):
-            management.ExcelCommand(command, arguments, clientid, accountid)
-            bs.broadcastmessage("Executed", transient=True, clients=[clientid])
+    cmd = registry.get_command(command)
+    if cmd:
+        if cmd.category == "Normal":
+            cmd.handler(arguments, clientid, accountid)
         else:
-            bs.broadcastmessage("access denied", transient=True,
-                                clients=[clientid])
+            from shop import has_purchased_command
+            if check_permissions(accountid, command) or has_purchased_command(accountid, command):
+                cmd.handler(arguments, clientid, accountid)
+                bs.broadcastmessage(
+                    "Executed", transient=True, clients=[clientid])
+            else:
+                bs.broadcastmessage(
+                    "access denied", transient=True, clients=[clientid])
 
-    elif command_type(command) == "Fun":
-        if check_permissions(accountid, command):
-            fun.ExcelCommand(command, arguments, clientid, accountid)
-            bs.broadcastmessage("Executed", transient=True, clients=[clientid])
-        else:
-            bs.broadcastmessage("access denied", transient=True,
-                                clients=[clientid])
-
-    elif command_type(command) == "Cheats":
-        if check_permissions(accountid, command):
-            cheats.ExcelCommand(command, arguments, clientid, accountid)
-            bs.broadcastmessage("Executed", transient=True, clients=[clientid])
-        else:
-            bs.broadcastmessage("access denied", transient=True,
-                                clients=[clientid])
     now = datetime.now()
-    if accountid in pdata.get_blacklist()[
-        "muted-ids"] and now < datetime.strptime(
-        pdata.get_blacklist()["muted-ids"][accountid]["till"],
-        "%Y-%m-%d %H:%M:%S"):
-        bs.broadcastmessage("You are on mute", transient=True,
-                            clients=[clientid])
-        return None
+    if accountid in pdata.get_blacklist()["muted-ids"]:
+        till_str = pdata.get_blacklist()["muted-ids"][accountid]["till"]
+        try:
+            till_dt = datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S")
+            if now < till_dt:
+                bs.broadcastmessage("You are on mute",
+                                    transient=True, clients=[clientid])
+                return None
+        except ValueError:
+            pass
+
     if serverdata.muted:
         return None
-    if settings["ChatCommands"]["BrodcastCommand"]:
+
+    if settings.get("ChatCommands", {}).get("BrodcastCommand", False):
         return msg
     return None
 
 
-def QuickAccess(msg, client_id):
+def QuickAccess(msg: str, client_id: int) -> str | None:
+    """Quick access commands like team chat or popup text."""
     from bascenev1lib.actor import popuptext
     if msg.startswith(","):
         name = ""
         teamid = 0
-        for i in bs.get_foreground_host_session().sessionplayers:
-            if i.inputdevice.client_id == client_id:
-                teamid = i.sessionteam.id
-                name = i.getname(True)
+        session = bs.get_foreground_host_session()
+        if session:
+            for player in session.sessionplayers:
+                if player.inputdevice.client_id == client_id:
+                    teamid = getattr(player.sessionteam, 'id', 0)
+                    name = player.getname(True)
+                    break
 
-        for i in bs.get_foreground_host_session().sessionplayers:
-            if hasattr(i,
-                       'sessionteam') and i.sessionteam and teamid == i.sessionteam.id and i.inputdevice.client_id != client_id:
-                bs.broadcastmessage(name + ":" + msg[1:],
-                                    clients=[i.inputdevice.client_id],
-                                    color=(0.3, 0.6, 0.3), transient=True)
-
+            for player in session.sessionplayers:
+                if (hasattr(player, 'sessionteam') and
+                        player.sessionteam and
+                        teamid == player.sessionteam.id and
+                        player.inputdevice.client_id != client_id):
+                    bs.broadcastmessage(
+                        name + ":" + msg[1:],
+                        clients=[player.inputdevice.client_id],
+                        color=(0.3, 0.6, 0.3),
+                        transient=True
+                    )
         return None
+
     elif msg.startswith("."):
-        msg = msg[1:]
-        msgAr = msg.split(" ")
-        if len(msg) > 25 or int(len(msg) / 5) > len(msgAr):
+        msg_text = msg[1:]
+        msg_ar = msg_text.split(" ")
+        if len(msg_text) > 25 or int(len(msg_text) / 5) > len(msg_ar):
             bs.broadcastmessage("msg/word length too long",
                                 clients=[client_id], transient=True)
             return None
-        msgAr.insert(int(len(msgAr) / 2), "\n")
-        for player in _babase.get_foreground_host_activity().players:
-            if player.sessionplayer.inputdevice.client_id == client_id and player.actor.exists() and hasattr(
-                player.actor.node, "position"):
-                pos = player.actor.node.position
-                with bs.get_foreground_host_activity().context:
-                    popuptext.PopupText(
-                        " ".join(msgAr),
-                        (pos[0], pos[1] + 1, pos[2])).autoretain()
-                return None
+
+        msg_ar.insert(int(len(msg_ar) / 2), "\n")
+        activity = bs.get_foreground_host_activity()
+        if activity:
+            for player in activity.players:
+                if (player.sessionplayer.inputdevice.client_id == client_id and
+                        player.actor and player.actor.exists() and
+                        player.actor.node and hasattr(player.actor.node, "position")):
+                    pos = player.actor.node.position
+                    with activity.context:
+                        popuptext.PopupText(
+                            " ".join(msg_ar),
+                            position=(pos[0], pos[1] + 1, pos[2])
+                        ).autoretain()
+                    return None
         return None

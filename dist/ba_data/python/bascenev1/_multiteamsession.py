@@ -2,8 +2,6 @@
 #
 """Functionality related to teams sessions."""
 
-from __future__ import annotations
-
 import copy
 import random
 import logging
@@ -15,11 +13,15 @@ import _bascenev1
 from bascenev1._session import Session
 
 if TYPE_CHECKING:
-    from typing import Any, Sequence
+    from typing import Any
 
     import bascenev1
 
+#: Default RGB colors for the two teams in a :class:`MultiTeamSession`,
+#: used when a session doesn't specify its own.
 DEFAULT_TEAM_COLORS = ((0.1, 0.25, 1.0), (1.0, 0.25, 0.2))
+
+#: Default display names for the two teams in a :class:`MultiTeamSession`.
 DEFAULT_TEAM_NAMES = ('Blue', 'Red')
 
 
@@ -54,11 +56,7 @@ class MultiTeamSession(Session):
             team_names = None
             team_colors = None
 
-        # print('FIXME: TEAM BASE SESSION WOULD CALC DEPS.')
-        depsets: Sequence[bascenev1.DependencySet] = []
-
         super().__init__(
-            depsets,
             team_names=team_names,
             team_colors=team_colors,
             min_players=1,
@@ -277,12 +275,17 @@ class MultiTeamSession(Session):
         or whatnot, along with a possible audio
         announcement of the same.
         """
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
         # pylint: disable=cyclic-import
         from bascenev1._gameutils import cameraflash
         from bascenev1._freeforallsession import FreeForAllSession
         from bascenev1._messages import CelebrateMessage
 
-        _bascenev1.timer(delay, _bascenev1.getsound('boxingBell').play)
+        _bascenev1.timer(delay, stdassets.audio.boxing_bell.play)
 
         if announce_winning_team:
             winning_sessionteam = results.winning_sessionteam

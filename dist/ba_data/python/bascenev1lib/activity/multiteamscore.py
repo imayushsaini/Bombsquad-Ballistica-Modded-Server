@@ -2,11 +2,10 @@
 #
 """Functionality related to teams mode score screen."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bascenev1 as bs
+from bascenev1 import stdassets
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.image import Image
@@ -17,8 +16,8 @@ class MultiTeamScoreScreenActivity(bs.ScoreScreenActivity):
 
     def __init__(self, settings: dict):
         super().__init__(settings=settings)
-        self._score_display_sound = bs.getsound('scoreHit01')
-        self._score_display_sound_small = bs.getsound('scoreHit02')
+        self._score_display_sound = stdassets.audio.score_hit01
+        self._score_display_sound_small = stdassets.audio.score_hit02
 
         self._show_up_next: bool = True
 
@@ -67,7 +66,6 @@ class MultiTeamScoreScreenActivity(bs.ScoreScreenActivity):
     ) -> None:
         """Show scores for individual players."""
         # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
 
         ts_v_offset = 150.0 + y_offset
         ts_h_offs = 80.0 + x_offset

@@ -78,7 +78,7 @@ def vote(pb_id, client_id, vote_type):
             try:
                 activity = bs.get_foreground_host_activity()
                 with activity.context:
-                    bs.get_foreground_host_activity().end_game()
+                    bs.get_foreground_host_activity().end()
             except:
                 pass
         elif vote_type == "nv":

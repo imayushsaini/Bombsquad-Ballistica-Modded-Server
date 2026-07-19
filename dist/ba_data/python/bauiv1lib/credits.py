@@ -2,11 +2,6 @@
 #
 """Provides a window to display game credits."""
 
-from __future__ import annotations
-
-import os
-import json
-import logging
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
@@ -23,8 +18,8 @@ class CreditsWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
+        # pylint: disable=too-many-locals
 
         bui.set_analytics_screen('Credits Window')
 
@@ -210,22 +205,9 @@ class CreditsWindow(bui.MainWindow):
         names.sort(key=lambda x: x.lower())
         freesound_names = _format_names(names, 90)
 
-        try:
-            with open(
-                os.path.join(
-                    bui.app.env.data_directory,
-                    'ba_data',
-                    'data',
-                    'langdata.json',
-                ),
-                encoding='utf-8',
-            ) as infile:
-                translation_contributors = json.loads(infile.read())[
-                    'translation_contributors'
-                ]
-        except Exception:
-            logging.exception('Error reading translation contributors.')
-            translation_contributors = []
+        translation_contributors = bui.get_legacy_langdata().get(
+            'translation_contributors', []
+        )
 
         translation_names = _format_names(translation_contributors, 60)
 

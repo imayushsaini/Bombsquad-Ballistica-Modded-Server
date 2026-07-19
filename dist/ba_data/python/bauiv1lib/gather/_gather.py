@@ -2,8 +2,6 @@
 #
 """Provides UI for inviting/joining friends."""
 
-from __future__ import annotations
-
 import weakref
 import logging
 from enum import Enum
@@ -11,6 +9,7 @@ from typing import override, TYPE_CHECKING
 
 from bauiv1lib.tabs import TabRow
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from bauiv1lib.play import PlaylistSelectContext
@@ -74,7 +73,6 @@ class GatherWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
         from bauiv1lib.gather.abouttab import AboutGatherTab
         from bauiv1lib.gather.manualtab import ManualGatherTab
@@ -250,8 +248,8 @@ class GatherWindow(bui.MainWindow):
                 self._width * 0.5 - self._scroll_width * 0.5,
                 self._scroll_bottom,
             ),
-            texture=bui.gettexture('scrollWidget'),
-            mesh_transparent=bui.getmesh('softEdgeOutside'),
+            texture=builtinassets.textures.scroll_widget.get(),
+            mesh_transparent=builtinassets.meshes.soft_edge_outside.get(),
             opacity=0.4,
         )
         self._tab_container: bui.Widget | None = None

@@ -3,8 +3,6 @@
 # pylint: disable=too-many-lines
 """Provides a popup window to view achievements."""
 
-from __future__ import annotations
-
 import weakref
 from functools import partial
 from dataclasses import dataclass
@@ -17,6 +15,7 @@ import bacommon.clouddialog.basic as bcdlg
 import bacommon.classic
 from bauiv1lib.utils import scroll_fade_bottom, scroll_fade_top
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     import datetime
@@ -533,7 +532,7 @@ class InboxWindow(bui.MainWindow):
         if display is None:
             return
 
-        bui.getsound('click01').play()
+        builtinassets.audio.click01.get().play()
 
         self._neuter_entry_display(display)
 
@@ -550,7 +549,7 @@ class InboxWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Pause the root ui so stuff like token counts don't change
@@ -595,7 +594,7 @@ class InboxWindow(bui.MainWindow):
         self.main_window_back()
 
     def _neuter_entry_display(self, entry: _EntryDisplay) -> None:
-        errsound = bui.getsound('error')
+        errsound = builtinassets.audio.error.get()
         if entry.button_positive is not None:
             bui.buttonwidget(
                 edit=entry.button_positive,
@@ -619,7 +618,6 @@ class InboxWindow(bui.MainWindow):
         action: cdlg.Action,
         response: cdlg.ActionResponse | Exception,
     ) -> None:
-        # pylint: disable=too-many-branches
 
         # Let the UI auto-update again after any animations we may apply
         # here.
@@ -672,7 +670,7 @@ class InboxWindow(bui.MainWindow):
         # Show error message if so.
         if error_message is not None:
             bui.screenmessage(error_message, color=(1, 0, 0))
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             if button is not None:
                 bui.buttonwidget(
                     edit=button, label=bui.Lstr(resource='errorText')
@@ -699,8 +697,8 @@ class InboxWindow(bui.MainWindow):
     def _on_inbox_request_response(
         self, response: bacommon.classic.InboxRequestResponse | Exception
     ) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
+        # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
 
         # No-op if our UI is dead or on its way out.
@@ -1030,7 +1028,7 @@ class InboxWindow(bui.MainWindow):
             claims_up_down=True,
         )
 
-        backing_tex = bui.gettexture('buttonSquareWide')
+        backing_tex = builtinassets.textures.button_square_wide.get()
 
         assert bui.app.classic is not None
 

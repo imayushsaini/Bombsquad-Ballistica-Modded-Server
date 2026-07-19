@@ -2,12 +2,12 @@
 #
 """Provides a window which shows info about resource types."""
 
-from __future__ import annotations
-
 from typing import override, TYPE_CHECKING, assert_never
 
 from bauiv1lib.popup import PopupWindow
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -67,10 +67,10 @@ class ResourceTypeInfoWindow(PopupWindow):
         if resource_type == 'tickets':
             yoffs -= 20
             rdesc = bui.Lstr(resource='ticketsDescriptionText')
-            texname = 'tickets'
+            tex = stdassets.textures.tickets.get()
         elif resource_type == 'tokens':
             rdesc = bui.Lstr(resource='tokens.tokensDescriptionText')
-            texname = 'coin'
+            tex = stdassets.textures.coin.get()
             bwidth = 200
             bheight = 50
 
@@ -97,10 +97,10 @@ class ResourceTypeInfoWindow(PopupWindow):
 
         elif resource_type == 'trophies':
             rdesc = 'TODO: Will show trophies & league rankings.'
-            texname = 'crossOut'
+            tex = stdassets.textures.cross_out.get()
         elif resource_type == 'xp':
             rdesc = 'TODO: Will describe xp/levels.'
-            texname = 'crossOut'
+            tex = stdassets.textures.cross_out.get()
         else:
             assert_never(resource_type)
 
@@ -109,7 +109,7 @@ class ResourceTypeInfoWindow(PopupWindow):
             parent=self.root_widget,
             position=(self._width * 0.5 - imgsize * 0.5, yoffs + 5.0),
             size=(imgsize, imgsize),
-            texture=bui.gettexture(texname),
+            texture=tex,
         )
 
         bui.textwidget(
@@ -142,5 +142,5 @@ class ResourceTypeInfoWindow(PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()

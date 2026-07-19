@@ -4,14 +4,14 @@
 
 # pylint: disable=too-many-lines
 
-from __future__ import annotations
-
 import copy
 import logging
 from typing import TYPE_CHECKING, override
 
 import bacommon.classic
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 from bauiv1lib.utils import scroll_fade_bottom, scroll_fade_top
 from bauiv1lib.popup import PopupMenu
 
@@ -61,7 +61,6 @@ class LeagueRankWindow(bui.MainWindow):
             else 710 if uiscale is bui.UIScale.MEDIUM else 800
         )
         self._r = 'coopSelectWindow'
-        self._rdict = bui.app.lang.get_resource(self._r)
         self._xoffs = 40
 
         self._league_url_arg = ''
@@ -282,7 +281,7 @@ class LeagueRankWindow(bui.MainWindow):
                 ),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
     def _on_activity_mult_press(self) -> None:
         from bauiv1lib import confirm
@@ -352,7 +351,7 @@ class LeagueRankWindow(bui.MainWindow):
                 data=info,
             )
         else:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
     def _on_power_ranking_query_response(
         self, data: dict[str, Any] | None
@@ -429,7 +428,6 @@ class LeagueRankWindow(bui.MainWindow):
                     )
 
     def _refresh(self) -> None:
-        # pylint: disable=too-many-statements
 
         plus = bui.app.plus
         assert plus is not None
@@ -482,7 +480,7 @@ class LeagueRankWindow(bui.MainWindow):
             id=f'{self.main_window_id_prefix}|ach',
             position=(self._xoffs + h2 - 60, v2 + 10),
             size=(200, 80),
-            icon=bui.gettexture('achievementsIcon'),
+            icon=stdassets.textures.achievements_icon.get(),
             autoselect=True,
             on_activate_call=bui.WeakCallStrict(self._on_achievements_press),
             up_widget=self._back_button,
@@ -513,7 +511,7 @@ class LeagueRankWindow(bui.MainWindow):
             id=f'{self.main_window_id_prefix}|trophies',
             position=(self._xoffs + h2 - 60, v2 + 10),
             size=(200, 80),
-            icon=bui.gettexture('medalSilver'),
+            icon=stdassets.textures.medal_silver.get(),
             autoselect=True,
             on_activate_call=bui.WeakCallStrict(self._on_trophies_press),
             left_widget=self._back_button,
@@ -558,7 +556,7 @@ class LeagueRankWindow(bui.MainWindow):
                 id=f'{self.main_window_id_prefix}|amult',
                 position=(self._xoffs + h2 - 60, v2 + 10),
                 size=(200, 60),
-                icon=bui.gettexture('heart'),
+                icon=stdassets.textures.heart.get(),
                 icon_color=(0.5, 0, 0.5),
                 label=bui.Lstr(resource='coopSelectWindow.activityText'),
                 autoselect=True,
@@ -592,7 +590,7 @@ class LeagueRankWindow(bui.MainWindow):
             id=f'{self.main_window_id_prefix}|uptodatebonus',
             position=(self._xoffs + h2 - 60, v2 + 10),
             size=(200, 60),
-            icon=bui.gettexture('logo'),
+            icon=stdassets.textures.logo.get(),
             icon_color=(0.3, 0, 0.3),
             label=bui.Lstr(resource='league.upToDateBonusText'),
             autoselect=True,
@@ -653,7 +651,7 @@ class LeagueRankWindow(bui.MainWindow):
             label='',
             position=(self._xoffs + h2 - 60, v2 - 100),
             color=(0.7, 0.55, 0.9),
-            texture=bui.gettexture('buttonSquareWide'),
+            texture=builtinassets.textures.button_square_wide.get(),
             opacity=0.3,
             size=(200, 80),
             autoselect=True,
@@ -689,7 +687,7 @@ class LeagueRankWindow(bui.MainWindow):
         self._president_star1 = bui.imagewidget(
             parent=w_parent,
             draw_controller=self._president_button,
-            texture=bui.gettexture('star'),
+            texture=stdassets.textures.star.get(),
             color=(0.7, 0.55, 0.9),
             opacity=0.2,
             position=(self._xoffs + h2 - 60 + 5, v2 - 100 + 17),
@@ -698,7 +696,7 @@ class LeagueRankWindow(bui.MainWindow):
         self._president_star1 = bui.imagewidget(
             parent=w_parent,
             draw_controller=self._president_button,
-            texture=bui.gettexture('star'),
+            texture=stdassets.textures.star.get(),
             color=(0.7, 0.55, 0.9),
             opacity=0.2,
             position=(self._xoffs + h2 - 60 + 200 - 5 - 32, v2 - 100 + 17),
@@ -848,7 +846,7 @@ class LeagueRankWindow(bui.MainWindow):
         self._see_more_button = bui.buttonwidget(
             parent=w_parent,
             id=f'{self.main_window_id_prefix}|seemore',
-            label=self._rdict.seeMoreText,
+            label=bui.app.lang.get_resource(f'{self._r}.seeMoreText'),
             position=(self._xoffs + h, v),
             color=(0.5, 0.5, 0.6),
             textcolor=(0.7, 0.7, 0.8),
@@ -875,7 +873,7 @@ class LeagueRankWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource='notSignedInErrorText'), color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Wait for connectivity if need be, then bring up a cloud based
@@ -900,7 +898,7 @@ class LeagueRankWindow(bui.MainWindow):
 
         our_login_id = plus.get_v1_account_public_login_id()
         if not self._can_do_more_button or our_login_id is None:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource='unavailableText'), color=(1, 0, 0)
             )
@@ -936,8 +934,10 @@ class LeagueRankWindow(bui.MainWindow):
         assert bui.app.classic is not None
         accounts = bui.app.classic.accounts
         in_top = data is not None and data['rank'] is not None
-        eq_text = self._rdict.powerRankingPointsEqualsText
-        pts_txt = self._rdict.powerRankingPointsText
+        eq_text = bui.app.lang.get_resource(
+            f'{self._r}.powerRankingPointsEqualsText'
+        )
+        pts_txt = bui.app.lang.get_resource(f'{self._r}.powerRankingPointsText')
         num_text = bui.Lstr(resource='numberText').evaluate()
         do_percent = False
         finished_season_unranked = False
@@ -955,8 +955,8 @@ class LeagueRankWindow(bui.MainWindow):
                 # Handle old seasons where we didn't wind up ranked at
                 # the end.
                 if not data['scores']:
-                    status_text = (
-                        self._rdict.powerRankingFinishedSeasonUnrankedText
+                    status_text = bui.app.lang.get_resource(
+                        f'{self._r}.powerRankingFinishedSeasonUnrankedText'
                     )
                     extra_text = ''
                     finished_season_unranked = True
@@ -965,18 +965,17 @@ class LeagueRankWindow(bui.MainWindow):
                     our_points = accounts.get_league_rank_points(data)
                     progress = float(our_points) / max(1, data['scores'][-1][1])
                     status_text = str(int(progress * 100.0)) + '%'
-                    extra_text = (
-                        '\n'
-                        + self._rdict.powerRankingPointsToRankedText.replace(
-                            '${CURRENT}', str(our_points)
-                        ).replace('${REMAINING}', str(data['scores'][-1][1]))
+                    extra_text = '\n' + bui.app.lang.get_resource(
+                        f'{self._r}.powerRankingPointsToRankedText'
+                    ).replace('${CURRENT}', str(our_points)).replace(
+                        '${REMAINING}', str(data['scores'][-1][1])
                     )
                     do_percent = True
             except Exception:
                 logging.exception('Error updating power ranking.')
-                status_text = self._rdict.powerRankingNotInTopText.replace(
-                    '${NUMBER}', str(data['listSize'])
-                )
+                status_text = bui.app.lang.get_resource(
+                    f'{self._r}.powerRankingNotInTopText'
+                ).replace('${NUMBER}', str(data['listSize']))
                 extra_text = ''
         else:
             status_text = '-'
@@ -1362,7 +1361,7 @@ class LeagueRankWindow(bui.MainWindow):
     ) -> None:
         from bauiv1lib.account.viewer import AccountViewerWindow
 
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         AccountViewerWindow(
             account_id=account_id, position=textwidget.get_screen_space_center()
         )

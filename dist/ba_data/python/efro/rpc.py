@@ -2,8 +2,6 @@
 #
 """Remote procedure call related functionality."""
 
-from __future__ import annotations
-
 import time
 import asyncio
 import logging
@@ -13,7 +11,7 @@ from dataclasses import dataclass
 from threading import current_thread
 from typing import TYPE_CHECKING, Annotated, assert_never
 
-from efro.util import strip_exception_tracebacks
+from efro.util import strip_exception_tracebacks, gather_strip
 from efro.error import (
     CommunicationError,
     is_asyncio_streams_communication_error,
@@ -256,7 +254,7 @@ class RPCEndpoint:
         self._tasks += core_tasks
 
         # Run our core tasks until they all complete.
-        results = await asyncio.gather(*core_tasks, return_exceptions=True)
+        results = await gather_strip(*core_tasks)
 
         # Core tasks should handle their own errors; the only ones
         # we expect to bubble up are CancelledError.
@@ -269,10 +267,6 @@ class RPCEndpoint:
                     self._label,
                     result,
                 )
-            if isinstance(result, BaseException):
-                # We're done with these exceptions, so strip their
-                # tracebacks to avoid reference cycles.
-                strip_exception_tracebacks(result)
 
         if not all(task.done() for task in core_tasks):
             logger.warning(
@@ -398,9 +392,12 @@ class RPCEndpoint:
         message_id: int,
     ) -> bytes:
         # pylint: disable=too-many-positional-arguments
-        # We need to know their protocol, so if we haven't gotten a handshake
-        # from them yet, just wait.
+
+        # We need to know their protocol, so if we haven't gotten a
+        # handshake from them yet, just wait.
         while self._peer_info is None:
+            if self._closing:
+                raise CommunicationError('Endpoint closed before handshake.')
             await asyncio.sleep(0.01)
         assert self._peer_info is not None
 
@@ -409,19 +406,21 @@ class RPCEndpoint:
                 raise RuntimeError('Message cannot be larger than 65535 bytes')
 
         try:
-            # print(f'WILL WAIT FOR TASK {bytes_awaitable.get_name()}')
             return await asyncio.wait_for(bytes_awaitable, timeout=timeout)
         except asyncio.CancelledError as exc:
-            # Question: we assume this means the above wait_for() was
-            # cancelled; how do we distinguish between this and *us* being
-            # cancelled though?
+            # If the current task itself was cancelled (vs an inner task
+            # being cancelled by endpoint close()), preserve the
+            # CancelledError rather than swallowing it as a
+            # CommunicationError or incorrectly closing the endpoint.
+            current_task = asyncio.current_task()
+            if current_task is not None and current_task.cancelling() > 0:
+                raise
             if self.debug_print:
                 self.debug_print_call(
                     f'{self._label}: message {message_id} was cancelled.'
                 )
             if close_on_error:
                 self.close()
-
             raise CommunicationError() from exc
         except Exception as exc:
             # If our timer timed-out or anything else went wrong with
@@ -492,7 +491,6 @@ class RPCEndpoint:
         Wait for the endpoint to finish closing. This is called by run()
         so generally does not need to be explicitly called.
         """
-        # pylint: disable=too-many-branches
         self._check_env()
 
         # Make sure we only *enter* this call once.
@@ -522,7 +520,7 @@ class RPCEndpoint:
             )
 
         # Wait for all of our in-flight tasks to wrap up.
-        results = await asyncio.gather(*live_tasks, return_exceptions=True)
+        results = await gather_strip(*live_tasks)
         for result in results:
             # We want to know if any errors happened aside from CancelledError
             # (which are BaseExceptions, not Exception).

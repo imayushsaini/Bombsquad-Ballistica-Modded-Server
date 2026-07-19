@@ -3,8 +3,6 @@
 # pylint: disable=too-many-lines
 """Defines the public tab in the gather UI."""
 
-from __future__ import annotations
-
 import copy
 import time
 from threading import Thread
@@ -15,6 +13,8 @@ from typing import TYPE_CHECKING, cast, override
 from bacommon.analytics import ClassicAnalyticsEvent
 from bauiv1lib.gather import GatherTab
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 import bascenev1 as bs
 
 if TYPE_CHECKING:
@@ -95,7 +95,6 @@ class UIRow:
         tab: PublicGatherTab,
     ) -> None:
         """Update for the given data."""
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-positional-arguments
 
         plus = bui.app.plus
@@ -565,7 +564,7 @@ class PublicGatherTab(GatherTab):
     ) -> None:
         assert self._container
         if playsound:
-            bui.getsound('click01').play()
+            builtinassets.audio.click01.get().play()
 
         # Reset our selection (prevents selecting something way down the
         # list if we switched away and came back).
@@ -1445,13 +1444,13 @@ class PublicGatherTab(GatherTab):
                 bui.Lstr(resource='internal.invalidNameErrorText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         bs.set_public_party_name(name)
         cfg = bui.app.config
         cfg['Public Party Name'] = name
         cfg.commit()
-        bui.getsound('shieldUp').play()
+        stdassets.audio.shield_up.get().play()
         bs.set_public_party_enabled(True)
 
         # In GUI builds we want to authenticate clients only when
@@ -1474,7 +1473,7 @@ class PublicGatherTab(GatherTab):
         # In GUI builds we want to authenticate clients only when
         # hosting public parties.
         bs.set_authenticate_clients(False)
-        bui.getsound('shieldDown').play()
+        stdassets.audio.shield_down.get().play()
         text = self._host_status_text
         if text:
             bui.textwidget(
@@ -1506,7 +1505,7 @@ class PublicGatherTab(GatherTab):
         if party.queue is not None:
             from bauiv1lib.partyqueue import PartyQueueWindow
 
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
             PartyQueueWindow(party.queue, party.address, party.port)
         else:
             address = party.address

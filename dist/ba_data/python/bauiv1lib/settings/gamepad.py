@@ -3,14 +3,14 @@
 # pylint: disable=too-many-lines
 """Settings UI functionality related to gamepads."""
 
-from __future__ import annotations
-
 import logging
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib.popup import PopupMenuWindow
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -170,7 +170,6 @@ class GamepadSettingsWindow(bui.MainWindow):
                 self._settings[button] = val
 
     def _rebuild_ui(self, is_reset: bool = False) -> None:
-        # pylint: disable=too-many-statements
 
         assert bui.app.classic is not None
 
@@ -315,7 +314,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs, v + scly * dist),
             color=d_color,
             button='buttonUp' + self._ext,
-            texture=bui.gettexture('upButton'),
+            texture=stdassets.textures.up_button.get(),
             scale=1.0,
             message=dpm,
             message2=dpm2,
@@ -324,7 +323,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs - sclx * dist, v),
             color=d_color,
             button='buttonLeft' + self._ext,
-            texture=bui.gettexture('leftButton'),
+            texture=stdassets.textures.left_button.get(),
             scale=1.0,
             message=dpm,
             message2=dpm2,
@@ -333,7 +332,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs + sclx * dist, v),
             color=d_color,
             button='buttonRight' + self._ext,
-            texture=bui.gettexture('rightButton'),
+            texture=stdassets.textures.right_button.get(),
             scale=1.0,
             message=dpm,
             message2=dpm2,
@@ -342,7 +341,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs, v - scly * dist),
             color=d_color,
             button='buttonDown' + self._ext,
-            texture=bui.gettexture('downButton'),
+            texture=stdassets.textures.down_button.get(),
             scale=1.0,
             message=dpm,
             message2=dpm2,
@@ -354,7 +353,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             color=(0.4, 0.4, 0.6),
             button='analogStickLR' + self._ext,
             maxwidth=140,
-            texture=bui.gettexture('analogStick'),
+            texture=stdassets.textures.analog_stick.get(),
             scale=1.2,
             message=bui.Lstr(resource=f'{self._r}.pressLeftRightText'),
             message2=dpm3,
@@ -364,7 +363,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(self._width * 0.5, v),
             color=(0.4, 0.4, 0.6),
             button='buttonStart' + self._ext,
-            texture=bui.gettexture('startButton'),
+            texture=builtinassets.textures.start_button.get(),
             scale=0.7,
         )
 
@@ -374,28 +373,28 @@ class GamepadSettingsWindow(bui.MainWindow):
             pos=(h_offs, v + scly * dist),
             color=(0.6, 0.4, 0.8),
             button='buttonPickUp' + self._ext,
-            texture=bui.gettexture('buttonPickUp'),
+            texture=stdassets.textures.button_pick_up.get(),
             scale=1.0,
         )
         self._capture_button(
             pos=(h_offs - sclx * dist, v),
             color=(0.7, 0.5, 0.1),
             button='buttonPunch' + self._ext,
-            texture=bui.gettexture('buttonPunch'),
+            texture=stdassets.textures.button_punch.get(),
             scale=1.0,
         )
         self._capture_button(
             pos=(h_offs + sclx * dist, v),
             color=(0.5, 0.2, 0.1),
             button='buttonBomb' + self._ext,
-            texture=bui.gettexture('buttonBomb'),
+            texture=stdassets.textures.button_bomb.get(),
             scale=1.0,
         )
         self._capture_button(
             pos=(h_offs, v - scly * dist),
             color=(0.2, 0.5, 0.2),
             button='buttonJump' + self._ext,
-            texture=bui.gettexture('buttonJump'),
+            texture=stdassets.textures.button_jump.get(),
             scale=1.0,
         )
 
@@ -704,7 +703,7 @@ class GamepadSettingsWindow(bui.MainWindow):
                     edit=self._textwidgets['buttonDown' + ext],
                     text=self.get_control_value_name('buttonDown' + ext),
                 )
-                bui.getsound('gunCocking').play()
+                builtinassets.audio.gun_cocking.get().play()
                 dialog.die()
 
         elif control == 'analogStickLR' + ext:
@@ -718,7 +717,7 @@ class GamepadSettingsWindow(bui.MainWindow):
                         edit=self._textwidgets['analogStickLR' + ext],
                         text=self.get_control_value_name('analogStickLR' + ext),
                     )
-                    bui.getsound('gunCocking').play()
+                    builtinassets.audio.gun_cocking.get().play()
                     dialog.die()
 
                     # Now launch the up/down listener.
@@ -749,7 +748,7 @@ class GamepadSettingsWindow(bui.MainWindow):
                                 'analogStickLR' + ext
                             ),
                         )
-                        bui.getsound('gunCocking').play()
+                        builtinassets.audio.gun_cocking.get().play()
                         dialog.die()
         else:
             # For other buttons we just want a button-press.
@@ -762,7 +761,7 @@ class GamepadSettingsWindow(bui.MainWindow):
                     edit=self._textwidgets[control],
                     text=self.get_control_value_name(control),
                 )
-                bui.getsound('gunCocking').play()
+                builtinassets.audio.gun_cocking.get().play()
                 dialog.die()
 
     def _capture_button(
@@ -870,7 +869,7 @@ class GamepadSettingsWindow(bui.MainWindow):
             pass
 
         self._rebuild_ui(is_reset=True)
-        bui.getsound('gunCocking').play()
+        builtinassets.audio.gun_cocking.get().play()
 
     def _do_more(self) -> None:
         """Show a burger menu with extra settings."""
@@ -959,9 +958,9 @@ class GamepadSettingsWindow(bui.MainWindow):
                 },
             )
             bui.app.config.apply_and_commit()
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
         else:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
 
         if self._modal:
             bui.containerwidget(
@@ -1072,5 +1071,5 @@ class AwaitGamepadInputWindow(bui.Window):
                     edit=self._count_down_text, text=str(self._counter)
                 )
         else:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             self.die()

@@ -7,8 +7,6 @@
 #
 # pylint: disable=unidiomatic-typecheck
 
-from __future__ import annotations
-
 import logging
 from enum import Enum
 import dataclasses
@@ -55,13 +53,14 @@ def ioprep(cls: type, globalns: dict | None = None) -> None:
     early in a process to ensure any invalid types or configuration are caught
     immediately.
 
-    Prepping a dataclass involves evaluating its type annotations, which,
-    as of PEP 563, are stored simply as strings. This evaluation is done
-    with localns set to the class dict (so that types defined in the class
-    can be used) and globalns set to the containing module's class.
-    It is possible to override globalns for special cases such as when
-    prepping happens as part of an execed string instead of within a
-    module.
+    Prepping a dataclass involves evaluating its type annotations
+    (deferred under PEP 649/749 semantics as of Python 3.14, or stored
+    as strings for any remaining PEP 563 / explicitly-quoted cases).
+    This evaluation is done with localns set to the class dict (so that
+    types defined in the class can be used) and globalns set to the
+    containing module's dict. It is possible to override globalns for
+    special cases such as when prepping happens as part of an execed
+    string instead of within a module.
     """
     PrepSession(explicit=True, globalns=globalns).prep_dataclass(
         cls, recursion_level=0
@@ -118,6 +117,11 @@ class PrepData:
     # Map of storage names to attr names.
     storage_names_to_attr_names: dict[str, str]
 
+    # The full set of storage names used by this class (including ones
+    # that match their attr name). Used to detect clashes with things
+    # like IOMultiType type-id-storage-names.
+    storage_names: set[str]
+
 
 class PrepSession:
     """Context for a prep."""
@@ -134,8 +138,6 @@ class PrepSession:
         The only case where this will return None is for recursive types
         if the type is already being prepped higher in the call order.
         """
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-branches
 
         # We should only need to do this once per dataclass.
         existing_data = getattr(cls, PREP_ATTR, None)
@@ -244,6 +246,7 @@ class PrepSession:
         prepdata = PrepData(
             annotations=resolved_annotations,
             storage_names_to_attr_names=storage_names_to_attr_names,
+            storage_names=all_storage_names,
         )
         setattr(cls, PREP_ATTR, prepdata)
 
@@ -264,7 +267,6 @@ class PrepSession:
         # pylint: disable=too-many-positional-arguments
         # pylint: disable=too-many-return-statements
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
 
         if not TYPE_CHECKING:
 
@@ -421,11 +423,29 @@ class PrepSession:
             # We allow datetime objects (and google's extended subclass of
             # them used in firestore, which is why we don't look for exact
             # type here).
+            # IMPORTANT: datetime.datetime is a subclass of datetime.date, so
+            # the datetime.datetime check MUST come before the datetime.date
+            # check below.
             if issubclass(origin, datetime.datetime):
+                return
+
+            # We support datetime.date. Note: the datetime.datetime check
+            # above must precede this since datetime.datetime is a subclass
+            # of datetime.date.
+            if issubclass(origin, datetime.date) and not issubclass(
+                origin, datetime.datetime
+            ):
                 return
 
             # We support datetime.timedelta.
             if issubclass(origin, datetime.timedelta):
+                if ioattrs is not None and ioattrs.time_format == 'iso':
+                    raise TypeError(
+                        f"time_format='iso' is not supported for"
+                        f' datetime.timedelta fields'
+                        f" (attr '{attrname}' on {cls.__name__});"
+                        f" use 'float' or 'ints' instead."
+                    )
                 return
 
             if dataclasses.is_dataclass(origin):

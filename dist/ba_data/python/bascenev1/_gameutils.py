@@ -2,8 +2,6 @@
 #
 """Utility functionality pertaining to gameplay."""
 
-from __future__ import annotations
-
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, NewType
@@ -16,7 +14,13 @@ if TYPE_CHECKING:
 
     import bascenev1
 
+#: Monotonic time measurement local to a scene activity — pauses
+#: when the activity pauses, resets when the activity ends.
 Time = NewType('Time', float)
+
+#: Like :data:`Time` but tied to the underlying scene's clock rather
+#: than an activity — keeps advancing across activity transitions
+#: within the same session.
 BaseTime = NewType('BaseTime', float)
 
 TROPHY_CHARS = {
@@ -168,7 +172,6 @@ def show_damage_count(
     dead: bool = False,
 ) -> None:
     """Pop up a damage count at a position in space."""
-    # pylint: disable=too-many-locals
     lifespan = 1.0
     app = babase.app
 
@@ -231,7 +234,6 @@ def cameraflash(duration: float = 999.0) -> None:
     (as seen when a team wins a game)
     Duration is in seconds.
     """
-    # pylint: disable=too-many-locals
     from bascenev1._nodeactor import NodeActor
 
     x_spread = 10

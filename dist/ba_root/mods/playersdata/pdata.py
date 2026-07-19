@@ -1,3 +1,4 @@
+# Released under the MIT License. See LICENSE for details.
 """Module to manage players data."""
 
 # ba_meta require api 8
@@ -12,17 +13,15 @@ import os
 import shutil
 import time
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, List, Dict, Any, Optional
 
 import _bascenev1
+import babase
+import bascenev1 as bs
 import setting
 from serverdata import serverdata
 from tools.server_update import checkSpammer
-from tools.file_handle import OpenJson
-from typing import TYPE_CHECKING
-
-import babase
-# pylint: disable=import-error
-import bascenev1 as bs
+from repository import profiles as db_profiles
 
 if TYPE_CHECKING:
     pass
@@ -32,164 +31,173 @@ settings = setting.get_settings_data()
 PLAYERS_DATA_PATH = os.path.join(
     babase.env()["python_directory_user"], "playersdata" + os.sep
 )
+PROFILES_PATH = os.path.join(PLAYERS_DATA_PATH, "profiles.json")
+PROFILES_BACKUP_PATH = os.path.join(PLAYERS_DATA_PATH, "profiles.json.backup")
+BLACKLIST_PATH = os.path.join(PLAYERS_DATA_PATH, "blacklist.json")
+ROLES_PATH = os.path.join(PLAYERS_DATA_PATH, "roles.json")
+ROLES_BACKUP_PATH = os.path.join(PLAYERS_DATA_PATH, "roles.json.backup")
+CUSTOM_PATH = os.path.join(PLAYERS_DATA_PATH, "custom.json")
+CUSTOM_BACKUP_PATH = os.path.join(PLAYERS_DATA_PATH, "custom.json.backup")
+WHITELIST_PATH = os.path.join(PLAYERS_DATA_PATH, "whitelist.json")
 
 
-class CacheData:  # pylint: disable=too-few-public-methods
+class CacheData:
     """Stores the cache data."""
-
-    roles: dict = {}
-    data: dict = {}
-    custom: dict = {}
-    profiles: dict = {}
-    whitelist: list[str] = []
-    blacklist: dict = {}
-
-
-def get_info(account_id: str) -> dict | None:
-    """Returns the information about player.
-
-    Parameters
-    ----------
-    account_id : str
-        account_id of the client
-
-    Returns
-    -------
-    dict | None
-        information of client
-    """
-    profiles = get_profiles()
-    if account_id in profiles:
-        return profiles[account_id]
-    return None
+    roles: Dict[str, Any] = {}
+    data: Dict[str, Any] = {}
+    custom: Dict[str, Any] = {}
+    profiles: Any = None
+    whitelist: List[str] = []
+    blacklist: Dict[str, Any] = {}
 
 
-def get_profiles() -> dict:
-    """Returns the profiles of all players.
-
-    Returns
-    -------
-    dict
-        profiles of the players
-    """
-    if CacheData.profiles == {}:
-        try:
-            if os.stat(PLAYERS_DATA_PATH + "profiles.json").st_size > 1000000:
-                newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
-                shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
-                profiles = {"pb-sdf": {}}
-                print("Resetting Profiles.")
-            else:
-                f = open(PLAYERS_DATA_PATH + "profiles.json", "r")
-                profiles = json.load(f)
-                f.close()
-                print("Loading old profiles.json")
-            CacheData.profiles = profiles
-
-        except Exception as e:
-            f = open(PLAYERS_DATA_PATH + "profiles.json.backup", "r")
-            profiles = json.load(f)
-            print(e)
-            print("Exception occurred, falling back to profiles.json.backup")
-            CacheData.profiles = profiles
-            f.close()
-            return profiles
-    else:
-        return CacheData.profiles
-
-
-def get_profiles_archive_index():
-    return [x for x in os.listdir(PLAYERS_DATA_PATH) if
-            x.startswith("profiles")]
-
-
-def get_old_profiles(filename):
+def use_sqlite() -> bool:
+    """Check if the SQLite database should be used instead of JSON files."""
     try:
-        f = open(PLAYERS_DATA_PATH + filename, "r")
-        profiles = json.load(f)
-        return profiles
-    except:
-        return {}
+        return setting.get_settings_data().get("useSqlite", False)
+    except Exception:
+        return False
 
 
-def get_blacklist() -> dict:
-    if CacheData.blacklist == {}:
-        try:
-            with open(PLAYERS_DATA_PATH + "blacklist.json", "r") as f:
-                CacheData.blacklist = json.load(f)
-        except:
-            print('Error opening blacklist.json')
-            return {
-                "ban": {
-                    "ids": {},
-                    "ips": {},
-                    "deviceids": {}
-                },
+def _load_json_file(path: str, backup_path: Optional[str] = None) -> Dict | List:
+    """A utility function to load a json file with an optional backup."""
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding='utf-8') as f:
+                return json.load(f)
+    except (IOError, json.JSONDecodeError) as e:
+        print(f"Error reading {path}: {e}")
+        if backup_path and os.path.exists(backup_path):
+            print(f"Falling back to {backup_path}")
+            try:
+                with open(backup_path, "r", encoding='utf-8') as f:
+                    return json.load(f)
+            except (IOError, json.JSONDecodeError) as backup_e:
+                print(f"Error reading backup {backup_path}: {backup_e}")
+    return {}
+
+
+def _save_json_file(path: str, data: Any, backup_path: Optional[str] = None) -> None:
+    """A utility function to save data to a json file with an optional backup."""
+    if backup_path and os.path.exists(path):
+        shutil.copyfile(path, backup_path)
+    with open(path, "w", encoding='utf-8') as f:
+        json.dump(data, f, indent=4)
+
+
+def get_info(account_id: str) -> Optional[Dict[str, Any]]:
+    """Returns the information about a player."""
+    return get_profiles().get(account_id)
+
+
+def get_profiles() -> Dict[str, Any]:
+    """Returns the profiles of all players."""
+    if CacheData.profiles is None:
+        if use_sqlite():
+            CacheData.profiles = db_profiles.SQLiteLazyProfiles()
+        else:
+            try:
+                if os.path.exists(PROFILES_PATH) and os.stat(PROFILES_PATH).st_size > 1000000:
+                    newpath = os.path.join(
+                        PLAYERS_DATA_PATH, f'profiles-{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.json')
+                    shutil.copyfile(PROFILES_PATH, newpath)
+                    CacheData.profiles = {"pb-sdf": {}}
+                    print("Resetting Profiles.")
+                else:
+                    CacheData.profiles = _load_json_file(
+                        PROFILES_PATH, PROFILES_BACKUP_PATH) or {"pb-sdf": {}}
+            except Exception as e:
+                print(f"Exception in get_profiles: {e}")
+                CacheData.profiles = _load_json_file(
+                    PROFILES_BACKUP_PATH) or {"pb-sdf": {}}
+    return CacheData.profiles
+
+
+def get_profiles_archive_index() -> List[str]:
+    """Returns a list of archived profile filenames."""
+    return [x for x in os.listdir(PLAYERS_DATA_PATH) if x.startswith("profiles")]
+
+
+def get_old_profiles(filename: str) -> Dict[str, Any]:
+    """Loads profiles from an archived file."""
+    return _load_json_file(os.path.join(PLAYERS_DATA_PATH, filename))
+
+
+def get_blacklist() -> Dict[str, Any]:
+    """Returns the blacklist."""
+    if not CacheData.blacklist:
+        if use_sqlite():
+            try:
+                CacheData.blacklist = db_profiles.load_blacklist()
+            except Exception as e:
+                print(f"Exception loading blacklist from DB: {e}")
+                CacheData.blacklist = {
+                    "ban": {"ids": {}, "ips": {}, "deviceids": {}},
+                    "muted-ids": {},
+                    "kick-vote-disabled": {}
+                }
+        else:
+            default_blacklist = {
+                "ban": {"ids": {}, "ips": {}, "deviceids": {}},
                 "muted-ids": {},
                 "kick-vote-disabled": {}
             }
-
+            CacheData.blacklist = _load_json_file(
+                BLACKLIST_PATH) or default_blacklist
     return CacheData.blacklist
 
 
-def update_blacklist():
-    with open(PLAYERS_DATA_PATH + "blacklist.json", "w") as f:
-        json.dump(CacheData.blacklist, f, indent=4)
+def update_blacklist() -> None:
+    """Saves the blacklist."""
+    if use_sqlite():
+        try:
+            db_profiles.save_blacklist(CacheData.blacklist)
+        except Exception as e:
+            print(f"Exception updating blacklist in DB: {e}")
+    else:
+        _save_json_file(BLACKLIST_PATH, CacheData.blacklist)
 
 
-def commit_profiles(data={}) -> None:
-    """Commits the given profiles in the database.
-
-    Parameters
-    ----------
-        profiles of all players
-    """
-    # with OpenJson(PLAYERS_DATA_PATH + "profiles.json") as profiles_file:
-    #     profiles_file.dump(CacheData.profiles, indent=4)
+def commit_profiles(data: Dict = {}) -> None:
+    """Commits the given profiles in the database."""
+    # This function is now a no-op as saving is handled by dump_cache/on-the-fly
+    pass
 
 
-def get_detailed_info(pbid):
+def get_detailed_info(pbid: str) -> str:
+    """Gets detailed information for a given player build id."""
     main_account = get_info(pbid)
-    if main_account == None:
+    if not main_account:
         return "No info"
-    linked_accounts = ' '.join(main_account["display_string"])
-    ip = main_account["lastIP"]
-    deviceid = main_account["deviceUUID"]
-    otheraccounts = ""
-    dob = main_account["accountAge"]
+
+    linked_accounts = ' '.join(main_account.get("display_string", []))
+    ip = main_account.get("lastIP", "N/A")
+    deviceid = main_account.get("deviceUUID", "N/A")
+    dob = main_account.get("accountAge", "N/A")
+
+    other_accounts = set()
     profiles = get_profiles()
     for key, value in profiles.items():
         if ("lastIP" in value and value["lastIP"] == ip) or (
                 "deviceUUID" in value and value["deviceUUID"] == deviceid):
-            otheraccounts += ' '.join(value["display_string"])
-    return f"Accounts:{linked_accounts} \n other accounts {otheraccounts} \n created on {dob}"
+            other_accounts.add(' '.join(value.get("display_string", [])))
+    other_accounts_str = ' '.join(other_accounts)
+    return f"Accounts:{linked_accounts} \n other accounts {other_accounts_str} \n created on {dob}"
 
 
 def add_profile(
     account_id: str,
     display_string: str,
     current_name: str,
-    account_age: int,
+    account_creation_date: str,
 ) -> None:
-    """Adds the profile in database.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    display_string : str
-        display string of the client
-    current_name : str
-        name of the client
-    account_age : int
-        account_age of the account
-    """
+    """Adds a new player profile."""
     profiles = get_profiles()
     profiles[account_id] = {
-        "display_string": display_string,
+        "display_string": [display_string],
         "profiles": [],
         "name": current_name,
-        "accountAge": account_age,
+        "creationDate": account_creation_date,
         "registerOn": time.time(),
         "spamCount": 0,
         "lastSpam": time.time(),
@@ -197,557 +205,404 @@ def add_profile(
     }
     CacheData.profiles = profiles
 
-    serverdata.clients[account_id] = profiles[account_id]
-    serverdata.clients[account_id]["warnCount"] = 0
-    serverdata.clients[account_id]["lastWarned"] = time.time()
-    serverdata.clients[account_id]["verified"] = False
-    serverdata.clients[account_id]["rejoincount"] = 1
-    serverdata.clients[account_id]["lastJoin"] = time.time()
-    cid = 113
-    for ros in bs.get_game_roster():
-        if ros['account_id'] == account_id:
-            cid = ros['client_id']
-    ip = _bascenev1.get_client_ip(cid)
-    serverdata.clients[account_id]["lastIP"] = ip
-    serverdata.recents.append(
-        {"client_id": cid, "deviceId": display_string, "pbid": account_id})
-    serverdata.recents = serverdata.recents[-20:]
-    device_id = _bascenev1.get_client_public_device_uuid(cid)
-    if (device_id == None):
-        device_id = _bascenev1.get_client_device_uuid(cid)
-    checkSpammer({'id': account_id, 'display': display_string,
-                  'ip': ip, 'device': device_id})
-    if device_id in get_blacklist()["ban"]["deviceids"] or account_id in \
-            get_blacklist()["ban"]["ids"]:
-        bs.disconnect_client(cid)
-    serverdata.clients[account_id]["deviceUUID"] = device_id
 
-
-def update_display_string(account_id: str, display_string: str) -> None:
-    """Updates the display string of the account.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    display_string : str
-        new display string to be updated
-    """
+def update_display_string(account_id: str, display_string: List[str]) -> None:
+    """Updates the display string of the account."""
     profiles = get_profiles()
     if account_id in profiles:
-        profiles[account_id]["display_string"] = display_string
-        CacheData.profiles = profiles
-        commit_profiles()
+        p = profiles[account_id]
+        p["display_string"] = display_string
+        profiles[account_id] = p
 
 
 def update_profile(
     account_id: str,
-    display_string: str = None,
-    allprofiles: list[str] = None,
-    name: str = None,
+    display_string: Optional[str] = None,
+    allprofiles: Optional[List[str]] = None,
+    name: Optional[str] = None,
 ) -> None:
-    """Updates the profile of client.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    display_string : str, optional
-        display string of the account, by default None
-    allprofiles : list[str], optional
-        all profiles of the client, by default None
-    name : str, optional
-        name to be updated, by default None
-    """
-
+    """Updates the profile of a client."""
     profiles = get_profiles()
-
-    if profiles is None:
+    if not profiles or account_id not in profiles:
         return
 
-    if account_id in profiles and display_string is not None:
-        if display_string not in profiles[account_id]["display_string"]:
-            profiles[account_id]["display_string"].append(display_string)
+    p = profiles[account_id]
+    if display_string and display_string not in p.get("display_string", []):
+        p["display_string"].append(display_string)
 
-    if allprofiles is not None:
+    if allprofiles:
         for profile in allprofiles:
-            if profile not in profiles[account_id]["profiles"]:
-                profiles[account_id]["profiles"].append(profile)
+            if profile not in p.get("profiles", []):
+                p["profiles"].append(profile)
 
-    if name is not None:
-        profiles[account_id]["name"] = name
-    CacheData.profiles = profiles
-    commit_profiles()
+    if name:
+        p["name"] = name
+
+    profiles[account_id] = p
+
+
+def _ban_unban_helper(account_id: str, ban: bool, duration_in_days: float = 0, reason: str = ""):
+    """Helper function to ban or unban a player."""
+    profiles = get_profiles()
+    ip = profiles.get(account_id, {}).get("lastIP")
+    device_id = profiles.get(account_id, {}).get("deviceUUID")
+
+    if not (ip and device_id):
+        for account in reversed(serverdata.recents):
+            if account.get("pbid") == account_id:
+                ip = account.get("ip")
+                device_id = account.get("device_uuid")
+                break
+
+    if ban:
+        ban_time = (datetime.now() + timedelta(days=duration_in_days)
+                    ).strftime("%Y-%m-%d %H:%M:%S")
+        ban_entry = {"till": ban_time, "reason": reason}
+        linked_reason = f'linked with account {account_id}'
+        if ip:
+            CacheData.blacklist["ban"]["ips"][ip] = {
+                "till": ban_time, "reason": linked_reason}
+        if device_id:
+            CacheData.blacklist["ban"]["deviceids"][device_id] = {
+                "till": ban_time, "reason": linked_reason}
+        CacheData.blacklist["ban"]["ids"][account_id] = ban_entry
+    else:
+        if ip:
+            CacheData.blacklist["ban"]["ips"].pop(ip, None)
+        if device_id:
+            CacheData.blacklist["ban"]["deviceids"].pop(device_id, None)
+        CacheData.blacklist["ban"]["ids"].pop(account_id, None)
+
+    _thread.start_new_thread(update_blacklist, ())
 
 
 def ban_player(account_id: str, duration_in_days: float, reason: str) -> None:
-    """Bans the player.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the player to be banned
-    """
-    current_profiles = get_profiles()
-    ip = ""
-    device_id = ""
-    if account_id in current_profiles:
-        ip = current_profiles[account_id]["lastIP"]
-        device_id = current_profiles[account_id]["deviceUUID"]
-
-    ban_time = datetime.now() + timedelta(days=duration_in_days)
-
-    CacheData.blacklist["ban"]["ips"][ip] = {"till": ban_time.strftime(
-        "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
-    CacheData.blacklist["ban"]["ids"][account_id] = {
-        "till": ban_time.strftime("%Y-%m-%d %H:%M:%S"), "reason": reason}
-    CacheData.blacklist["ban"]["deviceids"][device_id] = {
-        "till": ban_time.strftime(
-            "%Y-%m-%d %H:%M:%S"), "reason": f'linked with account {account_id}'}
-    _thread.start_new_thread(update_blacklist, ())
+    """Bans a player."""
+    _ban_unban_helper(account_id, True, duration_in_days, reason)
 
 
-def unban_player(account_id):
-    current_profiles = get_profiles()
-    ip = ""
-    device_id = ""
-    if account_id in current_profiles:
-        ip = current_profiles[account_id]["lastIP"]
-        device_id = current_profiles[account_id]["deviceUUID"]
-    else:
-        for account in serverdata.recents:
-            if account["pbid"] == account_id:
-                ip = account["ip"]
-                device_id = account["device_uuid"]
-
-    CacheData.blacklist["ban"]["ips"].pop(ip, None)
-    CacheData.blacklist["ban"]["deviceids"].pop(device_id, None)
-    CacheData.blacklist["ban"]["ids"].pop(account_id, None)
-    _thread.start_new_thread(update_blacklist, ())
+def unban_player(account_id: str):
+    """Unbans a player."""
+    _ban_unban_helper(account_id, False)
 
 
-def disable_kick_vote(account_id, duration, reason):
-    ban_time = datetime.now() + timedelta(days=duration)
+def disable_kick_vote(account_id: str, duration: float, reason: str):
+    """Disables kick voting for a player."""
+    ban_time = (datetime.now() + timedelta(days=duration)
+                ).strftime("%Y-%m-%d %H:%M:%S")
     CacheData.blacklist["kick-vote-disabled"][account_id] = {
-        "till": ban_time.strftime(
-            "%Y-%m-%d %H:%M:%S"), "reason": reason}
+        "till": ban_time, "reason": reason}
     _thread.start_new_thread(update_blacklist, ())
 
 
-def enable_kick_vote(account_id):
+def enable_kick_vote(account_id: str):
+    """Enables kick voting for a player."""
     CacheData.blacklist["kick-vote-disabled"].pop(account_id, None)
     _thread.start_new_thread(update_blacklist, ())
 
 
 def mute(account_id: str, duration_in_days: float, reason: str) -> None:
-    """Mutes the player.
-
-    Parameters
-    ----------
-    account_id : str
-        acccount id of the player to be muted
-    """
-    ban_time = datetime.now() + timedelta(days=duration_in_days)
-
-    CacheData.blacklist["muted-ids"][account_id] = {"till": ban_time.strftime(
-        "%Y-%m-%d %H:%M:%S"), "reason": reason}
+    """Mutes a player."""
+    ban_time = (datetime.now() + timedelta(days=duration_in_days)
+                ).strftime("%Y-%m-%d %H:%M:%S")
+    CacheData.blacklist["muted-ids"][account_id] = {
+        "till": ban_time, "reason": reason}
     _thread.start_new_thread(update_blacklist, ())
 
 
 def unmute(account_id: str) -> None:
-    """Unmutes the player.
-
-    Parameters
-    ----------
-    account_id : str
-        acccount id of the player to be unmuted
-    """
+    """Unmutes a player."""
     CacheData.blacklist["muted-ids"].pop(account_id, None)
     _thread.start_new_thread(update_blacklist, ())
 
 
 def update_spam(account_id: str, spam_count: int, last_spam: float) -> None:
-    """Updates the spam time and count.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    spam_count : int
-        spam count to be added
-    last_spam : float
-        last spam time
-    """
+    """Updates the spam time and count for a player."""
     profiles = get_profiles()
     if account_id in profiles:
-        profiles[account_id]["spamCount"] = spam_count
-        profiles[account_id]["lastSpam"] = last_spam
-        CacheData.profiles = profiles
-        commit_profiles(profiles)
+        p = profiles[account_id]
+        p["spamCount"] = spam_count
+        p["lastSpam"] = last_spam
+        profiles[account_id] = p
 
 
-def commit_roles(data: dict) -> None:
-    """Commits the roles in database.
-
-    Parameters
-    ----------
-    data : dict
-        data to be commited
-    """
-    if not data:
-        return
-
-    # with OpenJson(PLAYERS_DATA_PATH + "roles.json") as roles_file:
-    #     roles_file.format(data)
+def commit_roles(data: Dict) -> None:
+    """Commits the roles in the database."""
+    # This function is now a no-op as saving is handled by dump_cache
+    pass
 
 
-def get_roles() -> dict:
-    """Returns the roles.
-
-    Returns
-    -------
-    dict
-        roles
-    """
-    if CacheData.roles == {}:
-        try:
-            f = open(PLAYERS_DATA_PATH + "roles.json", "r")
-            roles = json.load(f)
-            f.close()
-            CacheData.roles = roles
-        except Exception as e:
-            print(e)
-            f = open(PLAYERS_DATA_PATH + "roles.json.backup", "r")
-            roles = json.load(f)
-            f.close()
-            CacheData.roles = roles
+def get_roles() -> Dict[str, Any]:
+    """Returns all roles."""
+    if not CacheData.roles:
+        if use_sqlite():
+            try:
+                CacheData.roles = db_profiles.load_roles()
+            except Exception as e:
+                print(f"Exception loading roles from DB: {e}")
+                CacheData.roles = {}
+        else:
+            CacheData.roles = _load_json_file(ROLES_PATH, ROLES_BACKUP_PATH)
     return CacheData.roles
 
 
 def create_role(role: str) -> None:
-    """Ceates the role.
-
-    Parameters
-    ----------
-    role : str
-        role to be created
-    """
+    """Creates a new role."""
     roles = get_roles()
-
-    if role in roles:
-        return
-
-    roles[role] = {
-        "tag": role,
-        "tagcolor": [1, 1, 1],
-        "commands": [],
-        "ids": [],
-    }
-    CacheData.roles = roles
-    commit_roles(roles)
+    if role not in roles:
+        roles[role] = {"tag": role, "tagcolor": [
+            1, 1, 1], "commands": [], "ids": []}
+        CacheData.roles = roles
 
 
 def add_player_role(role: str, account_id: str) -> None:
-    """Adds the player to the role.
-
-    Parameters
-    ----------
-    role : str
-        role to be added
-    account_id : str
-        account id of the client
-    """
+    """Adds a player to a role."""
     roles = get_roles()
-
-    if role in roles:
-        if account_id not in roles[role]["ids"]:
-            roles[role]["ids"].append(account_id)
-            CacheData.roles = roles
-            commit_roles(roles)
-
+    if role in roles and account_id not in roles[role]["ids"]:
+        roles[role]["ids"].append(account_id)
+        CacheData.roles = roles
     else:
-        print(f'Role named {role} does not exist.')
+        print(f'Role named {role} does not exist or player already in role.')
 
 
 def remove_player_role(role: str, account_id: str) -> str:
-    """Removes the role from player.
-
-    Parameters
-    ----------
-    role : str
-        role to br removed
-    account_id : str
-        account id of the client
-
-    Returns
-    -------
-    str
-        status of the removing role
-    """
+    """Removes a role from a player."""
     roles = get_roles()
-    if role in roles:
+    if role in roles and account_id in roles[role]["ids"]:
         roles[role]["ids"].remove(account_id)
         CacheData.roles = roles
-        commit_roles(roles)
-        return "removed from " + role
-    return "role not exists"
+        return f"Removed from {role}"
+    return "Role not found or player not in role."
 
 
 def add_command_role(role: str, command: str) -> str:
-    """Adds the command to the role.
-
-    Parameters
-    ----------
-    role : str
-        role to add the command
-    command : str
-        command to be added
-
-    Returns
-    -------
-    str
-        status of the adding command
-    """
+    """Adds a command to a role."""
     roles = get_roles()
-    if role in roles:
-        if command not in roles[role]["commands"]:
-            roles[role]["commands"].append(command)
-            CacheData.roles = roles
-            commit_roles(roles)
-            return "command added to " + role
-    return "command not exists"
+    if role in roles and command not in roles[role]["commands"]:
+        roles[role]["commands"].append(command)
+        CacheData.roles = roles
+        return f"Command added to {role}"
+    return "Role not found or command already in role."
 
 
 def remove_command_role(role: str, command: str) -> str:
-    """Removes the command from the role.
-
-    Parameters
-    ----------
-    role : str
-        role to remove command from
-    command : str
-        command to be removed
-
-    Returns
-    -------
-    str
-        status of the removing command
-    """
+    """Removes a command from a role."""
     roles = get_roles()
-    if role in roles:
-        if command in roles[role]["commands"]:
-            roles[role]["commands"].remove(command)
-            CacheData.roles = roles
-            commit_roles(roles)
-            return "command added to " + role
-    return "command not exists"
+    if role in roles and command in roles[role]["commands"]:
+        roles[role]["commands"].remove(command)
+        CacheData.roles = roles
+        return f"Command removed from {role}"
+    return "Role not found or command not in role."
 
 
 def change_role_tag(role: str, tag: str) -> str:
-    """Changes the tag of the role.
-
-    Parameters
-    ----------
-    role : str
-        role to chnage the tag
-    tag : str
-        tag to be added
-
-    Returns
-    -------
-    str
-        status of the adding tag
-    """
+    """Changes the tag of a role."""
     roles = get_roles()
     if role in roles:
         roles[role]["tag"] = tag
         CacheData.roles = roles
-        commit_roles(roles)
-        return "tag changed"
-    return "role not exists"
+        return "Tag changed"
+    return "Role not found"
 
 
-def get_player_roles(account_id: str) -> list[str]:
-    """Returns the avalibe roles of the account.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-
-    Returns
-    -------
-    list[str]
-        list of the roles
-    """
-
-    roles = get_roles()
-    have_roles = []
-    for role in roles:
-        if account_id in roles[role]["ids"]:
-            have_roles.append(role)
-    return have_roles
+def get_player_roles(account_id: str) -> List[str]:
+    """Returns the roles of a player."""
+    return [role for role, data in get_roles().items() if account_id in data.get("ids", [])]
 
 
-def get_custom() -> dict:
-    """Returns the custom effects.
-
-    Returns
-    -------
-    dict
-        custom effects
-    """
-    if CacheData.custom == {}:
-        try:
-            f = open(PLAYERS_DATA_PATH + "custom.json", "r")
-            custom = json.load(f)
-            f.close()
-            CacheData.custom = custom
-        except:
-            f = open(PLAYERS_DATA_PATH + "custom.json.backup", "r")
-            custom = json.load(f)
-            f.close()
-            CacheData.custom = custom
-        for account_id in custom["customeffects"]:
-            custom["customeffects"][account_id] = [
-                custom["customeffects"][account_id]] if type(
-                custom["customeffects"][account_id]) is str else \
-                custom["customeffects"][account_id]
-
+def get_custom() -> Dict[str, Any]:
+    """Returns custom effects and tags."""
+    if not CacheData.custom:
+        if use_sqlite():
+            try:
+                CacheData.custom = db_profiles.load_custom()
+            except Exception as e:
+                print(f"Exception loading custom perks from DB: {e}")
+                CacheData.custom = {"customtag": {}, "customeffects": {}}
+        else:
+            custom_data = _load_json_file(CUSTOM_PATH, CUSTOM_BACKUP_PATH)
+            if "customeffects" in custom_data:
+                for acc_id, effects in custom_data["customeffects"].items():
+                    if isinstance(effects, str):
+                        custom_data["customeffects"][acc_id] = [effects]
+            CacheData.custom = custom_data
     return CacheData.custom
 
 
 def set_effect(effect: str, account_id: str) -> None:
-    """Sets the costum effect for the player.
-
-    Parameters
-    ----------
-    effect : str
-        effect to be added to the player
-    accout_id : str
-        account id of the client
-    """
+    """Sets a custom effect for a player."""
     custom = get_custom()
-    if account_id in custom["customeffects"]:
-        effects = [custom["customeffects"][account_id]] if type(
-            custom["customeffects"][account_id]) is str else \
-            custom["customeffects"][account_id]
-        effects.append(effect)
-        custom["customeffects"][account_id] = effects
-    else:
-        custom["customeffects"][account_id] = [effect]
+    if "customeffects" not in custom:
+        custom["customeffects"] = {}
+
+    effects = custom["customeffects"].get(account_id, [])
+    if isinstance(effects, str):
+        effects = [effects]
+
+    effects.append(effect)
+    custom["customeffects"][account_id] = effects
     CacheData.custom = custom
-    commit_c()
 
 
 def set_tag(tag: str, account_id: str) -> None:
-    """Sets the custom tag to the player.
-
-    Parameters
-    ----------
-    tag : str
-        tag to be added to the player
-    account_id : str
-        account id of the client
-    """
+    """Sets a custom tag for a player."""
     custom = get_custom()
+    if "customtag" not in custom:
+        custom["customtag"] = {}
     custom["customtag"][account_id] = tag
     CacheData.custom = custom
-    commit_c()
 
 
-def update_roles(roles):
+def update_roles(roles: Dict):
+    """Updates the cached roles."""
     CacheData.roles = roles
 
 
-def get_custom_perks():
+def get_custom_perks() -> Dict:
+    """Returns all custom perks."""
     return CacheData.custom
 
 
-def update_custom_perks(custom):
+def update_custom_perks(custom: Dict):
+    """Updates the cached custom perks."""
     CacheData.custom = custom
 
 
 def remove_effect(account_id: str) -> None:
-    """Removes the effect from player.
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    """
+    """Removes effects from a player."""
     custom = get_custom()
-    custom["customeffects"].pop(account_id)
-    CacheData.custom = custom
+    if "customeffects" in custom:
+        custom["customeffects"].pop(account_id, None)
+        CacheData.custom = custom
 
 
 def remove_tag(account_id: str) -> None:
-    """Removes the tag from the player
-
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    """
+    """Removes a tag from a player."""
     custom = get_custom()
-    custom["customtag"].pop(account_id)
-    CacheData.custom = custom
+    if "customtag" in custom:
+        custom["customtag"].pop(account_id, None)
+        CacheData.custom = custom
 
 
 def commit_c():
     """Commits the custom data into the custom.json."""
-    # with OpenJson(PLAYERS_DATA_PATH + "custom.json") as custom_file:
-    #     custom_file.dump(CacheData.custom, indent=4)
+    # This function is now a no-op as saving is handled by dump_cache
+    pass
 
 
-def update_toppers(topper_list: list[str]) -> None:
-    """Updates the topper list into top5 role.
-
-    Parameters
-    ----------
-    topper_list : list[str]
-        list of the topper players
-    """
+def update_toppers(topper_list: List[str]) -> None:
+    """Updates the topper list into the top5 role."""
     roles = get_roles()
     if "top5" not in roles:
         create_role("top5")
     CacheData.roles["top5"]["ids"] = topper_list
-    commit_roles(roles)
 
 
 def load_white_list() -> None:
     """Loads the whitelist."""
-    with OpenJson(PLAYERS_DATA_PATH + "whitelist.json") as whitelist_file:
-        data = whitelist_file.load()
-        for account_id in data:
-            CacheData.whitelist.append(account_id)
+    if use_sqlite():
+        try:
+            CacheData.whitelist = db_profiles.load_whitelist()
+        except Exception as e:
+            print(f"Exception loading whitelist from DB: {e}")
+            CacheData.whitelist = []
+    else:
+        data = _load_json_file(WHITELIST_PATH)
+        if isinstance(data, list):
+            CacheData.whitelist = data
+        elif isinstance(data, dict):
+            CacheData.whitelist = list(data.keys())
 
 
 def load_cache():
-    """ to be called on server boot"""
-    get_profiles()
+    """To be called on server boot to load all data into cache."""
+    if use_sqlite():
+        # Check if database is empty, if so perform one-time migration from JSON files
+        try:
+            from repository.db import run_query
+            rows = run_query("SELECT count(*) FROM profiles", fetch=True)
+            db_empty = (rows[0][0] == 0) if rows else True
+            if db_empty:
+                print("SQLite database is empty. Migrating existing JSON data to SQLite...")
+
+                # Migrate profiles
+                json_profiles = _load_json_file(PROFILES_PATH, PROFILES_BACKUP_PATH)
+                if json_profiles:
+                    db_profiles.save_all_profiles(json_profiles)
+                    print(f"Migrated {len(json_profiles)} profiles to SQLite")
+
+                # Migrate roles
+                json_roles = _load_json_file(ROLES_PATH, ROLES_BACKUP_PATH)
+                if json_roles:
+                    db_profiles.save_roles(json_roles)
+                    print("Migrated roles to SQLite")
+
+                # Migrate custom perks
+                json_custom = _load_json_file(CUSTOM_PATH, CUSTOM_BACKUP_PATH)
+                if json_custom:
+                    if "customeffects" in json_custom:
+                        for acc_id, effects in json_custom["customeffects"].items():
+                            if isinstance(effects, str):
+                                json_custom["customeffects"][acc_id] = [effects]
+                    db_profiles.save_custom(json_custom)
+                    print("Migrated custom tags/effects to SQLite")
+
+                # Migrate blacklist
+                json_blacklist = _load_json_file(BLACKLIST_PATH)
+                if json_blacklist:
+                    db_profiles.save_blacklist(json_blacklist)
+                    print("Migrated blacklist to SQLite")
+
+                # Migrate whitelist
+                json_whitelist = _load_json_file(WHITELIST_PATH)
+                if json_whitelist:
+                    w_list = []
+                    if isinstance(json_whitelist, list):
+                        w_list = json_whitelist
+                    elif isinstance(json_whitelist, dict):
+                        w_list = list(json_whitelist.keys())
+                    db_profiles.save_whitelist(w_list)
+                    print("Migrated whitelist to SQLite")
+
+                print("JSON to SQLite migration completed successfully!")
+        except Exception as e:
+            print(f"Failed to migrate JSON to SQLite: {e}")
+
+        CacheData.profiles = db_profiles.SQLiteLazyProfiles()
+    else:
+        get_profiles()
+
     get_custom()
     get_roles()
+    load_white_list()
+    get_blacklist()
 
 
 def dump_cache():
-    if CacheData.profiles != {}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json",
-                        PLAYERS_DATA_PATH + "profiles.json.backup")
-        profiles = copy.deepcopy(CacheData.profiles)
-        with open(PLAYERS_DATA_PATH + "profiles.json", "w") as f:
-            json.dump(profiles, f, indent=4)
-    if CacheData.roles != {}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "roles.json",
-                        PLAYERS_DATA_PATH + "roles.json.backup")
-        roles = copy.deepcopy(CacheData.roles)
-        with open(PLAYERS_DATA_PATH + "roles.json", "w") as f:
-            json.dump(roles, f, indent=4)
-    if CacheData.custom != {}:
-        shutil.copyfile(PLAYERS_DATA_PATH + "custom.json",
-                        PLAYERS_DATA_PATH + "custom.json.backup")
-        custom = copy.deepcopy(CacheData.custom)
-        with open(PLAYERS_DATA_PATH + "custom.json", "w") as f:
-            json.dump(custom, f, indent=4)
+    """Periodically saves all cached data to disk or database."""
+    if use_sqlite():
+        try:
+            # We avoid taking the whole profiles database to in-memory CacheData,
+            # and do not do periodic dump of profiles in SQLite since it's already updated on the fly.
+            if CacheData.roles:
+                db_profiles.save_roles(copy.deepcopy(CacheData.roles))
+            if CacheData.custom:
+                db_profiles.save_custom(copy.deepcopy(CacheData.custom))
+            if CacheData.whitelist:
+                db_profiles.save_whitelist(copy.deepcopy(CacheData.whitelist))
+        except Exception as e:
+            print(f"Exception dumping cache to DB: {e}")
+    else:
+        if CacheData.profiles:
+            _save_json_file(PROFILES_PATH, copy.deepcopy(
+                CacheData.profiles), PROFILES_BACKUP_PATH)
+        if CacheData.roles:
+            _save_json_file(ROLES_PATH, copy.deepcopy(
+                CacheData.roles), ROLES_BACKUP_PATH)
+        if CacheData.custom:
+            _save_json_file(CUSTOM_PATH, copy.deepcopy(
+                CacheData.custom), CUSTOM_BACKUP_PATH)
+
+    # Schedule the next dump
     time.sleep(60)
     dump_cache()

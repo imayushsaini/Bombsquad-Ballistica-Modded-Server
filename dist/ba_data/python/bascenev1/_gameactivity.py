@@ -4,12 +4,8 @@
 
 # pylint: disable=too-many-lines
 
-from __future__ import annotations
-
 import random
 import logging
-import time
-import uuid
 from typing import TYPE_CHECKING, override
 
 import babase
@@ -212,6 +208,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
     def __init__(self, settings: dict):
         """Instantiate the Activity."""
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
         super().__init__(settings)
 
         #: Holds some flattened info about the player set at the point
@@ -221,7 +222,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         # Go ahead and get our map loading.
         self._map_type = _map.get_map_class(self._calc_map_name(settings))
 
-        self._spawn_sound = _bascenev1.getsound('spawn')
+        self._spawn_sound = stdassets.audio.spawn
         self._map_type.preload()
         self._map: bascenev1.Map | None = None
         self._powerup_drop_timer: bascenev1.Timer | None = None
@@ -340,26 +341,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         # Make our map.
         self._map = self._map_type()
 
-        # Add default activities for our map.
-        mapname = getattr(self._map_type, 'name', None)
-        map_preview = getattr(self._map_type, 'get_preview_texture_name', None)
-
-        if babase.app.discord.is_ready and mapname and map_preview:
-            preview = map_preview().lower().removesuffix('preview')
-            babase.app.discord.set_presence(
-                state=self.getname(),
-                details=f"Playing on {mapname}",
-                large_image_key=preview,
-                large_image_text=mapname,
-                small_image_key=(
-                    babase.app.classic.platform if babase.app.classic else None
-                ),
-                small_image_text=(
-                    babase.app.classic.platform if babase.app.classic else None
-                ),
-                start_timestamp=int(time.time()),
-            )
-
         # Give our map a chance to override the music
         map_music = self._map_type.get_music_type()
         music = map_music if map_music is not None else self.default_music
@@ -373,14 +354,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
         if babase.app.classic is not None:
             babase.app.classic.game_begin_analytics()
-
-        # Update Discord party info
-        if babase.app.discord.is_ready:
-            party_size = len(self.players)
-            max_size = max(8, party_size)
-            babase.app.discord.set_presence(
-                party_id=str(uuid.uuid4()), party_size=(party_size, max_size)
-            )
 
         _bascenev1.timer(0.001, self._show_scoreboard_info)
         _bascenev1.timer(1.0, self._show_info)
@@ -470,7 +443,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         This is the thing in the top left corner showing the name
         and short description of the game.
         """
-        # pylint: disable=too-many-locals
         from bascenev1._freeforallsession import FreeForAllSession
         from bascenev1._gameutils import animate
         from bascenev1._nodeactor import NodeActor
@@ -560,6 +532,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
     def _show_info(self) -> None:
         """Show the game description."""
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
         from bascenev1._gameutils import animate
         from bascenev1lib.actor.zoomtext import ZoomText
 
@@ -574,9 +551,9 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
             color=(0.93 * 1.25, 0.9 * 1.25, 1.0 * 1.25),
             trailcolor=(0.15, 0.05, 1.0, 0.0),
         ).autoretain()
-        _bascenev1.timer(0.2, _bascenev1.getsound('gong').play)
+        _bascenev1.timer(0.2, stdassets.audio.gong.play)
         # _bascenev1.timer(
-        #     0.2, Call(_bascenev1.playsound, _bascenev1.getsound('gong'))
+        #     0.2, Call(_bascenev1.playsound, stdassets.audio.gong)
         # )
 
         # The description can be either a string or a sequence with args
@@ -630,7 +607,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         _bascenev1.timer(4.0, dnode.delete)
 
     def _show_tip(self) -> None:
-        # pylint: disable=too-many-locals
         from bascenev1._gameutils import animate, GameTip
 
         # If there's any tips left on the list, display one.
@@ -842,7 +818,6 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         angle: float | None = None,
     ) -> PlayerSpaz:
         """Create and wire up a player-spaz for the provided player."""
-        # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
         from bascenev1._gameutils import animate
         from bascenev1._coopsession import CoopSession
@@ -989,6 +964,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         )
 
     def _standard_time_limit_tick(self) -> None:
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
         from bascenev1._gameutils import animate
 
         assert self._standard_time_limit_time is not None
@@ -1011,7 +991,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 animate(cnode, 'input1', {0: 1, 0.15: 0.5}, loop=True)
                 animate(cnode, 'input2', {0: 0.1, 0.15: 0.0}, loop=True)
                 cnode.input3 = 1.0
-            _bascenev1.getsound('tick').play()
+            stdassets.audio.tick.play()
         if self._standard_time_limit_time <= 0:
             self._standard_time_limit_timer = None
             self.end_game()
@@ -1027,7 +1007,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     'text': babase.Lstr(resource='timeExpiredText'),
                 },
             )
-            _bascenev1.getsound('refWhistle').play()
+            stdassets.audio.ref_whistle.play()
             animate(node, 'scale', {0.0: 0.0, 0.1: 1.4, 0.15: 1.2})
 
     def _setup_tournament_time_limit(self, duration: float) -> None:
@@ -1103,6 +1083,11 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         )
 
     def _tournament_time_limit_tick(self) -> None:
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import stdassets
+
         from bascenev1._gameutils import animate
 
         assert self._tournament_time_limit is not None
@@ -1134,7 +1119,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 animate(cnode, 'input1', {0: 1, 0.15: 0.5}, loop=True)
                 animate(cnode, 'input2', {0: 0.1, 0.15: 0.0}, loop=True)
                 cnode.input3 = 1.0
-            _bascenev1.getsound('tick').play()
+            stdassets.audio.tick.play()
         if self._tournament_time_limit <= 0:
             self._tournament_time_limit_timer = None
             self.end_game()
@@ -1154,7 +1139,7 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                     'text': tval,
                 },
             )
-            _bascenev1.getsound('refWhistle').play()
+            stdassets.audio.ref_whistle.play()
             animate(node, 'scale', {0: 0.0, 0.1: 1.4, 0.15: 1.2})
 
         # Normally we just connect this to time, but since this is a bit of a

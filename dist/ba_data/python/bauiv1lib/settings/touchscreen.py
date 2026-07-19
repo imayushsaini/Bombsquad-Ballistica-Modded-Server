@@ -2,8 +2,6 @@
 #
 """UI settings functionality related to touchscreens."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bauiv1 as bui
@@ -117,7 +115,6 @@ class TouchscreenSettingsWindow(bui.MainWindow):
         return False
 
     def _build_gui(self) -> None:
-        # pylint: disable=too-many-locals
         from bauiv1lib.config import ConfigNumberEdit, ConfigCheckBox
         from bauiv1lib.radiogroup import make_radio_group
 

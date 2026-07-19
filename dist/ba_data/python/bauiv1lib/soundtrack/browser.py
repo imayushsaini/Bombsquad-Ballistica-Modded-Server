@@ -2,13 +2,13 @@
 #
 """Provides UI for browsing soundtracks."""
 
-from __future__ import annotations
-
 import copy
 import logging
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -22,8 +22,6 @@ class SoundtrackBrowserWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-locals
 
         self._r = 'editSoundtrackWindow'
         assert bui.app.classic is not None
@@ -100,7 +98,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
         h = 43 + x_inset
         b_color = (0.6, 0.53, 0.63)
         b_textcolor = (0.75, 0.7, 0.8)
-        lock_tex = bui.gettexture('lock')
+        lock_tex = stdassets.textures.lock.get()
         self._lock_images: list[bui.Widget] = []
 
         scl = 1.2
@@ -291,7 +289,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
         if self._selected_soundtrack in soundtracks:
             del soundtracks[self._selected_soundtrack]
         cfg.commit()
-        bui.getsound('shieldDown').play()
+        stdassets.audio.shield_down.get().play()
         assert self._selected_soundtrack_index is not None
         assert self._soundtracks is not None
         self._selected_soundtrack_index = min(
@@ -306,7 +304,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
         if self._selected_soundtrack is None:
             return
         if self._selected_soundtrack == '__default__':
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantDeleteDefaultText'),
                 color=(1, 0, 0),
@@ -374,7 +372,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
 
         # If it varies from current, commit and play.
         if current_soundtrack != name and self._allow_changing_soundtracks:
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
             cfg['Soundtrack'] = self._selected_soundtrack
             cfg.commit()
 
@@ -385,7 +383,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
             )
 
     def _edit_soundtrack_with_sound(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._edit_soundtrack()
 
     def _edit_soundtrack(self) -> None:
@@ -399,7 +397,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
             return
 
         if self._selected_soundtrack == '__default__':
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantEditDefaultText'),
                 color=(1, 0, 0),
@@ -510,7 +508,7 @@ class SoundtrackBrowserWindow(bui.MainWindow):
 
     def _create_done(self, new_soundtrack: str) -> None:
         if new_soundtrack is not None:
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
             self._refresh(select_soundtrack=new_soundtrack)
 
     def _save_state(self) -> None:

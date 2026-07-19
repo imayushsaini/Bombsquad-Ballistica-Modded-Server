@@ -2,8 +2,6 @@
 #
 """Functionality related to the final screen in multi-teams sessions."""
 
-from __future__ import annotations
-
 from typing import override, TYPE_CHECKING, Any, cast
 
 import bascenev1 as bs
@@ -32,9 +30,9 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 
     @override
     def on_begin(self) -> None:
+        # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         from bascenev1lib.actor.text import Text
         from bascenev1lib.actor.image import Image
 
@@ -96,9 +94,10 @@ class TeamSeriesVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         tval = 6.4
         t_incr = 0.12
 
-        always_use_first_to = bs.app.lang.get_resource(
-            'bestOfUseFirstToInstead'
-        )
+        # 'bestOfUseFirstToInstead' was a per-language 0/1 grammar flag;
+        # hard-coded to the English value (0) for the strings migration
+        # (revisit in Step B; see followups.md).
+        always_use_first_to = 0
 
         session = self.session
         if self._is_ffa:

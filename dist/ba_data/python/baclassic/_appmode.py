@@ -3,8 +3,6 @@
 # pylint: disable=too-many-lines
 """Contains ClassicAppMode."""
 
-from __future__ import annotations
-
 import os
 import logging
 import hashlib
@@ -14,8 +12,10 @@ from typing import TYPE_CHECKING, override
 from efro.error import CommunicationError
 import bacommon.clienteffect as clfx
 import bacommon.classic
+import babase
 from babase import AppMode
 import bauiv1 as bui
+from bauiv1 import builtinassets
 from bauiv1lib.connectivity import wait_for_connectivity
 
 import _baclassic
@@ -76,6 +76,23 @@ class ClassicAppMode(AppMode):
 
     @override
     def on_activate(self) -> None:
+        # Register the asset-package versions backing our asset
+        # wrapper modules so legacy bare asset names arriving from old
+        # peers, old replays, server-driven docui content, or modder
+        # code get mapped to their asset-package homes (see
+        # AssetNameCompat in the native layer). Sourcing these from
+        # the wrappers means a modder-swapped package keeps working.
+        # (The bauiv1 and bascenev1 wrapper flavors carry identical
+        # __asset_package__ ids; builtinassets here is our module-level
+        # bauiv1 import.)
+        from bauiv1 import stdassets
+
+        babase.set_asset_name_compat_versions(
+            {
+                'builtinassets': builtinassets.__asset_package__,
+                'stdassets': stdassets.__asset_package__,
+            }
+        )
 
         # Let the native layer do its thing.
         _baclassic.classic_app_mode_activate()
@@ -288,7 +305,7 @@ class ClassicAppMode(AppMode):
                 color=(0, 1, 0),
             )
             if bui.asset_loads_allowed():
-                bui.getsound('cashRegister').play()
+                builtinassets.audio.cash_register.get().play()
 
         else:
 
@@ -304,7 +321,7 @@ class ClassicAppMode(AppMode):
                 color=(0, 1, 0),
             )
             if bui.asset_loads_allowed():
-                bui.getsound('cashRegister').play()
+                builtinassets.audio.cash_register.get().play()
 
     def on_engine_will_reset(self) -> None:
         """Called just before classic resets the engine.
@@ -509,7 +526,7 @@ class ClassicAppMode(AppMode):
     ) -> None:
         achp = round(val.achievements / max(val.achievements_total, 1) * 100.0)
 
-        bui.accountlog.debug('Got new classic account data.')
+        bui.accountlog.debug('Got new classic live account data.')
 
         chest0 = val.chests.get('0')
         chest1 = val.chests.get('1')
@@ -682,7 +699,7 @@ class ClassicAppMode(AppMode):
         old_window = ui.get_main_window()
         if old_window is not None:
 
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
 
             classic = bui.app.classic
             assert classic is not None
@@ -840,7 +857,7 @@ class ClassicAppMode(AppMode):
         plus = bui.app.plus
         if plus is None:
             bui.screenmessage('This requires plus.', color=(1, 0, 0))
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return False
         if plus.accounts.primary is None:
             show_sign_in_prompt(origin_widget=origin_widget)
@@ -972,6 +989,10 @@ class ClassicAppMode(AppMode):
             bui.DevConsoleButtonDef(
                 'DocUI Test', bui.WeakCallStrict(self._doc_ui_test_press)
             ),
+            bui.DevConsoleButtonDef(
+                'DocUI Test v2',
+                bui.WeakCallStrict(self._doc_ui_test_v2_press),
+            ),
         ]
 
     def _main_win_template_press(self) -> None:
@@ -984,13 +1005,13 @@ class ClassicAppMode(AppMode):
                 ' Open a menu or whatnot first.',
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Unintuitively, swish sounds come from buttons, not windows.
         # And dev-console buttons don't make sounds. So we need to
         # explicitly do so here.
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
 
         show_template_main_window()
 
@@ -1004,12 +1025,29 @@ class ClassicAppMode(AppMode):
                 ' Open a menu or whatnot first.',
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Unintuitively, swish sounds come from buttons, not windows.
         # And dev-console buttons don't make sounds. So we need to
         # explicitly do so here.
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
 
         show_test_doc_ui_window()
+
+    def _doc_ui_test_v2_press(self) -> None:
+        from bauiv1lib.docuitest import show_test_doc_ui_v2_window
+
+        # This only works if a main ui is up.
+        if bui.app.ui_v1.get_main_window() is None:
+            bui.screenmessage(
+                'This requires a main-window to be present.'
+                ' Open a menu or whatnot first.',
+                color=(1, 0, 0),
+            )
+            builtinassets.audio.error.get().play()
+            return
+
+        builtinassets.audio.swish.get().play()
+
+        show_test_doc_ui_v2_window()

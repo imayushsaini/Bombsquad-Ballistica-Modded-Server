@@ -2,14 +2,14 @@
 #
 """Provides a window for configuring play options."""
 
-from __future__ import annotations
-
 import logging
 from typing import TYPE_CHECKING, override
 
 from bacommon.analytics import ClassicAnalyticsEvent
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 from bauiv1lib.popup import PopupWindow
 
@@ -31,9 +31,9 @@ class PlayOptionsWindow(PopupWindow):
         delegate: Any = None,
         playlist_select_context: PlaylistSelectContext | None = None,
     ):
+        # pylint: disable=too-many-statements
         # FIXME: Tidy this up.
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
         from bascenev1 import filter_playlist, get_map_class
         from bauiv1lib.playlist import PlaylistTypeVars
@@ -65,9 +65,11 @@ class PlayOptionsWindow(PopupWindow):
         self._row_height = 45.0
 
         # Grab our maps to display.
-        mesh_opaque = bui.getmesh('level_select_button_opaque')
-        mesh_transparent = bui.getmesh('level_select_button_transparent')
-        mask_tex = bui.gettexture('mapPreviewMask')
+        mesh_opaque = stdassets.meshes.level_select_button_opaque.get()
+        mesh_transparent = (
+            stdassets.meshes.level_select_button_transparent.get()
+        )
+        mask_tex = stdassets.textures.map_preview_mask.get()
 
         # Poke into this playlist and see if we can display some of its
         # maps.
@@ -237,7 +239,11 @@ class PlayOptionsWindow(PopupWindow):
                         parent=self.root_widget,
                         size=(scl * 240.0, scl * 120.0),
                         position=(h, v),
-                        texture=bui.gettexture(tex_name if owned else 'empty'),
+                        texture=(
+                            bui.gettexture(tex_name)
+                            if owned
+                            else stdassets.textures.empty.get()
+                        ),
                         mesh_opaque=mesh_opaque if owned else None,
                         on_activate_call=bui.CallStrict(
                             bui.screenmessage, desc, desc_color
@@ -277,7 +283,7 @@ class PlayOptionsWindow(PopupWindow):
                             size=(scl * 100, scl * 100),
                             draw_controller=btn,
                             position=(h + scl * 70, v + scl * 10),
-                            texture=bui.gettexture('lock'),
+                            texture=stdassets.textures.lock.get(),
                         )
 
         y_offs = 50 if show_shuffle_check_box else 0
@@ -468,7 +474,7 @@ class PlayOptionsWindow(PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()
 
     def _on_cancel_press(self) -> None:
@@ -485,7 +491,7 @@ class PlayOptionsWindow(PopupWindow):
 
         # Disallow if we have no unlocked games.
         if not self._have_at_least_one_owned:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource='playlistNoValidGamesErrorText'),
                 color=(1, 0, 0),
@@ -505,7 +511,7 @@ class PlayOptionsWindow(PopupWindow):
             else:
                 raise RuntimeError('Only teams and ffa currently supported')
             cfg['Private Party Host Session Type'] = typename
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
 
             self._transition_out(transition='out_left')
             if self._delegate is not None:

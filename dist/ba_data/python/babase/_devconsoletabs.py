@@ -2,8 +2,6 @@
 #
 """Predefined tabs for the dev console."""
 
-from __future__ import annotations
-
 import math
 import random
 import logging
@@ -118,7 +116,7 @@ class DevConsoleTabUI(DevConsoleTab):
 
     @override
     def refresh(self) -> None:
-        from babase._mgen.enums import UIScale
+        from babase._generated.enums import UIScale
 
         xoffs = -305.0
         yoffs = 10.0
@@ -267,7 +265,6 @@ class Table[T]:
 
     def refresh(self, tab: DevConsoleTab) -> None:
         """Call to refresh the data."""
-        # pylint: disable=too-many-locals
 
         margin_top = 50.0
         margin_bottom = 10.0
@@ -537,7 +534,6 @@ class DevConsoleTabLogging(DevConsoleTab):
         height: float,
     ) -> None:
         # pylint: disable=too-many-positional-arguments
-        # pylint: disable=too-many-locals
 
         xoffs = -15.0
         bwidth = 80.0

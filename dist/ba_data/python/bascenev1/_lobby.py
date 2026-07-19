@@ -4,8 +4,6 @@
 
 # pylint: disable=too-many-lines
 
-from __future__ import annotations
-
 import logging
 import weakref
 from dataclasses import dataclass
@@ -195,12 +193,17 @@ class Chooser:
         sessionplayer: bascenev1.SessionPlayer,
         lobby: 'Lobby',
     ) -> None:
-        self._deek_sound = _bascenev1.getsound('deek')
-        self._click_sound = _bascenev1.getsound('click01')
-        self._punchsound = _bascenev1.getsound('punch01')
-        self._swish_sound = _bascenev1.getsound('punchSwish')
-        self._errorsound = _bascenev1.getsound('error')
-        self._mask_texture = _bascenev1.gettexture('characterIconMask')
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import builtinassets, stdassets
+
+        self._deek_sound = builtinassets.audio.deek
+        self._click_sound = builtinassets.audio.click01
+        self._punchsound = builtinassets.audio.punch01
+        self._swish_sound = stdassets.audio.punch_swish
+        self._errorsound = builtinassets.audio.error
+        self._mask_texture = builtinassets.textures.character_icon_mask
         self._vpos = vpos
         self._lobby = weakref.ref(lobby)
         self._sessionplayer = sessionplayer
@@ -451,9 +454,39 @@ class Chooser:
 
         # Pull this player's list of unlocked characters.
         if is_remote:
-            # TODO: Pull this from the remote player.
-            # (but make sure to filter it to the ones we've got).
-            self._character_names = ['Spaz']
+            # v2-auth hosts can get an authoritative purchases list
+            # from the master server — see
+            # ``input_device.get_classic_purchases()``. When that
+            # returns ``None`` (non-v2-auth connection, older
+            # master, etc.) fall back to the legacy behavior: start
+            # with just 'Spaz' and let ``update_from_profile()``
+            # lazily append characters referenced in the remote
+            # player's (master-server-validated) profiles. The
+            # purchases snapshot is captured at handshake time, so
+            # characters unlocked mid-match won't appear until
+            # rejoin — mirrors local-player behavior
+            # (``character_names_local_unlocked`` is only refreshed
+            # at lobby reload).
+            classic_purchases: list[str] | None = (
+                input_device.get_classic_purchases()
+            )
+            if classic_purchases is None:
+                self._character_names = ['Spaz']
+            else:
+                # Run through the same mapper local players use so
+                # the legacy-id → in-game-name translation lives in
+                # one place.
+                # pylint: disable=cyclic-import
+                from bascenev1lib.actor.spazappearance import (
+                    get_appearances,
+                )
+
+                self._character_names = get_appearances(
+                    purchases=classic_purchases
+                )
+                self._character_names.sort(key=lambda x: x.lower())
+                if not self._character_names:
+                    self._character_names = ['Spaz']
         else:
             self._character_names = self.lobby.character_names_local_unlocked
 
@@ -763,6 +796,10 @@ class Chooser:
 
     def handlemessage(self, msg: Any) -> Any:
         """Standard generic message handler."""
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import builtinassets
 
         if isinstance(msg, ChangeMessage):
             self._handle_repeat_message_attack()
@@ -791,7 +828,7 @@ class Chooser:
                 if len(self._profilenames) == 1:
                     # This should be pretty hard to hit now with
                     # automatic local accounts.
-                    _bascenev1.getsound('error').play()
+                    builtinassets.audio.error.play()
                 else:
                     # Pick the next player profile and assign our name
                     # and character based on that.
@@ -903,10 +940,15 @@ class Chooser:
         return self._sessionplayer
 
     def _update_icon(self) -> None:
+        # Safe up-call: bascenev1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import builtinassets, stdassets
+
         assert babase.app.classic is not None
         if self._profilenames[self._profileindex] == '_edit':
-            tex = _bascenev1.gettexture('black')
-            tint_tex = _bascenev1.gettexture('black')
+            tex = builtinassets.textures.black
+            tint_tex = builtinassets.textures.black
             self.icon.color = (1, 1, 1)
             self.icon.texture = tex
             self.icon.tint_texture = tint_tex
@@ -922,8 +964,11 @@ class Chooser:
             ].icon_mask_texture
         except Exception:
             logging.exception('Error updating char icon list')
-            tex_name = 'neoSpazIcon'
-            tint_tex_name = 'neoSpazIconColorMask'
+            tex_name = f'{stdassets.__asset_package__}:textures/neo_spaz_icon'
+            tint_tex_name = (
+                f'{stdassets.__asset_package__}'
+                ':textures/neo_spaz_icon_color_mask'
+            )
 
         tex = _bascenev1.gettexture(tex_name)
         tint_tex = _bascenev1.gettexture(tint_tex_name)

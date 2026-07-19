@@ -2,13 +2,12 @@
 #
 """Provides a picker for icons."""
 
-from __future__ import annotations
-
 import math
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib.popup import PopupWindow
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -41,7 +40,6 @@ class IconPicker(PopupWindow):
         tint2_color: Sequence[float] = (1.0, 1.0, 1.0),
         selected_icon: str | None = None,
     ):
-        # pylint: disable=too-many-locals
         del parent  # unused here
         del tint_color  # unused_here
         del tint2_color  # unused here
@@ -197,5 +195,5 @@ class IconPicker(PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()

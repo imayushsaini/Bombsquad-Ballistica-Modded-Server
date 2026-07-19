@@ -2,8 +2,6 @@
 #
 """Provides the built-in on screen keyboard UI."""
 
-from __future__ import annotations
-
 import logging
 from typing import cast
 
@@ -126,7 +124,11 @@ class OnScreenKeyboardWindow(Window):
         self._load_keyboard()
 
     def _load_keyboard(self) -> None:
-        # pylint: disable=too-many-locals
+        # Safe up-call: bauiv1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bauiv1 import builtinassets
+
         self._keyboard = self._get_keyboard()
         # We want to get just chars without column data, etc.
         self._chars = [j for i in self._keyboard.chars for j in i]
@@ -142,7 +144,7 @@ class OnScreenKeyboardWindow(Window):
         key_color = self._key_color
         key_color_dark = self._key_color_dark
 
-        self._click_sound = _bauiv1.getsound('click01')
+        self._click_sound = builtinassets.audio.click01.get()
 
         # kill prev char keys
         for key in self._char_keys:
@@ -386,6 +388,11 @@ class OnScreenKeyboardWindow(Window):
         self._refresh()
 
     def _next_keyboard(self) -> None:
+        # Safe up-call: bauiv1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bauiv1 import builtinassets
+
         assert babase.app.meta.scanresults is not None
         kbexports = babase.app.meta.scanresults.exports_by_name(
             'bauiv1.Keyboard'
@@ -394,7 +401,7 @@ class OnScreenKeyboardWindow(Window):
 
         self._load_keyboard()
         if len(kbexports) < 2:
-            _bauiv1.getsound('error').play()
+            builtinassets.audio.error.get().play()
             babase.screenmessage(
                 babase.Lstr(resource='keyboardNoOthersAvailableText'),
                 color=(1, 0, 0),
@@ -452,8 +459,13 @@ class OnScreenKeyboardWindow(Window):
         self._refresh()
 
     def _cancel(self) -> None:
+        # Safe up-call: bauiv1 is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bauiv1 import builtinassets
+
         self._adapter.cancel()
-        _bauiv1.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         _bauiv1.containerwidget(edit=self._root_widget, transition='out_scale')
 
     def _done(self) -> None:

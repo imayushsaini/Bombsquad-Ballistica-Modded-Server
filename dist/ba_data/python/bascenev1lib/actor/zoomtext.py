@@ -2,8 +2,6 @@
 #
 """Defined Actor(s)."""
 
-from __future__ import annotations
-
 import random
 import logging
 from typing import TYPE_CHECKING, override
@@ -39,7 +37,6 @@ class ZoomText(bs.Actor):
         tilt_translate: float = 0.0,
         maxwidth: float | None = None,
     ):
-        # pylint: disable=too-many-locals
         super().__init__()
         self._dying = False
         positionadjusted = (position[0], position[1] - 100)

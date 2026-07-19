@@ -2,12 +2,11 @@
 #
 """Provides a top level control settings window."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 
 class ControlsSettingsWindow(bui.MainWindow):
@@ -18,8 +17,8 @@ class ControlsSettingsWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # FIXME: should tidy up here.
         # pylint: disable=too-many-statements
+        # FIXME: should tidy up here.
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
@@ -317,7 +316,7 @@ class ControlsSettingsWindow(bui.MainWindow):
                     bui.Lstr(resource='settingsWindowAdvanced.mustRestartText'),
                     color=(1, 1, 0),
                 )
-                bui.getsound('gunCocking').play()
+                builtinassets.audio.gun_cocking.get().play()
                 bui.set_low_level_config_value('enablexinput', not value)
 
             xinput_checkbox = bui.checkboxwidget(
