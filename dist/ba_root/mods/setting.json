@@ -138,7 +138,7 @@
     "enable": false
   },
   "minAgeToChatInHours": 78,
-  "minAgeToJoinInHours": 0.001,
+  "minAgeToJoinInHours": 24,
   "newResultBoard": true,
   "playermod": {
     "default_bomb": "normal",

@@ -473,7 +473,6 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             # Put ourself at the back of the spawn order.
             player.team.spawn_order.remove(player)
             player.team.spawn_order.append(player)
-            player.node.delete()
 
     def _update(self) -> None:
         # For both teams, find the first player on the spawn order

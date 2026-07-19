@@ -2,8 +2,6 @@
 #
 """Core components of dataclassio."""
 
-from __future__ import annotations
-
 import dataclasses
 import typing
 import warnings
@@ -12,7 +10,6 @@ from enum import Enum
 from typing import TYPE_CHECKING, get_args, override, final
 
 from typing import _AnnotatedAlias  # type: ignore
-
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Literal, ClassVar, Self
