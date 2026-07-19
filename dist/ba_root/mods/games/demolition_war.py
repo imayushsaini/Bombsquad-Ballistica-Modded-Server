@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 """
 DemolitionWar - BombFight on wooden floor flying in air.
 Author: Mr.Smoothy
@@ -25,10 +25,8 @@ if TYPE_CHECKING:
 
 
 # ba_meta export bascenev1.GameActivity
-
-
 class DemolitionWar(EliminationGame):
-    name = 'DemolitionWar'
+    name = 'Demolition War'
     description = 'Last remaining alive wins.'
     scoreconfig = bs.ScoreConfig(
         label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
@@ -41,7 +39,7 @@ class DemolitionWar(EliminationGame):
     @classmethod
     def get_available_settings(
         cls, sessiontype: type[bs.Session]
-    ) -> list[babase.Setting]:
+    ) -> list[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -124,7 +122,7 @@ class DemolitionWar(EliminationGame):
         node = bs.getcollision().sourcenode
         bs.emitfx((node.position[0], 0.9, node.position[2]),
                   (0, 2, 0), 30, 1, spread=1, chunk_type='splinter')
-        bs.timer(0.1, babase.Call(node.delete))
+        bs.timer(0.1, babase.CallStrict(node.delete))
 
     def map_extend(self):
         # TODO need to improve here , so we can increase size of map easily with settings
@@ -137,7 +135,7 @@ class DemolitionWar(EliminationGame):
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', True),
-                ('call', 'at_connect', babase.Call(self.on_blast))
+                ('call', 'at_connect', babase.CallStrict(self.on_blast))
             ))
         self.ramps = []
         for i in p:
@@ -309,6 +307,6 @@ class WoodenFloor(
 
 
 try:
-    bs._map.register_map(WoodenFloor)
+    bs.register_map(WoodenFloor)
 except:
     pass

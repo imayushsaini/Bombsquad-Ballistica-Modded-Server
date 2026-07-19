@@ -146,7 +146,7 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
     def on_player_join(self, player):
         if player.state is None:
-            player.state = self.states[5]
+            player.state = self.states[0]
         self.spawn_player(player)
 
     # overriding the default character spawning..
