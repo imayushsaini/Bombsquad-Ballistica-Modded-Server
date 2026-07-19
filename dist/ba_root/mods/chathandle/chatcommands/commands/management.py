@@ -24,7 +24,8 @@ def unban(arguments: list[str], clientid: int, accountid: str) -> None:
         for account in serverdata.recents:
             if account['client_id'] == target_cl_id:
                 pdata.unban_player(account["pbid"])
-                logger.log(f'unbanned {account["pbid"]} by chat command, recents')
+                logger.log(
+                    f'unbanned {account["pbid"]} by chat command, recents')
     except (ValueError, TypeError):
         pass
 
@@ -33,7 +34,8 @@ def unban(arguments: list[str], clientid: int, accountid: str) -> None:
 def recents(arguments: list[str], clientid: int, accountid: str) -> None:
     """List recent players."""
     for players in serverdata.recents:
-        send(f"{players['client_id']} {players['deviceId']} {players['pbid']}", clientid)
+        send(
+            f"{players['client_id']} {players['deviceId']} {players['pbid']}", clientid)
 
 
 @registry.register(['info'], category='Manage')
@@ -75,7 +77,8 @@ def createteam(arguments: list[str], clientid: int, accountid: str) -> None:
             session.sessionteams.append(SessionTeam(
                 team_id=len(session.sessionteams) + 1,
                 name=str(arguments[0]),
-                color=(random.uniform(0, 1.2), random.uniform(0, 1.2), random.uniform(0, 1.2))
+                color=(random.uniform(0, 1.2), random.uniform(
+                    0, 1.2), random.uniform(0, 1.2))
             ))
             from bascenev1._lobby import Lobby
             session.lobby = Lobby()
@@ -121,17 +124,19 @@ def ban(arguments: list[str], clientid: int, accountid: str) -> None:
     try:
         cl_id = int(arguments[0])
         duration = float(arguments[1]) if len(arguments) >= 2 else 0.5
-        
+
         for ros in bs.get_game_roster():
             if ros["client_id"] == cl_id:
-                pdata.ban_player(ros['account_id'], duration, "by chat command")
+                pdata.ban_player(ros['account_id'],
+                                 duration, "by chat command")
                 logger.log(f'banned {ros["display_string"]} by chat command')
 
         for account in serverdata.recents:
             if account['client_id'] == cl_id:
                 pdata.ban_player(account["pbid"], duration, "by chat command")
-                logger.log(f'banned {account["pbid"]} by chat command, recents')
-        
+                logger.log(
+                    f'banned {account["pbid"]} by chat command, recents')
+
         kick_player(cl_id)
     except (ValueError, TypeError):
         pass
@@ -157,23 +162,25 @@ def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
         return
     action = arguments[0]
     target = arguments[1]
-    
+
     if action == 'enable':
         if target == 'all':
-            _babase.set_enable_default_kick_voting(True)
+            _bascenev1.set_enable_default_kick_voting(True)
         else:
             try:
                 cl_id = int(target)
                 for ros in bs.get_game_roster():
                     if ros["client_id"] == cl_id:
                         pdata.enable_kick_vote(ros["account_id"])
-                        logger.log(f'kick vote enabled for {ros["account_id"]} {ros["display_string"]}')
-                        send("Upon server restart, Kick-vote will be enabled for this person", clientid)
+                        logger.log(
+                            f'kick vote enabled for {ros["account_id"]} {ros["display_string"]}')
+                        send(
+                            "Upon server restart, Kick-vote will be enabled for this person", clientid)
             except (ValueError, TypeError):
                 pass
     elif action == 'disable':
         if target == 'all':
-            _babase.set_enable_default_kick_voting(False)
+            _bascenev1.set_enable_default_kick_voting(False)
         else:
             try:
                 cl_id = int(target)
@@ -181,8 +188,10 @@ def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
                     if ros["client_id"] == cl_id:
                         _bascenev1.disable_kickvote(ros["account_id"])
                         send("Kick-vote disabled for this person", clientid)
-                        logger.log(f'kick vote disabled for {ros["account_id"]} {ros["display_string"]}')
-                        pdata.disable_kick_vote(ros["account_id"], 2, "by chat command")
+                        logger.log(
+                            f'kick vote disabled for {ros["account_id"]} {ros["display_string"]}')
+                        pdata.disable_kick_vote(
+                            ros["account_id"], 2, "by chat command")
             except (ValueError, TypeError):
                 pass
 
@@ -190,13 +199,13 @@ def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
 @registry.register(['hideid'], category='Manage')
 def hideid(arguments: list[str], clientid: int, accountid: str) -> None:
     """Hide player device ID."""
-    _babase.hide_player_device_id(True)
+    _bascenev1.hide_player_device_id(True)
 
 
 @registry.register(['showid'], category='Manage')
 def showid(arguments: list[str], clientid: int, accountid: str) -> None:
     """Show player device ID."""
-    _babase.hide_player_device_id(False)
+    _bascenev1.hide_player_device_id(False)
 
 
 @registry.register(['lm'], category='Manage')
@@ -213,7 +222,8 @@ def gp(arguments: list[str], clientid: int, accountid: str) -> None:
         player_id = int(arguments[0])
         session = bs.get_foreground_host_session()
         if session and 0 <= player_id < len(session.sessionplayers):
-            profiles = session.sessionplayers[player_id].inputdevice.get_player_profiles()
+            profiles = session.sessionplayers[player_id].inputdevice.get_player_profiles(
+            )
             for num, profile in enumerate(profiles, 1):
                 send(f"{num})-  {profile}", clientid)
     except (ValueError, TypeError, IndexError):
@@ -252,11 +262,13 @@ def mute(arguments: list[str], clientid: int, accountid: str) -> None:
         for ros in bs.get_game_roster():
             if ros["client_id"] == cl_id:
                 logger.log(f'muted {ros["display_string"]}')
-                pdata.mute(ros['account_id'], duration, "muted by chat command")
+                pdata.mute(ros['account_id'], duration,
+                           "muted by chat command")
                 return
         for account in serverdata.recents:
             if account['client_id'] == cl_id:
-                pdata.mute(account["pbid"], duration, "muted by chat command, from recents")
+                pdata.mute(account["pbid"], duration,
+                           "muted by chat command, from recents")
     except (ValueError, TypeError):
         pass
 
@@ -277,7 +289,8 @@ def unmute(arguments: list[str], clientid: int, accountid: str) -> None:
         for account in serverdata.recents:
             if account['client_id'] == cl_id:
                 pdata.unmute(account["pbid"])
-                logger.log(f'unmuted {account["pbid"]} by chat command, recents')
+                logger.log(
+                    f'unmuted {account["pbid"]} by chat command, recents')
     except (ValueError, TypeError):
         pass
 
@@ -321,7 +334,7 @@ def nv(arguments: list[str], clientid: int, accountid: str) -> None:
         if activity and activity.globalsnode:
             nv_tint = (0.5, 0.5, 1.0)
             nv_ambient = (1.5, 1.5, 1.5)
-            
+
             if is_close(activity.globalsnode.tint, nv_tint):
                 activity.globalsnode.tint = (1.0, 1.0, 1.0)
                 activity.globalsnode.ambient_color = (1.0, 1.0, 1.0)
@@ -415,7 +428,8 @@ def removerole(arguments: list[str], clientid: int, accountid: str) -> None:
             if session:
                 for player in session.sessionplayers:
                     if player.inputdevice.client_id == target_cl_id:
-                        pdata.remove_player_role(role, player.get_v1_account_id())
+                        pdata.remove_player_role(
+                            role, player.get_v1_account_id())
         except (ValueError, TypeError):
             pass
 
@@ -430,7 +444,8 @@ def getroles(arguments: list[str], clientid: int, accountid: str) -> None:
             if session:
                 for player in session.sessionplayers:
                     if player.inputdevice.client_id == target_cl_id:
-                        roles = pdata.get_player_roles(player.get_v1_account_id())
+                        roles = pdata.get_player_roles(
+                            player.get_v1_account_id())
                         reply = ",".join(roles)
                         send(reply, clientid)
                         break

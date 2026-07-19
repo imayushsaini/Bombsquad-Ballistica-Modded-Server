@@ -27,6 +27,7 @@ from bascenev1._session import Session
 from bascenev1._map import Map
 from bascenev1._activitytypes import ScoreScreenActivity
 from baclassic._servermode import ServerController
+from efro.terminal import Clr
 import setting
 import bauiv1 as bui
 from baclassic._appmode import ClassicAppMode
@@ -178,6 +179,46 @@ def playerspaz_init(playerspaz: bs.Player, node: bs.Node, player: bs.Player):
     modifyspaz.main(playerspaz, node, player)
 
 
+def verify_account_token() -> None:
+    """Verifies the account API token on server start."""
+    import urllib.request
+    import urllib.error
+    import json
+    token = settings.get("accountApiToken")
+    warning_msg = (
+        "invalid token found , update settings.json with api token "
+        "else server functionaly will break."
+    )
+    if not token:
+        logging.warning(warning_msg)
+        print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+        return
+
+    try:
+        url = "https://www.ballistica.net/api/v1/accounts/me"
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            status = response.getcode()
+            if status == 200:
+                data = json.loads(response.read().decode('utf-8'))
+                tag = data.get("tag", "unknown")
+                print(
+                    f"{Clr.BGRN}api token verified sucfessfuly using {tag} token.{Clr.RST}", flush=True)
+                logging.info(
+                    f"api token verified sucfessfuly using {tag} token.")
+            else:
+                logging.warning(warning_msg)
+                print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+    except Exception:
+        logging.warning(warning_msg)
+        print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+
+
 def bootstraping():
     """Bootstarps the server."""
     logging.warning("Bootstraping mods...")
@@ -185,6 +226,7 @@ def bootstraping():
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
+    _thread.start_new_thread(verify_account_token, ())
     pdata.load_cache()
     _thread.start_new_thread(pdata.dump_cache, ())
     _thread.start_new_thread(notification_manager.dump_cache, ())
