@@ -14,7 +14,7 @@ import _babase
 import _bascenev1
 import babase
 import bascenev1 as bs
-from babase._general import CallPartial
+from babase._general import Call
 from features import profanity
 from playersdata import pdata
 from repository import profiles
@@ -443,8 +443,7 @@ class LoadProfile(threading.Thread):
     def run(self) -> None:
         player_data = pdata.get_info(self.pbid)
         _babase.pushcall(
-            CallPartial(on_player_join_server, self.pbid,
-                 player_data, self.ip, self.device_id),
+            Call(_on_profile_loaded, self.pbid, player_data, self.ip, self.device_id, self.client_id, self.display_string),
             from_other_thread=True,
         )
 
