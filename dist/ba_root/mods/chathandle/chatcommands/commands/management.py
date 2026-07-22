@@ -319,7 +319,7 @@ def remove(arguments: list[str], clientid: int, accountid: str) -> None:
 @registry.register(['sm', 'slow', 'slowmo'], category='Manage')
 def slow_motion(arguments: list[str], clientid: int, accountid: str) -> None:
     """Toggle slow motion."""
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         activity.globalsnode.slow_motion = not activity.globalsnode.slow_motion
 
@@ -375,7 +375,7 @@ def tint(arguments: list[str], clientid: int, accountid: str) -> None:
 @registry.register(['pause', 'pausegame'], category='Manage')
 def pause(arguments: list[str], clientid: int, accountid: str) -> None:
     """Toggle pause state."""
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         activity.globalsnode.paused = not activity.globalsnode.paused
 
@@ -383,7 +383,7 @@ def pause(arguments: list[str], clientid: int, accountid: str) -> None:
 @registry.register(['cameraMode', 'camera_mode', 'rotate_camera'], category='Manage')
 def camera_mode(arguments: list[str], clientid: int, accountid: str) -> None:
     """Toggle camera mode."""
-    activity = _babase.get_foreground_host_activity()
+    activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         if activity.globalsnode.camera_mode != 'rotate':
             activity.globalsnode.camera_mode = 'rotate'
