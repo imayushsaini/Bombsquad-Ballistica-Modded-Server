@@ -218,6 +218,17 @@ class AssetClientTooOldError(AssetResolveError):
     """
 
 
+class AssetContentError(AssetResolveError):
+    """Tier-1 resolve failed: the package's own source content is bad.
+
+    The package failed to build due to a problem in its source assets
+    (e.g. a malformed sound or texture file) — something the package
+    author can fix. ``server_message`` names the offending source
+    file(s), so surface it verbatim. Raised when the server returns
+    :attr:`~bacommon.cloud.AssetPackageResolveError.CONTENT`.
+    """
+
+
 class AssetResolveAbortedError(AssetResolveError):
     """An asset-subsystem operation was abandoned because we're shutting down.
 
@@ -227,6 +238,19 @@ class AssetResolveAbortedError(AssetResolveError):
     outcome -- not a real failure -- so callers should bow out quietly
     rather than logging it as an error.
     """
+
+
+#: Which :class:`AssetResolveError` subclass a Tier-1 resolve raises for
+#: each structured server code (codes without an entry get the base
+#: class).
+_RESOLVE_ERROR_TYPES: dict[
+    AssetPackageResolveError, type[AssetResolveError]
+] = {
+    AssetPackageResolveError.AUTH_REQUIRED: AssetAuthRequiredError,
+    AssetPackageResolveError.ACCESS_DENIED: AssetAccessDeniedError,
+    AssetPackageResolveError.CLIENT_TOO_OLD: AssetClientTooOldError,
+    AssetPackageResolveError.CONTENT: AssetContentError,
+}
 
 
 @dataclass
@@ -367,7 +391,7 @@ def make_progress_reporter(
     Pass the returned callable as ``on_progress`` to
     :meth:`AssetSubsystem.resolve`. It calls ``on_update(message, progress)``
     immediately on a phase or package change and then at most once per
-    :data:`_PROGRESS_UPDATE_INTERVAL` seconds (so a slow download keeps
+    a short throttle interval (so a slow download keeps
     the user informed without spamming). ``progress`` is a ``0.0``–``1.0``
     fraction for a progress bar — ``0.0`` during phases with no known count
     (the bar is held at zero rather than hidden, so the display doesn't resize
@@ -493,6 +517,24 @@ class _CachedPackage:
     last_used: Annotated[float, IOAttrs('lu')]
 
 
+#: Layout epoch of the flavor-manifest blobs the cache manifest
+#: references. Bumped when the server-side manifest shape changes
+#: incompatibly, so a client upgrading across the change discards its
+#: cached (old-shape) flavor manifests wholesale instead of serving
+#: them to lookups that expect the new shape. Discard is cheap: leaf
+#: data blobs are shape-invariant and stay reusable by hash, so a
+#: re-resolve only re-downloads the small flavor-manifest blobs (the
+#: orphaned old ones get swept by GC). History: 1 = original shape
+#: (container-extension keys + single-char parts); 2 = pure
+#: logical-path keys + ``<role>.<format>`` parts (asset-packages
+#: decision #35, 2026-07-19); 3 = same shape as 2 — bumped purely to
+#: flush caches poisoned during the #35 rollout window, when servers
+#: could still hand a new client old-shape manifests that were then
+#: committed under epoch 2 (see the ingestion-time shape validation
+#: in ``_tier1_download``, which prevents that class going forward).
+_CACHE_MANIFEST_LAYOUT_VERSION = 3
+
+
 @ioprepped
 @dataclass
 class _CacheManifest:
@@ -514,6 +556,13 @@ class _CacheManifest:
     flavor_manifest_last_used: Annotated[dict[str, float], IOAttrs('f')] = (
         field(default_factory=dict)
     )
+
+    #: The ``_CACHE_MANIFEST_LAYOUT_VERSION`` this manifest was written
+    #: at. Defaults to 1 (not the current version!) so manifests
+    #: predating the field read as the original epoch; construction
+    #: sites must pass the current version explicitly. A mismatch on
+    #: load discards the manifest (see ``_load_manifest``).
+    layout_version: Annotated[int, IOAttrs('v')] = 1
 
 
 class AssetSubsystem(AppSubsystem):
@@ -959,7 +1008,7 @@ class AssetSubsystem(AppSubsystem):
         :class:`~bacommon.loctext.StringSelector`) read from the package's
         resolved ``language/<locale>`` blob -- the Python side of what the
         native ``ReloadLanguage`` consumes, for the language-agnostic
-        (``Lstr``) doc-ui decode path. ``locale`` must be the one the package
+        (``LangStr``) doc-ui decode path. ``locale`` must be the one the package
         was :meth:`resolve`\\ d for (the coord is ``language/<locale.value>``,
         matching the ``_desired_coords`` bucket map).
 
@@ -983,10 +1032,10 @@ class AssetSubsystem(AppSubsystem):
         if fm_hash is None or self._locate_blob(fm_hash) is None:
             return {}
 
-        # The blob lives at logical path 'language.json' part 'j' (the same
-        # one native ReloadLanguage looks up).
-        parts = self._read_entries(fm_hash).get('language.json')
-        blob_hash = parts.get('j') if parts else None
+        # The blob lives at logical path 'language' part 'j.json' (the
+        # same one native ReloadLanguage looks up).
+        parts = self._read_entries(fm_hash).get('language')
+        blob_hash = parts.get('j.json') if parts else None
         if blob_hash is None:
             return {}
         path = self._locate_blob(blob_hash)
@@ -1009,7 +1058,10 @@ class AssetSubsystem(AppSubsystem):
         """
         from babase._asset_packages import loaded_asset_package_apverids
 
-        _babase.reload_language(loaded_asset_package_apverids())
+        # The resolved locale's wire value drives native CLDR plural
+        # selection for language-string evaluation.
+        plural_locale = _babase.app.locale.current_locale.resolved.locale.value
+        _babase.reload_language(loaded_asset_package_apverids(), plural_locale)
 
     # ---------------------------------------------------------------------
     # Resolve internals.
@@ -1364,6 +1416,33 @@ class AssetSubsystem(AppSubsystem):
             for p, info in parsed['e'].items()
         }
 
+    @staticmethod
+    def _validate_manifest_shape(
+        apverid: str, coord: str, parsed: dict
+    ) -> None:
+        """Refuse a downloaded flavor-manifest from an older layout epoch.
+
+        Ingestion-time shape validation: nothing else guards
+        server-too-old — a mid-rollout server (or its serve-stale cache)
+        handing us an older-epoch manifest would otherwise silently miss
+        every lookup AND poison our writable cache until manually
+        cleared (exactly what happened in the decision-#35 reshape
+        rollout, 2026-07-19). Raising here (before any write) means a
+        mismatched manifest is never committed. Discriminator: every
+        part key is ``<role>.<format>`` in the current epoch, so any
+        dotless part key marks a pre-#35 manifest; this check must move
+        in lockstep with any future shape change.
+        """
+        for info in parsed['e'].values():
+            for part in info:
+                if '.' not in part:
+                    raise AssetResolveError(
+                        f'{apverid}: server manifest for {coord!r} is from'
+                        f' an older layout epoch (part {part!r}); refusing'
+                        f' to ingest. The server may be mid-update; retry'
+                        f' later.'
+                    )
+
     async def _tier1_download(
         self, apverid: str, language: Locale
     ) -> dict[str, str]:
@@ -1401,13 +1480,10 @@ class AssetSubsystem(AppSubsystem):
             # Raise a specific subclass for the cases callers branch on
             # (e.g. construct-mode prompting for sign-in). Carry the
             # server's raw message too so callers can show its wording.
-            if code is AssetPackageResolveError.AUTH_REQUIRED:
-                raise AssetAuthRequiredError(msg, code, response.error)
-            if code is AssetPackageResolveError.ACCESS_DENIED:
-                raise AssetAccessDeniedError(msg, code, response.error)
-            if code is AssetPackageResolveError.CLIENT_TOO_OLD:
-                raise AssetClientTooOldError(msg, code, response.error)
-            raise AssetResolveError(msg, code, response.error)
+            errcls = AssetResolveError
+            if code is not None:
+                errcls = _RESOLVE_ERROR_TYPES.get(code, AssetResolveError)
+            raise errcls(msg, code, response.error)
         if not response.buckets:
             raise AssetResolveError(f'{apverid}: resolve returned no buckets.')
 
@@ -1423,6 +1499,7 @@ class AssetSubsystem(AppSubsystem):
             ):
                 fm_writes[flavor_manifest.hash] = flavor_manifest.data
             parsed = json.loads(flavor_manifest.data)
+            self._validate_manifest_shape(apverid, coord, parsed)
             # The manifest carries only canonical content identity (hash +
             # size); a blob's transfer encoding is negotiated per /casblob
             # download (see _acquire_data_blob), not recorded here.
@@ -1770,15 +1847,33 @@ class AssetSubsystem(AppSubsystem):
         path = self._manifest_path
         try:
             with open(path, encoding='utf-8') as infile:
-                return dataclass_from_json(_CacheManifest, infile.read())
+                manifest = dataclass_from_json(_CacheManifest, infile.read())
         except FileNotFoundError:
-            return _CacheManifest()
+            return self._fresh_manifest()
         except Exception as exc:
             logger.exception(
                 'Error loading asset cache manifest %s; starting fresh.', path
             )
             strip_exception_tracebacks(exc)
-            return _CacheManifest()
+            return self._fresh_manifest()
+        if manifest.layout_version != _CACHE_MANIFEST_LAYOUT_VERSION:
+            # The cached flavor manifests were written at a different
+            # shape epoch than this build expects; drop them wholesale
+            # (packages simply re-resolve; shape-invariant data blobs
+            # stay reusable by hash and orphans get swept by GC).
+            logger.info(
+                'Discarding asset cache manifest at layout version %d'
+                ' (current is %d).',
+                manifest.layout_version,
+                _CACHE_MANIFEST_LAYOUT_VERSION,
+            )
+            return self._fresh_manifest()
+        return manifest
+
+    @staticmethod
+    def _fresh_manifest() -> _CacheManifest:
+        """An empty cache manifest at the current layout version."""
+        return _CacheManifest(layout_version=_CACHE_MANIFEST_LAYOUT_VERSION)
 
     def _commit_manifest(
         self, manifest_pkgs: dict[str, dict[str, str]], now: float
@@ -1919,7 +2014,9 @@ class AssetSubsystem(AppSubsystem):
         }
         self._persist_manifest(
             _CacheManifest(
-                packages=new_packages, flavor_manifest_last_used=new_fmlu
+                packages=new_packages,
+                flavor_manifest_last_used=new_fmlu,
+                layout_version=_CACHE_MANIFEST_LAYOUT_VERSION,
             )
         )
         return live, time.monotonic() - start
@@ -2043,7 +2140,7 @@ class AssetSubsystem(AppSubsystem):
                 value = int(infile.read().strip(), 16)
             if 0 <= value < _CAS_SHARD_COUNT:
                 return value
-        except (OSError, ValueError):
+        except OSError, ValueError:
             pass
         return 0
 

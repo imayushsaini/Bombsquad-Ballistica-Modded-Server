@@ -35,10 +35,8 @@ def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
 
 def filter_chat_message(msg: str, client_id: int) -> str | None:
     try:
-        print("importing custom_hooks")
         import custom_hooks as chooks
-    except Exception as e:
-        print(e)
+    except:
         pass
     """Intercept/filter chat messages.
 
