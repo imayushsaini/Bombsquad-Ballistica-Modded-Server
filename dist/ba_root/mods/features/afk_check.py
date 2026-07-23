@@ -15,7 +15,7 @@ cLastIdle = 0
 
 class checkIdle(object):
     def start(self):
-        self.t1 = babase.AppTimer(2, babase.Call(self.check), repeat=True)
+        self.t1 = babase.AppTimer(2, babase.CallPartial(self.check), repeat=True)
         self.lobbies = {}
 
     def check(self):
@@ -25,8 +25,10 @@ class checkIdle(object):
         if not bs.get_foreground_host_session():
             return
         for player in bs.get_foreground_host_session().sessionplayers:
-            last_input = int(player.inputdevice.get_last_input_time())
-            afk_time = int((current - last_input) / 1000)
+            try:
+                afk_time = int(babase.get_input_idle_time())
+            except Exception:
+                continue
             if afk_time in range(INGAME_TIME,
                                  INGAME_TIME + 20) or afk_time > INGAME_TIME + 20:
                 if (current - cLastIdle) / 1000 < 3:
@@ -38,7 +40,7 @@ class checkIdle(object):
                 cLastIdle = current
 
             if afk_time in range(INGAME_TIME, INGAME_TIME + 20):
-                self.warn_player(player.get_v1_account_id(),
+                self.warn_player(player.get_account_id(),
                                  "Press any button within " + str(
                                      INGAME_TIME + 20 - afk_time) + " secs")
             if afk_time > INGAME_TIME + 20:
