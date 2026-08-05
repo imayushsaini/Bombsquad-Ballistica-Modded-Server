@@ -78,7 +78,10 @@ def vote(pb_id, client_id, vote_type):
             try:
                 activity = bs.get_foreground_host_activity()
                 with activity.context:
-                    bs.get_foreground_host_activity().end()
+                    results = bs.GameResults()
+                    for team in activity.teams:
+                        results.set_team_score(team, team.score)
+                    bs.get_foreground_host_activity().end(results=results)
             except:
                 pass
         elif vote_type == "nv":

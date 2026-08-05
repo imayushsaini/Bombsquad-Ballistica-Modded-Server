@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 from __future__ import annotations
 import setting
 from bascenev1lib.actor.bomb import BombFactory

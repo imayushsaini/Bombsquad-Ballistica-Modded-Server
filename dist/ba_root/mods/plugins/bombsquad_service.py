@@ -33,9 +33,9 @@ class BsDataThread(object):
         )["ballistica_web"]["discord_link"]
         stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
-        self.refresh_stats_cache_timer = bs.AppTimer(8, babase.Call(
+        self.refresh_stats_cache_timer = bs.AppTimer(8, babase.CallStrict(
             self.refreshStats), repeat=True)
-        self.refresh_leaderboard_cache_timer = bs.AppTimer(10, babase.Call(
+        self.refresh_leaderboard_cache_timer = bs.AppTimer(10, babase.CallStrict(
             self.refreshLeaderboard), repeat=True)
 
     def startThread(self):
@@ -111,14 +111,14 @@ class BsDataThread(object):
                                       True),
                                   'inGame': player.in_game,
                                   'character': player.character,
-                                  'account_id': player.get_v1_account_id()
+                                  'account_id': player.get_account_id()
                                   }
                     data[str(team.id)]['players'].append(teamplayer)
 
         return data
 
 
-v = bs.AppTimer(8, babase.Call(
+v = bs.AppTimer(8, babase.CallStrict(
     BsDataThread))
 
 
@@ -282,10 +282,10 @@ def update_server_config(config):
 
 def do_action(action, value):
     if action == "message":
-        _babase.pushcall(babase.Call(bs.chatmessage, value),
+        _babase.pushcall(babase.CallPartial(bs.chatmessage, value),
                          from_other_thread=True)
     elif action == "quit":
-        _babase.pushcall(babase.Call(_babase.quit), from_other_thread=True)
+        _babase.pushcall(babase.CallStrict(_babase.quit), from_other_thread=True)
 
 
 def subscribe_player(sub, account_id, name):

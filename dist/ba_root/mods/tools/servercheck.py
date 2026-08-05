@@ -17,7 +17,6 @@ import _babase
 import _bascenev1
 import babase
 import bascenev1 as bs
-from babase._general import Call
 
 from features import profanity
 from playersdata import pdata
@@ -64,7 +63,7 @@ class ServerCheck:
         self.ip_client_map: Dict[str, List[int]] = {}
         self.device_client_map: Dict[str, List[int]] = {}
         self.ip_join: Dict[str, IPJoin] = {}
-        self.timer = bs.AppTimer(1, babase.Call(self.check), repeat=True)
+        self.timer = bs.AppTimer(1, babase.CallStrict(self.check), repeat=True)
 
     def check(self) -> None:
         """
@@ -566,7 +565,7 @@ class LoadProfile(threading.Thread):
     def run(self) -> None:
         player_data = pdata.get_info(self.pbid)
         _babase.pushcall(
-            Call(_on_profile_loaded, self.pbid, player_data, self.ip, self.device_id, self.client_id, self.display_string),
+            babase.CallPartial(_on_profile_loaded, self.pbid, player_data, self.ip, self.device_id, self.client_id, self.display_string),
             from_other_thread=True,
         )
 
@@ -585,7 +584,7 @@ class FetchThread(threading.Thread):
         data = self.method(pb_id)
         if self.callback is not None:
             _babase.pushcall(
-                Call(self.callback, data, pb_id, display_string),
+                babase.CallPartial(self.callback, data, pb_id, display_string),
                 from_other_thread=True,
             )
 
@@ -698,12 +697,12 @@ def account_check(account_id: str, ip: str, client_id: int) -> None:
                 profiles.upsert_ip(account_id, ip)
             except urllib.error.URLError:
                 _babase.pushcall(
-                    Call(bs.chatmessage, "Click stats button and login your V2 account, to verify your identity", [
+                    babase.CallPartial(bs.chatmessage, "Click stats button and login your V2 account, to verify your identity", [
                          client_id]),
                     from_other_thread=True,
                 )
                 _babase.pushcall(
-                    Call(bs.disconnect_client, client_id, 2), from_other_thread=True)
+                    babase.CallPartial(bs.disconnect_client, client_id, 2), from_other_thread=True)
 
 
 # Instantiate the server check
