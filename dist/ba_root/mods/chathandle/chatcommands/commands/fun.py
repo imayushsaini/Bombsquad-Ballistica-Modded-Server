@@ -96,3 +96,87 @@ def floater(arguments: list[str], clientid: int, accountid: str) -> None:
             floater_mod.assignFloInputs(val)
     except Exception:
         pass
+
+
+@registry.register(['tnt', 'spawntnt', 'spawn'], category='Fun', shop_cost=200)
+def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
+    print("chat command execute")
+    """Spawn a TNT node at target player position."""
+    from bascenev1lib.actor.bomb import BombFactory
+    from bascenev1lib.gameutils import SharedObjects
+    try:
+        activity = bs.get_foreground_host_activity()
+        if activity is not None:
+            with activity.context:
+                print("befor asset import")
+                from assetpackage import testasset
+                print("after asset immport")
+                shared = SharedObjects.get()
+                print("shared imported")
+                factory = BombFactory.get()
+                print("factory imported")
+                materials = (
+                    factory.bomb_material,
+                    shared.footing_material,
+                    shared.object_material,
+                    factory.normal_sound_material,
+                )
+                print("outside target actors")
+                bs.NodeActor(bs.newnode(
+                    'prop',
+                    attrs={
+                        'position': (0, 2, 0),
+                        'velocity': (0.0, 0.0, 0.0),
+                        'mesh': factory.tnt_mesh,
+                        'light_mesh': factory.tnt_mesh,
+                        'body': 'crate',
+                        'body_scale': 1.0,
+                        'shadow_size': 0.5,
+                        'color_texture': testasset.texture.bnt,
+                        'reflection': 'soft',
+                        'reflection_scale': [0.23],
+                        'materials': materials,
+                    },
+                )).autoretain()
+                target_args = [arg for arg in arguments if arg.lower()
+                               not in ('tnt', 'spawn')]
+                for actor in get_target_actors(target_args, clientid):
+                    print(":inside actor")
+                    if actor.node:
+                        pos = actor.node.position
+                        bs.NodeActor(bs.newnode(
+                            'prop',
+                            attrs={
+                                'position': pos,
+                                'velocity': (0.0, 0.0, 0.0),
+                                'mesh': factory.tnt_mesh,
+                                'light_mesh': factory.tnt_mesh,
+                                'body': 'crate',
+                                'body_scale': 1.0,
+                                'shadow_size': 0.5,
+                                'color_texture': testasset.texture.bnt,
+                                'reflection': 'soft',
+                                'reflection_scale': [0.23],
+                                'materials': materials,
+                            },
+                        )).autoretain()
+                    else:
+                        print('actor not found')
+                        bs.NodeActor(bs.newnode(
+                            'prop',
+                            attrs={
+                                'position': (0, 2, 0),
+                                'velocity': (0.0, 0.0, 0.0),
+                                'mesh': factory.tnt_mesh,
+                                'light_mesh': factory.tnt_mesh,
+                                'body': 'crate',
+                                'body_scale': 1.0,
+                                'shadow_size': 0.5,
+                                'color_texture': testasset.texture.bnt,
+                                'reflection': 'soft',
+                                'reflection_scale': [0.23],
+                                'materials': materials,
+                            },
+                        )).autoretain()
+    except Exception as e:
+        print(f"Error spawning TNT: {e}")

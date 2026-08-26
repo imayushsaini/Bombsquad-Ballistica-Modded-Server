@@ -38,11 +38,14 @@ def execute(msg: str, clientid: int) -> str | None:
         if cmd.category == "Normal":
             cmd.handler(arguments, clientid, accountid)
         else:
-            from shop import has_purchased_command
-            if check_permissions(accountid, command) or has_purchased_command(accountid, command):
+            from shop import has_purchased_command, consume_command_usage
+            is_permitted = check_permissions(accountid, command)
+            if is_permitted or has_purchased_command(accountid, command):
                 cmd.handler(arguments, clientid, accountid)
                 bs.broadcastmessage(
                     "Executed", transient=True, clients=[clientid])
+                if not is_permitted:
+                    consume_command_usage(accountid, command)
             else:
                 bs.broadcastmessage(
                     "access denied", transient=True, clients=[clientid])

@@ -254,25 +254,38 @@ def _ban_unban_helper(account_id: str, ban: bool, duration_in_days: float = 0, r
                 device_id = account.get("device_uuid")
                 break
 
+    blacklist = get_blacklist()
+
+    # Find all linked accounts
+    linked_accounts = {account_id}
+    for key, value in profiles.items():
+        if (ip and "lastIP" in value and value["lastIP"] == ip) or (
+                device_id and "deviceUUID" in value and value["deviceUUID"] == device_id) or (
+                account_id in value.get("profiles", [])):
+            linked_accounts.add(key)
+
     if ban:
         ban_time = (datetime.now() + timedelta(days=duration_in_days)
                     ).strftime("%Y-%m-%d %H:%M:%S")
         ban_entry = {"till": ban_time, "reason": reason}
         linked_reason = f'linked with account {account_id}'
         if ip:
-            CacheData.blacklist["ban"]["ips"][ip] = {
+            blacklist["ban"]["ips"][ip] = {
                 "till": ban_time, "reason": linked_reason}
         if device_id:
-            CacheData.blacklist["ban"]["deviceids"][device_id] = {
+            blacklist["ban"]["deviceids"][device_id] = {
                 "till": ban_time, "reason": linked_reason}
-        CacheData.blacklist["ban"]["ids"][account_id] = ban_entry
+        for acc in linked_accounts:
+            blacklist["ban"]["ids"][acc] = ban_entry
     else:
+        for acc in linked_accounts:
+            blacklist["ban"]["ids"].pop(acc, None)
         if ip:
-            CacheData.blacklist["ban"]["ips"].pop(ip, None)
+            blacklist["ban"]["ips"].pop(ip, None)
         if device_id:
-            CacheData.blacklist["ban"]["deviceids"].pop(device_id, None)
-        CacheData.blacklist["ban"]["ids"].pop(account_id, None)
+            blacklist["ban"]["deviceids"].pop(device_id, None)
 
+    CacheData.blacklist = blacklist
     _thread.start_new_thread(update_blacklist, ())
 
 
@@ -290,14 +303,50 @@ def disable_kick_vote(account_id: str, duration: float, reason: str):
     """Disables kick voting for a player."""
     ban_time = (datetime.now() + timedelta(days=duration)
                 ).strftime("%Y-%m-%d %H:%M:%S")
-    CacheData.blacklist["kick-vote-disabled"][account_id] = {
-        "till": ban_time, "reason": reason}
+    blacklist = get_blacklist()
+
+    # Find all linked accounts
+    profiles_dict = get_profiles()
+    player_profile = profiles_dict.get(account_id, {})
+    ip = player_profile.get("lastIP")
+    device_id = player_profile.get("deviceUUID")
+
+    linked_accounts = {account_id}
+    for key, value in profiles_dict.items():
+        if (ip and "lastIP" in value and value["lastIP"] == ip) or (
+                device_id and "deviceUUID" in value and value["deviceUUID"] == device_id) or (
+                account_id in value.get("profiles", [])):
+            linked_accounts.add(key)
+
+    for acc in linked_accounts:
+        blacklist["kick-vote-disabled"][acc] = {
+            "till": ban_time, "reason": reason}
+
+    CacheData.blacklist = blacklist
     _thread.start_new_thread(update_blacklist, ())
 
 
 def enable_kick_vote(account_id: str):
     """Enables kick voting for a player."""
-    CacheData.blacklist["kick-vote-disabled"].pop(account_id, None)
+    blacklist = get_blacklist()
+
+    # Find all linked accounts
+    profiles_dict = get_profiles()
+    player_profile = profiles_dict.get(account_id, {})
+    ip = player_profile.get("lastIP")
+    device_id = player_profile.get("deviceUUID")
+
+    linked_accounts = {account_id}
+    for key, value in profiles_dict.items():
+        if (ip and "lastIP" in value and value["lastIP"] == ip) or (
+                device_id and "deviceUUID" in value and value["deviceUUID"] == device_id) or (
+                account_id in value.get("profiles", [])):
+            linked_accounts.add(key)
+
+    for acc in linked_accounts:
+        blacklist["kick-vote-disabled"].pop(acc, None)
+
+    CacheData.blacklist = blacklist
     _thread.start_new_thread(update_blacklist, ())
 
 
@@ -305,14 +354,50 @@ def mute(account_id: str, duration_in_days: float, reason: str) -> None:
     """Mutes a player."""
     ban_time = (datetime.now() + timedelta(days=duration_in_days)
                 ).strftime("%Y-%m-%d %H:%M:%S")
-    CacheData.blacklist["muted-ids"][account_id] = {
-        "till": ban_time, "reason": reason}
+    blacklist = get_blacklist()
+
+    # Find all linked accounts
+    profiles_dict = get_profiles()
+    player_profile = profiles_dict.get(account_id, {})
+    ip = player_profile.get("lastIP")
+    device_id = player_profile.get("deviceUUID")
+
+    linked_accounts = {account_id}
+    for key, value in profiles_dict.items():
+        if (ip and "lastIP" in value and value["lastIP"] == ip) or (
+                device_id and "deviceUUID" in value and value["deviceUUID"] == device_id) or (
+                account_id in value.get("profiles", [])):
+            linked_accounts.add(key)
+
+    for acc in linked_accounts:
+        blacklist["muted-ids"][acc] = {
+            "till": ban_time, "reason": reason}
+
+    CacheData.blacklist = blacklist
     _thread.start_new_thread(update_blacklist, ())
 
 
 def unmute(account_id: str) -> None:
     """Unmutes a player."""
-    CacheData.blacklist["muted-ids"].pop(account_id, None)
+    blacklist = get_blacklist()
+
+    # Find all linked accounts
+    profiles_dict = get_profiles()
+    player_profile = profiles_dict.get(account_id, {})
+    ip = player_profile.get("lastIP")
+    device_id = player_profile.get("deviceUUID")
+
+    linked_accounts = {account_id}
+    for key, value in profiles_dict.items():
+        if (ip and "lastIP" in value and value["lastIP"] == ip) or (
+                device_id and "deviceUUID" in value and value["deviceUUID"] == device_id) or (
+                account_id in value.get("profiles", [])):
+            linked_accounts.add(key)
+
+    for acc in linked_accounts:
+        blacklist["muted-ids"].pop(acc, None)
+
+    CacheData.blacklist = blacklist
     _thread.start_new_thread(update_blacklist, ())
 
 
@@ -346,6 +431,40 @@ def get_roles() -> Dict[str, Any]:
     return CacheData.roles
 
 
+def save_roles_async(roles: dict) -> None:
+    """Saves roles to database or file in a background thread."""
+    import _thread
+    roles_copy = copy.deepcopy(roles)
+    _thread.start_new_thread(_save_roles_thread, (roles_copy,))
+
+
+def _save_roles_thread(roles: dict) -> None:
+    if use_sqlite():
+        try:
+            db_profiles.save_roles(roles)
+        except Exception as e:
+            print(f"Exception saving roles: {e}")
+    else:
+        _save_json_file(ROLES_PATH, roles, ROLES_BACKUP_PATH)
+
+
+def save_custom_async(custom: dict) -> None:
+    """Saves custom perks to database or file in a background thread."""
+    import _thread
+    custom_copy = copy.deepcopy(custom)
+    _thread.start_new_thread(_save_custom_thread, (custom_copy,))
+
+
+def _save_custom_thread(custom: dict) -> None:
+    if use_sqlite():
+        try:
+            db_profiles.save_custom(custom)
+        except Exception as e:
+            print(f"Exception saving custom perks: {e}")
+    else:
+        _save_json_file(CUSTOM_PATH, custom, CUSTOM_BACKUP_PATH)
+
+
 def create_role(role: str) -> None:
     """Creates a new role."""
     roles = get_roles()
@@ -353,6 +472,7 @@ def create_role(role: str) -> None:
         roles[role] = {"tag": role, "tagcolor": [
             1, 1, 1], "commands": [], "ids": []}
         CacheData.roles = roles
+        save_roles_async(roles)
 
 
 def add_player_role(role: str, account_id: str) -> None:
@@ -361,6 +481,7 @@ def add_player_role(role: str, account_id: str) -> None:
     if role in roles and account_id not in roles[role]["ids"]:
         roles[role]["ids"].append(account_id)
         CacheData.roles = roles
+        save_roles_async(roles)
     else:
         print(f'Role named {role} does not exist or player already in role.')
 
@@ -371,6 +492,7 @@ def remove_player_role(role: str, account_id: str) -> str:
     if role in roles and account_id in roles[role]["ids"]:
         roles[role]["ids"].remove(account_id)
         CacheData.roles = roles
+        save_roles_async(roles)
         return f"Removed from {role}"
     return "Role not found or player not in role."
 
@@ -381,6 +503,7 @@ def add_command_role(role: str, command: str) -> str:
     if role in roles and command not in roles[role]["commands"]:
         roles[role]["commands"].append(command)
         CacheData.roles = roles
+        save_roles_async(roles)
         return f"Command added to {role}"
     return "Role not found or command already in role."
 
@@ -391,6 +514,7 @@ def remove_command_role(role: str, command: str) -> str:
     if role in roles and command in roles[role]["commands"]:
         roles[role]["commands"].remove(command)
         CacheData.roles = roles
+        save_roles_async(roles)
         return f"Command removed from {role}"
     return "Role not found or command not in role."
 
@@ -401,6 +525,7 @@ def change_role_tag(role: str, tag: str) -> str:
     if role in roles:
         roles[role]["tag"] = tag
         CacheData.roles = roles
+        save_roles_async(roles)
         return "Tag changed"
     return "Role not found"
 
@@ -442,6 +567,7 @@ def set_effect(effect: str, account_id: str) -> None:
     effects.append(effect)
     custom["customeffects"][account_id] = effects
     CacheData.custom = custom
+    save_custom_async(custom)
 
 
 def set_tag(tag: str, account_id: str) -> None:
@@ -451,11 +577,13 @@ def set_tag(tag: str, account_id: str) -> None:
         custom["customtag"] = {}
     custom["customtag"][account_id] = tag
     CacheData.custom = custom
+    save_custom_async(custom)
 
 
 def update_roles(roles: Dict):
     """Updates the cached roles."""
     CacheData.roles = roles
+    save_roles_async(roles)
 
 
 def get_custom_perks() -> Dict:
@@ -466,6 +594,7 @@ def get_custom_perks() -> Dict:
 def update_custom_perks(custom: Dict):
     """Updates the cached custom perks."""
     CacheData.custom = custom
+    save_custom_async(custom)
 
 
 def remove_effect(account_id: str) -> None:
@@ -474,6 +603,7 @@ def remove_effect(account_id: str) -> None:
     if "customeffects" in custom:
         custom["customeffects"].pop(account_id, None)
         CacheData.custom = custom
+        save_custom_async(custom)
 
 
 def remove_tag(account_id: str) -> None:
@@ -482,6 +612,7 @@ def remove_tag(account_id: str) -> None:
     if "customtag" in custom:
         custom["customtag"].pop(account_id, None)
         CacheData.custom = custom
+        save_custom_async(custom)
 
 
 def commit_c():
@@ -496,6 +627,35 @@ def update_toppers(topper_list: List[str]) -> None:
     if "top5" not in roles:
         create_role("top5")
     CacheData.roles["top5"]["ids"] = topper_list
+    save_roles_async(CacheData.roles)
+
+
+def add_to_whitelist(account_id: str) -> None:
+    """Adds a player to the whitelist."""
+    load_white_list()  # Ensure it is loaded
+    if account_id not in CacheData.whitelist:
+        CacheData.whitelist.append(account_id)
+        if use_sqlite():
+            try:
+                db_profiles.save_whitelist(CacheData.whitelist)
+            except Exception as e:
+                print(f"Exception saving whitelist to DB: {e}")
+        else:
+            _save_json_file(WHITELIST_PATH, CacheData.whitelist)
+
+
+def remove_from_whitelist(account_id: str) -> None:
+    """Removes a player from the whitelist."""
+    load_white_list()  # Ensure it is loaded
+    if account_id in CacheData.whitelist:
+        CacheData.whitelist.remove(account_id)
+        if use_sqlite():
+            try:
+                db_profiles.save_whitelist(CacheData.whitelist)
+            except Exception as e:
+                print(f"Exception saving whitelist to DB: {e}")
+        else:
+            _save_json_file(WHITELIST_PATH, CacheData.whitelist)
 
 
 def load_white_list() -> None:
@@ -523,10 +683,12 @@ def load_cache():
             rows = run_query("SELECT count(*) FROM profiles", fetch=True)
             db_empty = (rows[0][0] == 0) if rows else True
             if db_empty:
-                print("SQLite database is empty. Migrating existing JSON data to SQLite...")
+                print(
+                    "SQLite database is empty. Migrating existing JSON data to SQLite...")
 
                 # Migrate profiles
-                json_profiles = _load_json_file(PROFILES_PATH, PROFILES_BACKUP_PATH)
+                json_profiles = _load_json_file(
+                    PROFILES_PATH, PROFILES_BACKUP_PATH)
                 if json_profiles:
                     db_profiles.save_all_profiles(json_profiles)
                     print(f"Migrated {len(json_profiles)} profiles to SQLite")
@@ -543,7 +705,8 @@ def load_cache():
                     if "customeffects" in json_custom:
                         for acc_id, effects in json_custom["customeffects"].items():
                             if isinstance(effects, str):
-                                json_custom["customeffects"][acc_id] = [effects]
+                                json_custom["customeffects"][acc_id] = [
+                                    effects]
                     db_profiles.save_custom(json_custom)
                     print("Migrated custom tags/effects to SQLite")
 

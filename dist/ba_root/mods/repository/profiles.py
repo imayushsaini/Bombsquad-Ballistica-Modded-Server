@@ -17,12 +17,9 @@ def init_db():
         display_string TEXT,
         profiles TEXT,
         name TEXT,
-        isBan INTEGER,
-        isMuted INTEGER,
         accountAge TEXT,
         creationDate TEXT,
         registerOn REAL,
-        canStartKickVote INTEGER,
         spamCount INTEGER,
         lastSpam REAL,
         totaltimeplayer REAL,
@@ -54,12 +51,9 @@ def init_db():
             "display_string": "TEXT",
             "profiles": "TEXT",
             "name": "TEXT",
-            "isBan": "INTEGER",
-            "isMuted": "INTEGER",
             "accountAge": "TEXT",
             "creationDate": "TEXT",
             "registerOn": "REAL",
-            "canStartKickVote": "INTEGER",
             "spamCount": "INTEGER",
             "lastSpam": "REAL",
             "totaltimeplayer": "REAL",
@@ -73,13 +67,16 @@ def init_db():
         for col_name, col_type in expected_columns.items():
             if col_name not in existing_cols:
                 try:
-                    run_query(f"ALTER TABLE profiles ADD COLUMN {col_name} {col_type}")
+                    run_query(
+                        f"ALTER TABLE profiles ADD COLUMN {col_name} {col_type}")
                 except Exception as e:
                     print(f"Error adding column {col_name} to profiles: {e}")
 
     # Ensure v2Tag and account_id have unique indices for conflict resolution
-    run_query("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_v2Tag ON profiles(v2Tag)")
-    run_query("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_account_id ON profiles(account_id)")
+    run_query(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_v2Tag ON profiles(v2Tag)")
+    run_query(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_account_id ON profiles(account_id)")
 
     # 2. roles table
     run_query("""
@@ -153,8 +150,8 @@ def upsert_ip(v2Tag: str, ip: str) -> None:
 def load_all_profiles() -> dict:
     """Loads all player profiles from database into memory dictionary structure."""
     rows = run_query("""
-        SELECT v2Tag, display_string, profiles, name, isBan, isMuted,
-               accountAge, creationDate, registerOn, canStartKickVote,
+        SELECT v2Tag, display_string, profiles, name,
+               accountAge, creationDate, registerOn,
                spamCount, lastSpam, totaltimeplayer, warnCount, lastWarned,
                verified, rejoincount, lastJoin, lastIP, deviceUUID
         FROM profiles
@@ -183,22 +180,19 @@ def load_all_profiles() -> dict:
             "display_string": display_string,
             "profiles": profiles,
             "name": r[3],
-            "isBan": bool(r[4]) if r[4] is not None else False,
-            "isMuted": bool(r[5]) if r[5] is not None else False,
-            "accountAge": r[6],
-            "creationDate": r[7],
-            "registerOn": r[8],
-            "canStartKickVote": bool(r[9]) if r[9] is not None else True,
-            "spamCount": r[10] or 0,
-            "lastSpam": r[11],
-            "totaltimeplayer": r[12] or 0.0,
-            "warnCount": r[13] or 0,
-            "lastWarned": r[14],
-            "verified": bool(r[15]) if r[15] is not None else False,
-            "rejoincount": r[16] or 1,
-            "lastJoin": r[17],
-            "lastIP": r[18],
-            "deviceUUID": r[19]
+            "accountAge": r[4],
+            "creationDate": r[5],
+            "registerOn": r[6],
+            "spamCount": r[7] or 0,
+            "lastSpam": r[8],
+            "totaltimeplayer": r[9] or 0.0,
+            "warnCount": r[10] or 0,
+            "lastWarned": r[11],
+            "verified": bool(r[12]) if r[12] is not None else False,
+            "rejoincount": r[13] or 1,
+            "lastJoin": r[14],
+            "lastIP": r[15],
+            "deviceUUID": r[16]
         }
     return profiles_dict
 
@@ -211,29 +205,22 @@ def save_all_profiles(profiles_dict: dict) -> None:
         for account_id, p in profiles_dict.items():
             display_string_str = json.dumps(p.get("display_string", []))
             profiles_str = json.dumps(p.get("profiles", []))
-
-            is_ban = 1 if p.get("isBan") else 0
-            is_muted = 1 if p.get("isMuted") else 0
-            can_kick = 1 if p.get("canStartKickVote", True) else 0
             verified = 1 if p.get("verified") else 0
 
             cur.execute("""
                 INSERT INTO profiles (
-                    v2Tag, account_id, display_string, profiles, name, isBan, isMuted,
-                    accountAge, creationDate, registerOn, canStartKickVote,
+                    v2Tag, account_id, display_string, profiles, name,
+                    accountAge, creationDate, registerOn,
                     spamCount, lastSpam, totaltimeplayer, warnCount, lastWarned,
                     verified, rejoincount, lastJoin, lastIP, deviceUUID
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(account_id) DO UPDATE SET
                     display_string=excluded.display_string,
                     profiles=excluded.profiles,
                     name=excluded.name,
-                    isBan=excluded.isBan,
-                    isMuted=excluded.isMuted,
                     accountAge=excluded.accountAge,
                     creationDate=excluded.creationDate,
                     registerOn=excluded.registerOn,
-                    canStartKickVote=excluded.canStartKickVote,
                     spamCount=excluded.spamCount,
                     lastSpam=excluded.lastSpam,
                     totaltimeplayer=excluded.totaltimeplayer,
@@ -246,10 +233,12 @@ def save_all_profiles(profiles_dict: dict) -> None:
                     deviceUUID=COALESCE(excluded.deviceUUID, profiles.deviceUUID),
                     v2Tag=COALESCE(excluded.v2Tag, profiles.v2Tag)
             """, (
-                account_id, account_id, display_string_str, profiles_str, p.get("name"),
-                is_ban, is_muted, p.get("accountAge"), p.get("creationDate"),
-                p.get("registerOn"), can_kick, p.get("spamCount", 0),
-                p.get("lastSpam"), p.get("totaltimeplayer", 0), p.get("warnCount", 0),
+                account_id, account_id, display_string_str, profiles_str, p.get(
+                    "name"),
+                p.get("accountAge"), p.get("creationDate"),
+                p.get("registerOn"), p.get("spamCount", 0),
+                p.get("lastSpam"), p.get(
+                    "totaltimeplayer", 0), p.get("warnCount", 0),
                 p.get("lastWarned"), verified, p.get("rejoincount", 1),
                 p.get("lastJoin"), p.get("lastIP"), p.get("deviceUUID")
             ))
@@ -274,30 +263,23 @@ def _save_profile_single_thread(account_id: str, p: dict) -> None:
     """Internal target to run single profile insert/update inside a background thread."""
     display_string_str = json.dumps(p.get("display_string", []))
     profiles_str = json.dumps(p.get("profiles", []))
-
-    is_ban = 1 if p.get("isBan") else 0
-    is_muted = 1 if p.get("isMuted") else 0
-    can_kick = 1 if p.get("canStartKickVote", True) else 0
     verified = 1 if p.get("verified") else 0
 
     try:
         run_query("""
             INSERT INTO profiles (
-                v2Tag, account_id, display_string, profiles, name, isBan, isMuted,
-                accountAge, creationDate, registerOn, canStartKickVote,
+                v2Tag, account_id, display_string, profiles, name,
+                accountAge, creationDate, registerOn,
                 spamCount, lastSpam, totaltimeplayer, warnCount, lastWarned,
                 verified, rejoincount, lastJoin, lastIP, deviceUUID
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(account_id) DO UPDATE SET
                 display_string=excluded.display_string,
                 profiles=excluded.profiles,
                 name=excluded.name,
-                isBan=excluded.isBan,
-                isMuted=excluded.isMuted,
                 accountAge=excluded.accountAge,
                 creationDate=excluded.creationDate,
                 registerOn=excluded.registerOn,
-                canStartKickVote=excluded.canStartKickVote,
                 spamCount=excluded.spamCount,
                 lastSpam=excluded.lastSpam,
                 totaltimeplayer=excluded.totaltimeplayer,
@@ -310,10 +292,12 @@ def _save_profile_single_thread(account_id: str, p: dict) -> None:
                 deviceUUID=COALESCE(excluded.deviceUUID, profiles.deviceUUID),
                 v2Tag=COALESCE(excluded.v2Tag, profiles.v2Tag)
         """, (
-            account_id, account_id, display_string_str, profiles_str, p.get("name"),
-            is_ban, is_muted, p.get("accountAge"), p.get("creationDate"),
-            p.get("registerOn"), can_kick, p.get("spamCount", 0),
-            p.get("lastSpam"), p.get("totaltimeplayer", 0), p.get("warnCount", 0),
+            account_id, account_id, display_string_str, profiles_str, p.get(
+                "name"),
+            p.get("accountAge"), p.get("creationDate"),
+            p.get("registerOn"), p.get("spamCount", 0),
+            p.get("lastSpam"), p.get(
+                "totaltimeplayer", 0), p.get("warnCount", 0),
             p.get("lastWarned"), verified, p.get("rejoincount", 1),
             p.get("lastJoin"), p.get("lastIP"), p.get("deviceUUID")
         ))
@@ -324,8 +308,8 @@ def _save_profile_single_thread(account_id: str, p: dict) -> None:
 def get_profile_by_acc_id(account_id: str) -> ProfileDictProxy | None:
     """Loads a single profile by account_id and returns it wrapped in a ProfileDictProxy."""
     rows = run_query("""
-        SELECT v2Tag, display_string, profiles, name, isBan, isMuted,
-               accountAge, creationDate, registerOn, canStartKickVote,
+        SELECT v2Tag, display_string, profiles, name,
+               accountAge, creationDate, registerOn,
                spamCount, lastSpam, totaltimeplayer, warnCount, lastWarned,
                verified, rejoincount, lastJoin, lastIP, deviceUUID
         FROM profiles
@@ -350,28 +334,26 @@ def get_profile_by_acc_id(account_id: str) -> ProfileDictProxy | None:
         "display_string": display_string,
         "profiles": profiles,
         "name": r[3],
-        "isBan": bool(r[4]) if r[4] is not None else False,
-        "isMuted": bool(r[5]) if r[5] is not None else False,
-        "accountAge": r[6],
-        "creationDate": r[7],
-        "registerOn": r[8],
-        "canStartKickVote": bool(r[9]) if r[9] is not None else True,
-        "spamCount": r[10] or 0,
-        "lastSpam": r[11],
-        "totaltimeplayer": r[12] or 0.0,
-        "warnCount": r[13] or 0,
-        "lastWarned": r[14],
-        "verified": bool(r[15]) if r[15] is not None else False,
-        "rejoincount": r[16] or 1,
-        "lastJoin": r[17],
-        "lastIP": r[18],
-        "deviceUUID": r[19]
+        "accountAge": r[4],
+        "creationDate": r[5],
+        "registerOn": r[6],
+        "spamCount": r[7] or 0,
+        "lastSpam": r[8],
+        "totaltimeplayer": r[9] or 0.0,
+        "warnCount": r[10] or 0,
+        "lastWarned": r[11],
+        "verified": bool(r[12]) if r[12] is not None else False,
+        "rejoincount": r[13] or 1,
+        "lastJoin": r[14],
+        "lastIP": r[15],
+        "deviceUUID": r[16]
     })
 
 
 def load_roles() -> dict:
     """Loads all roles from database."""
-    rows = run_query("SELECT name, tag, tagcolor, commands, ids FROM roles", fetch=True)
+    rows = run_query(
+        "SELECT name, tag, tagcolor, commands, ids FROM roles", fetch=True)
     roles_dict = {}
     if not rows:
         return roles_dict
@@ -402,32 +384,54 @@ def load_roles() -> dict:
     return roles_dict
 
 
+def run_transaction(queries_list: list) -> None:
+    """Executes multiple queries in a single transaction with database lock retry logic."""
+    import sqlite3
+    import time
+    import random
+    from repository.db import get_connection
+    MAX_RETRIES = 5
+    RETRY_DELAY = (0.1, 0.5)
+
+    retries = 0
+    while True:
+        try:
+            conn = get_connection()
+            cur = conn.cursor()
+            for query, params in queries_list:
+                cur.execute(query, params)
+            conn.commit()
+            conn.close()
+            return
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e).lower():
+                retries += 1
+                if retries > MAX_RETRIES:
+                    raise RuntimeError(
+                        "Max retries exceeded due to DB lock") from e
+                time.sleep(random.uniform(*RETRY_DELAY))
+            else:
+                raise
+
+
 def save_roles(roles_dict: dict) -> None:
     """Saves all roles to database."""
-    conn = get_connection()
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM roles")
-        for name, r in roles_dict.items():
-            tagcolor_str = json.dumps(r.get("tagcolor", [1, 1, 1]))
-            commands_str = json.dumps(r.get("commands", []))
-            ids_str = json.dumps(r.get("ids", []))
-            cur.execute("""
-                INSERT INTO roles (name, tag, tagcolor, commands, ids)
-                VALUES (?, ?, ?, ?, ?)
-            """, (name, r.get("tag"), tagcolor_str, commands_str, ids_str))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print(f"Error saving roles to DB: {e}")
-        raise
-    finally:
-        conn.close()
+    queries = [("DELETE FROM roles", ())]
+    for name, r in roles_dict.items():
+        tagcolor_str = json.dumps(r.get("tagcolor", [1, 1, 1]))
+        commands_str = json.dumps(r.get("commands", []))
+        ids_str = json.dumps(r.get("ids", []))
+        queries.append(("""
+            INSERT INTO roles (name, tag, tagcolor, commands, ids)
+            VALUES (?, ?, ?, ?, ?)
+        """, (name, r.get("tag"), tagcolor_str, commands_str, ids_str)))
+    run_transaction(queries)
 
 
 def load_custom() -> dict:
     """Loads custom tags and effects from database."""
-    rows = run_query("SELECT account_id, customtag, customeffects FROM custom_perks", fetch=True)
+    rows = run_query(
+        "SELECT account_id, customtag, customeffects FROM custom_perks", fetch=True)
     custom_dict = {"customtag": {}, "customeffects": {}}
     if not rows:
         return custom_dict
@@ -447,35 +451,26 @@ def load_custom() -> dict:
 
 def save_custom(custom_dict: dict) -> None:
     """Saves custom tags and effects to database."""
-    conn = get_connection()
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM custom_perks")
+    queries = [("DELETE FROM custom_perks", ())]
+    tags = custom_dict.get("customtag", {})
+    effects = custom_dict.get("customeffects", {})
+    all_accs = set(tags.keys()) | set(effects.keys())
 
-        tags = custom_dict.get("customtag", {})
-        effects = custom_dict.get("customeffects", {})
-        all_accs = set(tags.keys()) | set(effects.keys())
-
-        for acc_id in all_accs:
-            tag = tags.get(acc_id)
-            eff_list = effects.get(acc_id)
-            eff_str = json.dumps(eff_list) if eff_list is not None else None
-            cur.execute("""
-                INSERT INTO custom_perks (account_id, customtag, customeffects)
-                VALUES (?, ?, ?)
-            """, (acc_id, tag, eff_str))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print(f"Error saving custom perks to DB: {e}")
-        raise
-    finally:
-        conn.close()
+    for acc_id in all_accs:
+        tag = tags.get(acc_id)
+        eff_list = effects.get(acc_id)
+        eff_str = json.dumps(eff_list) if eff_list is not None else None
+        queries.append(("""
+            INSERT INTO custom_perks (account_id, customtag, customeffects)
+            VALUES (?, ?, ?)
+        """, (acc_id, tag, eff_str)))
+    run_transaction(queries)
 
 
 def load_blacklist() -> dict:
     """Loads blacklist from database."""
-    rows = run_query("SELECT type, target, till, reason FROM blacklist", fetch=True)
+    rows = run_query(
+        "SELECT type, target, till, reason FROM blacklist", fetch=True)
     blacklist = {
         "ban": {"ids": {}, "ips": {}, "deviceids": {}},
         "muted-ids": {},
@@ -503,37 +498,28 @@ def load_blacklist() -> dict:
 
 def save_blacklist(blacklist_dict: dict) -> None:
     """Saves blacklist to database."""
-    conn = get_connection()
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM blacklist")
+    queries = [("DELETE FROM blacklist", ())]
 
-        for target, val in blacklist_dict.get("ban", {}).get("ids", {}).items():
-            cur.execute("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_id', ?, ?, ?)",
-                        (target, val.get("till"), val.get("reason")))
+    for target, val in blacklist_dict.get("ban", {}).get("ids", {}).items():
+        queries.append(("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_id', ?, ?, ?)",
+                        (target, val.get("till"), val.get("reason"))))
 
-        for target, val in blacklist_dict.get("ban", {}).get("ips", {}).items():
-            cur.execute("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_ip', ?, ?, ?)",
-                        (target, val.get("till"), val.get("reason")))
+    for target, val in blacklist_dict.get("ban", {}).get("ips", {}).items():
+        queries.append(("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_ip', ?, ?, ?)",
+                        (target, val.get("till"), val.get("reason"))))
 
-        for target, val in blacklist_dict.get("ban", {}).get("deviceids", {}).items():
-            cur.execute("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_deviceid', ?, ?, ?)",
-                        (target, val.get("till"), val.get("reason")))
+    for target, val in blacklist_dict.get("ban", {}).get("deviceids", {}).items():
+        queries.append(("INSERT INTO blacklist (type, target, till, reason) VALUES ('ban_deviceid', ?, ?, ?)",
+                        (target, val.get("till"), val.get("reason"))))
 
-        for target, val in blacklist_dict.get("muted-ids", {}).items():
-            cur.execute("INSERT INTO blacklist (type, target, till, reason) VALUES ('mute', ?, ?, ?)",
-                        (target, val.get("till"), val.get("reason")))
+    for target, val in blacklist_dict.get("muted-ids", {}).items():
+        queries.append(("INSERT INTO blacklist (type, target, till, reason) VALUES ('mute', ?, ?, ?)",
+                        (target, val.get("till"), val.get("reason"))))
 
-        for target, val in blacklist_dict.get("kick-vote-disabled", {}).items():
-            cur.execute("INSERT INTO blacklist (type, target, till, reason) VALUES ('kickvote', ?, ?, ?)",
-                        (target, val.get("till"), val.get("reason")))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print(f"Error saving blacklist to DB: {e}")
-        raise
-    finally:
-        conn.close()
+    for target, val in blacklist_dict.get("kick-vote-disabled", {}).items():
+        queries.append(("INSERT INTO blacklist (type, target, till, reason) VALUES ('kickvote', ?, ?, ?)",
+                        (target, val.get("till"), val.get("reason"))))
+    run_transaction(queries)
 
 
 def load_whitelist() -> list:
@@ -546,23 +532,16 @@ def load_whitelist() -> list:
 
 def save_whitelist(whitelist_list: list) -> None:
     """Saves whitelist to database."""
-    conn = get_connection()
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM whitelist")
-        for account_id in whitelist_list:
-            cur.execute("INSERT INTO whitelist (account_id) VALUES (?)", (account_id,))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print(f"Error saving whitelist to DB: {e}")
-        raise
-    finally:
-        conn.close()
+    queries = [("DELETE FROM whitelist", ())]
+    for account_id in whitelist_list:
+        queries.append(
+            ("INSERT INTO whitelist (account_id) VALUES (?)", (account_id,)))
+    run_transaction(queries)
 
 
 class ProfileDictProxy(dict):
     """A dictionary wrapper for a player profile that writes changes to the DB on modification."""
+
     def __init__(self, account_id: str, initial_dict: dict):
         import copy
         super().__init__(initial_dict)
@@ -579,6 +558,7 @@ class ProfileDictProxy(dict):
 
 class SQLiteLazyProfiles(dict):
     """A dictionary-like wrapper to lazy-load profiles from SQLite on demand."""
+
     def __init__(self):
         super().__init__()
 

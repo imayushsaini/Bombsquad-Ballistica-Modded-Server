@@ -235,6 +235,11 @@ def bootstraping():
     if settings["elPatronPowerups"]["enable"]:
         from plugins import elPatronPowerups
         elPatronPowerups.enable()
+        try:
+            from plugins import creativePowerups
+            creativePowerups.enable()
+        except Exception as e:
+            logging.exception("Failed to enable creativePowerups:")
     if settings["mikirogQuickTurn"]["enable"]:
         from plugins import wavedash  # pylint: disable=unused-import
     if settings["colorful_explosions"]["enable"]:
