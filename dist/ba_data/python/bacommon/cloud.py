@@ -8,8 +8,6 @@
   it in mod code.
 """
 
-from __future__ import annotations
-
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated, override
@@ -17,8 +15,9 @@ from typing import TYPE_CHECKING, Annotated, override
 from efro.message import Message, Response
 from efro.dataclassio import ioprepped, IOAttrs
 from bacommon.analytics import AnalyticsEvent
-from bacommon.securedata import SecureDataChecker
+from bacommon import securedata
 from bacommon.transfer import DirectoryManifest
+from bacommon.locale import Locale
 from bacommon.login import LoginType
 from bacommon.docui import DocUIRequest, DocUIResponse
 import bacommon.displayitem as ditm
@@ -201,6 +200,13 @@ class WorkspaceFetchResponse(Response):
 
     done: Annotated[bool, IOAttrs('d')] = False
 
+    #: If set, the client should treat the sync as failed and display
+    #: this message. Allows the server to communicate user-facing errors
+    #: without relying on the protocol's ``forward_clean_errors`` flag.
+    error: Annotated[
+        str | None, IOAttrs('e', soft_default=None, store_default=False)
+    ] = None
+
 
 @ioprepped
 @dataclass
@@ -310,29 +316,6 @@ class StoreQueryResponse(Response):
 
 @ioprepped
 @dataclass
-class SecureDataCheckMessage(Message):
-    """Was this data signed by the master-server?."""
-
-    data: Annotated[bytes, IOAttrs('d')]
-    signature: Annotated[bytes, IOAttrs('s')]
-
-    @override
-    @classmethod
-    def get_response_types(cls) -> list[type[Response] | None]:
-        return [SecureDataCheckResponse]
-
-
-@ioprepped
-@dataclass
-class SecureDataCheckResponse(Response):
-    """Here's the result of that data check, boss."""
-
-    # Whether the data signature was valid.
-    result: Annotated[bool, IOAttrs('v')]
-
-
-@ioprepped
-@dataclass
 class SecureDataCheckerRequest(Message):
     """Can I get a checker over here?."""
 
@@ -347,7 +330,263 @@ class SecureDataCheckerRequest(Message):
 class SecureDataCheckerResponse(Response):
     """Here's that checker ya asked for, boss."""
 
-    checker: Annotated[SecureDataChecker, IOAttrs('c')]
+    checker: Annotated[securedata.Reader, IOAttrs('c')]
+
+
+@ioprepped
+@dataclass
+class SecureDataSigningTestRequest(Message):
+    """Ask basn to sign a test payload two ways for client verification.
+
+    Test-only round-trip used to confirm that ed25519 verify
+    (``_babase.verify_ed25519`` in the app binary; ``cryptography``
+    fallback in pytest) accepts both master-signed and
+    delegate-signed payloads against the embedded
+    :data:`~bacommon.securedata.STATIC_DATA_PUBLIC_KEYS`. basn
+    handles this without forwarding to bamaster.
+    """
+
+    @override
+    @classmethod
+    def get_response_types(cls) -> list[type[Response] | None]:
+        return [SecureDataSigningTestResponse]
+
+
+@ioprepped
+@dataclass
+class SecureDataSigningTestResponse(Response):
+    """Master- and delegate-signed archives over the same payload.
+
+    The verifier recovers the original payload via
+    :meth:`~bacommon.securedata.Reader.read` regardless of which
+    signing flow produced the archive.
+    """
+
+    #: Archive built with basn's cached static-data master key
+    #: (no cert).
+    master_archive: Annotated[securedata.Archive, IOAttrs('m')]
+
+    #: Archive built with basn's delegated
+    #: :class:`~bacommon.securedata.Writer` (carries a
+    #: master-signed cert).
+    delegate_archive: Annotated[securedata.Archive, IOAttrs('d')]
+
+
+@ioprepped
+@dataclass
+class ResolvedFlavorManifest:
+    """A resolved flavor-manifest blob, delivered inline (Tier 1).
+
+    Client-facing counterpart to the basn↔master
+    ``basntobamaster.ResolvedFlavorManifest``; basn relays it unchanged
+    when returning a resolved manifest to the client.
+
+    The flavor-manifest's canonical JSON bytes travel inline in
+    :attr:`data` (they are small — a ``logical_path -> {hash, size}``
+    map). The client writes them verbatim into its CAS store under
+    :attr:`hash` (sha256-verified), references that hash from its
+    top-level cache manifest exactly as the bundled manifest does, and
+    parses :attr:`data` (the ``{"e": {logical_path: {"h", "s"}}}``
+    shape) to discover the data-blob hashes to fetch via
+    ``GET /casblob/{hash}`` (Tier 2).
+    """
+
+    #: sha256 hex of :attr:`data` — the flavor-manifest's CAS hash.
+    hash: Annotated[str, IOAttrs('h')]
+
+    #: Canonical flavor-manifest JSON bytes (stored verbatim client-side
+    #: as a CAS blob; its sha256 equals :attr:`hash`).
+    data: Annotated[bytes, IOAttrs('d')]
+
+
+class AssetPackageResolveError(Enum):
+    """Why an asset-package resolve failed (structured for client branching).
+
+    Travels back to the client on :class:`ResolveAssetPackageResponse` so
+    the runtime can react precisely (e.g. prompt for sign-in on
+    ``AUTH_REQUIRED``) rather than parsing the human-readable ``error``
+    string.
+    """
+
+    #: Caller is unauthenticated and the version is non-public; signing in
+    #: with an account that has access may resolve it.
+    AUTH_REQUIRED = 'auth'
+    #: Caller is authenticated but lacks access to this (non-public)
+    #: version (not the owner / not on the package's dev team).
+    ACCESS_DENIED = 'access'
+    #: The requested asset-package-version id is unknown / invalid.
+    NOT_FOUND = 'notfound'
+    #: A requested dimension value was invalid (texture profile/quality,
+    #: language, etc.).
+    INVALID = 'invalid'
+    #: An internal/assemble error occurred server-side.
+    INTERNAL = 'internal'
+    #: The client build is too old to address current asset-package
+    #: manifests (which use clean source-named logical paths); the user
+    #: must update. Clients predating the build-number field also land
+    #: here.
+    CLIENT_TOO_OLD = 'tooold'
+    #: The package's own source content failed to build — a problem the
+    #: package author can fix (e.g. a malformed sound or texture file).
+    #: The human-readable ``error`` names the offending source file(s);
+    #: clients should surface it verbatim. Old clients see this as
+    #: ``INTERNAL`` via ``enum_fallback``.
+    CONTENT = 'content'
+
+
+class AssetPackageBuildPhase(Enum):
+    """Coarse phase of an in-progress server-side asset-package build.
+
+    Client-facing and deliberately decoupled from internal cloud-build
+    state — the master translates its build status into this. Combined
+    with the optional counts on :class:`AssetPackageBuildProgress` it
+    lets the client render a localized progress message (today English
+    only; structured so it can be translated later).
+    """
+
+    #: Spinning up / queued — the build hasn't begun real work yet.
+    PREPARING = 'prep'
+    #: Building the package's constituent assets.
+    BUILDING = 'build'
+    #: Assembling built outputs into the final manifest.
+    FINALIZING = 'final'
+
+
+@ioprepped
+@dataclass
+class AssetPackageBuildProgress:
+    """Progress of a server-side asset-package build, for the client.
+
+    Returned on :class:`ResolveAssetPackageResponse` when a resolve
+    can't be satisfied immediately because the master is (re)building
+    the requested flavors (a build can take noticeably longer than a
+    plain download). The client renders this and re-sends the same
+    resolve to poll until the manifest is ready.
+
+    Intentionally a resolve-specific, client-facing type — it does
+    **not** expose internal cloud-build types. The master translates
+    its build status into this at the resolve boundary.
+    """
+
+    #: Coarse phase, for a phase-appropriate (localized) message.
+    phase: Annotated[AssetPackageBuildPhase, IOAttrs('p')]
+
+    #: Optional 'done of total' unit counts (e.g. assets built) for a
+    #: progress readout. Typically both set or both unset.
+    units_done: Annotated[int | None, IOAttrs('ud', store_default=False)] = None
+    units_total: Annotated[int | None, IOAttrs('ut', store_default=False)] = (
+        None
+    )
+
+    #: Optional free-form text shown as-is (untranslated) — an escape
+    #: hatch for custom/modder build status the fixed phases can't
+    #: express.
+    detail: Annotated[str | None, IOAttrs('d', store_default=False)] = None
+
+
+@ioprepped
+@dataclass
+class ResolveAssetPackageMessage(Message):
+    """Resolve an asset-package-version's manifest for download (Tier 1).
+
+    Sent by a client to the basn node it is connected to when it needs
+    to download an asset package. basn resolves the manifest via
+    bamaster on the client's behalf and returns, per bucket, the
+    resolved flavor-manifest blob (its CAS hash + canonical bytes,
+    inline) plus a short-lived capability token. The client then fetches
+    each data blob the flavor-manifests reference from the same node via
+    ``GET /casblob/{hash}`` (Tier 2), presenting the token.
+
+    Texture dimensions travel as plain strings (the ``TextureProfile``
+    / ``TextureTier`` enum values) so this module stays decoupled
+    from the master-only ``baserver.workspace.assetsv1``; the master
+    converts + validates them.
+
+    The requesting account is conveyed via the standard
+    account-session-channel sidecar that basn auto-attaches to every
+    client message (no explicit field needed): a signed-in client
+    resolves against its account (required for non-public DEV/TEST
+    versions), while an anonymous client resolves PROD versions only
+    (which are public).
+    """
+
+    #: Fully-qualified ``account.package.version`` id to resolve.
+    apverid: Annotated[str, IOAttrs('a')]
+
+    #: Chosen locale for the ``language`` bucket.
+    language: Annotated[Locale, IOAttrs('l')]
+
+    #: Chosen ``TextureProfile`` value (e.g. ``'fallback_v1'``).
+    texture_profile: Annotated[str, IOAttrs('tp')]
+
+    #: Chosen ``TextureTier`` value (e.g. ``'regular'``). Wire key stays
+    #: the historical ``'tq'`` (it predates the tier/quality rename) so
+    #: this message stays compatible with un-migrated basn nodes and
+    #: older clients — construct-mode asset resolve sends it on every
+    #: boot, so the key must not break across versions.
+    texture_tier: Annotated[str, IOAttrs('tq')]
+
+    #: The client's engine build number. basn relays it to master, which
+    #: gates the resolve on it (clients too old to address current
+    #: source-named manifests get a ``CLIENT_TOO_OLD`` error). Soft-
+    #: defaults to 0 so older clients (and un-migrated basn) read as
+    #: build 0 -- always below the floor.
+    build_number: Annotated[int, IOAttrs('bn', soft_default=0)] = 0
+
+    @override
+    @classmethod
+    def get_response_types(cls) -> list[type[Response] | None]:
+        return [ResolveAssetPackageResponse]
+
+
+@ioprepped
+@dataclass
+class ResolveAssetPackageResponse(Response):
+    """Resolved flavor-manifests + capability token for a download.
+
+    ``buckets`` maps a ``bucket/flavor`` coordinate (e.g.
+    ``'textures/fallback_v1.gamma.regular'``, ``'constant'``) to that
+    flavor's resolved flavor-manifest blob (CAS hash + canonical bytes,
+    delivered inline). On failure ``error`` carries a human-readable
+    message and ``buckets`` is empty / ``token`` is ``None``.
+    """
+
+    #: Human-readable failure message (bad apverid, access denied, bad
+    #: dimension value, assemble failure), or ``None`` on success.
+    error: Annotated[str | None, IOAttrs('e')]
+
+    #: Structured failure reason accompanying ``error`` (lets the client
+    #: branch — e.g. prompt for sign-in — without parsing the message).
+    #: ``None`` on success, or when an older server didn't supply one.
+    #: ``enum_fallback`` makes a *future* unrecognized code degrade to
+    #: ``INTERNAL`` (message decode is lossy) instead of failing the whole
+    #: response — so a new error reason never bricks an older client's
+    #: resolve; it just surfaces the human ``error`` under a generic code.
+    error_code: Annotated[
+        AssetPackageResolveError | None,
+        IOAttrs(
+            'ec',
+            soft_default=None,
+            enum_fallback=AssetPackageResolveError.INTERNAL,
+        ),
+    ]
+
+    #: ``bucket/flavor`` coordinate -> the resolved flavor-manifest blob
+    #: for that flavor. Empty when ``error`` is set.
+    buckets: Annotated[dict[str, ResolvedFlavorManifest], IOAttrs('b')]
+
+    #: Short-lived capability token the client presents to
+    #: ``GET /casblob/{hash}`` to fetch the resolved blobs. ``None``
+    #: when ``error`` is set.
+    token: Annotated[securedata.Archive | None, IOAttrs('tok')]
+
+    #: Set when the manifest isn't ready yet because the master is
+    #: building the requested flavors; the client renders this progress
+    #: and re-sends the same resolve to poll. ``None`` once resolved
+    #: (then ``buckets`` / ``token`` are populated) or on ``error``.
+    build_progress: Annotated[
+        AssetPackageBuildProgress | None, IOAttrs('bp', soft_default=None)
+    ]
 
 
 @ioprepped
@@ -484,3 +723,29 @@ class AuthRequestResponse(Response):
 
     error: Annotated[str | None, IOAttrs('e')]
     token: Annotated[str | None, IOAttrs('t')]
+
+
+@ioprepped
+@dataclass
+class TransientAPIKeyRequest(Message):
+    """Request a transient API key for the currently signed-in account."""
+
+    @override
+    @classmethod
+    def get_response_types(cls) -> list[type[Response] | None]:
+        return [TransientAPIKeyResponse]
+
+
+@ioprepped
+@dataclass
+class TransientAPIKeyResponse(Response):
+    """Response to a transient API key request."""
+
+    class Error(Enum):
+        """Failure modes."""
+
+        INTERNAL_ERROR = 'ie'
+        KEY_LIMIT_REACHED = 'klr'
+
+    key: Annotated[str | None, IOAttrs('k')]
+    error: Annotated[Error | None, IOAttrs('e')]

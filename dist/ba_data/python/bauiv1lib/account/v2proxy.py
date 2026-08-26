@@ -2,14 +2,13 @@
 #
 """V2 account ui bits."""
 
-from __future__ import annotations
-
 import time
 import logging
 
 from efro.error import CommunicationError
 import bacommon.cloud
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 STATUS_CHECK_INTERVAL_SECONDS = 2.0
 
@@ -320,7 +319,7 @@ class V2ProxySignInWindow(bui.Window):
             and response.state is response.State.FAIL
         ):
             logging.info('LoginProxy failed.')
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(bui.Lstr(resource='errorText'), color=(1, 0, 0))
             self._done()
             return

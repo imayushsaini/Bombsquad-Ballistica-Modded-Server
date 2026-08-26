@@ -2,8 +2,6 @@
 #
 """Misc UI related types."""
 
-from __future__ import annotations
-
 import warnings
 from typing import TYPE_CHECKING, override
 
@@ -47,11 +45,17 @@ class TextWidgetStringEditAdapter(babase.StringEditAdapter):
         assert isinstance(initial_text, str)
         max_length: Any = _bauiv1.textwidget(query_max_chars=text_widget)
         assert isinstance(max_length, int)
+        is_password: Any = _bauiv1.textwidget(query_password=text_widget)
+        assert isinstance(is_password, bool)
 
         screen_space_center = text_widget.get_screen_space_center()
 
         super().__init__(
-            description, initial_text, max_length, screen_space_center
+            description,
+            initial_text,
+            max_length,
+            screen_space_center,
+            is_password=is_password,
         )
 
     @override

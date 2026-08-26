@@ -4,8 +4,6 @@
 
 """Provides classic app subsystem."""
 
-from __future__ import annotations
-
 import time
 import random
 import logging
@@ -16,7 +14,10 @@ from typing import TYPE_CHECKING, override, assert_never, final
 from efro.dataclassio import dataclass_from_dict
 import babase
 import bauiv1
+from bauiv1 import builtinassets
+from bauiv1 import stdassets as uistdassets
 import bascenev1
+from bascenev1 import stdassets
 
 import _baclassic
 from baclassic._music import MusicSubsystem
@@ -85,6 +86,15 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         #: device but should be mostly constant.
         device_signature: str
 
+        #: List of classic-inventory purchase legacy-ids owned by
+        #: the connecting account (e.g. ``'characters.kronk'``).
+        #: ``None`` when the master server isn't able to determine
+        #: this — for example on older master-server versions or
+        #: when the account has no classic-inventory record. Custom
+        #: handlers should treat ``None`` as "unknown" and not as
+        #: "owns nothing".
+        classic_purchases: list[str] | None = None
+
     @dataclass
     class V2AuthResponse:
         """What a V2 auth handler returns."""
@@ -106,6 +116,11 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         account_id: str
         account_tag: str
         player_profiles: dict
+        #: List of classic-inventory purchase legacy-ids owned by
+        #: the connecting account, or ``None`` when the master
+        #: server didn't provide one (unknown — fall back to the
+        #: legacy hacky character-list path).
+        classic_purchases: list[str] | None
         expire_time: float
 
     from baclassic._music import MusicPlayMode
@@ -216,7 +231,11 @@ class ClassicAppSubsystem(babase.AppSubsystem):
 
     @final
     async def run_v2_auth_handler(
-        self, request: V2AuthRequest, player_profiles: Any, token: str
+        self,
+        request: V2AuthRequest,
+        player_profiles: Any,
+        classic_purchases: list[str] | None,
+        token: str,
     ) -> V2AuthResponse:
         """:meta private:"""
         assert babase.in_logic_thread()
@@ -230,6 +249,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
                 account_id=request.account_id,
                 account_tag=request.account_tag,
                 player_profiles=player_profiles,
+                classic_purchases=classic_purchases,
                 expire_time=now + 30.0,
             )
 
@@ -386,7 +406,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             with activity.context:
                 globs = activity.globalsnode
                 if not globs.paused:
-                    bascenev1.getsound('refWhistle').play()
+                    stdassets.audio.ref_whistle.play()
                     globs.paused = True
 
                 # FIXME: This should not be an attr on Actor.
@@ -416,7 +436,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             with activity.context:
                 globs = activity.globalsnode
                 if globs.paused:
-                    bascenev1.getsound('refWhistle').play()
+                    stdassets.audio.ref_whistle.play()
                     globs.paused = False
 
                     # FIXME: This should not be an actor attr.
@@ -871,7 +891,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         # selected_profile: str | None = None,
     ) -> None:
         """Pop up a browser window from within a game."""
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         # from bauiv1lib.profile.browser import ProfileBrowserWindow
         from bauiv1lib.inventory import InventoryUIController
@@ -886,7 +906,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
 
         babase.app.ui_v1.set_main_window(
             InventoryUIController(player_profiles_only=True).create_window(
-                dui1.Request('/'),
+                dui2.Request('/'),
                 uiopenstateid='classicinventory',
                 transition=transition,
                 origin_widget=origin_widget,
@@ -900,8 +920,8 @@ class ClassicAppSubsystem(babase.AppSubsystem):
     def preload_map_preview_media(self) -> None:
         """Preload media needed for map preview UIs."""
         try:
-            bauiv1.getmesh('level_select_button_opaque')
-            bauiv1.getmesh('level_select_button_transparent')
+            _ = uistdassets.meshes.level_select_button_opaque.get()
+            _ = uistdassets.meshes.level_select_button_transparent.get()
             for maptype in list(self.maps.values()):
                 map_tex_name = maptype.get_preview_texture_name()
                 if map_tex_name is not None:
@@ -919,7 +939,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         # Play explicit swish sound so it occurs due to keypresses/etc.
         # This means we have to disable it for any button or else we get
         # double.
-        bauiv1.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
 
         # If it exists, dismiss it; otherwise make a new one.
         party_window = (
@@ -941,7 +961,7 @@ class ClassicAppSubsystem(babase.AppSubsystem):
             # need to make sure to disable swish sounds for any buttons
             # that lead us here.
             if babase.app.env.gui:
-                bauiv1.getsound('swish').play()
+                builtinassets.audio.swish.get().play()
 
             # Pause gameplay.
             self.pause()

@@ -4,8 +4,6 @@
 
 # pylint: disable=too-many-lines
 
-from __future__ import annotations
-
 import random
 import logging
 from typing import TYPE_CHECKING, override
@@ -14,7 +12,10 @@ from efro.util import strict_partial
 import bacommon.classic
 from bacommon.login import LoginType
 import bascenev1 as bs
+from bascenev1 import builtinassets
+from bascenev1 import stdassets
 import bauiv1 as bui
+from bauiv1 import stdassets as uistdassets
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.zoomtext import ZoomText
@@ -42,14 +43,16 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
 
         self._do_new_rating: bool = self.session.tournament_id is not None
 
-        self._score_display_sound = bs.getsound('scoreHit01')
-        self._score_display_sound_small = bs.getsound('scoreHit02')
-        self.drum_roll_sound = bs.getsound('drumRoll')
-        self.cymbal_sound = bs.getsound('cymbal')
+        self._score_display_sound = stdassets.audio.score_hit01
+        self._score_display_sound_small = stdassets.audio.score_hit02
+        self.drum_roll_sound = stdassets.audio.drum_roll
+        self.cymbal_sound = stdassets.audio.cymbal
 
-        self._replay_icon_texture = bui.gettexture('replayIcon')
-        self._menu_icon_texture = bui.gettexture('menuIcon')
-        self._next_level_icon_texture = bui.gettexture('nextLevelIcon')
+        self._replay_icon_texture = uistdassets.textures.replay_icon.get()
+        self._menu_icon_texture = uistdassets.textures.menu_icon.get()
+        self._next_level_icon_texture = (
+            uistdassets.textures.next_level_icon.get()
+        )
 
         self._campaign: bs.Campaign = settings['campaign']
 
@@ -74,17 +77,17 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
 
         if game_center_active:
             self._game_service_icon_color = (1.0, 1.0, 1.0)
-            icon = bui.gettexture('gameCenterIcon')
+            icon = uistdassets.textures.game_center_icon.get()
             self._game_service_achievements_texture = icon
             self._game_service_leaderboards_texture = icon
             self._account_has_achievements = True
         elif gpgs_active:
             self._game_service_icon_color = (0.8, 1.0, 0.6)
-            self._game_service_achievements_texture = bui.gettexture(
-                'googlePlayAchievementsIcon'
+            self._game_service_achievements_texture = (
+                uistdassets.textures.google_play_achievements_icon.get()
             )
-            self._game_service_leaderboards_texture = bui.gettexture(
-                'googlePlayLeaderboardsIcon'
+            self._game_service_leaderboards_texture = (
+                uistdassets.textures.google_play_leaderboards_icon.get()
             )
             self._account_has_achievements = True
         else:
@@ -93,9 +96,9 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             self._game_service_leaderboards_texture = None
             self._account_has_achievements = False
 
-        self._cashregistersound = bs.getsound('cashRegister')
-        self._gun_cocking_sound = bs.getsound('gunCocking')
-        self._dingsound = bs.getsound('ding')
+        self._cashregistersound = builtinassets.audio.cash_register
+        self._gun_cocking_sound = builtinassets.audio.gun_cocking
+        self._dingsound = builtinassets.audio.ding
         self._score_link: str | None = None
         self._root_ui: bui.Widget | None = None
         self._background: bs.Actor | None = None
@@ -219,13 +222,13 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     bui.Lstr(resource='tournamentCheckingStateText'),
                     color=(1, 0, 0),
                 )
-                bui.getsound('error').play()
+                builtinassets.audio.error.play()
                 return
             if self._tournament_time_remaining <= 0:
                 bui.screenmessage(
                     bui.Lstr(resource='tournamentEndedText'), color=(1, 0, 0)
                 )
-                bui.getsound('error').play()
+                builtinassets.audio.error.play()
                 return
 
         # If there are currently fewer players than our session min,
@@ -235,7 +238,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 bui.Lstr(resource='notEnoughPlayersRemainingText'),
                 color=(1, 0, 0),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.play()
             return
 
         self._campaign.set_selected_level(self._level_name)
@@ -289,7 +292,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
 
     def _ui_worlds_best(self) -> None:
         if self._score_link is None:
-            bui.getsound('error').play()
+            builtinassets.audio.error.play()
             bui.screenmessage(
                 bui.Lstr(resource='scoreListUnavailableText'), color=(1, 0.5, 0)
             )
@@ -307,7 +310,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 color=(0.5, 0.7, 0.5, 1),
                 position=(300, -235),
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.play()
             bs.timer(
                 2.0,
                 bs.WeakCallStrict(
@@ -337,9 +340,6 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
 
     def show_ui(self) -> None:
         """Show the UI for restarting, playing the next Level, etc."""
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-branches
 
         assert bui.app.classic is not None
 
@@ -1077,9 +1077,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         ).autoretain()
 
     def _got_friend_score_results(self, results: list[Any] | None) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         from efro.util import asserttype
 
         # delay a bit if results come in too fast
@@ -1236,9 +1234,9 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             )
 
     def _got_score_results(self, results: dict[str, Any] | None) -> None:
+        # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
 
         plus = bs.app.plus
         assert plus is not None
@@ -1514,10 +1512,10 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             self._tournament_time_remaining_text.node.text = val
 
     def _show_world_rank(self, offs_x: float) -> None:
+        # pylint: disable=too-many-statements
         # FIXME: Tidy this up.
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         assert bs.app.classic is not None
         assert self._show_info is not None
         available = self._show_info['results'] is not None
@@ -1728,7 +1726,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     stars = 1
                 else:
                     stars = 0
-                star_tex = bs.gettexture('star')
+                star_tex = stdassets.textures.star
                 star_x = 135 + offs_x
                 for _i in range(stars):
                     img = bs.NodeActor(

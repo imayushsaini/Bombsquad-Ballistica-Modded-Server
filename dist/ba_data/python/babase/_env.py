@@ -2,8 +2,6 @@
 #
 """Environment related functionality."""
 
-from __future__ import annotations
-
 import os
 import sys
 import ssl
@@ -22,9 +20,9 @@ if TYPE_CHECKING:
 
     from efro.logging import LogEntry, LogHandler
 
-# Timeout for standard functions talking to the master-server/etc. We
-# generally try to fail fast and retry instead of waiting a long time
-# for things.
+#: Timeout for standard functions talking to the master-server/etc.
+#: We generally try to fail fast and retry instead of waiting a long
+#: time for things.
 DEFAULT_REQUEST_TIMEOUT_SECONDS = 10
 
 _g_babase_imported: bool = False
@@ -199,13 +197,41 @@ def _bootstrap_networking() -> None:
     # Unfortunately this means we need to turn off retries here since
     # the retry mechanism effectively hides exceptions from us.
     global _g_net_warm_start_pool_manager  # pylint: disable=global-statement
-    _g_net_warm_start_pool_manager = urllib3.PoolManager(
-        retries=False,
-        ssl_context=_g_net_warm_start_ssl_context,
-        timeout=urllib3.util.Timeout(total=DEFAULT_REQUEST_TIMEOUT_SECONDS),
-        maxsize=10,
-        headers={'User-Agent': _babase.user_agent_string()},
-    )
+    # Honor HTTPS_PROXY if set; urllib3's PoolManager doesn't read it
+    # on its own. Lets the engine work behind corporate proxies and
+    # sandboxes that only permit outbound HTTPS via a proxy endpoint.
+    timeout = urllib3.util.Timeout(total=DEFAULT_REQUEST_TIMEOUT_SECONDS)
+    headers = {'User-Agent': _babase.user_agent_string()}
+    proxy_url = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+    if proxy_url:
+        # urllib3 doesn't pull credentials out of the proxy URL's
+        # userinfo, so an authenticating proxy needs them passed
+        # explicitly as a Proxy-Authorization header; otherwise the
+        # CONNECT tunnel for an https target comes back '407 Proxy
+        # Authentication Required'.
+        proxy_auth = urllib3.util.parse_url(proxy_url).auth
+        proxy_headers = (
+            urllib3.make_headers(proxy_basic_auth=proxy_auth)
+            if proxy_auth
+            else None
+        )
+        _g_net_warm_start_pool_manager = urllib3.ProxyManager(
+            proxy_url,
+            retries=False,
+            ssl_context=_g_net_warm_start_ssl_context,
+            timeout=timeout,
+            maxsize=10,
+            headers=headers,
+            proxy_headers=proxy_headers,
+        )
+    else:
+        _g_net_warm_start_pool_manager = urllib3.PoolManager(
+            retries=False,
+            ssl_context=_g_net_warm_start_ssl_context,
+            timeout=timeout,
+            maxsize=10,
+            headers=headers,
+        )
     # Kick off a request to our first-choice bootstrap server. This can
     # get dns lookup and ssl negotiation and whatnot going in the
     # background while the rest of our app is coming up, and our first
@@ -224,10 +250,12 @@ def _bootstrap_networking() -> None:
 
 
 def _warm_start_bootstrap_connection(pool: urllib3.PoolManager) -> None:
+    from efro.error import is_urllib3_communication_error
     from efro.util import strip_exception_tracebacks
     from babase._logging import netlog
     import _babase
 
+    url = 'https://regional.ballistica.net/ping'
     starttime = time.monotonic()
     try:
         netlog.debug('Warm starting urllib3 pool...')
@@ -237,18 +265,29 @@ def _warm_start_bootstrap_connection(pool: urllib3.PoolManager) -> None:
         # actually *use* the results of this request; we're just getting
         # urllib3 to establish a connection to our first-choice server
         # to hopefully have it available for immediate use when needed.
-        response = pool.request('GET', 'https://regional.ballistica.net/ping')
+        response = pool.request('GET', url)
         _data = response.data
         netlog.debug(
             'Warm starting urllib3 pool succeeded in %.3fs.',
             time.monotonic() - starttime,
         )
     except Exception as exc:
-        netlog.debug(
-            'Warm starting urllib3 pool failed in %.3fs.',
-            time.monotonic() - starttime,
-            exc_info=True,
-        )
+        # Communication errors are expected (offline at startup, DNS
+        # hiccup, etc.) and not informative; keep them to a one-line
+        # debug. Reserve the traceback for genuinely unexpected
+        # exceptions.
+        if is_urllib3_communication_error(exc, url=url):
+            netlog.debug(
+                'Warm starting urllib3 pool failed in %.3fs'
+                ' (communication error).',
+                time.monotonic() - starttime,
+            )
+        else:
+            netlog.debug(
+                'Warm starting urllib3 pool failed in %.3fs.',
+                time.monotonic() - starttime,
+                exc_info=True,
+            )
         # Hopefully avoid reference cycles.
         strip_exception_tracebacks(exc)
 
@@ -263,10 +302,10 @@ def _pycache_upkeep() -> None:
 
 
 def _do_pycache_upkeep() -> None:
+    # pylint: disable=too-many-statements
     """Take a quick pass at generating pycs for all .py files."""
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-locals
-    # pylint: disable=too-many-statements
     import py_compile
     import importlib.util
 
@@ -343,6 +382,7 @@ def _do_pycache_upkeep() -> None:
         if complained:
             cachelog.debug('(repeat) Error updating pycache dir: %s', msg)
             return
+        complained = True
         cachelog.warning('Error updating pycache dir: %s', msg)
 
     # Build a dict of dst pyc paths mapped to src py paths and
@@ -475,7 +515,7 @@ def _do_pycache_upkeep() -> None:
                         dstpath
                     ) or srcmtime > os.path.getmtime(dstpath)
                     if still_out_of_date:
-                        complain(f'Error precompiling {fullpath}: {exc}')
+                        complain(f'Error precompiling {srcpath}: {exc}')
                         assert complained
 
             if should_abort():
@@ -540,6 +580,18 @@ def interpreter_shutdown_sanity_checks() -> None:
         warn_threads.append(thread)
 
     if warn_threads:
+
+        def _describe(t: threading.Thread) -> str:
+            target = getattr(t, '_target', None)
+            target_desc = (
+                f'{target.__module__}.{target.__qualname__}'
+                if target is not None
+                and hasattr(target, '__qualname__')
+                and hasattr(target, '__module__')
+                else repr(target)
+            )
+            return f'{t} target={target_desc}'
+
         applog.warning(
             '%s',
             '\n '.join(
@@ -548,7 +600,7 @@ def interpreter_shutdown_sanity_checks() -> None:
                     f' unexpected thread(s) still running at'
                     f' Python shutdown:'
                 ]
-                + [str(t) for t in warn_threads]
+                + [_describe(t) for t in warn_threads]
             )
             + '\nThreads should spin themselves down at app shutdown'
             ' (see App.add_shutdown_task()).',

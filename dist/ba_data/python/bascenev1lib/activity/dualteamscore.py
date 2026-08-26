@@ -2,8 +2,6 @@
 #
 """Functionality related to the end screen in dual-team mode."""
 
-from __future__ import annotations
-
 from typing import override
 
 import bascenev1 as bs
@@ -35,7 +33,11 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         # 'First to 4'.
         session = self.session
         assert isinstance(session, bs.MultiTeamSession)
-        if bs.app.lang.get_resource('bestOfUseFirstToInstead'):
+        # 'bestOfUseFirstToInstead' was a per-language 0/1 grammar flag;
+        # hard-coded to the English value (0) for the strings migration
+        # (revisit in Step B; see followups.md).
+        best_of_use_first_to_instead = 0
+        if best_of_use_first_to_instead:
             best_txt = bs.Lstr(
                 resource='firstToSeriesText',
                 subs=[('${COUNT}', str(session.get_series_length() / 2 + 1))],
@@ -145,7 +147,6 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
         kill_delay: float,
         shiftdelay: float,
     ) -> None:
-        # pylint: disable=too-many-positional-arguments
         del kill_delay  # Unused arg.
         ZoomText(
             str(sessionteam.customdata['score']),

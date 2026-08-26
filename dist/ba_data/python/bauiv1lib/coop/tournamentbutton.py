@@ -2,12 +2,12 @@
 #
 """Defines button for co-op games."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 import copy
 
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -29,14 +29,12 @@ class TournamentButton:
         select: bool,
         on_pressed: Callable[[TournamentButton], None],
     ) -> None:
-        # pylint: disable=too-many-positional-arguments
-        # pylint: disable=too-many-statements
         self._r = 'coopSelectWindow'
         sclx = 300
         scly = 195.0
         self.on_pressed = on_pressed
-        self.lsbt = bui.getmesh('level_select_button_transparent')
-        self.lsbo = bui.getmesh('level_select_button_opaque')
+        self.lsbt = stdassets.meshes.level_select_button_transparent.get()
+        self.lsbo = stdassets.meshes.level_select_button_opaque.get()
         self.allow_ads = False
         self.tournament_id: str | None = None
         self.game: str | None = None
@@ -76,9 +74,9 @@ class TournamentButton:
             size=(image_width, image_width * 0.5),
             mesh_transparent=self.lsbt,
             mesh_opaque=self.lsbo,
-            texture=bui.gettexture('black'),
+            texture=builtinassets.textures.black.get(),
             opacity=0.2,
-            mask_texture=bui.gettexture('mapPreviewMask'),
+            mask_texture=stdassets.textures.map_preview_mask.get(),
         )
 
         self.lock_image = bui.imagewidget(
@@ -86,7 +84,7 @@ class TournamentButton:
             draw_controller=btn,
             position=(x + 21 + sclx * 0.5 - image_width * 0.15, y + scly - 130),
             size=(image_width * 0.3, image_width * 0.3),
-            texture=bui.gettexture('lock'),
+            texture=stdassets.textures.lock.get(),
             opacity=0.0,
         )
 
@@ -170,7 +168,7 @@ class TournamentButton:
                 draw_controller=btn,
                 position=(x + 360 - 20, y + scly - 140),
                 opacity=0.0,
-                texture=bui.gettexture('tv'),
+                texture=stdassets.textures.tv.get(),
             )
 
         x_offs += 50
@@ -225,7 +223,7 @@ class TournamentButton:
         self.prize_chest_1_image = bui.imagewidget(
             parent=parent,
             draw_controller=btn,
-            texture=bui.gettexture('white'),
+            texture=builtinassets.textures.white.get(),
             position=(x + 380 + xo2 + x_offs, y + scly - 93),
             size=(self._chestsz, self._chestsz),
             opacity=0.0,
@@ -259,7 +257,7 @@ class TournamentButton:
         self.prize_chest_2_image = bui.imagewidget(
             parent=parent,
             draw_controller=btn,
-            texture=bui.gettexture('white'),
+            texture=builtinassets.textures.white.get(),
             position=(x + 380 + xo2 + x_offs, y + scly - 93),
             size=(self._chestsz, self._chestsz),
             opacity=0.0,
@@ -293,7 +291,7 @@ class TournamentButton:
         self.prize_chest_3_image = bui.imagewidget(
             parent=parent,
             draw_controller=btn,
-            texture=bui.gettexture('white'),
+            texture=builtinassets.textures.white.get(),
             position=(x + 380 + xo2 + x_offs, y + scly - 93),
             size=(self._chestsz, self._chestsz),
             opacity=0.0,
@@ -430,9 +428,9 @@ class TournamentButton:
             or self.leader is None
             or len(self.leader[2]) != 1
         ):
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         AccountViewerWindow(
             account_id=self.leader[2][0].get('a', None),
             profile_id=self.leader[2][0].get('p', None),
@@ -445,7 +443,7 @@ class TournamentButton:
 
         tournament_id = self.tournament_id
         if tournament_id is None:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         TournamentScoresWindow(
@@ -485,8 +483,8 @@ class TournamentButton:
         )
 
     def update_for_data(self, entry: dict[str, Any]) -> None:
-        """Update for new incoming data."""
         # pylint: disable=too-many-statements
+        """Update for new incoming data."""
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
 
@@ -661,7 +659,9 @@ class TournamentButton:
         # if self.game is None:
         #     bui.textwidget(edit=self.button_text, text='-')
         #     bui.imagewidget(
-        #         edit=self.image, texture=bui.gettexture('black'), opacity=0.2
+        #         edit=self.image,
+        #         texture=builtinassets.textures.black,
+        #         opacity=0.2,
         #     )
         # else:
         max_players = bui.app.classic.accounts.tournament_info[

@@ -2,8 +2,6 @@
 #
 """Functionality related to running the game in server-mode."""
 
-from __future__ import annotations
-
 import sys
 import time
 import logging
@@ -354,8 +352,6 @@ class ServerController:
 
     def _launch_server_session(self) -> None:
         """Kick off a host-session based on the current server config."""
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         app = babase.app
         classic = app.classic
         plus = app.plus
@@ -443,6 +439,7 @@ class ServerController:
         bascenev1.set_public_party_max_size(self._config.max_party_size)
         bascenev1.set_public_party_queue_enabled(self._config.enable_queue)
         bascenev1.set_public_party_name(self._config.party_name)
+        bascenev1.set_host_password(self._config.password)
         bascenev1.set_public_party_stats_url(self._config.stats_url)
         bascenev1.set_public_party_public_address_ipv4(
             self._config.public_ipv4_address

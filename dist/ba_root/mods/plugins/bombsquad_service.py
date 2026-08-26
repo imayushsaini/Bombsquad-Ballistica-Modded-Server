@@ -33,9 +33,9 @@ class BsDataThread(object):
         )["ballistica_web"]["discord_link"]
         stats["vapidKey"] = notification_manager.get_vapid_keys()["public_key"]
 
-        self.refresh_stats_cache_timer = bs.AppTimer(8, babase.Call(
+        self.refresh_stats_cache_timer = bs.AppTimer(8, babase.CallStrict(
             self.refreshStats), repeat=True)
-        self.refresh_leaderboard_cache_timer = bs.AppTimer(10, babase.Call(
+        self.refresh_leaderboard_cache_timer = bs.AppTimer(10, babase.CallStrict(
             self.refreshLeaderboard), repeat=True)
 
     def startThread(self):
@@ -111,14 +111,14 @@ class BsDataThread(object):
                                       True),
                                   'inGame': player.in_game,
                                   'character': player.character,
-                                  'account_id': player.get_v1_account_id()
+                                  'account_id': player.get_account_id()
                                   }
                     data[str(team.id)]['players'].append(teamplayer)
 
         return data
 
 
-v = bs.AppTimer(8, babase.Call(
+v = bs.AppTimer(8, babase.CallStrict(
     BsDataThread))
 
 
@@ -282,11 +282,244 @@ def update_server_config(config):
 
 def do_action(action, value):
     if action == "message":
-        _babase.pushcall(babase.Call(bs.chatmessage, value),
+        _babase.pushcall(babase.CallPartial(bs.chatmessage, value),
                          from_other_thread=True)
     elif action == "quit":
-        _babase.pushcall(babase.Call(_babase.quit), from_other_thread=True)
+        _babase.pushcall(babase.CallStrict(
+            _babase.quit), from_other_thread=True)
 
 
 def subscribe_player(sub, account_id, name):
     notification_manager.subscribe(sub, account_id, name)
+
+
+def get_whitelist():
+    pdata.load_white_list()
+    return pdata.CacheData.whitelist
+
+
+def add_to_whitelist(account_id: str):
+    pdata.add_to_whitelist(account_id)
+
+
+def remove_from_whitelist(account_id: str):
+    pdata.remove_from_whitelist(account_id)
+
+
+def get_blacklist():
+    return pdata.get_blacklist()
+
+
+def get_recents():
+    return serverdata.recents
+
+
+def get_player_stats(account_id: str):
+    return mystats.get_stats_by_id(account_id)
+
+
+def get_players_paginated(page=1, per_page=50, search="", sort_by="server_profile_created_at", sort_order="desc"):
+    import json
+    import math
+    from datetime import datetime
+    from repository.db import run_query
+
+    # Sanitize inputs
+    try:
+        page = max(1, int(page))
+    except Exception:
+        page = 1
+    try:
+        per_page = max(1, min(100, int(per_page)))
+    except Exception:
+        per_page = 50
+
+    # White-list sortable columns
+    allowed_sort_cols = {
+        "id", "v2Tag", "account_id", "name", "isBan", "isMuted",
+        "registerOn", "totaltimeplayer", "warnCount", "rejoincount",
+        "lastJoin", "server_profile_created_at"
+    }
+    if sort_by not in allowed_sort_cols:
+        sort_by = "server_profile_created_at"
+
+    sort_order = "desc" if sort_order.lower() == "desc" else "asc"
+
+    query_where = ""
+    params = []
+    if search:
+        query_where = "WHERE name LIKE ? OR account_id LIKE ? OR v2Tag LIKE ? OR lastIP LIKE ? OR deviceUUID LIKE ?"
+        like_search = f"%{search}%"
+        params = [like_search] * 5
+
+    # Count total
+    count_query = f"SELECT count(*) FROM profiles {query_where}"
+    count_result = run_query(count_query, tuple(params), fetch=True)
+    total_count = count_result[0][0] if count_result else 0
+
+    # Fetch paginated rows
+    offset = (page - 1) * per_page
+    fetch_query = f"""
+        SELECT id, v2Tag, account_id, name, display_string, registerOn, lastJoin,
+               totaltimeplayer, isBan, isMuted, warnCount, rejoincount, lastIP,
+               deviceUUID, server_profile_created_at
+        FROM profiles
+        {query_where}
+        ORDER BY {sort_by} {sort_order}
+        LIMIT ? OFFSET ?
+    """
+    params_for_fetch = list(params)
+    params_for_fetch.extend([per_page, offset])
+    rows = run_query(fetch_query, tuple(params_for_fetch), fetch=True)
+
+    players = []
+    if rows:
+        blacklist = pdata.get_blacklist()
+        current_time = datetime.now()
+        for r in rows:
+            acc_id = r[2]
+            ip = r[12]
+            device_id = r[13]
+
+            is_banned = False
+            # Check ID
+            if acc_id in blacklist.get("ban", {}).get("ids", {}):
+                till_str = blacklist["ban"]["ids"][acc_id].get("till")
+                try:
+                    if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                        is_banned = True
+                except Exception:
+                    pass
+            # Check IP
+            if not is_banned and ip and ip in blacklist.get("ban", {}).get("ips", {}):
+                till_str = blacklist["ban"]["ips"][ip].get("till")
+                try:
+                    if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                        is_banned = True
+                except Exception:
+                    pass
+            # Check Device UUID
+            if not is_banned and device_id and device_id in blacklist.get("ban", {}).get("deviceids", {}):
+                till_str = blacklist["ban"]["deviceids"][device_id].get("till")
+                try:
+                    if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                        is_banned = True
+                except Exception:
+                    pass
+
+            # Check if muted
+            is_muted = False
+            if acc_id in blacklist.get("muted-ids", {}):
+                till_str = blacklist["muted-ids"][acc_id].get("till")
+                try:
+                    if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                        is_muted = True
+                except Exception:
+                    pass
+
+            try:
+                display_string = json.loads(r[4]) if r[4] else []
+            except Exception:
+                display_string = []
+            players.append({
+                "id": r[0],
+                "v2Tag": r[1],
+                "account_id": acc_id,
+                "name": r[3],
+                "display_string": display_string,
+                "registerOn": r[5],
+                "lastJoin": r[6],
+                "totaltimeplayer": r[7],
+                "isBan": is_banned,
+                "isMuted": is_muted,
+                "warnCount": r[10] or 0,
+                "rejoincount": r[11] or 1,
+                "lastIP": ip,
+                "deviceUUID": device_id,
+                "server_profile_created_at": r[14]
+            })
+
+    total_pages = math.ceil(total_count / per_page)
+    return {
+        "players": players,
+        "total": total_count,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages
+    }
+
+
+def get_player_by_id(account_id: str):
+    from repository.profiles import get_profile_by_acc_id
+    from datetime import datetime
+    p = get_profile_by_acc_id(account_id)
+    if p is not None:
+        p_dict = dict(p)
+        blacklist = pdata.get_blacklist()
+        current_time = datetime.now()
+
+        is_banned = False
+        ip = p_dict.get("lastIP")
+        device_id = p_dict.get("deviceUUID")
+
+        # Check ID
+        if account_id in blacklist.get("ban", {}).get("ids", {}):
+            till_str = blacklist["ban"]["ids"][account_id].get("till")
+            try:
+                if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                    is_banned = True
+            except Exception:
+                pass
+        # Check IP
+        if not is_banned and ip and ip in blacklist.get("ban", {}).get("ips", {}):
+            till_str = blacklist["ban"]["ips"][ip].get("till")
+            try:
+                if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                    is_banned = True
+            except Exception:
+                pass
+        # Check Device UUID
+        if not is_banned and device_id and device_id in blacklist.get("ban", {}).get("deviceids", {}):
+            till_str = blacklist["ban"]["deviceids"][device_id].get("till")
+            try:
+                if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                    is_banned = True
+            except Exception:
+                pass
+
+        # Check if muted
+        is_muted = False
+        if account_id in blacklist.get("muted-ids", {}):
+            till_str = blacklist["muted-ids"][account_id].get("till")
+            try:
+                if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                    is_muted = True
+            except Exception:
+                pass
+
+        # Check if kick vote disabled
+        is_kick_vote_disabled = False
+        if account_id in blacklist.get("kick-vote-disabled", {}):
+            till_str = blacklist["kick-vote-disabled"][account_id].get("till")
+            try:
+                if current_time < datetime.strptime(till_str, "%Y-%m-%d %H:%M:%S"):
+                    is_kick_vote_disabled = True
+            except Exception:
+                pass
+
+        p_dict["isBan"] = is_banned
+        p_dict["isMuted"] = is_muted
+        p_dict["canStartKickVote"] = not is_kick_vote_disabled
+        return p_dict
+    return None
+
+
+def update_player_profile(account_id: str, fields: dict):
+    from repository.profiles import get_profile_by_acc_id, save_profile_single
+    p = get_profile_by_acc_id(account_id)
+    if p is not None:
+        p_dict = dict(p)
+        p_dict.update(fields)
+        save_profile_single(account_id, p_dict)
+        return True
+    return False

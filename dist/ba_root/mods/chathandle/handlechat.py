@@ -21,7 +21,7 @@ def filter_chat_message(msg, client_id):
     if client_id == -1:
         if msg.startswith("/"):
             command_executor.execute(msg, client_id)
-            return None
+            return None 
         logger.log(f"Host msg: | {msg}", "chat")
         return msg
     acid = ""

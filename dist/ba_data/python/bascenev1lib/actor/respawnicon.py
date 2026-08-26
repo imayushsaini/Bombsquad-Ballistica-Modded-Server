@@ -2,11 +2,10 @@
 #
 """Implements respawn icon actor."""
 
-from __future__ import annotations
-
 import weakref
 
 import bascenev1 as bs
+from bascenev1 import builtinassets
 
 
 class RespawnIcon:
@@ -20,7 +19,6 @@ class RespawnIcon:
 
     def __init__(self, player: bs.Player, respawn_time: float):
         """Instantiate with a Player and respawn_time (in seconds)."""
-        # pylint: disable=too-many-locals
         self._visible = True
         self._dots_epic_only = False
 
@@ -29,7 +27,7 @@ class RespawnIcon:
         # Cache our mask tex on the team for easy access.
         mask_tex = player.team.customdata.get(self._MASKTEXSTORENAME)
         if mask_tex is None:
-            mask_tex = bs.gettexture('characterIconMask')
+            mask_tex = builtinassets.textures.character_icon_mask
             player.team.customdata[self._MASKTEXSTORENAME] = mask_tex
         assert isinstance(mask_tex, bs.Texture)
 

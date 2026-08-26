@@ -2,9 +2,9 @@
 #
 """Bits of utility functionality related to co-op levels."""
 
-from __future__ import annotations
-
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 
 class CoopLevelLockedWindow(bui.Window):
@@ -13,7 +13,7 @@ class CoopLevelLockedWindow(bui.Window):
     def __init__(self, name: bui.Lstr, dep_name: bui.Lstr):
         width = 550.0
         height = 250.0
-        lock_tex = bui.gettexture('lock')
+        lock_tex = stdassets.textures.lock.get()
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         super().__init__(
@@ -71,7 +71,7 @@ class CoopLevelLockedWindow(bui.Window):
         bui.containerwidget(
             edit=self._root_widget, selected_child=btn, start_button=btn
         )
-        bui.getsound('error').play()
+        builtinassets.audio.error.get().play()
 
     def _ok(self) -> None:
         bui.containerwidget(edit=self._root_widget, transition='out_left')

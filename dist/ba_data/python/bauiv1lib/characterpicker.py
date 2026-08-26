@@ -2,13 +2,12 @@
 #
 """Provides a picker for characters."""
 
-from __future__ import annotations
-
 import math
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib.popup import PopupWindow
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -40,7 +39,6 @@ class CharacterPicker(PopupWindow):
         tint2_color: Sequence[float] = (1.0, 1.0, 1.0),
         selected_character: str | None = None,
     ):
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-positional-arguments
         from bascenev1lib.actor import spazappearance
 
@@ -126,7 +124,7 @@ class CharacterPicker(PopupWindow):
             background=False,
         )
         index = 0
-        mask_texture = bui.gettexture('characterIconMask')
+        mask_texture = builtinassets.textures.character_icon_mask.get()
         for y in range(rows):
             for x in range(columns):
                 pos = (
@@ -220,5 +218,5 @@ class CharacterPicker(PopupWindow):
 
     @override
     def on_popup_cancel(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._transition_out()

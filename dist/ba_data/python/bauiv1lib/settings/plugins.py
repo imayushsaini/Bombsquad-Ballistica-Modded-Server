@@ -2,12 +2,12 @@
 #
 """Plugin Window UI."""
 
-from __future__ import annotations
-
 from enum import Enum
 from typing import TYPE_CHECKING, assert_never, override
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 from bauiv1lib import popup
 
 if TYPE_CHECKING:
@@ -35,8 +35,6 @@ class PluginWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-locals
         app = bui.app
 
         self._category = Category.ALL
@@ -175,7 +173,7 @@ class PluginWindow(bui.MainWindow):
             position=(settings_button_x + 3, button_row_yoffs - 57),
             draw_controller=self._settings_button,
             size=(35, 35),
-            texture=bui.gettexture('settingsIcon'),
+            texture=stdassets.textures.settings_icon.get(),
         )
 
         bui.widget(
@@ -214,7 +212,7 @@ class PluginWindow(bui.MainWindow):
             bui.screenmessage(
                 'Still scanning plugins; please try again.', color=(1, 0, 0)
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
         plugspecs = bui.app.plugins.plugin_specs
         plugstates: dict[str, dict] = bui.app.config.get('Plugins', {})
         assert isinstance(plugstates, dict)
@@ -306,9 +304,7 @@ class PluginWindow(bui.MainWindow):
                 i.delete()
 
     def _show_plugins(self) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         plugspecs = bui.app.plugins.plugin_specs
         plugstates: dict[str, dict] = bui.app.config.setdefault('Plugins', {})
         assert isinstance(plugstates, dict)

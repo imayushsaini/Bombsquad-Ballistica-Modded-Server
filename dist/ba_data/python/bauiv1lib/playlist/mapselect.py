@@ -2,12 +2,11 @@
 #
 """Provides UI for selecting maps in playlists."""
 
-from __future__ import annotations
-
 import math
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -29,7 +28,6 @@ class PlaylistMapSelectWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
         select_get_more_maps_button: bool = False,
     ):
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-positional-arguments
 
         from bascenev1 import get_filtered_map_name
@@ -155,8 +153,6 @@ class PlaylistMapSelectWindow(bui.MainWindow):
         return False
 
     def _refresh(self, select_get_more_maps_button: bool = False) -> None:
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-branches
         # pylint: disable=too-many-locals
         from bascenev1 import (
             get_map_class,
@@ -169,8 +165,10 @@ class PlaylistMapSelectWindow(bui.MainWindow):
         if self._subcontainer is not None:
             self._subcontainer.delete()
 
-        mesh_opaque = bui.getmesh('level_select_button_opaque')
-        mesh_transparent = bui.getmesh('level_select_button_transparent')
+        mesh_opaque = stdassets.meshes.level_select_button_opaque.get()
+        mesh_transparent = (
+            stdassets.meshes.level_select_button_transparent.get()
+        )
 
         self._maps = []
         map_list = self._gametype.get_supported_maps(self._sessiontype)
@@ -209,7 +207,7 @@ class PlaylistMapSelectWindow(bui.MainWindow):
             background=False,
         )
         index = 0
-        mask_texture = bui.gettexture('mapPreviewMask')
+        mask_texture = stdassets.textures.map_preview_mask.get()
         h_offs = 130 if len(self._maps) == 1 else 0
         for y in range(rows):
             for x in range(columns):
@@ -290,7 +288,7 @@ class PlaylistMapSelectWindow(bui.MainWindow):
             )
 
     def _on_store_press(self) -> None:
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         from bauiv1lib.docui import DocUIWindow
         from bauiv1lib.connectivity import wait_for_connectivity
@@ -319,7 +317,7 @@ class PlaylistMapSelectWindow(bui.MainWindow):
                 win_type=DocUIWindow,
                 win_create_call=bui.CallStrict(
                     StoreUIController().create_window,
-                    dui1.Request('/'),
+                    dui2.Request('/'),
                     origin_widget=self._get_more_maps_button,
                     uiopenstateid='classicstore',
                 ),

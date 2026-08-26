@@ -2,13 +2,12 @@
 #
 """Provides the top level play window."""
 
-from __future__ import annotations
-
 # import logging
 from typing import override, TYPE_CHECKING
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from bauiv1 import MainWindowState
@@ -32,25 +31,7 @@ class PlayWindow(bui.MainWindow):
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
 
-        import bacommon.cloud
-
         ui = bui.app.ui_v1
-
-        # TEMP TESTING
-        if bool(False):
-            print('HELLO FROM TEST')
-            plus = bui.app.plus
-            assert plus is not None
-            plus.cloud.send_message_cb(
-                bacommon.cloud.SecureDataCheckMessage(
-                    data=b'fo', signature=b'mo'
-                ),
-                on_response=lambda r: print('GOT CHECK RESPONSE', r),
-            )
-            plus.cloud.send_message_cb(
-                bacommon.cloud.SecureDataCheckerRequest(),
-                on_response=lambda r: print('GOT CHECKER RESPONSE', r),
-            )
 
         # Preload some modules we use in a background thread so we won't
         # have a visual hitch when the user taps them.
@@ -182,23 +163,23 @@ class PlayWindow(bui.MainWindow):
         )
         hoffs = (width - total_b_width) * 0.5
 
-        self._lineup_tex = bui.gettexture('playerLineup')
-        angry_computer_transparent_mesh = bui.getmesh(
-            'angryComputerTransparent'
+        self._lineup_tex = stdassets.textures.player_lineup.get()
+        angry_computer_transparent_mesh = (
+            stdassets.meshes.angry_computer_transparent.get()
         )
-        self._lineup_1_transparent_mesh = bui.getmesh(
-            'playerLineup1Transparent'
+        self._lineup_1_transparent_mesh = (
+            stdassets.meshes.player_lineup1_transparent.get()
         )
-        self._lineup_2_transparent_mesh = bui.getmesh(
-            'playerLineup2Transparent'
+        self._lineup_2_transparent_mesh = (
+            stdassets.meshes.player_lineup2_transparent.get()
         )
-        self._lineup_3_transparent_mesh = bui.getmesh(
-            'playerLineup3Transparent'
+        self._lineup_3_transparent_mesh = (
+            stdassets.meshes.player_lineup3_transparent.get()
         )
-        self._lineup_4_transparent_mesh = bui.getmesh(
-            'playerLineup4Transparent'
+        self._lineup_4_transparent_mesh = (
+            stdassets.meshes.player_lineup4_transparent.get()
         )
-        self._eyes_mesh = bui.getmesh('plasticEyesTransparent')
+        self._eyes_mesh = stdassets.meshes.plastic_eyes_transparent.get()
 
         self._coop_button: bui.Widget | None = None
 

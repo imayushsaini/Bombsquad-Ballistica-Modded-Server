@@ -2,12 +2,12 @@
 #
 """Settings UI related to gamepad functionality."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import stdassets
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -139,8 +139,8 @@ class GamepadSelectWindow(bui.MainWindow):
 
         assert bui.app.classic is not None
 
-        bui.getsound('activateBeep').play()
-        bui.getsound('swish').play()
+        stdassets.audio.activate_beep.get().play()
+        builtinassets.audio.swish.get().play()
         device = event['input_device']
         assert isinstance(device, bs.InputDevice)
 

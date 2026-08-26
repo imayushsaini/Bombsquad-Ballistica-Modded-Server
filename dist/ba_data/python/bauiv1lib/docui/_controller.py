@@ -2,8 +2,6 @@
 #
 """Controller functionality for DocUI."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, assert_never
 from dataclasses import dataclass
 from enum import Enum
@@ -21,17 +19,19 @@ from bacommon.docui import (
     DocUIWebResponse,
 )
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 from bauiv1lib.docui._window import DocUIWindow
 
 if TYPE_CHECKING:
     from typing import Callable
 
-    import bacommon.docui.v1
+    import bacommon.docui.v2
     from bacommon.docui import DocUIRequest, DocUIResponse
+    from bacommon.langstr import LangStrSpec
     import bacommon.clienteffect as clfx
 
-    from bauiv1lib.docui import v1prep
+    from bauiv1lib.docui import prep
 
 
 class _WinState(Enum):
@@ -108,11 +108,16 @@ class DocUIController:
     ) -> DocUIResponse:
         """Fulfill a request by sending it to a webserver."""
         import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         import urllib3.util
 
-        if not isinstance(request, dui1.Request):
+        if not isinstance(request, (dui1.Request, dui2.Request)):
             raise RuntimeError(f'Unsupported docui request: {type(request)}')
+
+        # The v1 and v2 method enums share wire values; normalize to v1
+        # for our http dispatch below.
+        method = dui1.RequestMethod(request.method.value)
 
         upool = bui.app.net.urllib3pool
 
@@ -129,7 +134,7 @@ class DocUIController:
 
         try:
             # Map docui GET requests to http GET and POST to POST.
-            if request.method is dui1.RequestMethod.GET:
+            if method is dui1.RequestMethod.GET:
                 # For GET we embed the request into a url param.
                 raw_response = upool.request(
                     'GET',
@@ -140,7 +145,7 @@ class DocUIController:
                     headers=headers,
                 )
 
-            elif request.method is dui1.RequestMethod.POST:
+            elif method is dui1.RequestMethod.POST:
                 # for POST we send the webrequest as json in body.
                 headers['Content-Type'] = 'application/json'
                 raw_response = upool.request(
@@ -149,10 +154,10 @@ class DocUIController:
                     headers=headers,
                     body=dataclass_to_json(webrequest),
                 )
-            elif request.method is dui1.RequestMethod.UNKNOWN:
+            elif method is dui1.RequestMethod.UNKNOWN:
                 raise RuntimeError('Unknown request method.')
             else:
-                assert_never(request.method)
+                assert_never(method)
 
             try:
                 # We use 'lossy' here so response versions or elements
@@ -202,6 +207,7 @@ class DocUIController:
             )
 
         assert webresponse.doc_ui_response is not None
+        self._check_server_response(webresponse.doc_ui_response)
         return webresponse.doc_ui_response
 
     def fulfill_request_cloud(
@@ -234,6 +240,7 @@ class DocUIController:
                 )
             assert isinstance(mresponse, bacommon.cloud.FulfillDocUIResponse)
 
+            self._check_server_response(mresponse.response)
             return mresponse.response
 
         except CommunicationError:
@@ -243,6 +250,21 @@ class DocUIController:
             )
         except Exception:
             return self.error_response(request)
+
+    @staticmethod
+    def _check_server_response(response: DocUIResponse) -> None:
+        """Run diagnostics on a pristine server-supplied response.
+
+        Called at the receipt points (cloud/web fulfillment) — before
+        controllers splice in any local content — so finalization
+        checks only see what the server actually sent.
+        """
+        import bacommon.docui.v2 as dui2
+
+        from bauiv1lib.docui import _resolve
+
+        if isinstance(response, dui2.Response):
+            _resolve.check_finalization_leaks(response)
 
     def error_response(
         self,
@@ -255,35 +277,34 @@ class DocUIController:
         A message is included based on ``error_type``. Pass
         ``custom_message`` to override this.
 
-        Messages will be translated to the client language using the
-        'serverResponses' Lstr translation category.
+        Messages are language-agnostic (bundled-package strings), so
+        error pages localize like any other doc-ui content; a
+        ``custom_message`` shows verbatim (untranslated).
         """
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
+        from bacommon.langstr import LangStrSpecValue
 
-        error_msg: bui.Lstr | None = None
-        error_msg_simple: str | None = None
+        from bauiv1 import stdassets
 
-        status_code = dui1.ResponseStatus.UNKNOWN_ERROR
+        uistrs = stdassets.strings.ui
+
+        error_msg: LangStrSpec
+
+        status_code = dui2.ResponseStatus.UNKNOWN_ERROR
 
         if custom_message is not None:
-            error_msg_simple = custom_message
+            error_msg = LangStrSpecValue(custom_message)
+        elif error_type is self.ErrorType.GENERIC:
+            error_msg = uistrs.error_occurred.spec
+        elif error_type is self.ErrorType.NEED_UPDATE:
+            error_msg = uistrs.need_update.spec
+        elif error_type is self.ErrorType.UNDER_CONSTRUCTION:
+            error_msg = uistrs.under_construction.spec
+        elif error_type is self.ErrorType.COMMUNICATION_ERROR:
+            status_code = dui2.ResponseStatus.COMMUNICATION_ERROR
+            error_msg = uistrs.server_error.spec
         else:
-            if error_type is self.ErrorType.GENERIC:
-                error_msg_simple = 'An error has occurred.'
-            elif error_type is self.ErrorType.NEED_UPDATE:
-                error_msg_simple = 'You must update the app to view this.'
-            elif error_type is self.ErrorType.UNDER_CONSTRUCTION:
-                error_msg_simple = 'Under construction - check back soon.'
-            elif error_type is self.ErrorType.COMMUNICATION_ERROR:
-                status_code = dui1.ResponseStatus.COMMUNICATION_ERROR
-                error_msg_simple = 'Error talking to server.'
-            else:
-                assert_never(error_type)
-        if error_msg_simple is not None:
-            error_msg = bui.Lstr(
-                translate=('serverResponses', error_msg_simple)
-            )
-        assert error_msg is not None
+            assert_never(error_type)
 
         debug = False
 
@@ -291,44 +312,37 @@ class DocUIController:
         # have unintentional side-effects so holding off on those for
         # now).
         do_retry = (
-            isinstance(request, dui1.Request)
-            and request.method is dui1.RequestMethod.GET
-            and status_code is dui1.ResponseStatus.COMMUNICATION_ERROR
+            isinstance(request, dui2.Request)
+            and request.method is dui2.RequestMethod.GET
+            and status_code is dui2.ResponseStatus.COMMUNICATION_ERROR
         )
 
-        return dui1.Response(
+        return dui2.Response(
             status=status_code,
-            page=dui1.Page(
-                title=bui.Lstr(resource='errorText').as_json(),
-                title_is_lstr=True,
+            page=dui2.Page(
+                title=uistrs.error.spec,
                 center_vertically=True,
                 rows=[
-                    dui1.ButtonRow(
+                    dui2.ButtonRow(
                         buttons=[
-                            dui1.Button(
-                                bui.Lstr(
-                                    resource=(
-                                        'retryText' if do_retry else 'okText'
-                                    )
-                                ).as_json(),
-                                (
-                                    dui1.Replace(
-                                        asserttype(request, dui1.Request)
+                            dui2.Button(
+                                (uistrs.retry if do_retry else uistrs.ok).spec,
+                                action=(
+                                    dui2.Replace(
+                                        asserttype(request, dui2.Request)
                                     )
                                     if do_retry
-                                    else dui1.Local(close_window=True)
+                                    else dui2.Local(close_window=True)
                                 ),
-                                label_is_lstr=True,
                                 default=True,
-                                style=dui1.ButtonStyle.MEDIUM,
+                                style=dui2.ButtonStyle.MEDIUM,
                                 size=(130, 50),
                                 padding_left=200,
                                 padding_right=200,
                                 padding_top=100,
                                 decorations=[
-                                    dui1.Text(
-                                        error_msg.as_json(),
-                                        is_lstr=True,
+                                    dui2.Text(
+                                        error_msg,
                                         position=(0, 80),
                                         size=(480, 50),
                                         highlight=False,
@@ -421,7 +435,7 @@ class DocUIController:
         May immediately display old results or may kick off a new
         request.
         """
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         assert bui.in_logic_thread()
 
@@ -438,8 +452,8 @@ class DocUIController:
 
             # If the current request is a POST, never auto-refetch. Just
             # build an error response.
-            assert isinstance(win.request, dui1.Request)
-            if win.request.method is dui1.RequestMethod.POST:
+            assert isinstance(win.request, dui2.Request)
+            if win.request.method is dui2.RequestMethod.POST:
                 # Do we want a specific error for this? Though this case
                 # should be rare I think.
                 explicit_error = self.ErrorType.GENERIC
@@ -481,7 +495,7 @@ class DocUIController:
         is_refresh: bool = False,
     ) -> None:
         """Kick off a request to replace existing window contents."""
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         assert bui.in_logic_thread()
 
@@ -490,76 +504,91 @@ class DocUIController:
         requesttype = request.get_type_id()
 
         if requesttype is DocUIRequestTypeID.V1:
-            assert isinstance(win.request, dui1.Request)
-
-            self._set_win_data(
+            # This client no longer works in v1.
+            bui.uilog.error('Got v1 doc-ui request; this is unsupported.')
+            self._submit_fresh_request(
                 win,
-                (
-                    _WinData(
-                        _WinState.REFRESHING
-                        if is_refresh
-                        else _WinState.FETCHING_FRESH_REQUEST
-                    )
-                ),
+                origin_widget,
+                is_refresh,
+                explicit_error=self.ErrorType.GENERIC,
             )
-
-            # Lock the ui and kick off this update.
-            win.lock_ui(origin_widget)
-            bui.app.threadpool.submit_no_wait(
-                bui.CallStrict(
-                    self._process_request_in_bg,
-                    win.request,
-                    weakwin=weakref.ref(win),
-                    uiscale=bui.app.ui_v1.uiscale,
-                    scroll_width=win.scroll_width,
-                    scroll_height=win.scroll_height,
-                    idprefix=win.main_window_id_prefix,
-                    immediate=True,
-                )
-            )
+        elif requesttype is DocUIRequestTypeID.V2:
+            assert isinstance(win.request, dui2.Request)
+            self._submit_fresh_request(win, origin_widget, is_refresh)
         elif requesttype is DocUIRequestTypeID.UNKNOWN:
-            assert isinstance(win.request, UnknownDocUIRequest)
             # Got a request type we don't know. Show a 'need a newer
             # build' error.
-
-            self._set_win_data(win, _WinData(_WinState.ERRORED))
-
-            # Lock the ui and kick off this update.
-            win.lock_ui(origin_widget)
-            bui.app.threadpool.submit_no_wait(
-                bui.CallStrict(
-                    self._process_request_in_bg,
-                    win.request,
-                    weakwin=weakref.ref(win),
-                    uiscale=bui.app.ui_v1.uiscale,
-                    scroll_width=win.scroll_width,
-                    scroll_height=win.scroll_height,
-                    idprefix=win.main_window_id_prefix,
-                    immediate=True,
-                    explicit_error=self.ErrorType.NEED_UPDATE,
-                )
+            assert isinstance(win.request, UnknownDocUIRequest)
+            self._submit_fresh_request(
+                win,
+                origin_widget,
+                is_refresh,
+                explicit_error=self.ErrorType.NEED_UPDATE,
             )
         else:
             assert_never(requesttype)
+
+    def _submit_fresh_request(
+        self,
+        win: DocUIWindow,
+        origin_widget: bui.Widget | None,
+        is_refresh: bool,
+        *,
+        explicit_error: DocUIController.ErrorType | None = None,
+    ) -> None:
+        """Lock the ui and kick off a fresh request's bg processing."""
+
+        # Timers (docui timed-actions especially) can still fire after
+        # the app threadpool is torn down; bow out quietly instead of
+        # erroring on submit once shutdown has begun.
+        if bui.app.shutting_down:
+            return
+
+        self._set_win_data(
+            win,
+            _WinData(
+                _WinState.ERRORED
+                if explicit_error is not None
+                else (
+                    _WinState.REFRESHING
+                    if is_refresh
+                    else _WinState.FETCHING_FRESH_REQUEST
+                )
+            ),
+        )
+        win.lock_ui(origin_widget)
+        bui.app.threadpool.submit_no_wait(
+            bui.CallStrict(
+                self._process_request_in_bg,
+                win.request,
+                weakwin=weakref.ref(win),
+                uiscale=bui.app.ui_v1.uiscale,
+                scroll_width=win.scroll_width,
+                scroll_height=win.scroll_height,
+                idprefix=win.main_window_id_prefix,
+                immediate=True,
+                explicit_error=explicit_error,
+            )
+        )
 
     def run_action(
         self,
         window: DocUIWindow,
         widgetid: str | None,
-        action: bacommon.docui.v1.Action | None,
+        action: bacommon.docui.v2.Action | None,
         is_timed: bool = False,
     ) -> None:
-        """Called when a button is pressed in a v1 ui."""
+        """Called when a button is pressed in a doc-ui."""
         # pylint: disable=too-many-branches
         # pylint: disable=cyclic-import
 
-        import bacommon.docui.v1 as dui
+        import bacommon.docui.v2 as dui
 
         assert bui.in_logic_thread()
 
         # If locked, been and tell them to try again.
         if window.locked:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource='pageRefreshingTryAgainText'), color=(1, 0, 0)
             )
@@ -582,7 +611,7 @@ class DocUIController:
         # Play error beeps on buttons with no actions assigned to let
         # the user know nothing is supposed to happen.
         if action is None:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         action_type = action.get_type_id()
@@ -597,7 +626,7 @@ class DocUIController:
                 )
             else:
                 if action.default_sound:
-                    bui.getsound('swish').play()
+                    builtinassets.audio.swish.get().play()
                 window.main_window_replace(
                     lambda: self.create_window(
                         action.request,
@@ -607,36 +636,18 @@ class DocUIController:
                     )
                 )
 
-                self._run_immediate_effects_and_actions(
-                    client_effects=action.immediate_client_effects,
-                    local_action=action.immediate_local_action,
-                    local_action_args=action.immediate_local_action_args,
-                    widget=widget,
-                    window=window,
-                    is_timed=is_timed,
-                )
-
         elif action_type is dui.ActionTypeID.REPLACE:
             assert isinstance(action, dui.Replace)
 
             # Play default click sound only if this is coming from a
             # button.
             if widget is not None and action.default_sound:
-                bui.getsound('click01').play()
+                builtinassets.audio.click01.get().play()
 
             # Force a state save so if our UI gets rebuilt with the same
             # IDs we'll wind up with the same selection and whatnot.
             window.main_window_save_shared_state()
             self.replace(window, action.request, origin_widget=widget)
-
-            self._run_immediate_effects_and_actions(
-                client_effects=action.immediate_client_effects,
-                local_action=action.immediate_local_action,
-                local_action_args=action.immediate_local_action_args,
-                widget=widget,
-                window=window,
-                is_timed=is_timed,
-            )
 
         elif action_type is dui.ActionTypeID.LOCAL:
             assert isinstance(action, dui.Local)
@@ -644,11 +655,11 @@ class DocUIController:
                 if action.close_window:
                     # Always play close-window swish, even if we don't have
                     # a source button.
-                    bui.getsound('swish').play()
+                    builtinassets.audio.swish.get().play()
                 else:
                     # Only play click sound if this is coming from a button.
                     if widget is not None:
-                        bui.getsound('click01').play()
+                        builtinassets.audio.click01.get().play()
             if action.close_window:
                 window.main_window_back()
 
@@ -663,7 +674,7 @@ class DocUIController:
         elif action_type is dui.ActionTypeID.UNKNOWN:
             assert isinstance(action, dui.UnknownAction)
             bui.screenmessage('Unknown action.', color=(1, 0, 0))
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
         else:
             # Make sure we handle all options.
             assert_never(action_type)
@@ -742,10 +753,9 @@ class DocUIController:
 
         This will always return a response, even on error conditions.
         """
-        # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
-        import bacommon.docui.v1 as dui1
-        from bauiv1lib.docui import v1prep
+        import bacommon.docui.v2 as dui2
+        from bauiv1lib.docui import prep
 
         assert not bui.in_logic_thread()
 
@@ -781,17 +791,36 @@ class DocUIController:
             responsetype = response.get_type_id()
 
             if responsetype is DocUIResponseTypeID.V1:
+                # This client no longer works in v1 (servers serve v2
+                # to any build with v2 support, so this implies either
+                # a server bug or a v1-only mod controller).
+                bui.uilog.error('Got v1 doc-ui response; this is unsupported.')
+                error = self.ErrorType.GENERIC
+                response = None
 
-                assert isinstance(response, dui1.Response)
-
-                # If they require a build-number newer than us, say so.
+            elif responsetype is DocUIResponseTypeID.V2:
+                assert isinstance(response, dui2.Response)
                 minbuild = response.minimum_engine_build
                 if (
                     minbuild is not None
                     and minbuild > bui.app.env.engine_build_number
                 ):
                     error = self.ErrorType.NEED_UPDATE
+                    response = None
+                else:
+                    try:
+                        # Resolve referenced packages in our locale and
+                        # de-index deferred effects; the page then preps
+                        # and renders natively.
+                        from bauiv1lib.docui import _resolve
 
+                        _resolve.resolve_response(response)
+                    except Exception:
+                        bui.uilog.exception(
+                            'Error resolving v2 doc-ui response.'
+                        )
+                        error = self.ErrorType.GENERIC
+                        response = None
             elif responsetype is DocUIResponseTypeID.UNKNOWN:
                 assert isinstance(response, UnknownDocUIResponse)
                 bui.uilog.debug(
@@ -806,11 +835,12 @@ class DocUIController:
         if error is not None:
             response = self.error_response(request, error)
 
-        # Currently must be v1 if it made it to here.
-        assert isinstance(response, dui1.Response)
+        # Currently must be v2 if it made it to here.
+        assert isinstance(response, dui2.Response)
 
-        pageprep = v1prep.prep_page(
+        pageprep = prep.prep_page(
             response.page,
+            packages=list(response.packages),
             uiscale=uiscale,
             scroll_width=scroll_width,
             scroll_height=scroll_height,
@@ -837,9 +867,9 @@ class DocUIController:
         self,
         response: DocUIResponse,
         weakwin: weakref.ref[DocUIWindow],
-        pageprep: v1prep.PagePrep,
+        pageprep: prep.PagePrep,
     ) -> None:
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         assert bui.in_logic_thread()
 
@@ -849,13 +879,13 @@ class DocUIController:
         if win is None:
             return
 
-        # Currently should only be sending ourself v1 responses here.
-        assert isinstance(response, dui1.Response)
+        # Currently should only be sending ourself v2 responses here.
+        assert isinstance(response, dui2.Response)
 
         win.unlock_ui()
         win.set_last_response(
             response,
-            response.status == dui1.ResponseStatus.SUCCESS,
+            response.status == dui2.ResponseStatus.SUCCESS,
         )
 
         # Set the UI.
@@ -891,20 +921,16 @@ class DocUIController:
 
         # Possibly take further action depending on state.
         if state is _WinState.REDISPLAYING_OLD_STATE:
-            # Ok; we're done showing old state. For POST this is as far
-            # as we go (don't want to repeat POST effects), but for GET
-            # we can now kick off a refresh to swap in the latest
-            # version of the page.
-            assert isinstance(win.request, dui1.Request)
-            if win.request.method is dui1.RequestMethod.GET:
+            # Ok; we're done showing old state. For GET we can now kick off
+            # a refresh to swap in the latest version of the page; for POST
+            # this is as far as we go (don't want to repeat POST effects).
+            # (win.request stays the original v1-or-v2 request here.)
+            from bauiv1lib.docui import _resolve
+
+            if _resolve.request_is_get(win.request):
                 self.replace(win, win.request, is_refresh=True)
-            elif (
-                win.request.method is dui1.RequestMethod.POST
-                or win.request.method is dui1.RequestMethod.UNKNOWN
-            ):
-                self._set_idle_and_schedule_timed_action(response, weakwin)
             else:
-                assert_never(win.request.method)
+                self._set_idle_and_schedule_timed_action(response, weakwin)
 
         elif state is _WinState.ERRORED or state is _WinState.IDLE:
             pass
@@ -919,12 +945,12 @@ class DocUIController:
     def _set_idle_and_schedule_timed_action(
         self, response: DocUIResponse, weakwin: weakref.ref[DocUIWindow]
     ) -> None:
-        import bacommon.docui.v1 as dui1
+        import bacommon.docui.v2 as dui2
 
         win = weakwin()
         assert win is not None
         assert self._get_win_data(win).state is not _WinState.IDLE
-        assert isinstance(response, dui1.Response)
+        assert isinstance(response, dui2.Response)
 
         refresh_timer: bui.AppTimer | None = None
 
@@ -945,7 +971,7 @@ class DocUIController:
     def _run_timed_action(
         self,
         weakwin: weakref.ref[DocUIWindow],
-        action: bacommon.docui.v1.Action,
+        action: bacommon.docui.v2.Action,
     ) -> None:
         # If our target window died since we set this timer, no biggie.
         win = weakwin()

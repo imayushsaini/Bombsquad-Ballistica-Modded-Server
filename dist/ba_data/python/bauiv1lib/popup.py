@@ -2,12 +2,11 @@
 #
 """Popup window/menu related functionality."""
 
-from __future__ import annotations
-
 import weakref
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable, Literal
@@ -131,8 +130,6 @@ class PopupMenuWindow(PopupWindow):
     ):
         # FIXME: Clean up a bit.
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         if choices_disabled is None:
             choices_disabled = []
         if choices_display is None:
@@ -271,7 +268,7 @@ class PopupMenuWindow(PopupWindow):
             self._current_choice = self._choices[index]
 
     def _activate(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         bui.apptimer(0.05, self._transition_out)
         delegate = self._getdelegate()
         if delegate is not None:
@@ -298,7 +295,7 @@ class PopupMenuWindow(PopupWindow):
     @override
     def on_popup_cancel(self) -> None:
         if not self._transitioning_out:
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
         self._transition_out()
 
 
@@ -327,7 +324,6 @@ class PopupMenu:
         button_size: tuple[float, float] = (160.0, 50.0),
         autoselect: bool = True,
     ):
-        # pylint: disable=too-many-locals
         if choices_disabled is None:
             choices_disabled = []
         if choices_display is None:

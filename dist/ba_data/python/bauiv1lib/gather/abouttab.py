@@ -2,8 +2,6 @@
 #
 """Defines the about tab in the gather UI."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib.gather import GatherTab
@@ -27,7 +25,6 @@ class AboutGatherTab(GatherTab):
         region_bottom: float,
     ) -> bui.Widget:
         # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-positional-arguments
 
         plus = bui.app.plus

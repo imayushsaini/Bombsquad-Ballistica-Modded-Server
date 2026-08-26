@@ -2,8 +2,6 @@
 #
 """Provides ui for network related testing."""
 
-from __future__ import annotations
-
 import time
 import copy
 import weakref
@@ -212,7 +210,6 @@ class NetTestingWindow(bui.MainWindow):
 
 
 def _run_diagnostics(weakwin: weakref.ref[NetTestingWindow]) -> None:
-    # pylint: disable=too-many-statements
 
     from efro.util import utc_now
 

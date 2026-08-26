@@ -3,13 +3,9 @@
 
 """UI functionality for advanced settings."""
 
-from __future__ import annotations
-
-import os
-import logging
 from typing import TYPE_CHECKING, override
 
-from bacommon.locale import LocaleResolved
+from bacommon.locale import Locale, LocaleResolved
 import bauiv1 as bui
 from bauiv1lib.utils import scroll_fade_bottom, scroll_fade_top
 from bauiv1lib.popup import PopupMenu
@@ -26,7 +22,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-statements
 
         if bui.app.classic is None:
             raise RuntimeError('This requires classic support.')
@@ -118,7 +113,10 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         self._show_use_insecure_connections = True
         if self._show_use_insecure_connections:
-            self._sub_height += 82
+            # 42 for the label+popup row, ~25 for extra descender so
+            # the description sits below the popup rather than
+            # overlapping it, 40 for spacing to the next row.
+            self._sub_height += 107
 
         self._do_vr_test_button = app.env.vr
         self._do_net_test_button = True
@@ -296,7 +294,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
     def _rebuild(self) -> None:
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
 
         from bauiv1lib.config import ConfigCheckBox
         from babase.modutils import show_user_scripts
@@ -376,24 +373,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         # We have a special dict of language names in that language so
         # we don't have to go digging through each full language.
-        try:
-            import json
-
-            with open(
-                os.path.join(
-                    bui.app.env.data_directory,
-                    'ba_data',
-                    'data',
-                    'langdata.json',
-                ),
-                encoding='utf-8',
-            ) as infile:
-                lang_names_translated = json.loads(infile.read())[
-                    'lang_names_translated'
-                ]
-        except Exception:
-            logging.exception('Error reading lang data.')
-            lang_names_translated = {}
+        lang_names_translated = bui.get_legacy_langdata().get(
+            'lang_names_translated', {}
+        )
 
         langs_translated = {}
         for lang in available_languages:
@@ -601,27 +583,55 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 maxwidth=430,
             )
 
-        self._use_insecure_connections_check_box: ConfigCheckBox | None
+        self._insecure_connections_popup: PopupMenu | None
         if self._show_use_insecure_connections:
             v -= 42
-            self._use_insecure_connections_check_box = ConfigCheckBox(
+
+            # Popup on the left, label on the right — same row.
+            # Resolve the current stored value, normalizing legacy
+            # states so the popup always reflects a valid choice.
+            current_mode = bui.app.config.resolve('Insecure Connections')
+            if current_mode not in ('always', 'auto', 'never'):
+                current_mode = 'auto'
+
+            self._insecure_connections_popup = PopupMenu(
                 parent=self._subcontainer,
-                check_box_id=(
-                    f'{self.main_window_id_prefix}|useinsecureconnections'
+                button_id=(f'{self.main_window_id_prefix}|insecureconnections'),
+                position=(50, v - 18),
+                width=180,
+                choices=['always', 'auto', 'never'],
+                choices_display=[
+                    bui.Lstr(resource='graphicsSettingsWindow.alwaysText'),
+                    bui.Lstr(resource='autoText'),
+                    bui.Lstr(resource='graphicsSettingsWindow.neverText'),
+                ],
+                current_choice=current_mode,
+                # WeakCallPartial so the popup's callback reference
+                # to self doesn't cycle with
+                # self._insecure_connections_popup — otherwise gc
+                # flags this window every open. Partial rather than
+                # Strict because PopupMenu passes the selected value
+                # as a runtime arg.
+                on_value_change_call=bui.WeakCallPartial(
+                    self._set_insecure_connections_mode
                 ),
-                position=(50, v),
-                size=(self._sub_width - 100, 30),
-                configkey='Use Insecure Connections',
-                autoselect=True,
-                displayname=bui.Lstr(
-                    resource=(f'{self._r}.insecureConnectionsText')
-                ),
-                scale=1.0,
-                maxwidth=430,
             )
+
+            # Label sits to the right of the popup.
             bui.textwidget(
                 parent=self._subcontainer,
-                position=(90, v - 20),
+                position=(224, v + 5),
+                size=(0, 0),
+                text=bui.Lstr(resource=f'{self._r}.insecureConnectionsText'),
+                maxwidth=300,
+                color=(0.8, 0.8, 0.8),
+                h_align='left',
+                v_align='center',
+            )
+
+            bui.textwidget(
+                parent=self._subcontainer,
+                position=(90, v - 45),
                 size=(0, 0),
                 text=bui.Lstr(
                     resource=(f'{self._r}.insecureConnectionsDescriptionText')
@@ -633,9 +643,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 h_align='left',
                 v_align='center',
             )
-            v -= 40
+            v -= 65
         else:
-            self._use_insecure_connections_check_box = None
+            self._insecure_connections_popup = None
 
         self._always_use_internal_keyboard_check_box: ConfigCheckBox | None
         if self._show_always_use_internal_keyboard:
@@ -839,6 +849,19 @@ class AdvancedSettingsWindow(bui.MainWindow):
         )
         plus.run_v1_account_transactions()
 
+    def _set_insecure_connections_mode(self, value: str) -> None:
+        """Persist the user's tri-state ``Insecure Connections`` choice.
+
+        Takes effect on the next outbound server connection — existing
+        live transports keep running until they naturally cycle.
+        """
+        if value not in ('always', 'auto', 'never'):
+            # Defensive — shouldn't happen with our fixed choices.
+            value = 'auto'
+        cfg = bui.app.config
+        cfg['Insecure Connections'] = value
+        cfg.commit()
+
     def _on_vr_test_press(self) -> None:
         from bauiv1lib.settings.vrtesting import VRTestingWindow
 
@@ -899,21 +922,22 @@ class AdvancedSettingsWindow(bui.MainWindow):
         self._menu_open = False
 
     def _on_menu_choice(self, choice: str) -> None:
-
-        cfg = bui.app.config
-        cfgkey = 'Lang'
-
+        # Switching is now an elective asset-resolve (the target locale's
+        # language flavor is downloaded if not already local) that commits
+        # only on success -- driven by LocaleSubsystem.set_locale, which
+        # writes/clears the 'Lang' config itself. 'Auto' = no override
+        # (follow the OS-default locale).
+        locale_ss = bui.app.locale
         if choice == 'Auto':
-            if cfgkey in cfg:
-                del cfg[cfgkey]
+            locale_ss.set_locale(
+                locale_ss.default_locale, store_to_config=False
+            )
         else:
-            cfg[cfgkey] = choice
-
-        cfg.apply_and_commit()
+            locale_ss.set_locale(
+                Locale.from_long_value(choice), store_to_config=True
+            )
 
         self.main_window_save_shared_state()
-
-        bui.apptimer(0.1, bui.WeakCallStrict(self._rebuild))
 
     def _completed_langs_cb(self, results: dict[str, Any] | None) -> None:
         if results is not None and results['langs'] is not None:

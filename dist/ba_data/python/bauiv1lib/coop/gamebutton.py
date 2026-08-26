@@ -2,13 +2,12 @@
 #
 """Defines button for co-op games."""
 
-from __future__ import annotations
-
 import random
 import weakref
 from typing import TYPE_CHECKING
 
 import bauiv1 as bui
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from bauiv1lib.coop.browser import CoopBrowserWindow
@@ -28,7 +27,6 @@ class GameButton:
         row: str,
     ):
         # pylint: disable=too-many-positional-arguments
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
 
         assert bui.app.classic is not None
@@ -97,7 +95,7 @@ class GameButton:
             texture=bui.gettexture(
                 campaign.getlevel(levelname).preview_texture_name
             ),
-            mask_texture=bui.gettexture('mapPreviewMask'),
+            mask_texture=stdassets.textures.map_preview_mask.get(),
         )
 
         translated = campaign.getlevel(levelname).displayname
@@ -182,7 +180,7 @@ class GameButton:
             position=(x - 8 + sclx * 0.5, y + scly * 0.5 - 20),
             size=(60, 60),
             opacity=0.0,
-            texture=bui.gettexture('lock'),
+            texture=stdassets.textures.lock.get(),
         )
 
         # give a quasi-random update increment to spread the load..

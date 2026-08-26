@@ -2,8 +2,6 @@
 #
 """Session and Activity for displaying the main menu bg."""
 
-from __future__ import annotations
-
 import time
 import random
 import weakref
@@ -11,6 +9,8 @@ from typing import TYPE_CHECKING, override
 
 from bacommon.locale import LocaleResolved
 import bascenev1 as bs
+from bascenev1 import stdassets
+from bascenev1 import builtinassets
 import bauiv1 as bui
 
 if TYPE_CHECKING:
@@ -21,10 +21,13 @@ if TYPE_CHECKING:
     from bascenev1lib.actor.spazbot import DemoSpazBotSet
 
 
+def _tex(name: str) -> str:
+    """Qualified stdassets ref for a logo texture name."""
+    return f'{stdassets.__asset_package__}:textures/{name}'
+
+
 class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
     """Activity showing the rotating main menu bg stuff."""
-
-    _stdassets = bs.Dependency(bs.AssetPackage, 'stdassets@1')
 
     _did_initial_transition = False
 
@@ -112,8 +115,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 assert self.beta_info.node
                 bs.animate(self.beta_info.node, 'opacity', {1.3: 0, 1.8: 1.0})
 
-        trees_mesh = bs.getmesh('trees')
-        trees_texture = bs.gettexture('treesColor')
+        trees_mesh = stdassets.meshes.trees
+        trees_texture = stdassets.textures.trees_color
 
         gnode = self.globalsnode
         gnode.camera_mode = 'rotate'
@@ -157,7 +160,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         app.classic.invoke_main_menu_ui()
 
     def _update(self) -> None:
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
         app = bs.app
         assert app.classic is not None
@@ -168,15 +170,19 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             if custom_texture != self._custom_logo_tex_name:
                 self._custom_logo_tex_name = custom_texture
                 self._logo_node.texture = bs.gettexture(
-                    custom_texture if custom_texture is not None else 'logo'
+                    custom_texture
+                    if custom_texture is not None
+                    else _tex('logo')
                 )
                 self._logo_node.mesh_opaque = (
-                    None if custom_texture is not None else bs.getmesh('logo')
+                    None
+                    if custom_texture is not None
+                    else stdassets.meshes.logo
                 )
                 self._logo_node.mesh_transparent = (
                     None
                     if custom_texture is not None
-                    else bs.getmesh('logoTransparent')
+                    else stdassets.meshes.logo_transparent
                 )
 
         # If language has changed, recreate our logo text/graphics.
@@ -212,7 +218,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     113 + y + 1.2 * y_extra,
                     0.34 * base_scale,
                     delay=base_delay + 0.1,
-                    custom_texture='chTitleChar1',
+                    custom_texture=_tex('ch_title_char1'),
                     jitter_scale=2.0,
                     vr_depth_offset=-30,
                 )
@@ -223,7 +229,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     110 + y + 1.2 * y_extra,
                     0.31 * base_scale,
                     delay=base_delay + 0.15,
-                    custom_texture='chTitleChar2',
+                    custom_texture=_tex('ch_title_char2'),
                     jitter_scale=2.0,
                     vr_depth_offset=-30,
                 )
@@ -234,7 +240,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     110 + y + 1.2 * y_extra,
                     0.3 * base_scale,
                     delay=base_delay + 0.25,
-                    custom_texture='chTitleChar3',
+                    custom_texture=_tex('ch_title_char3'),
                     jitter_scale=2.0,
                     vr_depth_offset=-30,
                 )
@@ -245,7 +251,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     110 + y + 1.2 * y_extra,
                     0.31 * base_scale,
                     delay=base_delay + 0.3,
-                    custom_texture='chTitleChar4',
+                    custom_texture=_tex('ch_title_char4'),
                     jitter_scale=2.0,
                     vr_depth_offset=-30,
                 )
@@ -256,7 +262,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     105 + y + 1.2 * y_extra,
                     0.34 * base_scale,
                     delay=base_delay + 0.35,
-                    custom_texture='chTitleChar5',
+                    custom_texture=_tex('ch_title_char5'),
                     jitter_scale=2.0,
                     vr_depth_offset=-30,
                 )
@@ -379,8 +385,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         shadow: bool = False,
     ) -> None:
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         if shadow:
             word_obj = bs.NodeActor(
                 bs.newnode(
@@ -491,7 +495,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         assert plus is not None
 
         if plus.get_v1_account_misc_read_val('easter', False):
-            return 'logoEaster'
+            return _tex('logo_easter')
         return None
 
     # Pop the logo and menu in.
@@ -507,18 +511,17 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         rotate: float = 0.0,
         vr_depth_offset: float = 0.0,
     ) -> None:
-        # pylint: disable=too-many-locals
         if custom_texture is None:
             custom_texture = self._get_custom_logo_tex_name()
         self._custom_logo_tex_name = custom_texture
         ltex = bs.gettexture(
-            custom_texture if custom_texture is not None else 'logo'
+            custom_texture if custom_texture is not None else _tex('logo')
         )
-        mopaque = None if custom_texture is not None else bs.getmesh('logo')
+        mopaque = None if custom_texture is not None else stdassets.meshes.logo
         mtrans = (
             None
             if custom_texture is not None
-            else bs.getmesh('logoTransparent')
+            else stdassets.meshes.logo_transparent
         )
         logo_attrs = {
             'position': (x, y),
@@ -823,19 +826,13 @@ def _preload1() -> None:
         'windowBGBlotch',
     ]:
         bs.getmesh(mname)
-    for tname in ['playerLineup', 'lock']:
-        bs.gettexture(tname)
-    for tex in [
-        'iconRunaround',
-        'iconOnslaught',
-        'medalComplete',
-        'medalBronze',
-        'medalSilver',
-        'medalGold',
-        'characterIconMask',
-    ]:
-        bs.gettexture(tex)
-    bs.gettexture('bg')
+    # Asset-package textures warm up through their wrappers.
+    _ = builtinassets.textures.character_icon_mask
+    _ = stdassets.textures.player_lineup
+    _ = stdassets.textures.lock
+    _ = stdassets.textures.icon_runaround
+    _ = stdassets.textures.icon_onslaught
+    _ = stdassets.textures.bg
     from bascenev1lib.actor.powerupbox import PowerupBoxFactory
 
     PowerupBoxFactory.get()
@@ -848,28 +845,22 @@ def _preload2() -> None:
     #  (even if the actual result is cached).
     for mname in ['powerup', 'powerupSimple']:
         bs.getmesh(mname)
-    for tname in [
-        'powerupBomb',
-        'powerupSpeed',
-        'powerupPunch',
-        'powerupIceBombs',
-        'powerupStickyBombs',
-        'powerupShield',
-        'powerupImpactBombs',
-        'powerupHealth',
-    ]:
-        bs.gettexture(tname)
-    for sname in [
-        'powerup01',
-        'boxDrop',
-        'boxingBell',
-        'scoreHit01',
-        'scoreHit02',
-        'dripity',
-        'spawn',
-        'gong',
-    ]:
-        bs.getsound(sname)
+    _ = stdassets.textures.powerup_bomb
+    _ = stdassets.textures.powerup_speed
+    _ = stdassets.textures.powerup_punch
+    _ = stdassets.textures.powerup_ice_bombs
+    _ = stdassets.textures.powerup_sticky_bombs
+    _ = stdassets.textures.powerup_shield
+    _ = stdassets.textures.powerup_impact_bombs
+    _ = stdassets.textures.powerup_health
+    _ = stdassets.audio.powerup01
+    _ = stdassets.audio.box_drop
+    _ = stdassets.audio.boxing_bell
+    _ = stdassets.audio.score_hit01
+    _ = stdassets.audio.score_hit02
+    _ = stdassets.audio.dripity
+    _ = stdassets.audio.spawn
+    _ = stdassets.audio.gong
     from bascenev1lib.actor.bomb import BombFactory
 
     BombFactory.get()
@@ -881,27 +872,30 @@ def _preload3() -> None:
 
     for mname in ['bomb', 'bombSticky', 'impactBomb']:
         bs.getmesh(mname)
-    for tname in [
-        'bombColor',
-        'bombColorIce',
-        'bombStickyColor',
-        'impactBombColor',
-        'impactBombColorLit',
-    ]:
-        bs.gettexture(tname)
-    for sname in ['freeze', 'fuse01', 'activateBeep', 'warnBeep']:
-        bs.getsound(sname)
+    _ = stdassets.textures.bomb_color
+    _ = stdassets.textures.bomb_color_ice
+    _ = stdassets.textures.bomb_sticky_color
+    _ = stdassets.textures.impact_bomb_color
+    _ = stdassets.textures.impact_bomb_color_lit
+    _ = stdassets.audio.freeze
+    _ = stdassets.audio.fuse01
+    _ = stdassets.audio.activate_beep
+    _ = stdassets.audio.warn_beep
     SpazFactory.get()
     bui.apptimer(0.2, _preload4)
 
 
 def _preload4() -> None:
-    for tname in ['bar', 'meter', 'null', 'flagColor', 'achievementOutline']:
-        bs.gettexture(tname)
+    _ = stdassets.textures.bar
+    _ = stdassets.textures.null
+    _ = stdassets.textures.flag_color
+    _ = stdassets.textures.achievement_outline
     for mname in ['frameInset', 'meterTransparent', 'achievementOutline']:
         bs.getmesh(mname)
-    for sname in ['metalHit', 'metalSkid', 'refWhistle', 'achievement']:
-        bs.getsound(sname)
+    _ = stdassets.audio.metal_hit
+    _ = stdassets.audio.metal_skid
+    _ = stdassets.audio.ref_whistle
+    _ = stdassets.audio.achievement
     from bascenev1lib.actor.flag import FlagFactory
 
     FlagFactory.get()
@@ -911,10 +905,7 @@ class MainMenuSession(bs.Session):
     """Session that runs the main menu environment."""
 
     def __init__(self) -> None:
-        # Gather dependencies we'll need (just our activity).
-        self._activity_deps = bs.DependencySet(bs.Dependency(MainMenuActivity))
-
-        super().__init__([self._activity_deps])
+        super().__init__()
         self._locked = False
         self.setactivity(bs.newactivity(MainMenuActivity))
 

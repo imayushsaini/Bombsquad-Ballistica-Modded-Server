@@ -2,8 +2,6 @@
 #
 """Store related functionality for classic mode."""
 
-from __future__ import annotations
-
 import logging
 from typing import TYPE_CHECKING
 
@@ -14,6 +12,15 @@ import bascenev1
 
 if TYPE_CHECKING:
     from typing import Any
+
+
+def _tex(name: str) -> str:
+    """Qualified stdassets ref for a store preview texture."""
+    # Deferred; only runs post-import.
+    # pylint: disable-next=cyclic-import
+    from bascenev1 import stdassets
+
+    return f'{stdassets.__asset_package__}:textures/{name}'
 
 
 class StoreSubsystem:
@@ -125,27 +132,27 @@ class StoreSubsystem:
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
                 'games.race': {
                     'gametype': RaceGame,
-                    'previewTex': 'bigGPreview',
+                    'previewTex': _tex('big_gpreview'),
                 },
                 'games.ninja_fight': {
                     'gametype': NinjaFightGame,
-                    'previewTex': 'courtyardPreview',
+                    'previewTex': _tex('courtyard_preview'),
                 },
                 'games.meteor_shower': {
                     'gametype': MeteorShowerGame,
-                    'previewTex': 'rampagePreview',
+                    'previewTex': _tex('rampage_preview'),
                 },
                 'games.infinite_onslaught': {
                     'gametype': MeteorShowerGame,
-                    'previewTex': 'rampagePreview',
+                    'previewTex': _tex('rampage_preview'),
                 },
                 'games.target_practice': {
                     'gametype': TargetPracticeGame,
-                    'previewTex': 'doomShroomPreview',
+                    'previewTex': _tex('doom_shroom_preview'),
                 },
                 'games.easter_egg_hunt': {
                     'gametype': EasterEggHuntGame,
-                    'previewTex': 'towerDPreview',
+                    'previewTex': _tex('tower_dpreview'),
                 },
                 'icons.flag_us': {
                     'icon': babase.charstr(
@@ -490,8 +497,6 @@ class StoreSubsystem:
 
     def get_available_sale_time(self, tab: str) -> int | None:
         """(internal)"""
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-nested-blocks
         plus = babase.app.plus
         assert plus is not None

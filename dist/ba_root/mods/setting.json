@@ -128,7 +128,8 @@
   "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
   "leaderboard": {
     "barsBehindName": true,
-    "enable": true
+    "enable": true,
+    "range": 3
   },
   "maxAccountPerIP": 3,
   "maxPlayersPerDevice": 2,
@@ -182,5 +183,7 @@
     "enable": true,
     "enforce_for_all_players": false,
     "enforce_for_accounts": [ "HeySmoothy", "test" ]
-  }
+  },
+  "accountApiToken": "your-api-token-here",
+  "useSqlite": true
 }

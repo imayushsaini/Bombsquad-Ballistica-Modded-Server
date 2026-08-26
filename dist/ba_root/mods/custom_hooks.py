@@ -8,42 +8,95 @@
 # pylint: disable=protected-access
 
 from __future__ import annotations
+from tools import servercheck, server_update, logger, playlist, servercontroller
+from tools import notification_manager
+from tools import account
+from stats import mystats
+from spazmod import modifyspaz
+from serverdata import serverdata
+from playersdata import pdata
+from features import votingmachine
+from features import text_on_map, announcement
+from features import team_balancer, afk_check, dual_team_score as newdts
+from features import map_fun
+from chathandle import handlechat
+from bascenev1lib.actor import playerspaz
+from bascenev1lib.activity.coopscore import CoopScoreScreen
+from bascenev1lib.activity import dualteamscore, multiteamscore, drawscore
+from bascenev1._session import Session
+from bascenev1._map import Map
+from bascenev1._activitytypes import ScoreScreenActivity
+from baclassic._servermode import ServerController
+from efro.terminal import Clr
+import setting
+import bauiv1 as bui
+from baclassic._appmode import ClassicAppMode
+import _bascenev1
+import bascenev1 as bs
+import babase
+from typing import TYPE_CHECKING
+import _babase
 
 import _thread
 import importlib
 import logging
 import os
+import sys
+import subprocess
 import time
 from datetime import datetime
 
-import _babase
-from typing import TYPE_CHECKING
+# --- Auto dependency installer ---
 
-import babase
-import bascenev1 as bs
-import _bascenev1
-from baclassic._appmode import ClassicAppMode
-import bauiv1 as bui
-import setting
-from baclassic._servermode import ServerController
-from bascenev1._activitytypes import ScoreScreenActivity
-from bascenev1._map import Map
-from bascenev1._session import Session
-from bascenev1lib.activity import dualteamscore, multiteamscore, drawscore
-from bascenev1lib.activity.coopscore import CoopScoreScreen
-from bascenev1lib.actor import playerspaz
-from chathandle import handlechat
-from features import map_fun
-from features import team_balancer, afk_check, dual_team_score as newdts
-from features import text_on_map, announcement
-from features import votingmachine
-from playersdata import pdata
-from serverdata import serverdata
-from spazmod import modifyspaz
-from stats import mystats
-from tools import account
-from tools import notification_manager
-from tools import servercheck, server_update, logger, playlist, servercontroller
+
+def _check_and_install_dependencies():
+    """Checks and installs ecdsa and flask to python-site-packages if missing."""
+    needed = ["ecdsa", "flask", "waitress"]
+    missing = []
+
+    mods_dir = os.path.dirname(__file__)
+    target_dir = os.path.abspath(os.path.join(
+        mods_dir, "..", "..", "ba_data", "python-site-packages"))
+    if target_dir not in sys.path:
+        sys.path.insert(0, target_dir)
+
+    for pkg in needed:
+        try:
+            importlib.import_module(pkg)
+        except ImportError:
+            missing.append(pkg)
+
+    if missing:
+        logging.warning(
+            f"Required dependencies {missing} are missing. Attempting to install them into {target_dir}...")
+        try:
+            python_exe = sys.executable or "python3"
+            cmd = [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                "--target",
+                target_dir,
+                "--break-system-packages"
+            ] + missing
+
+            result = subprocess.run(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode == 0:
+                logging.warning(
+                    f"Successfully installed {missing} to {target_dir}")
+                importlib.invalidate_caches()
+            else:
+                logging.error(
+                    f"Failed to install dependencies {missing}. pip output: {result.stderr}")
+        except Exception as e:
+            logging.exception(
+                f"Exception during automatic dependency installation: {e}")
+
+
+_check_and_install_dependencies()
+
 
 if TYPE_CHECKING:
     from typing import Any
@@ -62,7 +115,7 @@ class modSetup(babase.Plugin):
         """Runs when app is launched."""
         plus = bui.app.plus
         bootstraping()
-        servercheck.checkserver().start()
+        servercheck.ServerCheck()
         server_update.check()
         # bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
@@ -126,6 +179,46 @@ def playerspaz_init(playerspaz: bs.Player, node: bs.Node, player: bs.Player):
     modifyspaz.main(playerspaz, node, player)
 
 
+def verify_account_token() -> None:
+    """Verifies the account API token on server start."""
+    import urllib.request
+    import urllib.error
+    import json
+    token = settings.get("accountApiToken")
+    warning_msg = (
+        "invalid token found , update settings.json with api token "
+        "else server functionaly will break."
+    )
+    if not token:
+        logging.warning(warning_msg)
+        print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+        return
+
+    try:
+        url = "https://www.ballistica.net/api/v1/accounts/me"
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            status = response.getcode()
+            if status == 200:
+                data = json.loads(response.read().decode('utf-8'))
+                tag = data.get("tag", "unknown")
+                print(
+                    f"{Clr.BGRN}api token verified sucfessfuly using {tag} token.{Clr.RST}", flush=True)
+                logging.info(
+                    f"api token verified sucfessfuly using {tag} token.")
+            else:
+                logging.warning(warning_msg)
+                print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+    except Exception:
+        logging.warning(warning_msg)
+        print(f'{Clr.BRED}{warning_msg}{Clr.RST}', flush=True)
+
+
 def bootstraping():
     """Bootstarps the server."""
     logging.warning("Bootstraping mods...")
@@ -133,6 +226,7 @@ def bootstraping():
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
+    _thread.start_new_thread(verify_account_token, ())
     pdata.load_cache()
     _thread.start_new_thread(pdata.dump_cache, ())
     _thread.start_new_thread(notification_manager.dump_cache, ())
@@ -141,6 +235,11 @@ def bootstraping():
     if settings["elPatronPowerups"]["enable"]:
         from plugins import elPatronPowerups
         elPatronPowerups.enable()
+        try:
+            from plugins import creativePowerups
+            creativePowerups.enable()
+        except Exception as e:
+            logging.exception("Failed to enable creativePowerups:")
     if settings["mikirogQuickTurn"]["enable"]:
         from plugins import wavedash  # pylint: disable=unused-import
     if settings["colorful_explosions"]["enable"]:
@@ -176,14 +275,14 @@ def bootstraping():
 
             # Install pip using python3.10
             python_process = subprocess.Popen(
-                ["python3.10"], stdin=curl_process.stdout)
+                ["python3.14"], stdin=curl_process.stdout)
 
             # Wait for the processes to finish
             curl_process.stdout.close()
             python_process.wait()
 
             subprocess.check_call(
-                ["python3.10", "-m", "pip", "install", "psutil"])
+                ["python3.14", "-m", "pip", "install", "psutil"])
             # restart after installation
             print("dependency installed , restarting server")
             _babase.quit()
@@ -275,6 +374,14 @@ org_player_join = bs._activity.Activity.on_player_join
 def on_player_join(self, player) -> None:
     """Runs when player joins the game."""
     team_balancer.on_player_join()
+
+    try:
+        from shop.shop_system import preload_player
+        account_id = player.sessionplayer.get_account_id()
+        if account_id:
+            preload_player(account_id)
+    except Exception as e:
+        print(f"Error preloading player shop cache: {e}")
     org_player_join(self, player)
 
 
@@ -357,14 +464,15 @@ ServerController.shutdown = shutdown(ServerController.shutdown)
 
 def on_player_request(func) -> bool:
     def wrapper(*args, **kwargs):
-        player = args[1]
+        player: bs.SessionPlayer = args[1]
         count = 0
-        if not (player.get_v1_account_id(
+        if not (player.get_account_id(
         ) in serverdata.clients and
-                serverdata.clients[player.get_v1_account_id()]["verified"]):
+                serverdata.clients[player.get_account_id()]["verified"]):
+
             return False
         for current_player in args[0].sessionplayers:
-            if current_player.get_v1_account_id() == player.get_v1_account_id():
+            if current_player.get_account_id() == player.get_account_id():
                 count += 1
         if count >= settings["maxPlayersPerDevice"]:
             bs.broadcastmessage("Reached max players limit per device",

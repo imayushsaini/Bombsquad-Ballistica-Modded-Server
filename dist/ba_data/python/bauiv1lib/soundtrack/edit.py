@@ -2,14 +2,14 @@
 #
 """Provides UI for editing a soundtrack."""
 
-from __future__ import annotations
-
 import copy
 import os
 from typing import TYPE_CHECKING, cast, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -24,13 +24,11 @@ class SoundtrackEditWindow(bui.MainWindow):
         transition: str | None = 'in_right',
         origin_widget: bui.Widget | None = None,
     ):
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-locals
 
         appconfig = bui.app.config
         self._r = 'editSoundtrackWindow'
-        self._folder_tex = bui.gettexture('folder')
-        self._file_tex = bui.gettexture('file')
+        self._folder_tex = stdassets.textures.folder.get()
+        self._file_tex = stdassets.textures.file.get()
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         self._width = 1200 if uiscale is bui.UIScale.SMALL else 648
@@ -275,7 +273,6 @@ class SoundtrackEditWindow(bui.MainWindow):
         ]
 
         # FIXME: We should probably convert this to use translations.
-        type_names_translated = bui.app.lang.get_resource('soundtrackTypeNames')
         prev_type_button: bui.Widget | None = None
         prev_test_button: bui.Widget | None = None
 
@@ -286,7 +283,9 @@ class SoundtrackEditWindow(bui.MainWindow):
                 claims_left_right=True,
                 selection_loops_to_parent=True,
             )
-            type_name = type_names_translated.get(song_type, song_type)
+            type_name = bui.app.lang.get_resource(
+                f'soundtrackTypeNames.{song_type}', fallback_value=song_type
+            )
             bui.textwidget(
                 parent=row,
                 size=(self._scroll_width - 350, 25),
@@ -391,7 +390,7 @@ class SoundtrackEditWindow(bui.MainWindow):
             None if musictype not in soundtrack else soundtrack[musictype]
         )
         if existing_entry != entry:
-            bui.getsound('gunCocking').play()
+            builtinassets.audio.gun_cocking.get().play()
 
         # Make sure this doesn't get mucked with after we get it.
         if entry is not None:
@@ -449,7 +448,7 @@ class SoundtrackEditWindow(bui.MainWindow):
 
         # Warn if volume is zero.
         if bui.app.config.resolve('Music Volume') < 0.01:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.musicVolumeZeroWarning'),
                 color=(1, 0.5, 0),
@@ -513,10 +512,10 @@ class SoundtrackEditWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantSaveAlreadyExistsText')
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         if not new_name:
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
         if (
             new_name
@@ -527,7 +526,7 @@ class SoundtrackEditWindow(bui.MainWindow):
             bui.screenmessage(
                 bui.Lstr(resource=f'{self._r}.cantOverwriteDefaultText')
             )
-            bui.getsound('error').play()
+            builtinassets.audio.error.get().play()
             return
 
         # Make sure config exists.
@@ -544,7 +543,7 @@ class SoundtrackEditWindow(bui.MainWindow):
         cfg['Soundtrack'] = new_name
 
         cfg.commit()
-        bui.getsound('gunCocking').play()
+        builtinassets.audio.gun_cocking.get().play()
 
         # Resets music back to normal.
         music.set_music_play_mode(
@@ -554,5 +553,5 @@ class SoundtrackEditWindow(bui.MainWindow):
         self.main_window_back()
 
     def _do_it_with_sound(self) -> None:
-        bui.getsound('swish').play()
+        builtinassets.audio.swish.get().play()
         self._do_it()

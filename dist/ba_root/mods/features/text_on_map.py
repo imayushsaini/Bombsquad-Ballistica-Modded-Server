@@ -41,7 +41,7 @@ class textonmap:
                 self.season_reset(_babase.season_ends_in_days)
         if setti["leaderboard"]["enable"]:
             self.leaderBoard()
-        self.timer = bs.timer(8, babase.Call(self.highlights_), repeat=True)
+        self.timer = bs.timer(8, babase.CallStrict(self.highlights_), repeat=True)
 
     def highlights_(self):
         if setti["textonmap"]['center highlights']["randomColor"]:
@@ -130,46 +130,57 @@ class textonmap:
                           })
 
     def leaderBoard(self):
-        if len(mystats.top3Name) > 2:
-            if setti["leaderboard"]["barsBehindName"]:
-                self.ss1 = bs.newnode('image', attrs={'scale': (300, 30),
-                                                      'texture': bs.gettexture(
-                                                          'uiAtlas2'),
-                                                      'position': (0, -80),
-                                                      'attach': 'topRight',
-                                                      'opacity': 0.5,
-                                                      'color': (0.7, 0.1, 0)})
-                self.ss1 = bs.newnode('image', attrs={'scale': (300, 30),
-                                                      'texture': bs.gettexture(
-                                                          'uiAtlas2'),
-                                                      'position': (0, -115),
-                                                      'attach': 'topRight',
-                                                      'opacity': 0.5,
-                                                      'color': (0.6, 0.6, 0.6)})
-                self.ss1 = bs.newnode('image', attrs={'scale': (300, 30),
-                                                      'texture': bs.gettexture(
-                                                          'uiAtlas2'),
-                                                      'position': (0, -150),
-                                                      'attach': 'topRight',
-                                                      'opacity': 0.5,
-                                                      'color': (0.1, 0.3, 0.1)})
+        names = mystats.top3Name
+        if not names:
+            return
 
-            self.ss1a = bs.newnode('text', attrs={
-                'text': "#1 " + mystats.top3Name[0][:10] + "...",
-                'flatness': 1.0, 'h_align': 'left', 'h_attach': 'right',
-                'v_attach': 'top', 'v_align': 'center', 'position': (-140, -80),
-                'scale': 0.7, 'color': (0.7, 0.4, 0.3)})
+        show_bars = setti.get("leaderboard", {}).get("barsBehindName", True)
 
-            self.ss1a = bs.newnode('text', attrs={
-                'text': "#2 " + mystats.top3Name[1][:10] + "...",
-                'flatness': 1.0, 'h_align': 'left', 'h_attach': 'right',
-                'v_attach': 'top', 'v_align': 'center',
-                'position': (-140, -115), 'scale': 0.7,
-                'color': (0.8, 0.8, 0.8)})
+        # Color definitions for ranks
+        text_colors = [
+            (0.7, 0.4, 0.3),  # Rank 1
+            (0.8, 0.8, 0.8),  # Rank 2
+            (0.2, 0.6, 0.2),  # Rank 3
+        ]
+        bar_colors = [
+            (0.7, 0.1, 0),    # Rank 1
+            (0.6, 0.6, 0.6),  # Rank 2
+            (0.1, 0.3, 0.1),  # Rank 3
+        ]
 
-            self.ss1a = bs.newnode('text', attrs={
-                'text': "#3 " + mystats.top3Name[2][:10] + "...",
-                'flatness': 1.0, 'h_align': 'left', 'h_attach': 'right',
-                'v_attach': 'top', 'v_align': 'center',
-                'position': (-140, -150), 'scale': 0.7,
-                'color': (0.2, 0.6, 0.2)})
+        default_text_color = (0.7, 0.7, 0.7)
+        default_bar_color = (0.2, 0.2, 0.2)
+
+        for i, name in enumerate(names):
+            y_pos = -80 - i * 35
+
+            # Determine color
+            if i < len(text_colors):
+                txt_color = text_colors[i]
+                bar_color = bar_colors[i]
+            else:
+                txt_color = default_text_color
+                bar_color = default_bar_color
+
+            if show_bars:
+                bs.newnode('image', attrs={
+                    'scale': (300, 30),
+                    'texture': bs.gettexture('uiAtlas2'),
+                    'position': (0, y_pos),
+                    'attach': 'topRight',
+                    'opacity': 0.5,
+                    'color': bar_color
+                })
+
+            display_name = (name or "Unknown")[:10]
+            bs.newnode('text', attrs={
+                'text': f"#{i+1} {display_name}...",
+                'flatness': 1.0,
+                'h_align': 'left',
+                'h_attach': 'right',
+                'v_attach': 'top',
+                'v_align': 'center',
+                'position': (-140, y_pos),
+                'scale': 0.7,
+                'color': txt_color
+            })

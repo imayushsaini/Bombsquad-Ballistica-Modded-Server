@@ -79,13 +79,13 @@ from _bascenev1 import (
     chatmessage,
     client_info_query_response,
     CollisionMesh,
-    connect_to_party,
     Data,
     disconnect_client,
     disconnect_from_host,
     emitfx,
     end_host_scanning,
     get_chat_messages,
+    get_client_ping,
     get_connection_to_host_info,
     get_connection_to_host_info_2,
     get_foreground_host_activity,
@@ -137,6 +137,8 @@ from _bascenev1 import (
     set_admins,
     set_authenticate_clients,
     set_debug_speed_exponent,
+    set_host_password,
+    set_hosting_asset_packages,
     set_enable_default_kick_voting,
     set_internal_music,
     set_map_bounds,
@@ -164,12 +166,6 @@ from bascenev1._collision import Collision, getcollision
 from bascenev1._coopgame import CoopGameActivity
 from bascenev1._coopsession import CoopSession
 from bascenev1._debug import print_live_object_warnings
-from bascenev1._dependency import (
-    Dependency,
-    DependencyComponent,
-    DependencySet,
-    AssetPackage,
-)
 from bascenev1._dualteamsession import DualTeamSession
 from bascenev1._freeforallsession import FreeForAllSession
 from bascenev1._gameactivity import GameActivity
@@ -218,7 +214,12 @@ from bascenev1._multiteamsession import (
     DEFAULT_TEAM_NAMES,
 )
 from bascenev1._music import MusicType, setmusic
-from bascenev1._net import HostInfo
+from bascenev1._net import (
+    connect_to_party,
+    fetch_host_requirements,
+    HostInfo,
+    HostRequirements,
+)
 from bascenev1._nodeactor import NodeActor
 from bascenev1._powerup import get_default_powerup_distribution
 from bascenev1._profile import (
@@ -271,7 +272,6 @@ __all__ = [
     'apptime',
     'apptimer',
     'AppTimer',
-    'AssetPackage',
     'basetime',
     'BaseTime',
     'basetimer',
@@ -301,9 +301,6 @@ __all__ = [
     'DeathType',
     'DEFAULT_TEAM_COLORS',
     'DEFAULT_TEAM_NAMES',
-    'Dependency',
-    'DependencyComponent',
-    'DependencySet',
     'DieMessage',
     'disconnect_client',
     'disconnect_from_host',
@@ -329,6 +326,7 @@ __all__ = [
     'GameResults',
     'GameTip',
     'get_chat_messages',
+    'get_client_ping',
     'get_connection_to_host_info',
     'get_connection_to_host_info_2',
     'get_default_free_for_all_playlist',
@@ -366,7 +364,9 @@ __all__ = [
     'have_connected_clients',
     'have_touchscreen_input',
     'HitMessage',
+    'fetch_host_requirements',
     'HostInfo',
+    'HostRequirements',
     'host_scan_cycle',
     'ImpactDamageMessage',
     'increment_analytics_count',
@@ -441,8 +441,9 @@ __all__ = [
     'set_analytics_screen',
     'set_authenticate_clients',
     'set_debug_speed_exponent',
-    'set_debug_speed_exponent',
     'set_enable_default_kick_voting',
+    'set_host_password',
+    'set_hosting_asset_packages',
     'set_internal_music',
     'set_map_bounds',
     'set_master_server_source',

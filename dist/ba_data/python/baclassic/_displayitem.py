@@ -2,17 +2,22 @@
 #
 """Display-item related functionality."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, assert_never
 
 from efro.util import pairs_from_flat
 import bacommon.displayitem as ditm
 import bacommon.classic
 import bauiv1
+from bauiv1 import builtinassets
+from bauiv1 import stdassets
 
 if TYPE_CHECKING:
     pass
+
+
+def _stex(name: str) -> str:
+    """Qualified stdassets texture ref."""
+    return f'{stdassets.__asset_package__}:textures/{name}'
 
 
 # FIXME - migrate to use the doc-ui rendering for these instead.
@@ -24,7 +29,6 @@ def show_display_item(
     debug: bool = False,
 ) -> None:
     """Create ui to depict a display-item."""
-    # pylint: disable=too-many-locals
 
     # Let's go with 4:3 aspect ratio.
     height = width * 0.75
@@ -41,15 +45,15 @@ def show_display_item(
     itemtype = itemwrapper.item.get_type_id()
 
     if itemtype is ditm.ItemTypeID.TICKETS:
-        img = 'tickets'
+        img = _stex('tickets')
         img_y_offs = width * 0.11
         text_y_offs = width * -0.15
     elif itemtype is ditm.ItemTypeID.TICKETS_PURPLE:
-        img = 'ticketsPurple'
+        img = _stex('tickets_purple')
         img_y_offs = width * 0.11
         text_y_offs = width * -0.15
     elif itemtype is ditm.ItemTypeID.TOKENS:
-        img = 'coin'
+        img = _stex('coin')
         img_y_offs = width * 0.11
         text_y_offs = width * -0.15
     elif itemtype is ditm.ItemTypeID.CHEST:
@@ -92,7 +96,7 @@ def show_display_item(
                 pos[1] - height * 0.5,
             ),
             size=(width, height),
-            texture=bauiv1.gettexture('white'),
+            texture=builtinassets.textures.white.get(),
             color=(0, 1, 0),
             opacity=0.1,
         )

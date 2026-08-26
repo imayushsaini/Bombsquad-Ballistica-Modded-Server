@@ -2,8 +2,6 @@
 #
 """Functionality related to coop-mode sessions."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 import babase
@@ -12,7 +10,7 @@ import _bascenev1
 from bascenev1._session import Session
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Sequence
+    from typing import Any, Callable
 
     import bascenev1
 
@@ -63,11 +61,7 @@ class CoopSession(Session):
         else:
             submit_score = True
 
-        # print('FIXME: COOP SESSION WOULD CALC DEPS.')
-        depsets: Sequence[bascenev1.DependencySet] = []
-
         super().__init__(
-            depsets,
             team_names=TEAM_NAMES,
             team_colors=TEAM_COLORS,
             min_players=min_players,
@@ -267,13 +261,13 @@ class CoopSession(Session):
     def on_activity_end(
         self, activity: bascenev1.Activity, results: Any
     ) -> None:
+        # pylint: disable=too-many-statements
         """Method override for co-op sessions.
 
         Jumps between co-op games and score screens.
         """
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         # pylint: disable=cyclic-import
         from bascenev1lib.activity.coopscore import CoopScoreScreen
         from bascenev1lib.tutorial import TutorialActivity
@@ -404,8 +398,7 @@ class CoopSession(Session):
                         else:
                             raise RuntimeError('FIXME')
                 else:
-                    if results.scoretype is not ScoreType.POINTS:
-                        print(f'Unknown ScoreType:' f' "{results.scoretype}"')
+                    assert results.scoretype is ScoreType.POINTS
                     scoretype = 'points'
 
             # Old coop-game-specific results; should migrate away from these.

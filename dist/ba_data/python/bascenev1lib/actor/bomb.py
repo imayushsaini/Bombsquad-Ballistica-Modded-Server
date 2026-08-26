@@ -5,12 +5,11 @@
 # FIXME
 # pylint: disable=too-many-lines
 
-from __future__ import annotations
-
 import random
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+from bascenev1 import stdassets
 
 from bascenev1lib.gameutils import SharedObjects
 
@@ -149,37 +148,37 @@ class BombFactory:
         """
         shared = SharedObjects.get()
 
-        self.bomb_mesh = bs.getmesh('bomb')
-        self.sticky_bomb_mesh = bs.getmesh('bombSticky')
-        self.impact_bomb_mesh = bs.getmesh('impactBomb')
-        self.land_mine_mesh = bs.getmesh('landMine')
-        self.tnt_mesh = bs.getmesh('tnt')
+        self.bomb_mesh = stdassets.meshes.bomb
+        self.sticky_bomb_mesh = stdassets.meshes.bomb_sticky
+        self.impact_bomb_mesh = stdassets.meshes.impact_bomb
+        self.land_mine_mesh = stdassets.meshes.land_mine
+        self.tnt_mesh = stdassets.meshes.tnt
 
-        self.regular_tex = bs.gettexture('bombColor')
-        self.ice_tex = bs.gettexture('bombColorIce')
-        self.sticky_tex = bs.gettexture('bombStickyColor')
-        self.impact_tex = bs.gettexture('impactBombColor')
-        self.impact_lit_tex = bs.gettexture('impactBombColorLit')
-        self.land_mine_tex = bs.gettexture('landMine')
-        self.land_mine_lit_tex = bs.gettexture('landMineLit')
-        self.tnt_tex = bs.gettexture('tnt')
+        self.regular_tex = stdassets.textures.bomb_color
+        self.ice_tex = stdassets.textures.bomb_color_ice
+        self.sticky_tex = stdassets.textures.bomb_sticky_color
+        self.impact_tex = stdassets.textures.impact_bomb_color
+        self.impact_lit_tex = stdassets.textures.impact_bomb_color_lit
+        self.land_mine_tex = stdassets.textures.land_mine
+        self.land_mine_lit_tex = stdassets.textures.land_mine_lit
+        self.tnt_tex = stdassets.textures.tnt
 
-        self.hiss_sound = bs.getsound('hiss')
-        self.debris_fall_sound = bs.getsound('debrisFall')
-        self.wood_debris_fall_sound = bs.getsound('woodDebrisFall')
+        self.hiss_sound = stdassets.audio.hiss
+        self.debris_fall_sound = stdassets.audio.debris_fall
+        self.wood_debris_fall_sound = stdassets.audio.wood_debris_fall
 
         self.explode_sounds = (
-            bs.getsound('explosion01'),
-            bs.getsound('explosion02'),
-            bs.getsound('explosion03'),
-            bs.getsound('explosion04'),
-            bs.getsound('explosion05'),
+            stdassets.audio.explosion01,
+            stdassets.audio.explosion02,
+            stdassets.audio.explosion03,
+            stdassets.audio.explosion04,
+            stdassets.audio.explosion05,
         )
 
-        self.freeze_sound = bs.getsound('freeze')
-        self.fuse_sound = bs.getsound('fuse01')
-        self.activate_sound = bs.getsound('activateBeep')
-        self.warn_sound = bs.getsound('warnBeep')
+        self.freeze_sound = stdassets.audio.freeze
+        self.fuse_sound = stdassets.audio.fuse01
+        self.activate_sound = stdassets.audio.activate_beep
+        self.warn_sound = stdassets.audio.warn_beep
 
         # Set up our material so new bombs don't collide with objects
         # that they are initially overlapping.
@@ -266,11 +265,11 @@ class BombFactory:
         )
 
         self.dink_sounds = (
-            bs.getsound('bombDrop01'),
-            bs.getsound('bombDrop02'),
+            stdassets.audio.bomb_drop01,
+            stdassets.audio.bomb_drop02,
         )
-        self.sticky_impact_sound = bs.getsound('stickyImpact')
-        self.roll_sound = bs.getsound('bombRoll01')
+        self.sticky_impact_sound = stdassets.audio.sticky_impact
+        self.roll_sound = stdassets.audio.bomb_roll01
 
         # Collision sounds.
         self.normal_sound_material.add_actions(
@@ -339,11 +338,10 @@ class Blast(bs.Actor):
         hit_type: str = 'explosion',
         hit_subtype: str = 'normal',
     ):
+        # pylint: disable=too-many-statements
         """Instantiate with given values."""
 
         # bah; get off my lawn!
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
 
         super().__init__()
 
@@ -707,9 +705,7 @@ class Bomb(bs.Actor):
     """
 
     # Ew; should try to clean this up later.
-    # pylint: disable=too-many-locals
     # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
 
     def __init__(
         self,
@@ -722,6 +718,7 @@ class Bomb(bs.Actor):
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
     ):
+        # pylint: disable=too-many-statements
         """Create a new Bomb.
 
         bomb_type can be 'ice','impact','land_mine','normal','sticky', or

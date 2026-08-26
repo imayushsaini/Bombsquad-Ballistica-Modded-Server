@@ -2,12 +2,12 @@
 #
 """Defines ScoreBoard Actor and related functionality."""
 
-from __future__ import annotations
-
 import weakref
 from typing import TYPE_CHECKING
 
 import bascenev1 as bs
+from bascenev1 import stdassets
+from bascenev1 import builtinassets
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -25,8 +25,6 @@ class _Entry:
         width: float | None = None,
         height: float | None = None,
     ):
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-positional-arguments
         self._scoreboard = weakref.ref(scoreboard)
         self._do_cover = do_cover
@@ -36,9 +34,9 @@ class _Entry:
         self._height = (32.0 if height is None else height) * self._scale
         self._bar_width = 2.0 * self._scale
         self._bar_height = 32.0 * self._scale
-        self._bar_tex = self._backing_tex = bs.gettexture('bar')
-        self._cover_tex = bs.gettexture('uiAtlas')
-        self._mesh = bs.getmesh('meterTransparent')
+        self._bar_tex = self._backing_tex = stdassets.textures.bar
+        self._cover_tex = builtinassets.textures.ui_atlas
+        self._mesh = stdassets.meshes.meter_transparent
         self._pos: Sequence[float] | None = None
         self._flash_timer: bs.Timer | None = None
         self._flash_counter: int | None = None
@@ -386,8 +384,7 @@ class Scoreboard:
         Label can be something like 'points' and will
         show up on boards if provided.
         """
-        # pylint: disable=too-many-positional-arguments
-        self._flat_tex = bs.gettexture('null')
+        self._flat_tex = stdassets.textures.null
         self._entries: dict[int, _Entry] = {}
         self._label = label
         self.score_split = score_split
