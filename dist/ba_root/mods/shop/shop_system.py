@@ -122,6 +122,11 @@ def preload_player(account_id: str) -> None:
         return
     import _thread
     _thread.start_new_thread(_preload_player_thread, (account_id,))
+    try:
+        from spazmod.effects_inventory import preload_player as inv_preload
+        inv_preload(account_id)
+    except Exception as e:
+        print(f"Error preloading effects inventory: {e}")
 
 
 def _preload_player_thread(account_id: str) -> None:
@@ -221,87 +226,62 @@ def buy_item(account_id: str, item_name: str) -> str:
         cost = cmd.shop_cost
         display_name = f"command '/{item_id}'"
 
-    # 3. Check if already owned
+    # 3. Process effect purchase via unified inventory
+    if is_effect:
+        balance = get_tickets(account_id)
+        if balance < cost:
+            return f"Insufficient tickets! {display_name} costs {cost} tickets, but you only have {balance}."
+
+        from spazmod.effects_inventory import add_shop_effect
+        ok, msg = add_shop_effect(account_id, item_id)
+        if not ok:
+            return msg
+
+        _add_tickets_no_log(account_id, -cost)
+        log_transaction(account_id, "purchase", cost, f"effect:{item_id}")
+        return f"Successfully purchased {display_name} for {cost} tickets! {msg} Remaining balance: {balance - cost}."
+
+    # 4. Process command purchase
     rows = run_query(
         "SELECT usages_left FROM shop_purchases WHERE account_id = ? AND item_type = ? AND item_id = ?",
         (account_id, item_type, item_id),
         fetch=True
     )
-    if rows:
-        if item_type == "effect" or (rows[0][0] is not None and rows[0][0] > 0):
-            return f"You have already purchased the {display_name}."
+    if rows and rows[0][0] is not None and rows[0][0] > 0:
+        return f"You have already purchased the {display_name}."
 
-    # 4. Check if they have enough tickets
     balance = get_tickets(account_id)
     if balance < cost:
         return f"Insufficient tickets! {display_name} costs {cost} tickets, but you only have {balance}."
 
-    # 5. Process transaction
     _add_tickets_no_log(account_id, -cost)
     run_query(
         "INSERT OR REPLACE INTO shop_purchases (account_id, item_type, item_id, usages_left) VALUES (?, ?, ?, ?)",
-        (account_id, item_type, item_id, 3 if item_type == "command" else None)
+        (account_id, item_type, item_id, 3)
     )
     log_transaction(account_id, "purchase", cost, f"{item_type}:{item_id}")
 
-    # Update in-memory cache
-    if item_type == "command":
-        if account_id not in _purchased_commands_cache:
-            _purchased_commands_cache[account_id] = set()
-        _purchased_commands_cache[account_id].add(item_id)
-    elif item_type == "effect":
-        if account_id not in _purchased_commands_cache:
-            _purchased_commands_cache[account_id] = set()
-        _purchased_commands_cache[account_id].add(item_id)
-
-    # 6. If effect, equip it automatically
-    if is_effect:
-        equip_effect(account_id, item_id)
-        return f"Successfully purchased and equipped {display_name} for {cost} tickets! Remaining balance: {balance - cost}."
+    if account_id not in _purchased_commands_cache:
+        _purchased_commands_cache[account_id] = set()
+    _purchased_commands_cache[account_id].add(item_id)
 
     return f"Successfully purchased {display_name} for {cost} tickets! remaining 3 usages. Remaining balance: {balance - cost}."
 
 
 def equip_effect(account_id: str, effect_name: str) -> str:
     """Equips an effect if owned."""
-    effect_name = effect_name.strip().lower()
-
-    if effect_name in ("none", "noeffect"):
-        run_query("INSERT OR REPLACE INTO shop_equipped (account_id, effect_id) VALUES (?, ?)", (account_id, "noeffect"))
-        _equipped_effects_cache[account_id] = "noeffect"
-        return "Your effect has been unequipped."
-
-    if effect_name not in EFFECTS_SHOP:
-        return f"Error: '{effect_name}' is not a valid effect."
-
-    # Verify ownership
-    rows = run_query(
-        "SELECT 1 FROM shop_purchases WHERE account_id = ? AND item_type = 'effect' AND item_id = ?",
-        (account_id, effect_name),
-        fetch=True
-    )
-    if not rows:
-        return f"Error: You do not own the effect '{effect_name}'. Purchase it first from '/shop effects'!"
-
-    run_query("INSERT OR REPLACE INTO shop_equipped (account_id, effect_id) VALUES (?, ?)", (account_id, effect_name))
-    _equipped_effects_cache[account_id] = effect_name
-    return f"Successfully equipped effect '{effect_name}'."
+    from spazmod.effects_inventory import equip_effect as inv_equip
+    ok, msg = inv_equip(account_id, effect_name)
+    return msg
 
 
 def get_equipped_effect(account_id: str) -> str | None:
-    """Returns the currently equipped effect ID for a player, using cache if available."""
+    """Returns the primary equipped effect ID for a player."""
     if not account_id:
         return None
-
-    # Check cache first
-    if account_id in _equipped_effects_cache:
-        return _equipped_effects_cache[account_id]
-
-    # Fallback to database query
-    rows = run_query("SELECT effect_id FROM shop_equipped WHERE account_id = ?", (account_id,), fetch=True)
-    effect = rows[0][0] if rows else None
-    _equipped_effects_cache[account_id] = effect
-    return effect
+    from spazmod.effects_inventory import get_equipped_effects
+    effs = get_equipped_effects(account_id)
+    return effs[0] if effs else None
 
 
 def has_purchased_command(account_id: str, command_name: str) -> bool:
@@ -437,15 +417,17 @@ def get_transactions(account_id: str = None, page: int = 1, per_page: int = 50) 
 
 
 def get_player_purchases(account_id: str) -> list:
-    """Returns all purchase records for a player."""
+    """Returns all purchase records and active effects for a player."""
     if not account_id:
         return []
+    purchases = []
+
+    # 1. Commands from shop_purchases
     rows = run_query(
         "SELECT item_type, item_id, usages_left FROM shop_purchases WHERE account_id = ?",
         (account_id,),
         fetch=True
     )
-    purchases = []
     if rows:
         for r in rows:
             purchases.append({
@@ -453,15 +435,68 @@ def get_player_purchases(account_id: str) -> list:
                 "item_id": r[1],
                 "usages_left": r[2]
             })
+
+    # 2. Effects from unified player_effects_inventory
+    try:
+        import time
+        from spazmod.effects_inventory import (
+            _load_player_inventory,
+            cleanup_expired_effects,
+            sync_rank_effects,
+            format_duration,
+        )
+        _load_player_inventory(account_id)
+        cleanup_expired_effects(account_id)
+        sync_rank_effects(account_id)
+
+        now = time.time()
+        eff_rows = run_query(
+            "SELECT effect_id, source, expires_at, is_equipped, added_at "
+            "FROM player_effects_inventory WHERE account_id = ?",
+            (account_id,),
+            fetch=True,
+        )
+        if eff_rows:
+            for r in eff_rows:
+                eff_id, src, expires_at, is_eq, added_at = r
+                if expires_at is not None and expires_at <= now:
+                    continue
+                time_left_str = (
+                    "Permanent"
+                    if expires_at is None
+                    else format_duration(expires_at - now) + " left"
+                )
+                purchases.append({
+                    "item_type": "effect",
+                    "item_id": eff_id,
+                    "usages_left": None,
+                    "source": src,
+                    "expires_at": expires_at,
+                    "is_equipped": bool(is_eq),
+                    "duration_display": time_left_str,
+                })
+    except Exception as e:
+        print(f"Error fetching player effects in get_player_purchases: {e}")
+
     return purchases
 
 
 def add_purchase_admin(account_id: str, item_type: str, item_id: str, usages_left: int = None) -> bool:
-    """Adds a purchase record on behalf of a player."""
+    """Adds a purchase or effect record on behalf of a player."""
     if not account_id or not item_type or not item_id:
         return False
     item_type = item_type.strip().lower()
     item_id = item_id.strip().lower()
+
+    if item_type == "effect":
+        try:
+            from spazmod.effects_inventory import add_admin_effect
+            add_admin_effect(account_id, item_id)
+            log_transaction(account_id, "admin_grant_effect", 0, f"effect:{item_id}")
+            return True
+        except Exception as e:
+            print(f"Error granting admin effect: {e}")
+            return False
 
     if item_type == "command" and usages_left is None:
         usages_left = 3
@@ -482,11 +517,21 @@ def add_purchase_admin(account_id: str, item_type: str, item_id: str, usages_lef
 
 
 def remove_purchase_admin(account_id: str, item_type: str, item_id: str) -> bool:
-    """Removes a purchase record on behalf of a player."""
+    """Removes a purchase record or effect on behalf of a player."""
     if not account_id or not item_type or not item_id:
         return False
     item_type = item_type.strip().lower()
     item_id = item_id.strip().lower()
+
+    if item_type == "effect":
+        try:
+            from spazmod.effects_inventory import remove_effect
+            remove_effect(account_id, item_id)
+            log_transaction(account_id, "admin_revoke_effect", 0, f"effect:{item_id}")
+            return True
+        except Exception as e:
+            print(f"Error revoking admin effect: {e}")
+            return False
 
     run_query(
         "DELETE FROM shop_purchases WHERE account_id = ? AND item_type = ? AND item_id = ?",
@@ -594,39 +639,66 @@ def get_economy_leaderboard(limit: int = 10) -> list:
 
 
 def get_purchasers_paginated(page: int = 1, per_page: int = 50) -> dict:
-    """Returns paginated active purchases joined with player profiles."""
-    import math
+    """Returns paginated active purchases and effects joined with player profiles."""
+    import math, time
     try:
         page = max(1, int(page))
         per_page = max(1, min(100, int(per_page)))
     except Exception:
         page, per_page = 1, 50
 
-    count_res = run_query("SELECT COUNT(*) FROM shop_purchases", fetch=True)
+    now = time.time()
+    count_query = """
+        SELECT COUNT(*) FROM (
+            SELECT account_id FROM shop_purchases
+            UNION ALL
+            SELECT account_id FROM player_effects_inventory WHERE expires_at IS NULL OR expires_at > ?
+        )
+    """
+    count_res = run_query(count_query, (now,), fetch=True)
     total = count_res[0][0] if count_res else 0
 
     offset = (page - 1) * per_page
-    rows = run_query("""
-        SELECT sp.account_id, sp.item_type, sp.item_id, sp.usages_left, p.name, p.v2Tag
-        FROM shop_purchases sp
-        LEFT JOIN profiles p ON sp.account_id = p.account_id
-        ORDER BY sp.account_id
+    data_query = """
+        SELECT u.account_id, u.item_type, u.item_id, u.usages_left, p.name, p.v2Tag, u.source, u.expires_at
+        FROM (
+            SELECT account_id, item_type, item_id, usages_left, 'shop' AS source, NULL AS expires_at FROM shop_purchases
+            UNION ALL
+            SELECT account_id, 'effect' AS item_type, effect_id AS item_id, NULL AS usages_left, source, expires_at 
+            FROM player_effects_inventory WHERE expires_at IS NULL OR expires_at > ?
+        ) u
+        LEFT JOIN profiles p ON u.account_id = p.account_id
+        ORDER BY u.account_id
         LIMIT ? OFFSET ?
-    """, (per_page, offset), fetch=True)
+    """
+    rows = run_query(data_query, (now, per_page, offset), fetch=True)
 
     purchases = []
     if rows:
+        from spazmod.effects_inventory import format_duration
         for r in rows:
+            src = r[6]
+            expires_at = r[7]
+            duration_str = None
+            if r[1] == "effect":
+                if expires_at is None:
+                    duration_str = "Permanent"
+                else:
+                    duration_str = format_duration(expires_at - now) + " left"
+
             purchases.append({
                 "account_id": r[0],
                 "item_type": r[1],
                 "item_id": r[2],
                 "usages_left": r[3],
                 "name": r[4] or "Unknown",
-                "v2Tag": r[5]
+                "v2Tag": r[5],
+                "source": src,
+                "expires_at": expires_at,
+                "duration_display": duration_str,
             })
 
-    total_pages = math.ceil(total / per_page)
+    total_pages = math.ceil(total / per_page) if per_page > 0 else 1
     return {
         "purchases": purchases,
         "total": total,

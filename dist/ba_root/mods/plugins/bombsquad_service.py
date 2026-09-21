@@ -148,17 +148,54 @@ def get_roles():
 
 
 def get_perks():
-    # TODO wire with spaz_effects to fetch list of effects.
-    return {"perks": pdata.get_custom_perks(),
-            "availableEffects": ["spark", "glow", "fairydust", "sparkground",
-                                 "sweat", "sweatground", "distortion", "shine",
-                                 "highlightshine", "scorch", "ice", "iceground",
-                                 "slime", "metal", "splinter", "rainbow"]}
+    custom = pdata.get_custom()
+    from plugins.kickvote_manager import KickVoteManager
+    immune_list = KickVoteManager.get().get_immune_list()
+    return {
+        "perks": {
+            "customtag": custom.get("customtag", {}),
+            "kick_vote_immune": immune_list
+        }
+    }
 
 
 def update_perks(custom):
-    logger.log(f'updating custom perks, request from web')
-    pdata.update_custom_perks(custom)
+    logger.log('updating custom perks (tags/immunity), request from web')
+    if isinstance(custom, dict):
+        tags = None
+        immune = None
+        if "customtag" in custom:
+            tags = custom["customtag"]
+        elif "perks" in custom and "customtag" in custom["perks"]:
+            tags = custom["perks"]["customtag"]
+
+        if "kick_vote_immune" in custom:
+            immune = custom["kick_vote_immune"]
+        elif "perks" in custom and "kick_vote_immune" in custom["perks"]:
+            immune = custom["perks"]["kick_vote_immune"]
+
+        if tags is not None:
+            current = pdata.get_custom()
+            current["customtag"] = tags
+            pdata.update_custom_perks(current)
+
+        if immune is not None:
+            from plugins.kickvote_manager import KickVoteManager
+            kvm = KickVoteManager.get()
+            if isinstance(immune, list):
+                # Set exact list
+                current_immune = set(kvm.get_immune_list())
+                target_immune = set(immune)
+                for to_add in (target_immune - current_immune):
+                    kvm.add_immune(to_add)
+                for to_remove in (current_immune - target_immune):
+                    kvm.remove_immune(to_remove)
+            elif isinstance(immune, dict):
+                for acc_id, is_imm in immune.items():
+                    if is_imm:
+                        kvm.add_immune(acc_id)
+                    else:
+                        kvm.remove_immune(acc_id)
 
 
 def update_roles(roles):
@@ -247,7 +284,8 @@ def unmute_player(account_id):
 
 def enable_kick_vote(account_id):
     logger.log(f'enabling kick vote for {account_id} , request from web')
-    pdata.enable_kick_vote(account_id)
+    from plugins.kickvote_manager import KickVoteManager
+    KickVoteManager.get().remove_restriction(account_id)
 
 
 # TODO take duration input
@@ -265,7 +303,27 @@ def mute_player(account_id, duration):
 
 def disable_kick_vote(account_id, duration):
     logger.log(f'disable {account_id} , request from web')
-    pdata.disable_kick_vote(account_id, duration, "manually from website")
+    from plugins.kickvote_manager import KickVoteManager
+    KickVoteManager.get().add_restriction(account_id, duration, "manually from website")
+
+
+def set_kick_vote_immune(account_id, immune: bool = True):
+    logger.log(f'set kick vote immune for {account_id} ({immune}) , request from web')
+    from plugins.kickvote_manager import KickVoteManager
+    if immune:
+        KickVoteManager.get().add_immune(account_id)
+    else:
+        KickVoteManager.get().remove_immune(account_id)
+
+
+def get_kickvote_data():
+    from plugins.kickvote_manager import KickVoteManager
+    kvm = KickVoteManager.get()
+    return {
+        "restricted": kvm.get_restricted_list(),
+        "immune": kvm.get_immune_list(),
+        "blacklist": pdata.get_blacklist().get("kick-vote-disabled", {})
+    }
 
 
 def get_server_config():
@@ -336,12 +394,11 @@ def get_players_paginated(page=1, per_page=50, search="", sort_by="server_profil
 
     # White-list sortable columns
     allowed_sort_cols = {
-        "id", "v2Tag", "account_id", "name", "isBan", "isMuted",
+        "id", "v2Tag", "account_id", "name",
         "registerOn", "totaltimeplayer", "warnCount", "rejoincount",
         "lastJoin", "server_profile_created_at"
     }
-    if sort_by not in allowed_sort_cols:
-        sort_by = "server_profile_created_at"
+    db_sort_by = sort_by if sort_by in allowed_sort_cols else "server_profile_created_at"
 
     sort_order = "desc" if sort_order.lower() == "desc" else "asc"
 
@@ -361,11 +418,11 @@ def get_players_paginated(page=1, per_page=50, search="", sort_by="server_profil
     offset = (page - 1) * per_page
     fetch_query = f"""
         SELECT id, v2Tag, account_id, name, display_string, registerOn, lastJoin,
-               totaltimeplayer, isBan, isMuted, warnCount, rejoincount, lastIP,
+               totaltimeplayer, warnCount, rejoincount, lastIP,
                deviceUUID, server_profile_created_at
         FROM profiles
         {query_where}
-        ORDER BY {sort_by} {sort_order}
+        ORDER BY {db_sort_by} {sort_order}
         LIMIT ? OFFSET ?
     """
     params_for_fetch = list(params)
@@ -378,8 +435,8 @@ def get_players_paginated(page=1, per_page=50, search="", sort_by="server_profil
         current_time = datetime.now()
         for r in rows:
             acc_id = r[2]
-            ip = r[12]
-            device_id = r[13]
+            ip = r[10]
+            device_id = r[11]
 
             is_banned = False
             # Check ID
@@ -432,12 +489,15 @@ def get_players_paginated(page=1, per_page=50, search="", sort_by="server_profil
                 "totaltimeplayer": r[7],
                 "isBan": is_banned,
                 "isMuted": is_muted,
-                "warnCount": r[10] or 0,
-                "rejoincount": r[11] or 1,
+                "warnCount": r[8] or 0,
+                "rejoincount": r[9] or 1,
                 "lastIP": ip,
                 "deviceUUID": device_id,
-                "server_profile_created_at": r[14]
+                "server_profile_created_at": r[12]
             })
+
+        if sort_by in ("isBan", "isMuted") and players:
+            players.sort(key=lambda p: bool(p.get(sort_by)), reverse=(sort_order == "desc"))
 
     total_pages = math.ceil(total_count / per_page)
     return {
@@ -510,6 +570,11 @@ def get_player_by_id(account_id: str):
         p_dict["isBan"] = is_banned
         p_dict["isMuted"] = is_muted
         p_dict["canStartKickVote"] = not is_kick_vote_disabled
+        try:
+            from plugins.kickvote_manager import KickVoteManager
+            p_dict["isKickVoteImmune"] = KickVoteManager.get().is_immune(account_id)
+        except Exception:
+            p_dict["isKickVoteImmune"] = False
         return p_dict
     return None
 
@@ -521,5 +586,178 @@ def update_player_profile(account_id: str, fields: dict):
         p_dict = dict(p)
         p_dict.update(fields)
         save_profile_single(account_id, p_dict)
+
+        if "canStartKickVote" in fields:
+            if fields["canStartKickVote"]:
+                enable_kick_vote(account_id)
+            else:
+                disable_kick_vote(account_id, 30.0)
+
+        if "isKickVoteImmune" in fields:
+            set_kick_vote_immune(account_id, bool(fields["isKickVoteImmune"]))
+
         return True
     return False
+
+
+# ==================== Replays Management ====================
+
+
+def get_replays_dir() -> str:
+    """Returns the absolute path to the replays directory."""
+    try:
+        import babase
+        if hasattr(babase, "get_replays_dir"):
+            p = babase.get_replays_dir()
+            if p and os.path.exists(p):
+                return os.path.abspath(p)
+    except Exception:
+        pass
+
+    try:
+        import _babase
+        user_dir = _babase.env().get("python_directory_user")
+        if user_dir:
+            fallback = os.path.abspath(os.path.join(user_dir, "..", "replays"))
+            if os.path.exists(fallback):
+                return fallback
+    except Exception:
+        pass
+
+    fallback = os.path.abspath("ba_root/replays")
+    os.makedirs(fallback, exist_ok=True)
+    return fallback
+
+
+def format_file_size(size_bytes: int) -> str:
+    """Formats bytes into human readable format (KB, MB, GB)."""
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    elif size_bytes < 1024 * 1024 * 1024:
+        return f"{size_bytes / (1024 * 1024):.2f} MB"
+    else:
+        return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+
+
+def get_replays_list(
+    page: int = 1,
+    per_page: int = 50,
+    search: str = "",
+    sort_by: str = "modified",
+    sort_order: str = "desc",
+) -> dict:
+    """Lists all replays in the replay directory with metadata, sorting, search, and pagination."""
+    replays_dir = get_replays_dir()
+    if not os.path.exists(replays_dir):
+        return {
+            "replays": [],
+            "total": 0,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": 0,
+            "directory": replays_dir,
+        }
+
+    search_lower = search.strip().lower()
+    raw_replays = []
+
+    for name in os.listdir(replays_dir):
+        if not name.endswith(".brp"):
+            continue
+        if search_lower and search_lower not in name.lower():
+            continue
+
+        filepath = os.path.join(replays_dir, name)
+        if not os.path.isfile(filepath):
+            continue
+
+        try:
+            stat = os.stat(filepath)
+            mtime = stat.st_mtime
+            size = stat.st_size
+            dt = datetime.fromtimestamp(mtime)
+            raw_replays.append({
+                "filename": name,
+                "size_bytes": size,
+                "size_formatted": format_file_size(size),
+                "modified_at": dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "timestamp": mtime,
+            })
+        except Exception:
+            continue
+
+    # Sorting
+    reverse = sort_order.lower() != "asc"
+    if sort_by == "name":
+        raw_replays.sort(key=lambda r: r["filename"].lower(), reverse=reverse)
+    elif sort_by == "size":
+        raw_replays.sort(key=lambda r: r["size_bytes"], reverse=reverse)
+    else:  # modified / date
+        raw_replays.sort(key=lambda r: r["timestamp"], reverse=reverse)
+
+    total = len(raw_replays)
+    per_page = max(1, min(per_page, 200))
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages)) if total > 0 else 1
+
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    paginated_replays = raw_replays[start_idx:end_idx]
+
+    return {
+        "replays": paginated_replays,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "directory": replays_dir,
+    }
+
+
+def get_replay_filepath(filename: str) -> str | None:
+    """Validates filename and returns absolute path if it exists in the replays directory."""
+    if not filename or not isinstance(filename, str):
+        return None
+    # Secure filename: avoid directory traversal
+    clean_name = os.path.basename(filename.strip())
+    if not clean_name.endswith(".brp"):
+        clean_name += ".brp"
+
+    replays_dir = get_replays_dir()
+    filepath = os.path.abspath(os.path.join(replays_dir, clean_name))
+
+    # Ensure path is strictly inside replays_dir
+    if not filepath.startswith(replays_dir):
+        return None
+
+    if os.path.isfile(filepath):
+        return filepath
+    return None
+
+
+def delete_replay(filename: str) -> bool:
+    """Deletes a single replay file."""
+    filepath = get_replay_filepath(filename)
+    if filepath and os.path.isfile(filepath):
+        try:
+            os.remove(filepath)
+            logger.log(f"Deleted replay file: {os.path.basename(filepath)}")
+            return True
+        except Exception as e:
+            logger.log(f"Error deleting replay file {filename}: {e}")
+            return False
+    return False
+
+
+def delete_replays_batch(filenames: list[str]) -> dict:
+    """Deletes multiple replay files."""
+    deleted = []
+    failed = []
+    for fn in filenames:
+        if delete_replay(fn):
+            deleted.append(fn)
+        else:
+            failed.append(fn)
+    return {"deleted": deleted, "failed": failed}

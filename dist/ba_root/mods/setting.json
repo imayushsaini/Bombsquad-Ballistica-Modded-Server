@@ -16,12 +16,14 @@
   },
   "ShowKickVoteStarterName": true,
   "StumbledScoreScreen": true,
+  "victory_score_screen": "stumbled",
+  "round_score_screen": "replay",
   "WarnCooldownMinutes": 30,
   "afk_remover": {
     "enable": true,
-    "ingame_idle_time_in_secs": 60,
+    "ingame_idle_time_in_secs": 260,
     "kick_idle_from_lobby": true,
-    "lobby_idle_time_in_secs": 10
+    "lobby_idle_time_in_secs": 140
   },
   "afterWarnKickMsg": "Enough warnings, Goodbye have a nice day :)",
   "allowInGameChat": true,
@@ -121,6 +123,9 @@
   "enableTagAnimation": true,
   "enableTop5effects": true,
   "enableeffects": true,
+  "max_equipped_effects": 3,
+  "rank_effect_duration_days": 3,
+  "shop_effect_duration_days": 6,
   "enablehptag": true,
   "enablerank": true,
   "enablestats": true,
@@ -186,4 +191,13 @@
   },
   "accountApiToken": "your-api-token-here",
   "useSqlite": true
+  "instant_replay": {
+    "enable": true,
+    "duration": 3,
+    "playback_speed": 0.5,
+    "zoom_on_player": true,
+    "zoom_target": "auto",
+    "zoom_box_size": 4.0,
+    "background_opacity": 0.4
+  }
 }

@@ -217,9 +217,10 @@ def shop_thread(clientid: int, accountid: str, subcategory: str | None) -> None:
             f"--- SHOP (Your Balance: {balance} tickets) ---\n"
             f"Categories:\n"
             f"  /shop commands - Chat commands you can buy\n"
-            f"  /shop effects - Spaz effects you can buy\n"
+            f"  /shop effects - Spaz effects you can buy (valid 6 days)\n"
             f"To buy: /buy <item_name>\n"
-            f"To equip effect: /equip <effect_name>"
+            f"To view inventory: /effects\n"
+            f"To equip effect: /effect enable <name> or /equip <name>"
         )
         _babase.pushcall(Call(send, reply, clientid), from_other_thread=True)
         return
@@ -235,7 +236,7 @@ def shop_thread(clientid: int, accountid: str, subcategory: str | None) -> None:
         _babase.pushcall(Call(send, reply, clientid), from_other_thread=True)
 
     elif subcategory == 'effects':
-        reply = f"--- Shop Effects (Balance: {balance} t) ---\n"
+        reply = f"--- Shop Effects (Balance: {balance} t, valid 6 days) ---\n"
         for name, info in EFFECTS_SHOP.items():
             reply += f"  {name} - Cost: {info['cost']} t - {info['description']}\n"
         _babase.pushcall(Call(send, reply, clientid), from_other_thread=True)
@@ -265,19 +266,102 @@ def buy_item_command(arguments: list[str], clientid: int, accountid: str) -> Non
     _thread.start_new_thread(buy_thread, (clientid, accountid, arguments[0]))
 
 
-def equip_thread(clientid: int, accountid: str, effect_name: str) -> None:
-    from shop.shop_system import equip_effect
-    result = equip_effect(accountid, effect_name)
-    _babase.pushcall(Call(send, result, clientid), from_other_thread=True)
+def effect_thread(clientid: int, accountid: str, action: str, target: str | None = None) -> None:
+    from spazmod import effects_inventory
+    if action == "list":
+        reply = effects_inventory.get_inventory_display(accountid)
+    elif action == "none":
+        reply = effects_inventory.disable_all_effects(accountid)
+    elif action == "enable":
+        ok, reply = effects_inventory.equip_effect(accountid, target)
+    elif action == "disable":
+        ok, reply = effects_inventory.unequip_effect(accountid, target)
+    else:
+        reply = "Usage: /effect [list | enable <name> | disable <name> | none]"
+    _babase.pushcall(Call(send, reply, clientid), from_other_thread=True)
+
+
+@registry.register(['effect', 'effects'], category='Normal')
+def effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Manage player effects inventory and equipped effects."""
+    if not arguments or arguments == [''] or arguments[0].lower() in ('list', 'inv', 'inventory', 'show'):
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "list", None))
+        return
+
+    arg0 = arguments[0].lower()
+    if arg0 in ('none', 'off', 'clear', 'disableall', 'removeall'):
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "none", None))
+        return
+
+    if arg0 in ('enable', 'equip', 'use', 'on'):
+        if len(arguments) > 1 and arguments[1] != '':
+            _thread.start_new_thread(effect_thread, (clientid, accountid, "enable", arguments[1].lower()))
+        else:
+            send("Usage: /effect enable <effect_name>", clientid)
+        return
+
+    if arg0 in ('disable', 'unequip', 'remove'):
+        if len(arguments) > 1 and arguments[1] != '':
+            _thread.start_new_thread(effect_thread, (clientid, accountid, "disable", arguments[1].lower()))
+        else:
+            send("Usage: /effect disable <effect_name>", clientid)
+        return
+
+    # Admin giving effect via /effect add <effect> <client_id>
+    if arg0 in ('add', 'gift', 'give') and len(arguments) >= 3:
+        from chathandle.chatcommands.handlers import check_permissions
+        if check_permissions(accountid, 'customeffect'):
+            eff = arguments[1].lower()
+            try:
+                target_cl_id = int(arguments[2])
+                session = bs.get_foreground_host_session()
+                if session:
+                    for player in session.sessionplayers:
+                        if player.inputdevice.client_id == target_cl_id:
+                            target_aid = player.get_v1_account_id()
+                            if target_aid:
+                                from spazmod.effects_inventory import add_admin_effect
+                                from playersdata import pdata
+                                add_admin_effect(target_aid, eff)
+                                pdata.set_effect(eff, target_aid)
+                                send(f"Gifted permanent effect '{eff}' to {player.getname(False)}.", clientid)
+                                return
+                send(f"Error: Client ID {target_cl_id} not found.", clientid)
+            except ValueError:
+                send("Usage: /effect add <effect> <client_id>", clientid)
+            return
+        else:
+            send("Access denied.", clientid)
+            return
+
+    # Single argument fallback: e.g. /effect spark -> equips spark!
+    _thread.start_new_thread(effect_thread, (clientid, accountid, "enable", arg0))
 
 
 @registry.register(['equip', 'use'], category='Normal')
 def equip_effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Equip a purchased effect."""
+    """Equip an effect from inventory."""
     if not arguments or arguments == ['']:
         send("Usage: /equip <effect_name> or /equip none", clientid)
         return
-    _thread.start_new_thread(equip_thread, (clientid, accountid, arguments[0]))
+    arg0 = arguments[0].lower()
+    if arg0 in ('none', 'off', 'clear'):
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "none", None))
+    else:
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "enable", arg0))
+
+
+@registry.register(['unequip'], category='Normal')
+def unequip_effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Unequip an effect from inventory."""
+    if not arguments or arguments == ['']:
+        send("Usage: /unequip <effect_name> or /unequip all", clientid)
+        return
+    arg0 = arguments[0].lower()
+    if arg0 in ('all', 'none'):
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "none", None))
+    else:
+        _thread.start_new_thread(effect_thread, (clientid, accountid, "disable", arg0))
 
 
 def claim_thread(clientid: int, accountid: str) -> None:
@@ -367,3 +451,25 @@ def give_tickets_command(arguments: list[str], clientid: int, accountid: str) ->
     target_clientid = target_player.inputdevice.client_id
 
     _thread.start_new_thread(give_tickets_thread, (clientid, target_accountid, target_name, target_clientid, amount))
+
+
+@registry.register(['hud', 'ui'], category='Normal')
+def hud_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Set player custom HUD preference."""
+    import private_hud
+    private_hud.hud_command(arguments, clientid, accountid)
+
+
+@registry.register(['night'], category='Normal')
+def night_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Set night mode tint for player."""
+    import private_hud
+    private_hud.night_command(arguments, clientid, accountid)
+
+
+@registry.register(['day'], category='Normal')
+def day_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Set day mode tint for player."""
+    import private_hud
+    private_hud.day_command(arguments, clientid, accountid)
+

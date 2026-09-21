@@ -134,6 +134,11 @@ class modSetup(babase.Plugin):
             plus.accounts.set_primary_credentials(None)
             plus.sign_in_v1('Local')
         bs.apptimer(60, playlist.flush_playlists)
+        try:
+            from actor import welcome
+            bs.apptimer(2.0, welcome.ensure_nodes)
+        except Exception:
+            pass
 
     # it works sometimes , but it blocks shutdown so server raise runtime
     # exception,   also dump server logs
@@ -145,13 +150,109 @@ class modSetup(babase.Plugin):
         # print("Done dumping memory")
 
 
+def is_victory_score_screen(activity: ScoreScreenActivity) -> bool:
+    """Check if the activity is a final series victory score screen."""
+    if getattr(activity, '_is_victory_screen', False):
+        return True
+    try:
+        from bascenev1lib.activity import multiteamvictory
+        if isinstance(activity, multiteamvictory.TeamSeriesVictoryScoreScreenActivity):
+            return True
+    except Exception:
+        pass
+    try:
+        from features import stumbled_score_screen
+        if isinstance(activity, stumbled_score_screen._TeamSeriesVictoryScoreScreenActivity):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def get_victory_score_screen_mode() -> str:
+    """Returns 'stumbled', 'replay', or 'original' for the final victory screen."""
+    mode = str(settings.get("victory_score_screen", "")).lower().strip()
+    if mode in ("stumbled", "replay", "original"):
+        return mode
+    gen_mode = str(settings.get("score_screen_mode", "")).lower().strip()
+    if gen_mode in ("stumbled", "replay", "original"):
+        return gen_mode
+    if settings.get("StumbledScoreScreen", False):
+        return "stumbled"
+    if settings.get("instant_replay", {}).get("enable", True):
+        return "replay"
+    return "original"
+
+
+def get_round_score_screen_mode() -> str:
+    """Returns 'replay' or 'original' for match round score screens."""
+    mode = str(settings.get("round_score_screen", "")).lower().strip()
+    if mode in ("replay", "original"):
+        return mode
+    gen_mode = str(settings.get("score_screen_mode", "")).lower().strip()
+    if gen_mode in ("replay", "original"):
+        return gen_mode
+    if settings.get("instant_replay", {}).get("enable", True):
+        return "replay"
+    return "original"
+
+
+def should_play_replay_on_activity(activity: ScoreScreenActivity) -> bool:
+    """Determines whether instant replay should play on this score screen."""
+    if not settings.get("instant_replay", {}).get("enable", True):
+        return False
+    if is_victory_score_screen(activity):
+        return get_victory_score_screen_mode() == "replay"
+    return get_round_score_screen_mode() == "replay"
+
+
+_orig_score_screen_init = ScoreScreenActivity.__init__
+
+
+def score_screen_init(self, *args, **kwargs) -> None:
+    _orig_score_screen_init(self, *args, **kwargs)
+    if should_play_replay_on_activity(self):
+        try:
+            from features import instant_replay
+            if instant_replay.has_replay_data():
+                replay_duration = instant_replay.get_replay_duration()
+                self._replay_duration = replay_duration
+                self._min_view_time = max(self._min_view_time, replay_duration)
+        except Exception as e:
+            logging.exception(
+                f"Error initializing instant replay duration: {e}")
+
+
+ScoreScreenActivity.__init__ = score_screen_init
+
+
 def score_screen_on_begin(func) -> None:
     """Runs when score screen is displayed."""
 
     def wrapper(self, *args, **kwargs):
+        replay_duration = getattr(self, '_replay_duration', 0.0)
+        if replay_duration <= 0.0 and should_play_replay_on_activity(self):
+            try:
+                from features import instant_replay
+                if instant_replay.has_replay_data():
+                    replay_duration = instant_replay.get_replay_duration()
+                    self._replay_duration = replay_duration
+                    self._min_view_time = max(
+                        self._min_view_time, replay_duration)
+            except Exception as e:
+                logging.exception(f"Error preparing instant replay: {e}")
+
         result = func(self, *args, **kwargs)  # execute the original method
         team_balancer.balanceTeams()
         mystats.update(self._stats)
+
+        if replay_duration > 0.0 and should_play_replay_on_activity(self):
+            try:
+                from features import instant_replay
+                instant_replay.play_replay_on_score_screen(self)
+            except Exception as e:
+                logging.exception(f"Error playing instant replay: {e}")
+
         announcement.showScoreScreenAnnouncement()
         return result
 
@@ -162,11 +263,130 @@ ScoreScreenActivity.on_begin = score_screen_on_begin(
     ScoreScreenActivity.on_begin)
 
 
+def cleanup_session_background(activity=None) -> None:
+    """Purge any Background actor on the score screen activity."""
+    if activity is not None:
+        try:
+            bg = getattr(activity, '_background', None)
+            if bg is not None:
+                try:
+                    bg.handlemessage(bs.DieMessage(immediate=True))
+                except Exception:
+                    pass
+                try:
+                    if hasattr(bg, 'node') and bg.node and bg.node.exists():
+                        bg.node.delete()
+                except Exception:
+                    pass
+                activity._background = None
+        except Exception as e:
+            logging.exception(f"Error cleaning up activity background: {e}")
+
+
+_orig_score_screen_transition_in = ScoreScreenActivity.on_transition_in
+
+
+def score_screen_on_transition_in(self) -> None:
+    replay_enabled = should_play_replay_on_activity(self)
+    has_replay = False
+    if replay_enabled:
+        try:
+            from features import instant_replay
+            has_replay = instant_replay.has_replay_data()
+        except Exception:
+            pass
+
+    if has_replay:
+        # Replay is queued to play on this score screen!
+        super(ScoreScreenActivity, self).on_transition_in()
+        self._tips_text = None
+        if self.default_music is not None:
+            bs.setmusic(self.default_music)
+
+        bg_opacity = 0.4
+        try:
+            from features import instant_replay
+            bg_opacity = instant_replay.get_replay_bg_opacity()
+        except Exception:
+            pass
+
+        if bg_opacity > 0.0:
+            from bascenev1lib.actor.background import Background
+            bg = Background(fade_time=0.5, start_faded=True, show_logo=False)
+            self._background = bg
+            try:
+                session = bs.getsession()
+                with session.context:
+                    bg.node.opacity = 0.0
+                    bs.animate(
+                        bg.node,
+                        'opacity',
+                        {0.0: 0.0, 0.5: bg_opacity},
+                        loop=False,
+                    )
+            except Exception as e:
+                logging.warning(f"Error animating replay background: {e}")
+        else:
+            self._background = None
+        return
+
+    _orig_score_screen_transition_in(self)
+
+
+ScoreScreenActivity.on_transition_in = score_screen_on_transition_in
+
+_orig_score_screen_transition_out = ScoreScreenActivity.on_transition_out
+
+
+def score_screen_on_transition_out(self) -> None:
+    try:
+        from features import instant_replay
+        instant_replay.stop_replay()
+    except Exception as e:
+        logging.exception(
+            f"Error stopping instant replay on transition out: {e}")
+    cleanup_session_background(self)
+    _orig_score_screen_transition_out(self)
+
+
+ScoreScreenActivity.on_transition_out = score_screen_on_transition_out
+
+_orig_score_screen_expire = ScoreScreenActivity.on_expire
+
+
+def score_screen_on_expire(self) -> None:
+    try:
+        from features import instant_replay
+        instant_replay.stop_replay()
+    except Exception as e:
+        logging.exception(f"Error stopping instant replay on expire: {e}")
+    cleanup_session_background(self)
+    _orig_score_screen_expire(self)
+
+
+ScoreScreenActivity.on_expire = score_screen_on_expire
+
+_orig_score_screen_player_press = ScoreScreenActivity._player_press
+
+
+def score_screen_player_press(self) -> None:
+    with self.context:
+        _orig_score_screen_player_press(self)
+
+
+ScoreScreenActivity._player_press = score_screen_player_press
+
+
 def on_map_init(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         text_on_map.textonmap()
         modifyspaz.setTeamCharacter()
+        try:
+            import private_hud
+            private_hud.apply_day_night_preferences()
+        except Exception as e:
+            print(f"Error applying day/night preferences on map init: {e}")
 
     return wrapper
 
@@ -254,11 +474,28 @@ def bootstraping():
     if settings["custom_characters"]["enable"]:
         from plugins import importcustomcharacters
         importcustomcharacters.enable()
-    if settings["StumbledScoreScreen"]:
-        pass
-        # from features import StumbledScoreScreen
+
+    # Auto Replay Plugin (defaults to enabled unless explicitly configured as disabled)
+    if settings.get("auto_replay", {}).get("enable", True):
+        try:
+            from plugins import auto_replay
+            auto_replay.enable()
+        except Exception as e:
+            logging.exception("Failed to enable auto_replay:")
+    # Final Victory Score Screen: 'stumbled', 'replay', or 'original'
+    if get_victory_score_screen_mode() == "stumbled":
+        try:
+            from features import stumbled_score_screen
+            stumbled_score_screen.enable()
+        except Exception as e:
+            logging.exception(f"Failed to enable StumbledScoreScreen: {e}")
     if settings["colorfullMap"]:
         from plugins import colorfulmaps2
+    try:
+        from plugins import kickvote_manager
+        kickvote_manager.enable()
+    except Exception as e:
+        logging.exception("Failed to enable kickvote_manager:")
     try:
         pass
         # from tools import healthcheck
@@ -344,11 +581,31 @@ org_begin = bs._activity.Activity.on_begin
 def new_begin(self):
     """Runs when game is began."""
     org_begin(self)
+    if isinstance(self, bs.GameActivity):
+        cleanup_session_background(self)
+        if settings.get("instant_replay", {}).get("enable", True):
+            try:
+                from features import instant_replay
+                instant_replay.on_game_begin(self)
+            except Exception as e:
+                logging.exception(
+                    f"Error starting instant replay recorder: {e}")
     night_mode()
     if settings["colorfullMap"]:
         map_fun.decorate_map()
     votingmachine.reset_votes()
     votingmachine.game_started_on = time.time()
+    try:
+        from actor import welcome
+        welcome.ensure_nodes()
+    except Exception as e:
+        logging.exception(
+            f"Error ensuring welcome banner nodes on game begin: {e}")
+    try:
+        import private_hud
+        private_hud.apply_day_night_preferences()
+    except Exception as e:
+        print(f"Error applying day/night preferences on game begin: {e}")
 
 
 bs._activity.Activity.on_begin = new_begin
@@ -359,20 +616,80 @@ org_end = bs._activity.Activity.end
 def new_end(self, results: Any = None,
             delay: float = 0.0, force: bool = False):
     """Runs when game is ended."""
-    activity = bs.get_foreground_host_activity()
+    if isinstance(self, bs.GameActivity):
+        try:
+            from features import instant_replay
+            instant_replay.on_game_end(activity=self, results=results)
+        except Exception as e:
+            logging.exception(f"Error ending instant replay recorder: {e}")
 
-    if isinstance(activity, CoopScoreScreen):
-        team_balancer.checkToExitCoop()
-    org_end(self, results, delay, force)
+    try:
+        activity = bs.get_foreground_host_activity()
+        if isinstance(activity, CoopScoreScreen):
+            team_balancer.checkToExitCoop()
+    except Exception:
+        pass
+    with self.context:
+        org_end(self, results, delay, force)
 
 
 bs._activity.Activity.end = new_end
+
+# Hook Stats.player_scored to track scorers for instant replay zoom
+try:
+    _orig_player_scored = bs.Stats.player_scored
+
+    def _wrapped_player_scored(self, player, base_points=1, *args, **kwargs):
+        try:
+            from features import instant_replay
+            target_pos = kwargs.get('target', None)
+            if target_pos is None and player and player.node:
+                try:
+                    target_pos = player.node.position
+                except Exception:
+                    pass
+            instant_replay.record_player_score(
+                player=player,
+                points=base_points,
+                position=target_pos,
+            )
+        except Exception:
+            pass
+        return _orig_player_scored(self, player, base_points, *args, **kwargs)
+
+    bs.Stats.player_scored = _wrapped_player_scored
+except Exception as e:
+    logging.warning(f"Error hooking bs.Stats.player_scored: {e}")
+
+# Hook Blast explosion events for instant replay
+try:
+    from bascenev1lib.actor.bomb import Blast
+    _orig_blast_init = Blast.__init__
+
+    def _wrapped_blast_init(self, *args, **kwargs):
+        _orig_blast_init(self, *args, **kwargs)
+        try:
+            from features import instant_replay
+            if instant_replay.g_active_recorder and instant_replay.g_active_recorder.running:
+                pos = kwargs.get(
+                    'position', (args[0] if args else (0.0, 1.0, 0.0)))
+                b_type = kwargs.get('blast_type', 'normal')
+                b_radius = kwargs.get('blast_radius', 2.0)
+                instant_replay.g_active_recorder.record_blast(
+                    pos, b_type, b_radius)
+        except Exception:
+            pass
+
+    Blast.__init__ = _wrapped_blast_init
+except Exception as e:
+    logging.exception(f"Error hooking Blast for instant replay: {e}")
+
 
 org_player_join = bs._activity.Activity.on_player_join
 
 
 def on_player_join(self, player) -> None:
-    """Runs when player joins the game."""
+    """Runs when player joins the game. OR during game result screen"""
     team_balancer.on_player_join()
 
     try:
@@ -382,6 +699,28 @@ def on_player_join(self, player) -> None:
             preload_player(account_id)
     except Exception as e:
         print(f"Error preloading player shop cache: {e}")
+
+    try:
+        sessionplayer = getattr(player, 'sessionplayer', None)
+        if sessionplayer is not None:
+            account_id = None
+            if hasattr(sessionplayer, 'get_v1_account_id'):
+                account_id = sessionplayer.get_v1_account_id()
+            if not account_id and hasattr(sessionplayer, 'get_account_id'):
+                account_id = sessionplayer.get_account_id()
+
+            inputdevice = getattr(sessionplayer, 'inputdevice', None)
+            client_id = getattr(inputdevice, 'client_id',
+                                None) if inputdevice else None
+
+            if account_id and client_id is not None and client_id != -1:
+                import private_hud
+                # Delay applying preferences on player join so client has finished loading the scene
+                babase.apptimer(2.0, babase.Call(
+                    private_hud.apply_preferences_for_client, client_id, account_id))
+    except Exception as e:
+        print(f"Error applying private HUD on player join: {e}")
+
     org_player_join(self, player)
 
 
@@ -411,9 +750,17 @@ def night_mode() -> None:
                     pass
 
 
-def kick_vote_started(started_by: str, started_to: str) -> None:
-    """Logs the kick vote."""
-    logger.log(f"{started_by} started kick vote for {started_to}.")
+# ------------------ Kick Vote Handling -------------------
+
+
+def kick_vote_started(started_by: str, started_to: str) -> bool:
+    """Checks restrictions and immunity via KickVoteManager, logs the attempt, and returns True to allow or False to block."""
+    try:
+        from plugins.kickvote_manager import KickVoteManager
+        return KickVoteManager.get().check_and_handle_kick_vote(started_by, started_to)
+    except Exception as e:
+        logger.log(f"Error in kick_vote_started: {e}")
+        return True
 
 
 def on_kicked(account_id: str) -> None:
@@ -454,6 +801,9 @@ def shutdown(func) -> None:
                                                                            0.5,
                                                                            0.7)
                                                                    })
+        import private_hud
+        private_hud.register_node(
+            bs.get_foreground_host_activity().restart_msg, 'next_match', 'scale', 0.5)
         func(*args, **kwargs)
 
     return wrapper
@@ -463,6 +813,7 @@ ServerController.shutdown = shutdown(ServerController.shutdown)
 
 
 def on_player_request(func) -> bool:
+
     def wrapper(*args, **kwargs):
         player: bs.SessionPlayer = args[1]
         count = 0
@@ -562,3 +913,24 @@ def bcs_verify_client_account_ip(account_id: str, ip: str, client_id: int) -> st
     if settings["mfa"]["enable"]:
         _thread.start_new_thread(servercheck.account_check,
                                  (account_id, ip, client_id))
+
+
+def player_entered_server(
+    client_id: int,
+    account_id: str,
+    display_name: str,
+    ip: str,
+    device_id: str,
+) -> bool | None:
+    """Runs as soon as a player enters the server (after authentication is done).
+
+    Return False to reject/disconnect the client, or True/None to allow.
+    """
+
+    try:
+        from actor import welcome
+        welcome.on_player_entered_server(client_id, display_name)
+    except Exception as e:
+        print(f"Error in player_entered_server welcome hook: {e}")
+
+    return True

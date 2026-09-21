@@ -13,12 +13,8 @@ from bascenev1lib.actor.playerspaz import *
 
 _settings = setting.get_settings_data()
 
-RANK_EFFECT_MAP = {
-    1: ["rainbow", "shine"],
-    2: ["sweat"],
-    3: ["metal"],
-    4: ["iceground"],
-}
+from spazmod.effects_inventory import RANK_EFFECT_MAP
+
 
 
 def effect(repeat_interval=0):
@@ -94,25 +90,8 @@ class NewPlayerSpaz(PlayerSpaz):
         except:
             return
 
-        from shop import get_equipped_effect
-        equipped_effect = get_equipped_effect(account_id)
-
-        if equipped_effect:
-            self.effects = [equipped_effect]
-        else:
-            custom_effects = pdata.get_custom()['customeffects']
-            if account_id in custom_effects:
-                self.effects = [custom_effects[account_id]] if type(
-                    custom_effects[account_id]) is str else custom_effects[
-                    account_id]
-            else:
-                #  check if we have any effect for his rank.
-                if _settings['enablestats']:
-                    stats = mystats.get_cached_stats()
-                    if account_id in stats and _settings['enableTop5effects']:
-                        rank = stats[account_id]["rank"]
-                        self.effects = RANK_EFFECT_MAP[
-                            rank] if rank in RANK_EFFECT_MAP else []
+        from spazmod.effects_inventory import get_equipped_effects
+        self.effects = get_equipped_effects(account_id)
 
         if len(self.effects) == 0:
             return

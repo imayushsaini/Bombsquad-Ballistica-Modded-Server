@@ -94,9 +94,22 @@ def init_db():
     CREATE TABLE IF NOT EXISTS custom_perks (
         account_id TEXT PRIMARY KEY,
         customtag TEXT,
-        customeffects TEXT
+        customeffects TEXT,
+        kick_vote_immune INTEGER DEFAULT 0
     )
     """)
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(custom_perks)")
+        cp_cols = {row[1] for row in cur.fetchall()}
+        conn.close()
+        if cp_cols and "kick_vote_immune" not in cp_cols:
+            run_query(
+                "ALTER TABLE custom_perks ADD COLUMN kick_vote_immune INTEGER DEFAULT 0")
+    except Exception as e:
+        print(f"Error checking/migrating custom_perks schema: {e}")
 
     # 4. blacklist table
     run_query("""
@@ -429,10 +442,10 @@ def save_roles(roles_dict: dict) -> None:
 
 
 def load_custom() -> dict:
-    """Loads custom tags and effects from database."""
+    """Loads custom tags, effects, and immunity perks from database."""
     rows = run_query(
-        "SELECT account_id, customtag, customeffects FROM custom_perks", fetch=True)
-    custom_dict = {"customtag": {}, "customeffects": {}}
+        "SELECT account_id, customtag, customeffects, kick_vote_immune FROM custom_perks", fetch=True)
+    custom_dict = {"customtag": {}, "customeffects": {}, "kick_vote_immune": {}}
     if not rows:
         return custom_dict
 
@@ -446,25 +459,44 @@ def load_custom() -> dict:
                 custom_dict["customeffects"][acc_id] = effects
             except Exception:
                 pass
+        if len(r) > 3 and r[3]:
+            custom_dict["kick_vote_immune"][acc_id] = True
     return custom_dict
 
 
 def save_custom(custom_dict: dict) -> None:
-    """Saves custom tags and effects to database."""
+    """Saves custom tags, effects, and kick vote immunity to database."""
     queries = [("DELETE FROM custom_perks", ())]
     tags = custom_dict.get("customtag", {})
     effects = custom_dict.get("customeffects", {})
-    all_accs = set(tags.keys()) | set(effects.keys())
+    immune = custom_dict.get("kick_vote_immune", {})
+    all_accs = set(tags.keys()) | set(effects.keys()) | set(immune.keys())
 
     for acc_id in all_accs:
         tag = tags.get(acc_id)
         eff_list = effects.get(acc_id)
         eff_str = json.dumps(eff_list) if eff_list is not None else None
+        is_immune = 1 if (acc_id in immune and immune[acc_id]) else 0
         queries.append(("""
-            INSERT INTO custom_perks (account_id, customtag, customeffects)
-            VALUES (?, ?, ?)
-        """, (acc_id, tag, eff_str)))
+            INSERT INTO custom_perks (account_id, customtag, customeffects, kick_vote_immune)
+            VALUES (?, ?, ?, ?)
+        """, (acc_id, tag, eff_str, is_immune)))
     run_transaction(queries)
+
+
+def set_custom_perk_immunity_async(account_id: str, is_immune: bool) -> None:
+    """Updates kick_vote_immune in custom_perks table async."""
+    def _run():
+        try:
+            val = 1 if is_immune else 0
+            run_query("""
+                INSERT INTO custom_perks (account_id, kick_vote_immune) VALUES (?, ?)
+                ON CONFLICT(account_id) DO UPDATE SET kick_vote_immune=excluded.kick_vote_immune
+            """, (account_id, val))
+        except Exception as e:
+            print(f"Error updating custom_perks immunity in DB: {e}")
+    import _thread
+    _thread.start_new_thread(_run, ())
 
 
 def load_blacklist() -> dict:

@@ -41,27 +41,52 @@ class textonmap:
                 self.season_reset(_babase.season_ends_in_days)
         if setti["leaderboard"]["enable"]:
             self.leaderBoard()
-        self.timer = bs.timer(8, babase.CallStrict(self.highlights_), repeat=True)
+        self.highlight_node = None
+        if self.highlights:
+            self.highlights_init()
 
-    def highlights_(self):
+    def _get_highlight_color(self):
         if setti["textonmap"]['center highlights']["randomColor"]:
-            color = ((0 + random.random() * 1.0), (0 + random.random() * 1.0),
-                     (0 + random.random() * 1.0))
-        else:
-            color = tuple(setti["textonmap"]["center highlights"]["color"])
-        node = bs.newnode('text',
-                          attrs={
-                              'text': self.highlights[self.index],
-                              'flatness': 1.0,
-                              'h_align': 'center',
-                              'v_attach': 'bottom',
-                              'scale': 1,
-                              'position': (0, 138),
-                              'color': color
-                          })
+            return ((0 + random.random() * 1.0), (0 + random.random() * 1.0),
+                    (0 + random.random() * 1.0))
+        return tuple(setti["textonmap"]["center highlights"]["color"])
 
-        self.delt = bs.timer(7, node.delete)
+    def highlights_init(self):
+        if not self.highlights:
+            return
+        color = self._get_highlight_color()
+        self.highlight_node = bs.newnode('text',
+                                         attrs={
+                                             'text': self.highlights[self.index],
+                                             'flatness': 1.0,
+                                             'h_align': 'center',
+                                             'v_attach': 'bottom',
+                                             'scale': 1.0,
+                                             'position': (0, 138),
+                                             'color': color
+                                         })
+
+        import private_hud
+        private_hud.register_node(self.highlight_node, 'highlight', 'scale', 1.0)
+
+        # Set blanking timer for blink effect after 6s and update timer every 8s
+        self.blank_timer = bs.timer(6.0, babase.CallStrict(self.highlights_blank))
+        self.timer = bs.timer(8.0, babase.CallStrict(self.highlights_update), repeat=True)
+
+    def highlights_blank(self):
+        if self.highlight_node and self.highlight_node.exists():
+            self.highlight_node.text = ""
+
+    def highlights_update(self):
+        if not self.highlight_node or not self.highlight_node.exists():
+            return
+        if not self.highlights:
+            return
         self.index = int((self.index + 1) % len(self.highlights))
+        color = self._get_highlight_color()
+        self.highlight_node.color = color
+        self.highlight_node.text = self.highlights[self.index]
+        self.blank_timer = bs.timer(6.0, babase.CallStrict(self.highlights_blank))
 
     def left_watermark(self, text):
         node = bs.newnode('text',
@@ -75,6 +100,8 @@ class textonmap:
                               'position': (25, 67),
                               'color': (0.7, 0.7, 0.7)
                           })
+        import private_hud
+        private_hud.register_node(node, 'watermark', 'scale', 0.7)
 
     def nextGame(self, text):
         node = bs.newnode('text',
@@ -88,6 +115,8 @@ class textonmap:
                               'position': (-25, 16),
                               'color': (0.5, 0.5, 0.5)
                           })
+        import private_hud
+        private_hud.register_node(node, 'next_match', 'scale', 0.7)
 
     def season_reset(self, text):
         node = bs.newnode('text',
@@ -101,6 +130,8 @@ class textonmap:
                               'position': (-25, 34),
                               'color': (0.6, 0.5, 0.7)
                           })
+        import private_hud
+        private_hud.register_node(node, 'next_match', 'scale', 0.5)
 
     def restart_msg(self):
         if hasattr(_babase, 'restart_scheduled'):
@@ -116,6 +147,8 @@ class textonmap:
                     'position': (-25, 54),
                     'color': (1, 0.5, 0.7)
                 })
+            import private_hud
+            private_hud.register_node(_babase.get_foreground_host_activity().restart_msg, 'next_match', 'scale', 0.5)
 
     def top_message(self, text):
         node = bs.newnode('text',
@@ -128,6 +161,8 @@ class textonmap:
                               'position': (0, -70),
                               'color': (1, 1, 1)
                           })
+        import private_hud
+        private_hud.register_node(node, 'watermark', 'scale', 0.7)
 
     def leaderBoard(self):
         names = mystats.top3Name
@@ -163,7 +198,7 @@ class textonmap:
                 bar_color = default_bar_color
 
             if show_bars:
-                bs.newnode('image', attrs={
+                img_node = bs.newnode('image', attrs={
                     'scale': (300, 30),
                     'texture': bs.gettexture('uiAtlas2'),
                     'position': (0, y_pos),
@@ -171,9 +206,11 @@ class textonmap:
                     'opacity': 0.5,
                     'color': bar_color
                 })
+                import private_hud
+                private_hud.register_node(img_node, 'leaderboard', 'opacity', 0.5)
 
             display_name = (name or "Unknown")[:10]
-            bs.newnode('text', attrs={
+            txt_node = bs.newnode('text', attrs={
                 'text': f"#{i+1} {display_name}...",
                 'flatness': 1.0,
                 'h_align': 'left',
@@ -184,3 +221,5 @@ class textonmap:
                 'scale': 0.7,
                 'color': txt_color
             })
+            import private_hud
+            private_hud.register_node(txt_node, 'leaderboard', 'scale', 0.7)

@@ -155,45 +155,167 @@ def end(arguments: list[str], clientid: int, accountid: str) -> None:
             pass
 
 
+def _resolve_target_account(target: str) -> tuple[str | None, str]:
+    """Resolves a client ID or account ID into (account_id, display_name)."""
+    target = target.strip()
+    if target.startswith("pb-"):
+        return target, target
+    try:
+        cl_id = int(target)
+        for ros in bs.get_game_roster():
+            if ros.get("client_id") == cl_id:
+                return ros.get("account_id"), ros.get("display_string", str(cl_id))
+        for account in serverdata.recents:
+            if account.get("client_id") == cl_id:
+                return account.get("pbid"), account.get("pbid")
+    except (ValueError, TypeError):
+        pass
+    return None, target
+
+
 @registry.register(['kickvote'], category='Manage')
 def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Enable or disable kick voting for players."""
-    if not arguments or len(arguments) < 2:
+    """Manage kick voting: enable, disable, immune, unimmune, list."""
+    if not arguments:
+        send("Usage: /kickvote <enable|disable|immune|unimmune|list> [target] [duration]", clientid)
         return
-    action = arguments[0]
+
+    action = arguments[0].lower()
+    from plugins.kickvote_manager import KickVoteManager
+    kvm = KickVoteManager.get()
+
+    if action == 'list':
+        restricted = kvm.get_restricted_list()
+        immune = kvm.get_immune_list()
+        send(f"KickVote Restricted: {len(restricted)} players: {', '.join(restricted[:5])}", clientid)
+        send(f"KickVote Immune: {len(immune)} players: {', '.join(immune[:5])}", clientid)
+        return
+
+    if len(arguments) < 2:
+        send("Target required for this action", clientid)
+        return
+
     target = arguments[1]
 
     if action == 'enable':
         if target == 'all':
             _bascenev1.set_enable_default_kick_voting(True)
+            send("Kick voting enabled globally", clientid)
         else:
-            try:
-                cl_id = int(target)
-                for ros in bs.get_game_roster():
-                    if ros["client_id"] == cl_id:
-                        pdata.enable_kick_vote(ros["account_id"])
-                        logger.log(
-                            f'kick vote enabled for {ros["account_id"]} {ros["display_string"]}')
-                        send(
-                            "Upon server restart, Kick-vote will be enabled for this person", clientid)
-            except (ValueError, TypeError):
-                pass
+            acc_id, display_name = _resolve_target_account(target)
+            if acc_id:
+                kvm.remove_restriction(acc_id)
+                logger.log(f'kick vote restriction removed for {acc_id} ({display_name})')
+                send(f"Kick-vote enabled for {display_name}", clientid)
+            else:
+                send(f"Player not found: {target}", clientid)
+
     elif action == 'disable':
         if target == 'all':
             _bascenev1.set_enable_default_kick_voting(False)
+            send("Kick voting disabled globally", clientid)
         else:
-            try:
-                cl_id = int(target)
-                for ros in bs.get_game_roster():
-                    if ros["client_id"] == cl_id:
-                        _bascenev1.disable_kickvote(ros["account_id"])
-                        send("Kick-vote disabled for this person", clientid)
-                        logger.log(
-                            f'kick vote disabled for {ros["account_id"]} {ros["display_string"]}')
-                        pdata.disable_kick_vote(
-                            ros["account_id"], 2, "by chat command")
-            except (ValueError, TypeError):
-                pass
+            duration = 2.0
+            if len(arguments) >= 3:
+                try:
+                    duration = float(arguments[2])
+                except ValueError:
+                    duration = 2.0
+            acc_id, display_name = _resolve_target_account(target)
+            if acc_id:
+                kvm.add_restriction(acc_id, duration_days=duration, reason="by chat command")
+                logger.log(f'kick vote restricted for {acc_id} ({display_name})')
+                send(f"Kick-vote disabled for {display_name} for {duration} days", clientid)
+            else:
+                send(f"Player not found: {target}", clientid)
+
+    elif action in ('immune', 'addimmune'):
+        acc_id, display_name = _resolve_target_account(target)
+        if acc_id:
+            kvm.add_immune(acc_id)
+            logger.log(f'kick vote immunity granted to {acc_id} ({display_name})')
+            send(f"Kick-vote immunity granted to {display_name}", clientid)
+        else:
+            send(f"Player not found: {target}", clientid)
+
+    elif action in ('unimmune', 'removeimmune'):
+        acc_id, display_name = _resolve_target_account(target)
+        if acc_id:
+            kvm.remove_immune(acc_id)
+            logger.log(f'kick vote immunity removed from {acc_id} ({display_name})')
+            send(f"Kick-vote immunity removed from {display_name}", clientid)
+        else:
+            send(f"Player not found: {target}", clientid)
+
+
+@registry.register(['kickimmune', 'immune'], category='Manage')
+def kickimmune(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Grant kick vote immunity (VIP perk) to a player."""
+    if not arguments or arguments == ['']:
+        send("Usage: /kickimmune <client_id or pb-id>", clientid)
+        return
+    from plugins.kickvote_manager import KickVoteManager
+    acc_id, display_name = _resolve_target_account(arguments[0])
+    if acc_id:
+        KickVoteManager.get().add_immune(acc_id)
+        logger.log(f'kick vote immunity granted to {acc_id} ({display_name}) by chat command')
+        send(f"Kick-vote immunity granted to {display_name}", clientid)
+    else:
+        send(f"Player not found: {arguments[0]}", clientid)
+
+
+@registry.register(['kickunimmune', 'unimmune'], category='Manage')
+def kickunimmune(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Remove kick vote immunity from a player."""
+    if not arguments or arguments == ['']:
+        send("Usage: /kickunimmune <client_id or pb-id>", clientid)
+        return
+    from plugins.kickvote_manager import KickVoteManager
+    acc_id, display_name = _resolve_target_account(arguments[0])
+    if acc_id:
+        KickVoteManager.get().remove_immune(acc_id)
+        logger.log(f'kick vote immunity removed from {acc_id} ({display_name}) by chat command')
+        send(f"Kick-vote immunity removed from {display_name}", clientid)
+    else:
+        send(f"Player not found: {arguments[0]}", clientid)
+
+
+@registry.register(['disablekickvote', 'dkv'], category='Manage')
+def disablekickvote(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Restrict a player from starting kick votes."""
+    if not arguments or arguments == ['']:
+        send("Usage: /disablekickvote <client_id or pb-id> [duration_days]", clientid)
+        return
+    from plugins.kickvote_manager import KickVoteManager
+    duration = 2.0
+    if len(arguments) >= 2:
+        try:
+            duration = float(arguments[1])
+        except ValueError:
+            duration = 2.0
+    acc_id, display_name = _resolve_target_account(arguments[0])
+    if acc_id:
+        KickVoteManager.get().add_restriction(acc_id, duration_days=duration, reason="by chat command")
+        logger.log(f'kick vote restricted for {acc_id} ({display_name}) by chat command')
+        send(f"Kick-vote disabled for {display_name} for {duration} days", clientid)
+    else:
+        send(f"Player not found: {arguments[0]}", clientid)
+
+
+@registry.register(['enablekickvote', 'ekv'], category='Manage')
+def enablekickvote(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Allow a player to start kick votes again."""
+    if not arguments or arguments == ['']:
+        send("Usage: /enablekickvote <client_id or pb-id>", clientid)
+        return
+    from plugins.kickvote_manager import KickVoteManager
+    acc_id, display_name = _resolve_target_account(arguments[0])
+    if acc_id:
+        KickVoteManager.get().remove_restriction(acc_id)
+        logger.log(f'kick vote enabled for {acc_id} ({display_name}) by chat command')
+        send(f"Kick-vote enabled for {display_name}", clientid)
+    else:
+        send(f"Player not found: {arguments[0]}", clientid)
 
 
 @registry.register(['hideid'], category='Manage')
@@ -324,7 +446,7 @@ def slow_motion(arguments: list[str], clientid: int, accountid: str) -> None:
         activity.globalsnode.slow_motion = not activity.globalsnode.slow_motion
 
 
-@registry.register(['nv', 'night'], category='Manage')
+@registry.register(['nv'], category='Manage')
 def nv(arguments: list[str], clientid: int, accountid: str) -> None:
     """Toggle night vision mode tint."""
     def is_close(a, b, tol=1e-5):
@@ -345,7 +467,7 @@ def nv(arguments: list[str], clientid: int, accountid: str) -> None:
         pass
 
 
-@registry.register(['dv', 'day'], category='Manage')
+@registry.register(['dv'], category='Manage')
 def dv(arguments: list[str], clientid: int, accountid: str) -> None:
     """Set daylight mode tint."""
     try:
@@ -479,18 +601,23 @@ def customtag(arguments: list[str], clientid: int, accountid: str) -> None:
             pass
 
 
-@registry.register(['customeffect', 'effect'], category='Manage')
+@registry.register(['customeffect', 'addeffect', 'gifteffect'], category='Manage')
 def customeffect(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set custom effect for a player."""
+    """Gift a custom effect permanently to a player."""
     if len(arguments) >= 2:
         try:
-            effect = arguments[0]
+            effect = arguments[0].lower()
             target_cl_id = int(arguments[1])
             session = bs.get_foreground_host_session()
             if session:
                 for player in session.sessionplayers:
                     if player.inputdevice.client_id == target_cl_id:
-                        pdata.set_effect(effect, player.get_v1_account_id())
+                        target_aid = player.get_v1_account_id()
+                        if target_aid:
+                            from spazmod.effects_inventory import add_admin_effect
+                            add_admin_effect(target_aid, effect)
+                            pdata.set_effect(effect, target_aid)
+                            bs.chatmessage(f"Gifted permanent effect '{effect}' to {player.getname(False)}")
         except (ValueError, TypeError):
             pass
 
@@ -516,11 +643,17 @@ def removeeffect(arguments: list[str], clientid: int, accountid: str) -> None:
     if arguments:
         try:
             target_cl_id = int(arguments[0])
+            effect = arguments[1].lower() if len(arguments) > 1 else None
             session = bs.get_foreground_host_session()
             if session:
                 for player in session.sessionplayers:
                     if player.inputdevice.client_id == target_cl_id:
-                        pdata.remove_effect(player.get_v1_account_id())
+                        target_aid = player.get_v1_account_id()
+                        if target_aid:
+                            from spazmod.effects_inventory import remove_effect
+                            remove_effect(target_aid, effect)
+                            pdata.remove_effect(target_aid)
+                            bs.chatmessage(f"Removed effect(s) from {player.getname(False)}")
         except (ValueError, TypeError):
             pass
 

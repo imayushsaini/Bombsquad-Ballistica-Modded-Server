@@ -615,6 +615,34 @@ def remove_tag(account_id: str) -> None:
         save_custom_async(custom)
 
 
+def set_kick_vote_immune(account_id: str, immune: bool = True) -> None:
+    """Sets or revokes kick vote immunity perk for a player."""
+    if not account_id:
+        return
+    custom = get_custom()
+    if "kick_vote_immune" not in custom or not isinstance(custom["kick_vote_immune"], dict):
+        custom["kick_vote_immune"] = {}
+    if immune:
+        custom["kick_vote_immune"][account_id] = True
+    else:
+        custom["kick_vote_immune"].pop(account_id, None)
+    CacheData.custom = custom
+    save_custom_async(custom)
+
+
+def is_kick_vote_immune(account_id: str) -> bool:
+    """Checks if a player has kick vote immunity."""
+    if not account_id:
+        return False
+    custom = get_custom()
+    immune_dict = custom.get("kick_vote_immune", {})
+    if isinstance(immune_dict, dict):
+        return bool(immune_dict.get(account_id))
+    elif isinstance(immune_dict, (list, set)):
+        return account_id in immune_dict
+    return False
+
+
 def commit_c():
     """Commits the custom data into the custom.json."""
     # This function is now a no-op as saving is handled by dump_cache

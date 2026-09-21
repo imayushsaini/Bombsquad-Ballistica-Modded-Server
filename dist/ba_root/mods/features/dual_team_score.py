@@ -28,7 +28,9 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     def on_begin(self) -> None:
         babase.set_analytics_screen('Teams Score Screen')
         super().on_begin()
+        self._reveal_scores()
 
+    def _reveal_scores(self) -> None:
         height = 130
         active_team_count = len(self.teams)
         vval = (height * active_team_count) / 2 - height / 2
@@ -87,9 +89,12 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
     def _show_team_name(self, pos_v: float, team: bs.SessionTeam,
                         kill_delay: float, shiftdelay: float) -> None:
         del kill_delay  # Unused arg.
+        team_name_str = (
+            team.name.evaluate() if hasattr(team.name, 'evaluate') else str(team.name)
+        )
         if len(self.teams) != 2:
             ZoomText(
-                babase.Lstr(value='${A}:', subs=[('${A}', team.name)]),
+                babase.Lstr(value='${A}:', subs=[('${A}', team_name_str)]),
                 position=(100, pos_v),
                 shiftposition=(-150, pos_v),
                 shiftdelay=shiftdelay,
@@ -101,7 +106,7 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
                 jitter=1.0,
             ).autoretain()
         else:
-            ZoomText(babase.Lstr(value='${A}', subs=[('${A}', team.name)]),
+            ZoomText(team.name,
                      position=(-250, 260) if pos_v == 65 else (250, 260),
                      shiftposition=(-250, 260) if pos_v == 65 else (250, 260),
                      shiftdelay=shiftdelay,
@@ -182,6 +187,9 @@ class TeamVictoryScoreScreenActivity(MultiTeamScoreScreenActivity):
 #                                 score board
 # ====================================================================================================
 
+_orig_show_player_scores = MultiTeamScoreScreenActivity.show_player_scores
+
+
 def show_player_scores(self,
                        delay: float = 2.5,
                        results: bs.GameResults | None = None,
@@ -192,14 +200,26 @@ def show_player_scores(self,
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
 
+    is_free_for_all = isinstance(self.session, bs.FreeForAllSession)
+    is_two_team = (not is_free_for_all) and len(self.session.sessionteams) == 2
+
+    # Dual team score layout only applies to 2-team sessions (dual teams).
+    # In FFA sessions or sessions with other team counts, use the original layout.
+    if not is_two_team:
+        _orig_show_player_scores(
+            self,
+            delay=delay,
+            results=results,
+            scale=scale,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
+        return
+
     ts_v_offset = 150.0 + y_offset
     ts_h_offs = 80.0 + x_offset
     tdelay = delay
     spacing = 40
-
-    is_free_for_all = isinstance(self.session, bs.FreeForAllSession)
-
-    is_two_team = True if len(self.session.sessionteams) == 2 else False
 
     def _get_prec_score(p_rec: bs.PlayerRecord) -> int | None:
         if is_free_for_all and results is not None:
@@ -347,14 +367,15 @@ def show_player_scores(self,
              transition_delay=(tdelay + delay2) if team_id == 1 else (
                      tdelay_team0 + delay2)).autoretain()
 
+    team0 = self.session.sessionteams[0]
     for playerrec in player_records:
-        if is_two_team and playerrec.team.id == 0:
+        team_is_0 = (playerrec.team is team0 or playerrec.team.id == team0.id)
+        if team_is_0:
             tdelay_team0 += 0.05
             voffs_team0 -= spacing
             x_image = 617
             x_text = -595
             y = ts_v_offset + (voffs_team0 + 15.0) * scale
-
         else:
             tdelay += 0.05
             voffs -= spacing
@@ -362,12 +383,14 @@ def show_player_scores(self,
             x_text = 10.0
             y = ts_v_offset + (voffs + 15.0) * scale
 
+        p_delay = tdelay_team0 if team_is_0 else tdelay
+
         Image(playerrec.get_icon(),
               position=(ts_h_offs - x_image * scale,
                         y),
               scale=(30.0 * scale, 30.0 * scale),
               transition=Image.Transition.IN_LEFT,
-              transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
+              transition_delay=p_delay).autoretain()
         Text(babase.Lstr(value=playerrec.getname(full=True)),
              maxwidth=160,
              scale=0.75 * scale,
@@ -377,9 +400,9 @@ def show_player_scores(self,
              v_align=Text.VAlign.CENTER,
              color=babase.safecolor(playerrec.team.color + (1,)),
              transition=Text.Transition.IN_LEFT,
-             transition_delay=tdelay if playerrec.team.id == 1 else tdelay_team0).autoretain()
+             transition_delay=p_delay).autoretain()
 
-        if is_two_team and playerrec.team.id == 0:
+        if team_is_0:
             _scoretxt(str(playerrec.accum_kill_count), -400,
                       playerrec.accum_kill_count == topkillcount, 0.1,
                       team_id=0)
@@ -406,6 +429,9 @@ class DrawScoreScreenActivity(MultiTeamScoreScreenActivity):
     def on_begin(self) -> None:
         babase.set_analytics_screen('Draw Score Screen')
         super().on_begin()
+        self._reveal_scores()
+
+    def _reveal_scores(self) -> None:
         ZoomText(babase.Lstr(resource='drawText'),
                  position=(0, 200),
                  maxwidth=400,
