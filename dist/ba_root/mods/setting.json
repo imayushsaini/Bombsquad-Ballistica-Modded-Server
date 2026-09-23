@@ -11,7 +11,9 @@
     "msg": [
       "click stats button to join discord",
       "watch hey smoothy youtube channel",
-      "downlaod new mods from discord"
+      "visit https://bombsquad-community.web.app",
+      "try command /hud to remove unwanted text on map",
+      "try command /shop to buy effects and tags"
     ]
   },
   "ShowKickVoteStarterName": true,
@@ -164,7 +166,7 @@
   "sameCharacterForTeam": false,
   "statsResetAfterDays": 31,
   "textonmap": {
-    "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7.51",
+    "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.8.0",
     "center highlights": {
       "color": [
         1,
@@ -175,7 +177,9 @@
         "type end to start end vote",
         "start msg with prefix .(dot) to send in game popup msg",
         "start msg with prefix ,(comma) to send msg to teammates",
-        "BombSquad Community Server - BCS"
+        "BombSquad Community Server - BCS",
+        "Use command /hud to remove unwanted text on map",
+        "Use command /shop to buy effects and tags"
       ],
       "randomColor": true
     },
@@ -185,11 +189,11 @@
   "warnMsg": "WARNING !!!",
   "whitelist": false,
   "mfa" : {
-    "enable": true,
+    "enable": false,
     "enforce_for_all_players": false,
     "enforce_for_accounts": [ "HeySmoothy", "test" ]
   },
-  "accountApiToken": "your-api-token-here",
+  "accountApiToken": "get you own api token from ballistica.net",
   "useSqlite": true,
   "instant_replay": {
     "enable": true,
