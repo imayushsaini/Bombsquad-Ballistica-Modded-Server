@@ -30,12 +30,14 @@ def update_name():
 
 
 def main(spaz, node, player):
-    if _setting['enablehptag']:
+    if _setting.get('enablehptag', True):
         tag.addhp(node, spaz)
-    if _setting['enabletags']:
+    if _setting.get('enabletags', True):
         tag.addtag(node, player)
-    if _setting['enablerank']:
+    if _setting.get('enablerank', True):
         tag.addrank(node, player)
+    if _setting.get('enableping', True):
+        tag.addping(node, player)
     if _setting["playermod"]['default_boxing_gloves']:
         spaz.equip_boxing_gloves()
     if _setting['playermod']['default_shield']:

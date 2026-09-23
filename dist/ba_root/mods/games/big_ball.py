@@ -1,8 +1,6 @@
 # Made by MythB
-# Ported by: MysteriousBoi
 
-
-# ba_meta require api 8
+# ba_meta require api 9
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -25,8 +23,6 @@ class PuckDiedMessage:
 
 
 # goalpost
-
-
 class FlagKale(bs.Actor):
     def __init__(self, position=(0, 2.5, 0), color=(1, 1, 1)):
         super().__init__()
@@ -305,8 +301,8 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
         if self._score_to_win == 1:
-            return 'score a goal'
-        return 'score ${ARG1} goals', self._score_to_win
+            return 'Score a goal'
+        return 'Score ${ARG1} goals', self._score_to_win
 
     def on_begin(self) -> None:
         super().on_begin()
@@ -437,7 +433,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                 if self._grant_power:
                     for player in team.players:
                         try:
-                            player.actor.node.handlemessage(
+                            player.node.handlemessage(
                                 bs.PowerupMessage('punch'))
                         except:
                             pass
@@ -463,7 +459,7 @@ class BBGame(bs.TeamGameActivity[Player, Team]):
                 if self._grant_power:
                     for player in team.players:
                         try:
-                            player.actor.node.handlemessage(
+                            player.node.handlemessage(
                                 bs.PowerupMessage('shield'))
                         except:
                             pass

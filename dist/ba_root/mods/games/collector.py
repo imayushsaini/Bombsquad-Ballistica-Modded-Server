@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 '''
@@ -128,7 +128,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
     @classmethod
     def get_available_settings(
         cls, sessiontype: type[bs.Session]
-    ) -> list[babase.Setting]:
+    ) -> list[bs.Setting]:
         settings = [
             bs.IntSetting(
                 capsules_to_win,
@@ -223,12 +223,12 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                 (
                     'call',
                     'at_connect',
-                    babase.Call(self._handle_player_flag_region_collide, True),
+                    babase.CallPartial(self._handle_player_flag_region_collide, True),
                 ),
                 (
                     'call',
                     'at_disconnect',
-                    babase.Call(self._handle_player_flag_region_collide, False),
+                    babase.CallPartial(self._handle_player_flag_region_collide, False),
                 ),
             ),
         )

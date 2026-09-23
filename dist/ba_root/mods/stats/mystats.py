@@ -3,7 +3,6 @@ import json
 import os
 import shutil
 import threading
-import urllib.request
 
 import _babase
 import setting
@@ -12,8 +11,6 @@ damage_data = {}
 
 ranks = []
 top3Name = []
-
-our_settings = setting.get_settings_data()
 
 base_path = os.path.join(_babase.env()['python_directory_user'],
                          "stats" + os.sep)
@@ -40,29 +37,32 @@ seasonStartDate = None
 
 def get_all_stats():
     global seasonStartDate
+    our_settings = setting.get_settings_data()
     if os.path.exists(statsfile):
-        with open(statsfile, 'r', encoding='utf8') as f:
-            try:
+        try:
+            with open(statsfile, 'r', encoding='utf8') as f:
                 jsonData = json.loads(f.read())
-            except:
-                f = open(statsfile + ".backup", encoding='utf-8')
-                jsonData = json.load(f)
+        except Exception:
             try:
-                stats = jsonData["stats"]
-                seasonStartDate = datetime.datetime.strptime(
-                    jsonData["startDate"], "%d-%m-%Y")
-                _babase.season_ends_in_days = our_settings[
-                                                  "statsResetAfterDays"] - (
-                                                  datetime.datetime.now() - seasonStartDate).days
-                if (datetime.datetime.now() - seasonStartDate).days >= \
-                    our_settings["statsResetAfterDays"]:
-                    backupStatsFile()
-                    seasonStartDate = datetime.datetime.now()
-                    return statsDefault
-                return stats
-            except OSError as e:
-                print(e)
-                return jsonData
+                with open(statsfile + ".backup", 'r', encoding='utf-8') as f:
+                    jsonData = json.load(f)
+            except Exception:
+                return {}
+        try:
+            stats = jsonData["stats"]
+            seasonStartDate = datetime.datetime.strptime(
+                jsonData["startDate"], "%d-%m-%Y")
+            _babase.season_ends_in_days = our_settings["statsResetAfterDays"] - (
+                datetime.datetime.now() - seasonStartDate).days
+            if (datetime.datetime.now() - seasonStartDate).days >= \
+                our_settings["statsResetAfterDays"]:
+                backupStatsFile()
+                seasonStartDate = datetime.datetime.now()
+                return statsDefault
+            return stats
+        except OSError as e:
+            print(e)
+            return jsonData
     else:
         return {}
 
@@ -75,14 +75,16 @@ def backupStatsFile():
 
 def dump_stats(s: dict):
     global seasonStartDate
-    if seasonStartDate == None:
+    if seasonStartDate is None:
         seasonStartDate = datetime.datetime.now()
     s = {"startDate": seasonStartDate.strftime("%d-%m-%Y"), "stats": s}
     if os.path.exists(statsfile):
         shutil.copyfile(statsfile, statsfile + ".backup")
-        with open(statsfile, 'w', encoding='utf8') as f:
-            f.write(json.dumps(s, indent=4, ensure_ascii=False))
-            f.close()
+        try:
+            with open(statsfile, 'w', encoding='utf8') as f:
+                f.write(json.dumps(s, indent=4, ensure_ascii=False))
+        except Exception as e:
+            print(f"Error dumping stats: {e}")
     else:
         print('Stats file not found!')
 
@@ -100,73 +102,74 @@ def get_cached_stats():
 
 
 def get_sorted_stats(stats):
-    entries = [(a['scores'], a['kills'], a['deaths'], a['games'],
-                a['name'], a['aid']) for a in stats.values()]
+    entries = [(a.get('scores', 0), a.get('kills', 0), a.get('deaths', 0), a.get('games', 0),
+                a.get('name', 'default'), a.get('aid', '')) for a in stats.values()]
     # this gives us a list of kills/names sorted high-to-low
     entries.sort(key=lambda x: x[1] or 0, reverse=True)
     return entries
 
 
-def refreshStats():
-    global cached_stats
-    # lastly, write a pretty html version.
-    # our stats url could point at something like this...
-    pStats = get_all_stats()
+def refreshStats(stats_dict: dict | None = None):
+    global cached_stats, ranks, top3Name
+
+    if stats_dict is None:
+        pStats = get_all_stats()
+    else:
+        pStats = stats_dict
+
     cached_stats = pStats
     entries = get_sorted_stats(pStats)
-    rank = 0
+    
+    # Configure the range for toppers and leaderboard
+    our_settings = setting.get_settings_data()
+    leaderboard_range = our_settings.get("leaderboard", {}).get("range", 3)
+    
     toppersIDs = []
     _ranks = []
-    for entry in entries:
-        if True:
-            rank += 1
-            scores = str(entry[0])
-            kills = str(entry[1])
-            deaths = str(entry[2])
-            games = str(entry[3])
-            name = str(entry[4])
-            aid = str(entry[5])
-            if rank < 6:
-                toppersIDs.append(aid)
-            # The below kd and avg_score will not be added to website's html document, it will be only added in stats.json
+    
+    for rank, entry in enumerate(entries, start=1):
+        scores, kills, deaths, games, name, aid = entry
+        aid_str = str(aid)
+        _ranks.append(aid_str)
+        
+        if rank <= leaderboard_range:
+            toppersIDs.append(aid_str)
+          
+        player_stats = pStats.get(aid_str)
+        if player_stats:
+            player_stats["rank"] = rank
+            player_stats["scores"] = int(scores)
+            player_stats["games"] = int(games)
+            player_stats["kills"] = int(kills)
+            player_stats["deaths"] = int(deaths)
+            
             try:
-                kd = str(float(kills) / float(deaths))
-                kd_int = kd.split('.')[0]
-                kd_dec = kd.split('.')[1]
-                p_kd = kd_int + '.' + kd_dec[:3]
+                kd = round(float(kills) / float(deaths), 3) if float(deaths) > 0 else float(kills)
             except Exception:
-                p_kd = "0"
+                kd = 0.0
+                
             try:
-                avg_score = str(float(scores) / float(games))
-                avg_score_int = avg_score.split('.')[0]
-                avg_score_dec = avg_score.split('.')[1]
-                p_avg_score = avg_score_int + '.' + avg_score_dec[:3]
+                avg_score = round(float(scores) / float(games), 3) if float(games) > 0 else 0.0
             except Exception:
-                p_avg_score = "0"
-            if damage_data and aid in damage_data:
-                dmg = damage_data[aid]
-                dmg = str(str(dmg).split('.')[
-                              0] + '.' + str(dmg).split('.')[1][:3])
-            else:
-                dmg = 0
+                avg_score = 0.0
+                
+            dmg = 0.0
+            if damage_data and aid_str in damage_data:
+                try:
+                    dmg = round(float(damage_data[aid_str]), 3)
+                except Exception:
+                    pass
 
-            _ranks.append(aid)
+            player_stats["total_damage"] = round(player_stats.get("total_damage", 0.0) + dmg, 3)
+            player_stats["kd"] = kd
+            player_stats["avg_score"] = avg_score
 
-            pStats[str(aid)]["rank"] = int(rank)
-            pStats[str(aid)]["scores"] = int(scores)
-            # not working properly
-            pStats[str(aid)]["total_damage"] += float(dmg)
-            pStats[str(aid)]["games"] = int(games)
-            pStats[str(aid)]["kills"] = int(kills)
-            pStats[str(aid)]["deaths"] = int(deaths)
-            pStats[str(aid)]["kd"] = float(p_kd)
-            pStats[str(aid)]["avg_score"] = float(p_avg_score)
-
-    global ranks
     ranks = _ranks
+    
+    # Extract top names directly from sorted local entries list without API calls
+    top3Name = [entry[4] for entry in entries[:leaderboard_range]]
 
     dump_stats(pStats)
-    updateTop3Names(toppersIDs[0:3])
 
     from playersdata import pdata
     pdata.update_toppers(toppersIDs)
@@ -178,122 +181,91 @@ def update(score_set):
     and passes them to a background thread to process and
     store.
     """
-    # look at score-set entries to tally per-account kills for this round
-
     account_kills = {}
     account_deaths = {}
     account_scores = {}
+    account_names = {}
 
     for p_entry in score_set.get_records().values():
-        account_id = p_entry.player.get_v1_account_id()
-        if account_id is not None:
-            account_kills.setdefault(account_id, 0)  # make sure exists
-            account_kills[account_id] += p_entry.accum_kill_count
-            account_deaths.setdefault(account_id, 0)  # make sure exists
-            account_deaths[account_id] += p_entry.accum_killed_count
-            account_scores.setdefault(account_id, 0)  # make sure exists
-            account_scores[account_id] += p_entry.accumscore
-    # Ok; now we've got a dict of account-ids and kills.
-    # Now lets kick off a background thread to load existing scores
-    # from disk, do display-string lookups for accounts that need them,
-    # and write everything back to disk (along with a pretty html version)
-    # We use a background thread so our server doesn't hitch while doing this.
+        try:
+            player = p_entry.player
+            if player is None:
+                continue
+            account_id = player.get_account_id()
+            if account_id is None:
+                continue
+            name = player.getname(True)
+        except Exception:
+            continue
+
+        account_kills.setdefault(account_id, 0)
+        account_kills[account_id] += p_entry.accum_kill_count
+        account_deaths.setdefault(account_id, 0)
+        account_deaths[account_id] += p_entry.accum_killed_count
+        account_scores.setdefault(account_id, 0)
+        account_scores[account_id] += p_entry.accumscore
+        account_names[account_id] = name
 
     if account_scores:
-        UpdateThread(account_kills, account_deaths, account_scores).start()
+        UpdateThread(account_kills, account_deaths, account_scores, account_names).start()
 
 
 class UpdateThread(threading.Thread):
-    def __init__(self, account_kills, account_deaths, account_scores):
-        threading.Thread.__init__(self)
+    def __init__(self, account_kills, account_deaths, account_scores, account_names):
+        super().__init__()
         self._account_kills = account_kills
         self.account_deaths = account_deaths
         self.account_scores = account_scores
+        self.account_names = account_names
 
     def run(self):
-        # pull our existing stats from disk
-        import datetime
         try:
             stats = get_all_stats()
-        except:
+        except Exception:
             stats = {}
 
-        # now add this batch of kills to our persistent stats
+        now_str = str(datetime.datetime.now())
         for account_id, kill_count in self._account_kills.items():
-            # add a new entry for any accounts that don't have one
             if account_id not in stats:
-                # also lets ask the master-server for their account-display-str.
-                # (we only do this when first creating the entry to save time,
-                # though it may be smart to refresh it periodically since
-                # it may change)
+                stats[account_id] = {
+                    'rank': 0,
+                    'name': "default name",
+                    'scores': 0,
+                    'total_damage': 0.0,
+                    'kills': 0,
+                    'deaths': 0,
+                    'games': 0,
+                    'kd': 0.0,
+                    'avg_score': 0.0,
+                    'last_seen': now_str,
+                    'aid': str(account_id)
+                }
 
-                stats[account_id] = {'rank': 0,
-                                     'name': "default name",
-                                     'scores': 0,
-                                     'total_damage': 0,
-                                     'kills': 0,
-                                     'deaths': 0,
-                                     'games': 0,
-                                     'kd': 0,
-                                     'avg_score': 0,
-                                     'last_seen': str(datetime.datetime.now()),
-                                     'aid': str(account_id)}
-
-            # Temporary codes to change 'name_html' to 'name'
-            # if 'name_html' in stats[account_id]:
-            #     stats[account_id].pop('name_html')
-            #     stats[account_id]['name'] = 'default'
-            url = "http://bombsquadgame.com/bsAccountInfo?buildNumber=20258&accountID=" + account_id
-            data = urllib.request.urlopen(url)
-            if data is not None:
-                try:
-                    name = json.loads(data.read())["profileDisplayString"]
-                except ValueError:
-                    stats[account_id]['name'] = "???"
-                else:
-                    stats[account_id]['name'] = name
-
-            # now increment their kills whether they were already there or not
+            if account_id in self.account_names:
+                stats[account_id]['name'] = self.account_names[account_id]
 
             stats[account_id]['kills'] += kill_count
-            stats[account_id]['deaths'] += self.account_deaths[account_id]
-            stats[account_id]['scores'] += self.account_scores[account_id]
-            stats[account_id]['last_seen'] = str(datetime.datetime.now())
-            # also incrementing the games played and adding the id
+            stats[account_id]['deaths'] += self.account_deaths.get(account_id, 0)
+            stats[account_id]['scores'] += self.account_scores.get(account_id, 0)
+            stats[account_id]['last_seen'] = now_str
             stats[account_id]['games'] += 1
             stats[account_id]['aid'] = str(account_id)
-        # dump our stats back to disk
-        tempppp = None
-        from datetime import datetime
-        dump_stats(stats)
-        # aaand that's it!  There IS no step 27!
-        now = datetime.now()
-        update_time = now.strftime("%S:%M:%H - %d %b %y")
-        # print(f"Added {str(len(self._account_kills))} account's stats entries. || {str(update_time)}")
-        refreshStats()
+
+            # Award tickets for playing and kills
+            try:
+                from shop import add_tickets
+                tickets_to_award = 10 + kill_count * 2
+                add_tickets(account_id, tickets_to_award)
+            except Exception as e:
+                print(f"Error awarding tickets to {account_id}: {e}")
+
+        refreshStats(stats)
 
 
 def getRank(acc_id):
     global ranks
-    if ranks == []:
+    if not ranks:
         refreshStats()
     if acc_id in ranks:
         return ranks.index(acc_id) + 1
-
-
-def updateTop3Names(ids):
-    global top3Name
-    names = []
-    for id in ids:
-        url = "http://bombsquadgame.com/bsAccountInfo?buildNumber=20258&accountID=" + id
-        data = urllib.request.urlopen(url)
-        if data is not None:
-            try:
-                name = json.loads(data.read())["profileDisplayString"]
-                if (not name):
-                    raise ValueError
-            except ValueError:
-                names.append("???")
-            else:
-                names.append(name)
-    top3Name = names
+    return None

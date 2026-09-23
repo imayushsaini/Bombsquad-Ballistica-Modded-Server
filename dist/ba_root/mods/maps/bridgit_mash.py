@@ -3,13 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import babase
-import bauiv1 as bui
 import bascenev1 as bs
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 import random
 if TYPE_CHECKING:
-    from typing import Any, List, Dict
+    from typing import Any
 
 
 class mapdefs:
@@ -131,7 +130,6 @@ class BridgitMash(bs.Map):
         self.create_ramp(0, 3.0)
         self.create_ramp(10.9, 3.2)
         self.ground()
-        # _babase.prop_axis(1, 0, 0)
 
     def ground(self):
         shared = SharedObjects.get()
@@ -151,10 +149,6 @@ class BridgitMash(bs.Map):
         )
 
     def create_ramp(self, loc, z_marg):
-        # try:
-        #     _babase.prop_axis(0, 0, 0)
-        # except:
-        #     pass
         shared = SharedObjects.get()
         self._real_wall_material = bs.Material()
 
@@ -172,13 +166,6 @@ class BridgitMash(bs.Map):
                      ('modify_part_collision', 'collide', False))
         )
         spaz_collide_mat = bs.Material()
-        # spaz_collide_mat.add_actions(
-        #     conditions=('they_have_material',shared.player_material),
-        #     actions=(
-        #         ('modify_part_collision', 'collide', True),
-        #         ( 'call','at_connect',babase.Call(self._handle_player_pad_collide,real )),
-        #     ),
-        #     )
         pos = (-5.3 + loc, 0.7, 1.1+z_marg)
         self.ud_1_r = bs.newnode('region', attrs={'position': pos, 'scale': (
             2, 1, 2), 'type': 'box', 'materials': [shared.footing_material, spaz_collide_mat]})
@@ -233,4 +220,4 @@ class BridgitMash(bs.Map):
             player.shatter(True)
 
 
-bs._map.register_map(BridgitMash)
+bs.register_map(BridgitMash)

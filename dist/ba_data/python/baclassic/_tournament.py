@@ -2,8 +2,6 @@
 #
 """Functionality related to classic tournament play."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 from bacommon.classic import ClassicChestAppearance
@@ -24,7 +22,6 @@ def get_tournament_prize_strings(
     entry: dict[str, Any], include_tickets: bool
 ) -> list[str]:
     """Given a tournament entry, return strings for its prize levels."""
-    # pylint: disable=too-many-locals
     from bascenev1 import get_trophy_string
 
     range1 = entry.get('prizeRange1')
@@ -99,8 +96,8 @@ def set_tournament_prize_chest_image(
         edit=image,
         opacity=1.0,
         color=chestdisplayinfo.color,
-        texture=bauiv1.gettexture(chestdisplayinfo.texclosed),
-        tint_texture=bauiv1.gettexture(chestdisplayinfo.texclosedtint),
+        texture=bauiv1.aptextureget(chestdisplayinfo.texclosed),
+        tint_texture=bauiv1.aptextureget(chestdisplayinfo.texclosedtint),
         tint_color=chestdisplayinfo.tint,
         tint2_color=chestdisplayinfo.tint2,
     )
@@ -138,8 +135,8 @@ def create_in_game_tournament_prize_image(
         # Provide magical extended dict version of texture that Image
         # actor supports.
         texture={
-            'texture': bascenev1.gettexture(chestdisplayinfo.texclosed),
-            'tint_texture': bascenev1.gettexture(
+            'texture': bascenev1.aptextureget(chestdisplayinfo.texclosed),
+            'tint_texture': bascenev1.aptextureget(
                 chestdisplayinfo.texclosedtint
             ),
             'tint_color': chestdisplayinfo.tint,

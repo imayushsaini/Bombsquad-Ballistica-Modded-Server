@@ -18,7 +18,7 @@ def check_permissions(accountid):
     roles = pdata.get_roles()
     for role in roles:
         if accountid in roles[role]["ids"] and (
-            role == "bypass-warn" or role == "owner"):
+                role == "bypass-warn" or role == "owner"):
             return True
     return False
 
@@ -104,7 +104,7 @@ def addWarn(pb_id, client_id):
                                 transient=True, clients=[client_id])
             logger.log(pb_id + " | kicked for chat spam")
             bs.disconnect_client(client_id)
-            _thread.start_new_thread(servercheck.reportSpam, (pb_id,))
+            _thread.start_new_thread(servercheck.report_spam, (pb_id,))
 
         else:
             bs.broadcastmessage(

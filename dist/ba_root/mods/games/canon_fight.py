@@ -1,9 +1,8 @@
-# Porting to api 8 made easier by baport.(https://github.com/bombsquad-community/baport)
 # Released under the MIT License. See LICENSE for details.
 #
-"""DeathMatch game and support classes."""
+"""Cannon Fight game and support classes."""
 
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 from __future__ import annotations
 
@@ -24,9 +23,6 @@ if TYPE_CHECKING:
     from typing import Any, Union, Sequence, Optional
 
 
-
-
-
 # ba_meta export bascenev1.GameActivity
 class CanonFightGame(DeathMatchGame):
     """A game type based on acquiring kills."""
@@ -39,7 +35,7 @@ class CanonFightGame(DeathMatchGame):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+            cls, sessiontype: type[bs.Session]) -> list[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -111,7 +107,7 @@ class CanonFightGame(DeathMatchGame):
                               bs.MusicType.TO_THE_DEATH)
 
         self.wtindex=0
-        self.wttimer = bs.timer(5, babase.Call(self.wt_), repeat=True)
+        self.wttimer = bs.timer(5, babase.CallStrict(self.wt_), repeat=True)
         self.wthighlights=["Created by Mr.Smoothy","hey smoothy youtube","smoothy#multiverse"]
 
     def wt_(self):
@@ -155,10 +151,6 @@ class CanonFightGame(DeathMatchGame):
     def handlemessage(self, msg: Any) -> Any:
 
         if isinstance(msg, bs.PlayerDiedMessage):
-
-            # Augment standard behavior.
-            super().handlemessage(msg)
-
             player = msg.getplayer(Player)
             self.respawn_player(player)
 
@@ -264,7 +256,7 @@ class CanonFightGame(DeathMatchGame):
             self.fake_explosion( (-5.708631629943848, 7.437141418457031, -4.525400638580322))
 
             Bomb(position=(-6,7.5,-4),bomb_type=type,owner=owner,source_player=source_player,velocity=(19,y,z)).autoretain()
-            bs.timer(0.6,babase.Call(self.launch_bomb_byA,owner,type,source_player,count-1))
+            bs.timer(0.6,babase.CallPartial(self.launch_bomb_byA,owner,type,source_player,count-1))
         else:
             return
     def launch_bomb_byB(self,owner,type,source_player,count):
@@ -274,7 +266,7 @@ class CanonFightGame(DeathMatchGame):
             self.fake_explosion( (5.708631629943848, 7.437141418457031, -4.525400638580322))
 
             Bomb(position=(6,7.5,-4),bomb_type=type,owner=owner,source_player=source_player,velocity=(-19,y,z)).autoretain()
-            bs.timer(0.6,babase.Call(self.launch_bomb_byB,owner,type,source_player,count-1))
+            bs.timer(0.6,babase.CallPartial(self.launch_bomb_byB,owner,type,source_player,count-1))
         else:
             return
 
@@ -306,7 +298,7 @@ class CanonFightGame(DeathMatchGame):
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', True),
-                ('call','at_connect',babase.Call(self._handle_canon_load_A))
+                ('call','at_connect',babase.CallStrict(self._handle_canon_load_A))
             ),
             )
         self.ud_1_r=bs.newnode('region',attrs={'position': (-8.908631629943848, 7.337141418457031, -4.525400638580322),'scale': (2,1,1),'type': 'box','materials': [canon_load_mat ]})
@@ -368,7 +360,7 @@ class CanonFightGame(DeathMatchGame):
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', True),
-                ('call','at_connect',babase.Call(self._handle_canon_load_B))
+                ('call','at_connect',babase.CallStrict(self._handle_canon_load_B))
             ),
             )
         self.ud_1_r2=bs.newnode('region',attrs={'position': (8.908631629943848+0.81, 7.327141418457031, -4.525400638580322),'scale': (2,1,1),'type': 'box','materials': [canon_load_mat ]})

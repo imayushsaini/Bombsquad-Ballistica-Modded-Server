@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 # AutoStunt mod by - Mr.Smoothy x Rikko
 # https://discord.gg/ucyaesh
 # https://bombsquad.ga
@@ -553,7 +553,7 @@ def on_begin(self, *args, **kwargs) -> None:
     return original_on_begin(self, *args, **kwargs)
 
 
-# ba_meta export plugin
+# ba_meta export babase.Plugin
 class byHeySmoothy(babase.Plugin):
     def on_app_running(self):
         try:

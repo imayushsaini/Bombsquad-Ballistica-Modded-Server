@@ -4,24 +4,28 @@
     "BrodcastCommand": true
   },
   "HostDeviceName": "v1.4",
-  "HostName": "BCSv2",
+  "HostName": "\uE047 BCSv2 \uE047",
   "KickVoteMsgType": "chat",
   "ScoreScreenAnnouncement": {
     "enable": true,
     "msg": [
       "click stats button to join discord",
       "watch hey smoothy youtube channel",
-      "downlaod new mods from discord"
+      "visit https://bombsquad-community.web.app",
+      "try command /hud to remove unwanted text on map",
+      "try command /shop to buy effects and tags"
     ]
   },
   "ShowKickVoteStarterName": true,
   "StumbledScoreScreen": true,
+  "victory_score_screen": "stumbled",
+  "round_score_screen": "replay",
   "WarnCooldownMinutes": 30,
   "afk_remover": {
     "enable": true,
-    "ingame_idle_time_in_secs": 60,
+    "ingame_idle_time_in_secs": 260,
     "kick_idle_from_lobby": true,
-    "lobby_idle_time_in_secs": 10
+    "lobby_idle_time_in_secs": 140
   },
   "afterWarnKickMsg": "Enough warnings, Goodbye have a nice day :)",
   "allowInGameChat": true,
@@ -121,6 +125,9 @@
   "enableTagAnimation": true,
   "enableTop5effects": true,
   "enableeffects": true,
+  "max_equipped_effects": 3,
+  "rank_effect_duration_days": 3,
+  "shop_effect_duration_days": 6,
   "enablehptag": true,
   "enablerank": true,
   "enablestats": true,
@@ -128,7 +135,8 @@
   "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
   "leaderboard": {
     "barsBehindName": true,
-    "enable": true
+    "enable": true,
+    "range": 3
   },
   "maxAccountPerIP": 3,
   "maxPlayersPerDevice": 2,
@@ -158,7 +166,7 @@
   "sameCharacterForTeam": false,
   "statsResetAfterDays": 31,
   "textonmap": {
-    "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.7.51",
+    "bottom left watermark": "Owner : <owner-name> \nEditor : <bablu>\nScripts : BCS1.8.0",
     "center highlights": {
       "color": [
         1,
@@ -169,7 +177,9 @@
         "type end to start end vote",
         "start msg with prefix .(dot) to send in game popup msg",
         "start msg with prefix ,(comma) to send msg to teammates",
-        "BombSquad Community Server - BCS"
+        "BombSquad Community Server - BCS",
+        "Use command /hud to remove unwanted text on map",
+        "Use command /shop to buy effects and tags"
       ],
       "randomColor": true
     },
@@ -179,8 +189,19 @@
   "warnMsg": "WARNING !!!",
   "whitelist": false,
   "mfa" : {
-    "enable": true,
+    "enable": false,
     "enforce_for_all_players": false,
     "enforce_for_accounts": [ "HeySmoothy", "test" ]
+  },
+  "accountApiToken": "get you own api token from ballistica.net",
+  "useSqlite": true,
+  "instant_replay": {
+    "enable": true,
+    "duration": 3,
+    "playback_speed": 0.5,
+    "zoom_on_player": true,
+    "zoom_target": "auto",
+    "zoom_box_size": 4.0,
+    "background_opacity": 0.4
   }
 }

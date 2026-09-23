@@ -1,4 +1,3 @@
-# Ported to api 8 by brostos using baport.(https://github.com/bombsquad-community/baport)
 # BetterElimination
 # Made by your friend: @[Just] Freak#4999
 
@@ -7,11 +6,12 @@
 
 """Defines a very-customisable Elimination mini-game"""
 
-# ba_meta require api 8
+# ba_meta require api 9
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+import logging
 
 import babase
 import bauiv1 as bui
@@ -20,8 +20,7 @@ from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Dict, Type, List, Sequence, Optional,
-                        Union)
+    from typing import Any, Tuple, Type, List, Sequence, Optional, Union
 
 
 class Icon(bs.Actor):
@@ -187,7 +186,7 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+            cls, sessiontype: Type[bs.Session]) -> List[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Life\'s Per Player',
@@ -590,7 +589,7 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
 
             player.lives -= 1
             if player.lives < 0:
-                babase.print_error(
+                logging.error(
                     "Got lives < 0 in Elim; this shouldn't happen. solo:" +
                     str(self._solo_mode))
                 player.lives = 0

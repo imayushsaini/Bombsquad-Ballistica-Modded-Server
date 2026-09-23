@@ -1,19 +1,14 @@
-# Porting to api 8 made easier by baport.(https://github.com/bombsquad-community/baport)
 # Released under the MIT License. See LICENSE for details.
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import babase
-import bauiv1 as bui
 import bascenev1 as bs
-import _babase
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.powerupbox import PowerupBoxFactory
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor import playerspaz as ps
 from bascenev1lib import maps
@@ -558,9 +553,6 @@ class Cuadro(bs.Actor):
                                                  'materials': [self.collision,
                                                                shared.footing_material]})
 
-        # self.shield = bs.newnode('shield', attrs={'radius': 1.0, 'color': (0,10,0)})
-        # self.region.connectattr('position', self.shield, 'position')
-
         position = (position[0], position[1], position[2]+0.09)
         pos = list(position)
         oldpos = list(position)
@@ -770,5 +762,5 @@ class BasketMapV2(maps.HockeyStadium):
         ]
 
 
-bs._map.register_map(BasketMap)
-bs._map.register_map(BasketMapV2)
+bs.register_map(BasketMap)
+bs.register_map(BasketMapV2)

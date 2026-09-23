@@ -2,16 +2,70 @@
 #
 """Functionality related to player-controlled Spazzes."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, overload, override
 
 import bascenev1 as bs
+from bascenev1 import builtinassets, classicassets
 
-from bascenev1lib.actor.spaz import Spaz
+from bascenev1lib.actor.spaz import Spaz, PickupMessage
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Literal
+
+
+# Minimum seconds between haptic events of the same kind for one player.
+#
+# This is a bandwidth-and-game-feel knob and belongs here rather than in
+# the engine: one explosion resolves into a separate hit event per
+# victim, all attributed to the same attacker inside a single step. (The
+# engine has its own arbiter for the *perceptual* side, since haptic
+# hardware cannot mix overlapping effects.)
+#
+# Landing a hit is information -- it confirms an attack connected, tied
+# to a button just pressed -- so suppressing it reads as unresponsiveness
+# and each punch in a combo should still confirm. Taking a hit is an
+# alarm: it fires far more often in a melee and goes numb fast if it
+# never lets up. Death is zero on purpose; dying should never be the
+# event suppressed because you were punched a moment earlier.
+#
+# Keyed by the engine's event names, which are a Literal type -- so a
+# typo here is a type error rather than a silent no-op at runtime.
+_FEEDBACK_COOLDOWNS: dict[bs.FeedbackEvent, float] = {
+    'grab': 0.15,
+    'collect': 0.15,
+    'impact_dealt': 0.15,
+    'impact_received': 0.5,
+    'death': 0.0,
+}
+
+# Single attribute we stash per-player cooldown state under. Player
+# objects are per-activity and expire with it, so nothing accumulates.
+_FEEDBACK_TIMES_ATTR = '_ffb_times'
+
+
+def _send_player_feedback(
+    player: bs.Player | None, event: bs.FeedbackEvent
+) -> None:
+    """Send a haptic event to a player, rate-limited per event kind.
+
+    Magnitude and length come from the event itself, so there is
+    deliberately no way to pass them here -- keeping the feel tunable in
+    one place rather than drifting across call sites.
+    """
+    if player is None or not player.exists():
+        return
+    now = bs.time()
+    times: dict[bs.FeedbackEvent, float] | None = getattr(
+        player, _FEEDBACK_TIMES_ATTR, None
+    )
+    if times is None:
+        times = {}
+        setattr(player, _FEEDBACK_TIMES_ATTR, times)
+    last = times.get(event)
+    if last is not None and now - last < _FEEDBACK_COOLDOWNS[event]:
+        return
+    times[event] = now
+    player.send_feedback(event=event)
 
 
 class PlayerSpazHurtMessage:
@@ -65,6 +119,9 @@ class PlayerSpaz(Spaz):
         self.held_count = 0
         self.last_player_held_by: bs.Player | None = None
         self._player = player
+        self._turbo_filter_times: dict[str, int] = {}
+        self._turbo_filter_time_bucket = 0
+        self._turbo_filter_counts: dict[str, int] = {}
         self._drive_player_position()
 
     # Overloads to tell the type system our return type based on doraise val.
@@ -177,11 +234,90 @@ class PlayerSpaz(Spaz):
                 ' non-connected player'
             )
 
+    def _turbo_filter_add_press(self, source: str) -> None:
+        """
+        Can pass all button presses through here; if we see an obscene number
+        of them in a short time let's shame/pushish this guy for using turbo.
+        """
+        t_ms = int(bs.basetime() * 1000.0)
+        assert isinstance(t_ms, int)
+        t_bucket = int(t_ms / 1000)
+        if t_bucket == self._turbo_filter_time_bucket:
+            # Add only once per timestep (filter out buttons triggering
+            # multiple actions).
+            if t_ms != self._turbo_filter_times.get(source, 0):
+                self._turbo_filter_counts[source] = (
+                    self._turbo_filter_counts.get(source, 0) + 1
+                )
+                self._turbo_filter_times[source] = t_ms
+                # (uncomment to debug; prints what this count is at)
+                # bs.broadcastmessage( str(source) + " "
+                #                   + str(self._turbo_filter_counts[source]))
+                if self._turbo_filter_counts[source] == 15:
+                    # Knock 'em out.  That'll learn 'em.
+                    assert self.node
+                    self.node.handlemessage('knockout', 500.0)
+
+                    # Also issue periodic notices about who is turbo-ing.
+                    now = bs.apptime()
+                    assert bs.app.classic is not None
+                    if now > bs.app.classic.last_spaz_turbo_warn_time + 30.0:
+                        bs.app.classic.last_spaz_turbo_warn_time = now
+                        bs.broadcastmessage(
+                            classicassets.strings.game.turbo_warning(
+                                name=self.node.name
+                            ),
+                            color=(1, 0.5, 0),
+                        )
+                        builtinassets.audio.error.get().play()
+        else:
+            self._turbo_filter_times = {}
+            self._turbo_filter_time_bucket = t_bucket
+            self._turbo_filter_counts = {source: 1}
+
+    @override
+    def on_jump_press(self) -> None:
+        self._turbo_filter_add_press('jump')
+        return super().on_jump_press()
+
+    @override
+    def on_pickup_press(self) -> None:
+        self._turbo_filter_add_press('pickup')
+        return super().on_pickup_press()
+
+    @override
+    def on_hold_position_press(self) -> None:
+        self._turbo_filter_add_press('holdposition')
+        return super().on_hold_position_press()
+
+    @override
+    def on_punch_press(self) -> None:
+        self._turbo_filter_add_press('punch')
+        return super().on_punch_press()
+
+    @override
+    def on_bomb_press(self) -> None:
+        self._turbo_filter_add_press('bomb')
+        return super().on_bomb_press()
+
+    @override
+    def on_run(self, value: float) -> None:
+        # Filtering these events would be tough since its an analog
+        # value, but lets still pass full 0-to-1 presses along to
+        # the turbo filter to punish players if it looks like they're turbo-ing.
+        if self._last_run_value < 0.01 and value > 0.99:
+            self._turbo_filter_add_press('run')
+        return super().on_run(value)
+
+    @override
+    def on_fly_press(self) -> None:
+        self._turbo_filter_add_press('fly')
+        return super().on_fly_press()
+
     @override
     def handlemessage(self, msg: Any) -> Any:
         # FIXME: Tidy this up.
         # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
         # pylint: disable=too-many-nested-blocks
         assert not self.expired
 
@@ -206,6 +342,31 @@ class PlayerSpaz(Spaz):
                 self.last_player_attacked_by = picked_up_by
                 self.last_attacked_time = bs.time()
                 self.last_attacked_type = ('picked_up', 'default')
+        elif isinstance(msg, bs.PowerupMessage):
+            result = super().handlemessage(msg)  # Augment standard behavior.
+
+            # Note we can't key off the return value: Spaz accepts the
+            # message (so the box goes away) even when dead, in which case
+            # nothing was actually gained and there is nothing to confirm.
+            # Mirror its own guard instead.
+            if not self._dead and self.node:
+                _send_player_feedback(self._player, 'collect')
+            return result
+        elif isinstance(msg, PickupMessage):
+            result = super().handlemessage(msg)  # Augment standard behavior.
+
+            # Spaz returns True from this handler to mean *rejected* (no
+            # collision, an invincible target, already holding a flag);
+            # falling through to None is what says hold_node actually got
+            # set.
+            #
+            # Note this hooks PickupMessage rather than watching
+            # hold_node: whipping out a bomb reaches Spaz._pick_up()
+            # directly and never sends this message, so it stays silent
+            # here without needing to be special-cased.
+            if result is None and self.node and self.node.hold_node:
+                _send_player_feedback(self._player, 'grab')
+            return result
         elif isinstance(msg, bs.StandMessage):
             super().handlemessage(msg)  # Augment standard behavior.
 
@@ -273,6 +434,8 @@ class PlayerSpaz(Spaz):
                         )
                     )
 
+                    _send_player_feedback(player, 'death')
+
             super().handlemessage(msg)  # Augment standard behavior.
 
         # Keep track of the player who last hit us for point rewarding.
@@ -282,10 +445,16 @@ class PlayerSpaz(Spaz):
                 self.last_player_attacked_by = source_player
                 self.last_attacked_time = bs.time()
                 self.last_attacked_type = (msg.hit_type, msg.hit_subtype)
+
+                # Hit confirmation for whoever landed it.
+                _send_player_feedback(source_player, 'impact_dealt')
             super().handlemessage(msg)  # Augment standard behavior.
             activity = self._activity()
             if activity is not None and self._player.exists():
                 activity.handlemessage(PlayerSpazHurtMessage(self))
+
+                # And an alarm for whoever took it.
+                _send_player_feedback(self._player, 'impact_received')
         else:
             return super().handlemessage(msg)
         return None

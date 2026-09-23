@@ -1,21 +1,20 @@
-# ba_meta require api 8
+# ba_meta require api 9
 from __future__ import annotations
+import setting
+from bascenev1lib.actor.bomb import BombFactory
+from bascenev1lib.actor.spaz import *
+from bauiv1lib.confirm import ConfirmWindow
+from bascenev1lib.actor.popuptext import PopupText
+from bascenev1lib.mainmenu import (MainMenuActivity, MainMenuSession)
+from bauiv1lib.popup import (PopupWindow, PopupMenu)
+from bascenev1lib.actor.spazbot import SpazBot
+from bascenev1lib.actor import powerupbox as pupbox
+from bascenev1lib.actor import bomb
+from bauiv1lib.profile import browser
+import bauiv1 as bui
+import babase
 
 _sp_ = ('\n')
-
-import babase
-import bauiv1 as bui
-
-from bauiv1lib.profile import browser
-from bascenev1lib.actor import bomb
-from bascenev1lib.actor import powerupbox as pupbox
-from bascenev1lib.actor.spazbot import SpazBot
-from bauiv1lib.popup import (PopupWindow, PopupMenu)
-from bascenev1lib.mainmenu import (MainMenuActivity, MainMenuSession)
-from bascenev1lib.actor.popuptext import PopupText
-from bauiv1lib.confirm import ConfirmWindow
-from bascenev1lib.actor.spaz import *
-from bascenev1lib.actor.bomb import BombFactory
 
 
 if TYPE_CHECKING:
@@ -25,12 +24,13 @@ if TYPE_CHECKING:
 # === Mod made by @Patron_Modz ===
 
 def getlanguage(text, subs: str = None, almacen: list = []):
-    if almacen == []: almacen = list(range(1000))
+    if almacen == []:
+        almacen = list(range(1000))
     lang = bui.app.lang.language
     translate = {"Reset":
-                     {"Spanish": "Reiniciar",
-                      "English": "Reset",
-                      "Portuguese": "Reiniciar"},
+                 {"Spanish": "Reiniciar",
+                  "English": "Reset",
+                  "Portuguese": "Reiniciar"},
                  "Nothing":
                      {"Spanish": "Sin potenciadores",
                       "English": "No powerups",
@@ -221,15 +221,14 @@ def getlanguage(text, subs: str = None, almacen: list = []):
                          "Portuguese": f"VocÃƒÂª ganhou {almacen[0]} Moedas. {_sp_} Mas vocÃƒÂª excedeu o limite de {almacen[1]}"},
                  }
     languages = ['Spanish', 'Portuguese', 'English']
-    if lang not in languages: lang = 'English'
+    if lang not in languages:
+        lang = 'English'
 
     if text not in translate:
         return text
 
     return translate[text][lang]
 
-
-import setting
 
 settings = setting.get_settings_data()
 
@@ -313,44 +312,6 @@ for i, x in promo_codes().items():
 apg.apply_and_commit()
 
 
-class BearStore:
-    def __init__(self,
-                 price: int = 1000,
-                 value: str = '',
-                 callback: Callable[[], None] = None):
-
-        self.price = price
-        self.value = value
-        self.store = STORE[value]
-        self.coins = apg['Bear Coin']
-        self.callback = callback
-
-    def buy(self):
-        if not self.store:
-            if self.coins >= (self.price):
-                def confirm():
-                    STORE[self.value] = True
-                    apg['Bear Coin'] -= int(self.price)
-                    bs.broadcastmessage(getlanguage('Purchase'), (0, 1, 0))
-                    bs.getsound('cashRegister').play()
-                    apg.apply_and_commit()
-                    self.callback()
-
-                ConfirmWindow(getlanguage('Confirm Purchase', subs=self.coins),
-                              width=400, height=120, action=confirm,
-                              ok_text=babase.Lstr(resource='okText'))
-            else:
-                bs.broadcastmessage(getlanguage('Coins 0'), (1, 0, 0))
-                bs.getsound('error').play()
-        else:
-            bs.broadcastmessage(getlanguage('Double Product'), (1, 0, 0))
-            bs.getsound('error').play()
-
-    def __del__(self):
-        apg['Bear Coin'] = int(apg['Bear Coin'])
-        apg.apply_and_commit()
-
-
 class PromoCode:
     def __init__(self, code: str = ''):
         self.code = code
@@ -392,36 +353,6 @@ class PromoCode:
 
 
 MainMenuActivity.super_transition_in = MainMenuActivity.on_transition_in
-
-
-def new_on_transition_in(self):
-    self.super_transition_in()
-    limit = 8400
-    bear_coin = apg['Bear Coin']
-    coins_message = GLOBAL['Coins Message']
-    try:
-        if not (STORE['Buy Firebombs'] and
-                STORE['Buy Option'] and
-                STORE['Buy Percentage']):
-
-            if coins_message != []:
-                result = 0
-                for i in coins_message:
-                    result += i
-
-                if not bear_coin >= (limit - 1):
-                    bs.broadcastmessage(
-                        getlanguage('Coins Message', subs=result), (0, 1, 0))
-                    bs.getsound('cashRegister').play()
-                else:
-                    bs.broadcastmessage(getlanguage('Coins Limit Message',
-                                                    almacen=[result, limit]),
-                                        (1, 0, 0))
-                    bs.getsound('error').play()
-                self.bear_coin_message = True
-                GLOBAL['Coins Message'] = []
-    except:
-        pass
 
 
 SpazBot.super_handlemessage = SpazBot.handlemessage
@@ -495,55 +426,6 @@ def percentage_health_damage():
     return float(percentage_text)
 
 
-# === Modify class ===
-
-class NewProfileBrowserWindow(browser.ProfileBrowserWindow):
-    def __init__(self,
-                 transition: str = 'in_right',
-                 in_main_menu: bool = True,
-                 selected_profile: str = None,
-                 origin_widget: bui.Widget = None):
-        super().__init__(transition, in_main_menu, selected_profile,
-                         origin_widget)
-
-        self.session = bs.get_foreground_host_session()
-        uiscale = bui.app.ui_v1.uiscale
-        width = (100 if uiscale is
-                        babase.UIScale.SMALL else -14)
-        size = 50
-        position = (width * 1.65, 300)
-
-        if isinstance(self.session, MainMenuSession):
-            self.button = bui.buttonwidget(parent=self._root_widget,
-                                           autoselect=True, position=position,
-                                           size=(size, size),
-                                           button_type='square',
-                                           label='',
-                                           on_activate_call=babase.Call(
-                                               self.powerupmanager_window))
-
-            size = size * 0.60
-            self.image = bui.imagewidget(parent=self._root_widget,
-                                         size=(size, size),
-                                         draw_controller=self.button,
-                                         position=(
-                                         position[0] + 10.5, position[1] + 17),
-                                         texture=bs.gettexture('powerupSpeed'))
-
-            self.text = bui.textwidget(parent=self._root_widget,
-                                       position=(
-                                       position[0] + 25, position[1] + 10),
-                                       size=(0, 0), scale=0.45,
-                                       color=(0.7, 0.9, 0.7, 1.0),
-                                       draw_controller=self.button, maxwidth=60,
-                                       text=(f"Ultimate Powerup {_sp_}Manager"),
-                                       h_align='center', v_align='center')
-
-    def powerupmanager_window(self):
-        bui.containerwidget(edit=self._root_widget, transition='out_left')
-        PowerupManagerWindow()
-
-
 class NewPowerupBoxFactory(pupbox.PowerupBoxFactory):
     def __init__(self) -> None:
         super().__init__()
@@ -587,7 +469,8 @@ class NewPowerupBoxFactory(pupbox.PowerupBoxFactory):
                     ptype = self._powerupdist[random.randint(
                         0,
                         len(self._powerupdist) - 1)]
-                    if ptype not in excludetypes and ptype not in powerup_disable: break
+                    if ptype not in excludetypes and ptype not in powerup_disable:
+                        break
         self._lastpoweruptype = ptype
         return ptype
 
@@ -601,7 +484,7 @@ def fire_effect(self):
         self.fire_effect_time = None
 
 
-###########BOMBS
+# BOMBS
 Bomb._pm_old_bomb = Bomb.__init__
 
 
@@ -615,7 +498,8 @@ def _bomb_init(self,
                owner: bs.Node = None):
 
     self.bm_type = bomb_type
-    new_bomb_type = 'ice' if bomb_type in ['ice_bubble', 'impairment', 'fire', 'fly'] else bomb_type
+    new_bomb_type = 'ice' if bomb_type in [
+        'ice_bubble', 'impairment', 'fire', 'fly'] else bomb_type
 
     # Call original __init__
     self._pm_old_bomb(position=position,
@@ -641,7 +525,8 @@ def _bomb_init(self,
         self.shield_fire = bs.newnode('shield', owner=self.node,
                                       attrs={'color': (6.5, 6.5, 2.0), 'radius': 0.6})
         self.node.connectattr('position', self.shield_fire, 'position')
-        self.fire_effect_time = bs.Timer(0.1, babase.Call(fire_effect, self), repeat=True)
+        self.fire_effect_time = bs.Timer(
+            0.1, babase.Call(fire_effect, self), repeat=True)
 
     elif self.bm_type == 'impairment':
         self.bomb_type = self.bm_type
@@ -658,8 +543,6 @@ def _bomb_init(self,
         self.blast_radius *= 1.2
     elif self.bomb_type == 'fly':
         self.blast_radius *= 2.2
-
-
 
 
 def bomb_handlemessage(self, msg: Any) -> Any:
@@ -703,34 +586,34 @@ def bomb_handlemessage(self, msg: Any) -> Any:
 def powerup_translated(self, type: str):
     powerups_names = {'triple_bombs': babase.Lstr(
         resource='helpWindow.' + 'powerupBombNameText'),
-                      'ice_bombs': babase.Lstr(
-                          resource='helpWindow.' + 'powerupIceBombsNameText'),
-                      'punch': babase.Lstr(
-                          resource='helpWindow.' + 'powerupPunchNameText'),
-                      'impact_bombs': babase.Lstr(
-                          resource='helpWindow.' + 'powerupImpactBombsNameText'),
-                      'land_mines': babase.Lstr(
-                          resource='helpWindow.' + 'powerupLandMinesNameText'),
-                      'sticky_bombs': babase.Lstr(
-                          resource='helpWindow.' + 'powerupStickyBombsNameText'),
-                      'shield': babase.Lstr(
-                          resource='helpWindow.' + 'powerupShieldNameText'),
-                      'health': babase.Lstr(
-                          resource='helpWindow.' + 'powerupHealthNameText'),
-                      'curse': babase.Lstr(
-                          resource='helpWindow.' + 'powerupCurseNameText'),
-                      'speed': getlanguage('Speed'),
-                      'health_damage': getlanguage('Healing Damage'),
-                      'goodbye': getlanguage('Goodbye'),
-                      'ice_man': getlanguage('Ice Man'),
-                      'tank_shield': getlanguage('Tank Shield'),
-                      'impairment_bombs': getlanguage('Impairment Bombs'),
-                      'fire_bombs': getlanguage('Fire Bombs'),
-                      'fly_bombs': getlanguage('Fly Bombs')}
+        'ice_bombs': babase.Lstr(
+        resource='helpWindow.' + 'powerupIceBombsNameText'),
+        'punch': babase.Lstr(
+        resource='helpWindow.' + 'powerupPunchNameText'),
+        'impact_bombs': babase.Lstr(
+        resource='helpWindow.' + 'powerupImpactBombsNameText'),
+        'land_mines': babase.Lstr(
+        resource='helpWindow.' + 'powerupLandMinesNameText'),
+        'sticky_bombs': babase.Lstr(
+        resource='helpWindow.' + 'powerupStickyBombsNameText'),
+        'shield': babase.Lstr(
+        resource='helpWindow.' + 'powerupShieldNameText'),
+        'health': babase.Lstr(
+        resource='helpWindow.' + 'powerupHealthNameText'),
+        'curse': babase.Lstr(
+        resource='helpWindow.' + 'powerupCurseNameText'),
+        'speed': getlanguage('Speed'),
+        'health_damage': getlanguage('Healing Damage'),
+        'goodbye': getlanguage('Goodbye'),
+        'ice_man': getlanguage('Ice Man'),
+        'tank_shield': getlanguage('Tank Shield'),
+        'impairment_bombs': getlanguage('Impairment Bombs'),
+        'fire_bombs': getlanguage('Fire Bombs'),
+        'fly_bombs': getlanguage('Fly Bombs')}
     self.texts['Name'].text = powerups_names[type]
 
 
-###########POWERUP
+# POWERUP
 pupbox.PowerupBox._old_pbx_ = pupbox.PowerupBox.__init__
 
 
@@ -738,7 +621,8 @@ def _pbx_(self, position: Sequence[float] = (0.0, 1.0, 0.0),
           poweruptype: str = 'triple_bombs',
           expire: bool = True):
     self.news: list = []
-    for x, i in powerup_dist(): self.news.append(x)
+    for x, i in powerup_dist():
+        self.news.append(x)
 
     self.box: list = []
     self.texts = {}
@@ -788,16 +672,17 @@ def _pbx_(self, position: Sequence[float] = (0.0, 1.0, 0.0),
     n_scale = config['Powerup Scale']
     style = config['Powerup Style']
 
-    curve = bs.animate(self.node, 'mesh_scale', {0: 0, 0.14: 1.6, 0.2: n_scale})
+    curve = bs.animate(self.node, 'mesh_scale', {
+                       0: 0, 0.14: 1.6, 0.2: n_scale})
     bs.timer(0.2, curve.delete)
 
     def util_text(type: str, text: str, scale: float = 1,
                   color: list = [1, 1, 1],
                   position: list = [0, 0.7, 0], colors_name: bool = False):
         m = bs.newnode('math', owner=self.node, attrs={'input1':
-                                                           (position[0],
-                                                            position[1],
-                                                            position[2]),
+                                                       (position[0],
+                                                        position[1],
+                                                        position[2]),
                                                        'operation': 'add'})
         self.node.connectattr('position', m, 'input2')
         self.texts[type] = bs.newnode('text', owner=self.node,
@@ -867,7 +752,7 @@ def _pbx_(self, position: Sequence[float] = (0.0, 1.0, 0.0),
         self.node.mesh = bs.getmesh('egg')
 
 
-###########SPAZ
+# SPAZ
 def _speed_off_flash(self):
     if self.node:
         factory = NewPowerupBoxFactory.get()
@@ -1274,7 +1159,7 @@ def new_handlemessage(self, msg: Any) -> Any:
         local_time = int(bs.time() * 1000)
         assert isinstance(local_time, int)
         if (self._last_hit_time is None
-            or local_time - self._last_hit_time > 1000):
+                or local_time - self._last_hit_time > 1000):
             self._num_times_hit += 1
             self._last_hit_time = local_time
 
@@ -1298,8 +1183,8 @@ def new_handlemessage(self, msg: Any) -> Any:
             if not self.shield and not self._dead:
                 self.hitpoints -= damage
                 bs.show_damage_count(f'-{damage}HP',
-                                         self.node.position,
-                                         msg.force_direction)
+                                     self.node.position,
+                                     msg.force_direction)
                 bs.getsound('fuse01').play()
 
             if duration != time:
@@ -1351,8 +1236,8 @@ def new_handlemessage(self, msg: Any) -> Any:
                 hitpoints = int(self.hitpoints * 0.80)
                 self.hitpoints -= int(hitpoints)
                 bs.show_damage_count((f'-{int(hitpoints / 10)}%'),
-                                         self.node.position,
-                                         msg.force_direction)
+                                     self.node.position,
+                                     msg.force_direction)
 
                 if self.hitpoints < 0 or hitpoints < 95:
                     self.node.handlemessage(bs.DieMessage())
@@ -1435,7 +1320,7 @@ def new_handlemessage(self, msg: Any) -> Any:
             damage = int(damage - dism)
 
             bs.show_damage_count('-' + str(int(damage / 10)) + '%',
-                                     msg.pos, msg.force_direction)
+                                 msg.pos, msg.force_direction)
 
         self.node.handlemessage('hurt_sound')
 
@@ -1465,7 +1350,7 @@ def new_handlemessage(self, msg: Any) -> Any:
             if damage > 350:
                 assert msg.force_direction is not None
                 bs.show_damage_count('-' + str(int(damage / 10)) + '%',
-                                         msg.pos, msg.force_direction)
+                                     msg.pos, msg.force_direction)
 
             if msg.hit_subtype == 'super_punch':
                 SpazFactory.get().punch_sound_stronger.play(1.0,
@@ -1667,7 +1552,7 @@ def new_handlemessage(self, msg: Any) -> Any:
             pass
 
         if (opposingnode.getnodetype() == 'spaz'
-            and not opposingnode.shattered and opposingbody == 4):
+                and not opposingnode.shattered and opposingbody == 4):
             opposingbody = 1
 
         held = self.node.hold_node
@@ -1683,974 +1568,6 @@ def new_handlemessage(self, msg: Any) -> Any:
     return None
 
 
-class PowerupManagerWindow(PopupWindow):
-    def __init__(self, transition='in_right'):
-        columns = 2
-        self._width = width = 800
-        self._height = height = 500
-        self._sub_height = 200
-        self._scroll_width = self._width * 0.90
-        self._scroll_height = self._height - 180
-        self._sub_width = self._scroll_width * 0.95
-        self.tab_buttons: set = {}
-        self.list_cls_power: list = []
-        self.default_powerups = default_powerups()
-        self.default_power_list = list(self.default_powerups)
-        self.coins = apg['Bear Coin']
-        self.popup_cls_power = None
-
-        if not STORE['Buy Firebombs']:
-            powerups['Fire Bombs'] = 0
-            self.default_power_list.remove('Fire Bombs')
-
-        self.charstr = [babase.charstr(babase.SpecialChar.LEFT_ARROW),
-                        babase.charstr(babase.SpecialChar.RIGHT_ARROW),
-                        babase.charstr(babase.SpecialChar.UP_ARROW),
-                        babase.charstr(babase.SpecialChar.DOWN_ARROW)]
-
-        self.tabdefs = {"Action 1": ['powerupIceBombs', (1, 1, 1)],
-                        "Action 2": ['settingsIcon', (0, 1, 0)],
-                        "Action 3": ['inventoryIcon', (1, 1, 1)],
-                        "Action 4": ['storeIcon', (1, 1, 1)],
-                        "Action 5": ['advancedIcon', (1, 1, 1)],
-                        "About": ['heart', (1.5, 0.3, 0.3)]}
-
-        if (STORE['Buy Firebombs'] and
-            STORE['Buy Option'] and
-            STORE['Buy Percentage']):
-            self.tabdefs = {"Action 1": ['powerupIceBombs', (1, 1, 1)],
-                            "Action 2": ['settingsIcon', (0, 1, 0)],
-                            "Action 3": ['inventoryIcon', (1, 1, 1)],
-                            "About": ['heart', (1.5, 0.3, 0.3)]}
-
-        self.listdef = list(self.tabdefs)
-
-        self.count = len(self.tabdefs)
-
-        self._current_tab = GLOBAL['Tab']
-
-        app = bui.app.ui_v1
-        uiscale = app.uiscale
-
-        self._root_widget = bui.containerwidget(size=(width + 90, height + 80),
-                                                transition=transition,
-                                                scale=1.5 if uiscale is babase.UIScale.SMALL else 1.0,
-                                                stack_offset=(0,
-                                                              -30) if uiscale is babase.UIScale.SMALL else (
-                                                0, 0))
-
-        self._backButton = b = bui.buttonwidget(parent=self._root_widget,
-                                                autoselect=True,
-                                                position=(
-                                                60, self._height - 15),
-                                                size=(130, 60),
-                                                scale=0.8, text_scale=1.2,
-                                                label=babase.Lstr(
-                                                    resource='backText'),
-                                                button_type='back',
-                                                on_activate_call=babase.Call(
-                                                    self._back))
-        bui.buttonwidget(edit=self._backButton, button_type='backSmall',
-                         size=(60, 60),
-                         label=babase.charstr(babase.SpecialChar.BACK))
-        bui.containerwidget(edit=self._root_widget, cancel_button=b)
-
-        self.titletext = bui.textwidget(parent=self._root_widget,
-                                        position=(0, height - 15),
-                                        size=(width, 50),
-                                        h_align="center",
-                                        color=bui.app.ui_v1.title_color,
-                                        v_align="center", maxwidth=width * 1.3)
-
-        index = 0
-        for tab in range(self.count):
-            for tab2 in range(columns):
-
-                tag = self.listdef[index]
-
-                position = (
-                620 + (tab2 * 120), self._height - 50 * 2.5 - (tab * 120))
-
-                if tag == 'About':
-                    text = babase.Lstr(resource='gatherWindow.aboutText')
-                elif tab == 'Action 4':
-                    text = babase.Lstr(resource='storeText')
-                else:
-                    text = getlanguage(tag)
-
-                self.tab_buttons[tag] = bui.buttonwidget(
-                    parent=self._root_widget, autoselect=True,
-                    position=position, size=(110, 110),
-                    scale=1, label='', enable_sound=False,
-                    button_type='square',
-                    on_activate_call=babase.Call(self._set_tab, tag,
-                                                 sound=True))
-
-                self.text = bui.textwidget(parent=self._root_widget,
-                                           position=(
-                                           position[0] + 55, position[1] + 30),
-                                           size=(0, 0), scale=1,
-                                           color=bui.app.ui_v1.title_color,
-                                           draw_controller=self.tab_buttons[
-                                               tag], maxwidth=100,
-                                           text=text, h_align='center',
-                                           v_align='center')
-
-                self.image = bui.imagewidget(parent=self._root_widget,
-                                             size=(60, 60),
-                                             color=self.tabdefs[tag][1],
-                                             draw_controller=self.tab_buttons[
-                                                 tag],
-                                             position=(position[0] + 25,
-                                                       position[1] + 40),
-                                             texture=bs.gettexture(
-                                                 self.tabdefs[tag][0]))
-
-                index += 1
-
-                if self.count == index:
-                    break
-
-            if self.count == index:
-                break
-
-        self._scrollwidget = None
-        self._tab_container = None
-        self._set_tab(self._current_tab)
-
-    def __del__(self):
-        apg.apply_and_commit()
-
-    def _set_tab(self, tab, sound: bool = False):
-        self.sound = sound
-        GLOBAL['Tab'] = tab
-        apg.apply_and_commit()
-
-        if self._tab_container is not None and self._tab_container.exists():
-            self._tab_container.delete()
-
-        if self.sound:
-            bs.getsound('click01').play()
-
-        if self._scrollwidget:
-            self._scrollwidget.delete()
-
-        self._scrollwidget = bui.scrollwidget(parent=self._root_widget,
-                                              position=(
-                                              self._width * 0.08, 51 * 1.8),
-                                              size=(self._sub_width - 140,
-                                                    self._scroll_height + 60 * 1.2))
-
-        if tab == 'Action 4':
-            if self._scrollwidget:
-                self._scrollwidget.delete()
-            self._scrollwidget = bui.hscrollwidget(parent=self._root_widget,
-                                                      position=(
-                                                      self._width * 0.08,
-                                                      51 * 1.8), size=(
-                self._sub_width - 140, self._scroll_height + 60 * 1.2),
-                                                      capture_arrows=True,
-                                                      claims_left_right=True)
-            bui.textwidget(edit=self.titletext,
-                           text=babase.Lstr(resource='storeText'))
-        elif tab == 'About':
-            bui.textwidget(edit=self.titletext,
-                           text=babase.Lstr(resource='gatherWindow.aboutText'))
-        else:
-            bui.textwidget(edit=self.titletext, text=getlanguage(tab))
-
-        choices = ['Reset', 'Only Bombs', 'Only Items', 'New', 'Nothing']
-        c_display = []
-
-        for display in choices:
-            choices_display = babase.Lstr(translate=("", getlanguage(display)))
-            c_display.append(choices_display)
-
-        if tab == 'Action 1':
-            self.popup_cls_power = PopupMenu(
-                parent=self._root_widget,
-                position=(130, self._width * 0.61),
-                button_size=(150, 50), scale=2.5,
-                choices=choices, width=150,
-                choices_display=c_display,
-                current_choice=GLOBAL['Cls Powerup'],
-                on_value_change_call=self._set_concept)
-            self.list_cls_power.append(self.popup_cls_power._button)
-
-            self.button_cls_power = bui.buttonwidget(parent=self._root_widget,
-                                                     position=(
-                                                     500, self._width * 0.61),
-                                                     size=(50, 50),
-                                                     autoselect=True,
-                                                     scale=1, label=('%'),
-                                                     text_scale=1,
-                                                     button_type='square',
-                                                     on_activate_call=self._percentage_window)
-            self.list_cls_power.append(self.button_cls_power)
-
-            rewindow = [self.popup_cls_power._button, self.button_cls_power]
-
-            for cls in self.list_cls_power:  # this is very important so that pupups don't accumulate
-                if cls not in rewindow:
-                    cls.delete()
-
-        elif tab == 'Action 4':
-            self.button_coin = bui.buttonwidget(parent=self._root_widget,
-                                                icon=bs.gettexture('coin'),
-                                                position=(
-                                                550, self._width * 0.614),
-                                                size=(160, 40),
-                                                textcolor=(0, 1, 0),
-                                                color=(0, 1, 6),
-                                                scale=1,
-                                                label=str(apg['Bear Coin']),
-                                                text_scale=1, autoselect=True,
-                                                on_activate_call=None)  # self._percentage_window)
-            self.list_cls_power.append(self.button_coin)
-
-            try:
-                rewindow.append(self.button_coin)
-            except:
-                rewindow = [self.button_coin]
-            for cls in self.list_cls_power:  # this is very important so that pupups don't accumulate
-                if cls not in rewindow:
-                    cls.delete()
-
-        else:
-            try:
-                for cls in self.list_cls_power:
-                    cls.delete()
-            except:
-                pass
-
-        if tab == 'Action 1':
-            sub_height = len(self.default_power_list) * 90
-            v = sub_height - 55
-            width = 300
-            posi = 0
-            id_power = list(self.default_powerups)
-            new_powerups = id_power[9:]
-            self.listpower = {}
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            for power in self.default_power_list:
-                if power == id_power[0]:
-                    text = 'helpWindow.powerupShieldNameText'
-                    tex = bs.gettexture('powerupShield')
-                elif power == id_power[1]:
-                    text = 'helpWindow.powerupPunchNameText'
-                    tex = bs.gettexture('powerupPunch')
-                elif power == id_power[2]:
-                    text = 'helpWindow.powerupLandMinesNameText'
-                    tex = bs.gettexture('powerupLandMines')
-                elif power == id_power[3]:
-                    text = 'helpWindow.powerupImpactBombsNameText'
-                    tex = bs.gettexture('powerupImpactBombs')
-                elif power == id_power[4]:
-                    text = 'helpWindow.powerupIceBombsNameText'
-                    tex = bs.gettexture('powerupIceBombs')
-                elif power == id_power[5]:
-                    text = 'helpWindow.powerupBombNameText'
-                    tex = bs.gettexture('powerupBomb')
-                elif power == id_power[6]:
-                    text = 'helpWindow.powerupStickyBombsNameText'
-                    tex = bs.gettexture('powerupStickyBombs')
-                elif power == id_power[7]:
-                    text = 'helpWindow.powerupCurseNameText'
-                    tex = bs.gettexture('powerupCurse')
-                elif power == id_power[8]:
-                    text = 'helpWindow.powerupHealthNameText'
-                    tex = bs.gettexture('powerupHealth')
-                elif power == id_power[9]:
-                    text = power
-                    tex = bs.gettexture('powerupSpeed')
-                elif power == id_power[10]:
-                    text = power
-                    tex = bs.gettexture('heart')
-                elif power == id_power[11]:
-                    text = "Goodbye!"
-                    tex = bs.gettexture('achievementOnslaught')
-                elif power == id_power[12]:
-                    text = power
-                    tex = bs.gettexture('ouyaUButton')
-                elif power == id_power[13]:
-                    text = power
-                    tex = bs.gettexture('achievementSuperPunch')
-                elif power == id_power[14]:
-                    text = power
-                    tex = bs.gettexture('levelIcon')
-                elif power == id_power[15]:
-                    text = power
-                    tex = bs.gettexture('ouyaOButton')
-                elif power == id_power[16]:
-                    text = power
-                    tex = bs.gettexture('star')
-
-                if power in new_powerups:
-                    label = getlanguage(power)
-                else:
-                    label = babase.Lstr(resource=text)
-
-                apperance = powerups[power]
-                position = (90, v - posi)
-
-                t = bui.textwidget(parent=c, position=(
-                position[0] - 30, position[1] - 15), size=(width, 50),
-                                   h_align="center",
-                                   color=(bui.app.ui_v1.title_color),
-                                   text=label, v_align="center",
-                                   maxwidth=width * 1.3)
-
-                self.powprev = bui.imagewidget(parent=c,
-                                               position=(position[0] - 70,
-                                                         position[1] - 10),
-                                               size=(50, 50), texture=tex)
-
-                dipos = 0
-                for direc in ['-', '+']:
-                    bui.buttonwidget(parent=c, autoselect=True,
-                                     position=(position[0] + 270 + dipos,
-                                               position[1] - 10),
-                                     size=(100, 100),
-                                     scale=0.4, label=direc,
-                                     button_type='square', text_scale=4,
-                                     on_activate_call=babase.Call(
-                                         self.apperance_powerups, power, direc))
-                    dipos += 100
-
-                textwidget = bui.textwidget(parent=c, position=(
-                position[0] + 190, position[1] - 15), size=(width, 50),
-                                            h_align="center",
-                                            color=cls_pow_color()[apperance],
-                                            text=str(apperance),
-                                            v_align="center",
-                                            maxwidth=width * 1.3)
-                self.listpower[power] = textwidget
-
-                posi += 90
-
-        elif tab == 'Action 2':
-            sub_height = 370 if not STORE['Buy Option'] else 450
-            v = sub_height - 55
-            width = 300
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            position = (40, v - 20)
-
-            c_display = []
-            choices = ['Auto', 'SY: BALL', 'SY: Impact', 'SY: Egg']
-            for display in choices:
-                choices_display = babase.Lstr(
-                    translate=("", getlanguage(display)))
-                c_display.append(choices_display)
-
-            popup = PopupMenu(parent=c,
-                              position=(position[0] + 300, position[1]),
-                              button_size=(150, 50), scale=2.5,
-                              choices=choices, width=150,
-                              choices_display=c_display,
-                              current_choice=config['Powerup Style'],
-                              on_value_change_call=babase.Call(self._all_popup,
-                                                               'Powerup Style'))
-
-            text = getlanguage('Powerup Style')
-            wt = (len(text) * 0.80)
-            t = bui.textwidget(parent=c,
-                               position=(position[0] - 60 + wt, position[1]),
-                               size=(width, 50), maxwidth=width * 0.9,
-                               scale=1.1, h_align="center",
-                               color=bui.app.ui_v1.title_color,
-                               text=getlanguage('Powerup Style'),
-                               v_align="center")
-
-            dipos = 0
-            for direc in ['-', '+']:
-                bui.buttonwidget(parent=c, autoselect=True,
-                                 position=(
-                                 position[0] + 310 + dipos, position[1] - 100),
-                                 size=(100, 100),
-                                 repeat=True, scale=0.4, label=direc,
-                                 button_type='square', text_scale=4,
-                                 on_activate_call=babase.Call(
-                                     self._powerups_scale, direc))
-                dipos += 100
-
-            txt_scale = config['Powerup Scale']
-            self.txt_scale = bui.textwidget(parent=c, position=(
-            position[0] + 230, position[1] - 105), size=(width, 50),
-                                            scale=1.1, h_align="center",
-                                            color=(0, 1, 0),
-                                            text=str(txt_scale),
-                                            v_align="center",
-                                            maxwidth=width * 1.3)
-
-            text = getlanguage('Powerup Scale')
-            wt = (len(text) * 0.80)
-            t = bui.textwidget(parent=c, position=(
-            position[0] - 60 + wt, position[1] - 100), size=(width, 50),
-                               maxwidth=width * 0.9,
-                               scale=1.1, h_align="center",
-                               color=bui.app.ui_v1.title_color, text=text,
-                               v_align="center")
-
-            position = (position[0] - 20, position[1] + 40)
-
-            self.check = bui.checkboxwidget(parent=c, position=(
-            position[0] + 30, position[1] - 230), value=config['Powerup Name'],
-                                            on_value_change_call=babase.Call(
-                                                self._switches, 'Powerup Name'),
-                                            maxwidth=self._scroll_width * 0.9,
-                                            text=getlanguage('Powerup Name'),
-                                            autoselect=True)
-
-            self.check = bui.checkboxwidget(parent=c, position=(
-            position[0] + 30, position[1] - 230 * 1.3),
-                                            value=config['Powerup With Shield'],
-                                            on_value_change_call=babase.Call(
-                                                self._switches,
-                                                'Powerup With Shield'),
-                                            maxwidth=self._scroll_width * 0.9,
-                                            text=getlanguage(
-                                                'Powerup With Shield'),
-                                            autoselect=True)
-
-            if STORE['Buy Option']:
-                self.check = bui.checkboxwidget(parent=c, position=(
-                position[0] + 30, position[1] - 230 * 1.6),
-                                                value=config['Powerup Time'],
-                                                on_value_change_call=babase.Call(
-                                                    self._switches,
-                                                    'Powerup Time'),
-                                                maxwidth=self._scroll_width * 0.9,
-                                                text=getlanguage(
-                                                    'Powerup Time'),
-                                                autoselect=True)
-
-        elif tab == 'Action 3':
-            sub_height = 300
-            v = sub_height - 55
-            width = 300
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            v -= 20
-            position = (110, v - 45 * 1.72)
-
-            if not STORE['Buy Percentage']:
-                t = bui.textwidget(parent=c, position=(90, v - 100),
-                                   size=(30 + width, 50),
-                                   h_align="center",
-                                   text=getlanguage('Block Option Store'),
-                                   color=bui.app.ui_v1.title_color,
-                                   v_align="center", maxwidth=width * 1.5,
-                                   scale=1.5)
-
-                i = bui.imagewidget(parent=c,
-                                    position=(
-                                    position[0] + 100, position[1] - 205),
-                                    size=(80, 80),
-                                    texture=bs.gettexture('lock'))
-            else:
-                t = bui.textwidget(parent=c, position=(
-                position[0] - 14, position[1] + 70), size=(30 + width, 50),
-                                   h_align="center",
-                                   text=f"{getlanguage('Tank Shield PTG')} ({getlanguage('Tank Shield')})",
-                                   color=bui.app.ui_v1.title_color,
-                                   v_align="center", maxwidth=width * 1.5,
-                                   scale=1.5)
-
-                b = bui.buttonwidget(parent=c, autoselect=True,
-                                     position=position, size=(100, 100),
-                                     repeat=True,
-                                     scale=0.6, label=self.charstr[3],
-                                     button_type='square', text_scale=2,
-                                     on_activate_call=babase.Call(
-                                         self.tank_shield_percentage,
-                                         'Decrement'))
-
-                b = bui.buttonwidget(parent=c, autoselect=True, repeat=True,
-                                     text_scale=2,
-                                     position=(position[0] * 3.2, position[1]),
-                                     size=(100, 100),
-                                     scale=0.6, label=self.charstr[2],
-                                     button_type='square',
-                                     on_activate_call=babase.Call(
-                                         self.tank_shield_percentage,
-                                         'Increment'))
-
-                porcentaje = config['Tank Shield PTG']
-                if porcentaje > 59:
-                    color = (0, 1, 0)
-                elif porcentaje < 40:
-                    color = (1, 1, 0)
-                else:
-                    color = (0, 1, 0.8)
-
-                self.tank_text = bui.textwidget(parent=c, position=(
-                position[0] - 14, position[1] + 5),
-                                                size=(30 + width, 50),
-                                                h_align="center",
-                                                text=str(porcentaje) + '%',
-                                                color=color,
-                                                v_align="center",
-                                                maxwidth=width * 1.3, scale=2)
-
-                # ----->
-
-                position = (110, v - 160 * 1.6)
-                t = bui.textwidget(parent=c, position=(
-                position[0] - 14, position[1] + 70), size=(30 + width, 50),
-                                   h_align="center",
-                                   text=f"{getlanguage('Healing Damage PTG')}{_sp_}({getlanguage('Healing Damage')})",
-                                   color=bui.app.ui_v1.title_color,
-                                   v_align="center", maxwidth=width * 1.3,
-                                   scale=1.4)
-
-                b = bui.buttonwidget(parent=c, autoselect=True,
-                                     position=position, size=(100, 100),
-                                     repeat=True,
-                                     scale=0.6, label=self.charstr[3],
-                                     button_type='square', text_scale=2,
-                                     on_activate_call=babase.Call(
-                                         self.health_damage_percentage,
-                                         'Decrement'))
-
-                b = bui.buttonwidget(parent=c, autoselect=True, repeat=True,
-                                     text_scale=2,
-                                     position=(position[0] * 3.2, position[1]),
-                                     size=(100, 100),
-                                     scale=0.6, label=self.charstr[2],
-                                     button_type='square',
-                                     on_activate_call=babase.Call(
-                                         self.health_damage_percentage,
-                                         'Increment'))
-
-                porcentaje = config['Healing Damage PTG']
-                if porcentaje > 59:
-                    color = (0, 1, 0)
-                elif porcentaje < 40:
-                    color = (1, 1, 0)
-                else:
-                    color = (0, 1, 0.8)
-
-                self.hlg_text = bui.textwidget(parent=c, position=(
-                position[0] - 14, position[1] + 5),
-                                               size=(30 + width, 50),
-                                               h_align="center",
-                                               text=str(porcentaje) + '%',
-                                               color=color,
-                                               v_align="center",
-                                               maxwidth=width * 1.3, scale=2)
-
-        elif tab == 'Percentage':
-            sub_height = len(self.default_power_list) * 90
-            v = sub_height - 55
-            width = 300
-            posi = 0
-            id_power = list(self.default_powerups)
-            new_powerups = id_power[9:]
-            self.listpower = {}
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            for power in self.default_power_list:
-                if power == id_power[0]:
-                    text = 'helpWindow.powerupShieldNameText'
-                    tex = bs.gettexture('powerupShield')
-                elif power == id_power[1]:
-                    text = 'helpWindow.powerupPunchNameText'
-                    tex = bs.gettexture('powerupPunch')
-                elif power == id_power[2]:
-                    text = 'helpWindow.powerupLandMinesNameText'
-                    tex = bs.gettexture('powerupLandMines')
-                elif power == id_power[3]:
-                    text = 'helpWindow.powerupImpactBombsNameText'
-                    tex = bs.gettexture('powerupImpactBombs')
-                elif power == id_power[4]:
-                    text = 'helpWindow.powerupIceBombsNameText'
-                    tex = bs.gettexture('powerupIceBombs')
-                elif power == id_power[5]:
-                    text = 'helpWindow.powerupBombNameText'
-                    tex = bs.gettexture('powerupBomb')
-                elif power == id_power[6]:
-                    text = 'helpWindow.powerupStickyBombsNameText'
-                    tex = bs.gettexture('powerupStickyBombs')
-                elif power == id_power[7]:
-                    text = 'helpWindow.powerupCurseNameText'
-                    tex = bs.gettexture('powerupCurse')
-                elif power == id_power[8]:
-                    text = 'helpWindow.powerupHealthNameText'
-                    tex = bs.gettexture('powerupHealth')
-                elif power == id_power[9]:
-                    text = power
-                    tex = bs.gettexture('powerupSpeed')
-                elif power == id_power[10]:
-                    text = power
-                    tex = bs.gettexture('heart')
-                elif power == id_power[11]:
-                    text = "Goodbye!"
-                    tex = bs.gettexture('achievementOnslaught')
-                elif power == id_power[12]:
-                    text = power
-                    tex = bs.gettexture('ouyaUButton')
-                elif power == id_power[13]:
-                    text = power
-                    tex = bs.gettexture('achievementSuperPunch')
-                elif power == id_power[14]:
-                    text = power
-                    tex = bs.gettexture('levelIcon')
-                elif power == id_power[15]:
-                    text = power
-                    tex = bs.gettexture('ouyaOButton')
-                elif power == id_power[16]:
-                    text = power
-                    tex = bs.gettexture('star')
-
-                if power in new_powerups:
-                    label = getlanguage(power)
-                else:
-                    label = babase.Lstr(resource=text)
-
-                apperance = powerups[power]
-                position = (90, v - posi)
-
-                t = bui.textwidget(parent=c, position=(
-                position[0] - 30, position[1] - 15), size=(width, 50),
-                                   h_align="center",
-                                   color=(bui.app.ui_v1.title_color),
-                                   text=label, v_align="center",
-                                   maxwidth=width * 1.3)
-
-                self.powprev = bui.imagewidget(parent=c,
-                                               position=(position[0] - 70,
-                                                         position[1] - 10),
-                                               size=(50, 50), texture=tex)
-
-                ptg = str(self.total_percentage(power))
-                t = bui.textwidget(parent=c, position=(
-                position[0] + 170, position[1] - 10), size=(width, 50),
-                                   h_align="center", color=(0, 1, 0),
-                                   text=(f'{ptg}%'), v_align="center",
-                                   maxwidth=width * 1.3)
-
-                posi += 90
-
-        elif tab == 'Action 4':
-            sub_height = 370
-            width = 300
-            v = sub_height - 55
-            u = width - 60
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(width + 500, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            position = (u + 150, v - 250)
-            n_pos = 0
-            prices = [7560, 5150, 3360]
-            str_name = ["FireBombs Store", "Timer Store", "Percentages Store"]
-            images = ["ouyaOButton", "settingsIcon", "inventoryIcon"]
-
-            index = 0
-            for store in store_items():
-                p = prices[index]
-                txt = str_name[index]
-                label = getlanguage(txt)
-                tx_pos = len(label) * 1.8
-                lb_scale = len(label) * 0.20
-                preview = images[index]
-
-                if STORE[store]:
-                    text = getlanguage('Bought')
-                    icon = bs.gettexture('graphicsIcon')
-                    color = (0.52, 0.48, 0.63)
-                    txt_scale = 1.5
-                else:
-                    text = str(p)
-                    icon = bs.gettexture('coin')
-                    color = (0.5, 0.4, 0.93)
-                    txt_scale = 2
-
-                b = bui.buttonwidget(parent=c, autoselect=True, position=(
-                position[0] + 210 - n_pos, position[1]),
-                                     size=(250, 80), scale=0.7, label=text,
-                                     text_scale=txt_scale, icon=icon,
-                                     color=color,
-                                     iconscale=1.7,
-                                     on_activate_call=babase.Call(
-                                         self._buy_object, store, p))
-
-                s = 180
-                b = bui.buttonwidget(parent=c, autoselect=True, position=(
-                position[0] + 210 - n_pos, position[1] + 55),
-                                     size=(s, s + 30), scale=1, label='',
-                                     color=color, button_type='square',
-                                     on_activate_call=babase.Call(
-                                         self._buy_object, store, p))
-
-                s -= 80
-                i = bui.imagewidget(parent=c, draw_controller=b,
-                                    position=(position[0] + 250 - n_pos,
-                                              position[1] + 140),
-                                    size=(s, s), texture=bs.gettexture(preview))
-
-                t = bui.textwidget(parent=c, position=(
-                position[0] + 270 - n_pos, position[1] + 101),
-                                   h_align="center",
-                                   color=(bui.app.ui_v1.title_color),
-                                   text=label, v_align="center", maxwidth=130)
-
-                n_pos += 280
-                index += 1
-
-        elif tab == 'Action 5':
-            sub_height = 370
-            v = sub_height - 55
-            width = 300
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height), background=False,
-                selection_loops_to_parent=True)
-
-            position = (0, v - 30)
-
-            t = bui.textwidget(parent=c,
-                               position=(position[0] + 80, position[1] - 30),
-                               size=(width + 60, 50), scale=1,
-                               h_align="center",
-                               color=(bui.app.ui_v1.title_color),
-                               text=babase.Lstr(
-                                   resource='settingsWindowAdvanced.enterPromoCodeText'),
-                               v_align="center", maxwidth=width * 1.3)
-
-            self.promocode_text = bui.textwidget(parent=c, position=(
-            position[0] + 80, position[1] - 100), size=(width + 60, 50),
-                                                 scale=1,
-                                                 editable=True,
-                                                 h_align="center", color=(
-                    bui.app.ui_v1.title_color), text='', v_align="center",
-                                                 maxwidth=width * 1.3,
-                                                 max_chars=30,
-                                                 description=babase.Lstr(
-                                                     resource='settingsWindowAdvanced.enterPromoCodeText'))
-
-            self.promocode_button = bui.buttonwidget(
-                parent=c, position=(position[0] + 160, position[1] - 170),
-                size=(200, 60), scale=1.0,
-                label=babase.Lstr(resource='submitText'),
-                on_activate_call=self._promocode)
-
-        else:
-            sub_height = 0
-            v = sub_height - 55
-            width = 300
-
-            self._tab_container = c = bui.containerwidget(
-                parent=self._scrollwidget,
-                size=(self._sub_width, sub_height),
-                background=False, selection_loops_to_parent=True)
-
-            t = bui.textwidget(parent=c, position=(110, v - 20),
-                               size=(width, 50),
-                               scale=1.4, color=(0.2, 1.2, 0.2),
-                               h_align="center", v_align="center",
-                               text=("Ultimate Powerup Manager v1.7"),
-                               maxwidth=width * 30)
-
-            t = bui.textwidget(parent=c, position=(110, v - 90),
-                               size=(width, 50),
-                               scale=1, color=(1.3, 0.5, 1.0), h_align="center",
-                               v_align="center",
-                               text=getlanguage('Creator'), maxwidth=width * 30)
-
-            t = bui.textwidget(parent=c, position=(110, v - 220),
-                               size=(width, 50),
-                               scale=1, color=(1.0, 1.2, 0.3), h_align="center",
-                               v_align="center",
-                               text=getlanguage('Mod Info'),
-                               maxwidth=width * 30)
-
-        for select_tab, button_tab in self.tab_buttons.items():
-            if select_tab == tab:
-                bui.buttonwidget(edit=button_tab, color=(0.5, 0.4, 1.5))
-            else:
-                bui.buttonwidget(edit=button_tab, color=(0.52, 0.48, 0.63))
-
-    def _all_popup(self, tag: str, popup: str) -> None:
-        config[tag] = popup
-        apg.apply_and_commit()
-
-    def _set_concept(self, concept: str) -> None:
-        GLOBAL['Cls Powerup'] = concept
-
-        if concept == 'Reset':
-            for power, deflt in default_powerups().items():
-                powerups[power] = deflt
-        elif concept == 'Nothing':
-            for power in default_powerups():
-                powerups[power] = 0
-        elif concept == 'Only Bombs':
-            for power, deflt in default_powerups().items():
-                if 'Bombs' not in power:
-                    powerups[power] = 0
-                else:
-                    powerups[power] = 3
-        elif concept == 'Only Items':
-            for power, deflt in default_powerups().items():
-                if 'Bombs' in power:
-                    powerups[power] = 0
-                else:
-                    powerups[power] = deflt
-        elif concept == 'New':
-            default_power = default_powerups()
-            new_powerups = list(default_power)[9:]
-            for power, deflt in default_power.items():
-                if power not in new_powerups:
-                    powerups[power] = 0
-                else:
-                    powerups[power] = deflt
-
-        if not STORE['Buy Firebombs']:
-            powerups['Fire Bombs'] = 0
-
-        self._set_tab('Action 1')
-
-    def tank_shield_percentage(self, tag):
-        max = 96
-        min = 40
-        if tag == 'Increment':
-            config['Tank Shield PTG'] += 1
-            if config['Tank Shield PTG'] > max:
-                config['Tank Shield PTG'] = min
-        elif tag == 'Decrement':
-            config['Tank Shield PTG'] -= 1
-            if config['Tank Shield PTG'] < min:
-                config['Tank Shield PTG'] = max
-
-        porcentaje = config['Tank Shield PTG']
-        if porcentaje > 59:
-            color = (0, 1, 0)
-        elif porcentaje < 40:
-            color = (1, 1, 0)
-        else:
-            color = (0, 1, 0.8)
-        bui.textwidget(edit=self.tank_text,
-                       text=str(porcentaje) + '%', color=color)
-
-    def health_damage_percentage(self, tag):
-        max = 80
-        min = 35
-        if tag == 'Increment':
-            config['Healing Damage PTG'] += 1
-            if config['Healing Damage PTG'] > max:
-                config['Healing Damage PTG'] = min
-        elif tag == 'Decrement':
-            config['Healing Damage PTG'] -= 1
-            if config['Healing Damage PTG'] < min:
-                config['Healing Damage PTG'] = max
-
-        porcentaje = config['Healing Damage PTG']
-        if porcentaje > 59:
-            color = (0, 1, 0)
-        elif porcentaje < 40:
-            color = (1, 1, 0)
-        else:
-            color = (0, 1, 0.8)
-        bui.textwidget(edit=self.hlg_text,
-                       text=str(porcentaje) + '%', color=color)
-
-    def apperance_powerups(self, powerup: str, ID: str):
-        max = 7
-        if ID == "-":
-            if powerups[powerup] == 0:
-                powerups[powerup] = max
-            else:
-                powerups[powerup] -= 1
-        elif ID == "+":
-            if powerups[powerup] == max:
-                powerups[powerup] = 0
-            else:
-                powerups[powerup] += 1
-        enum = powerups[powerup]
-        bui.textwidget(edit=self.listpower[powerup],
-                       text=str(powerups[powerup]),
-                       color=cls_pow_color()[enum])
-
-    def _powerups_scale(self, ID: str):
-        max = 1.5
-        min = 0.5
-        sc = 0.1
-        if ID == "-":
-            if config['Powerup Scale'] < (min + 0.1):
-                config['Powerup Scale'] = max
-            else:
-                config['Powerup Scale'] -= sc
-        elif ID == "+":
-            if config['Powerup Scale'] > (max - 0.1):
-                config['Powerup Scale'] = min
-            else:
-                config['Powerup Scale'] += sc
-        config['Powerup Scale'] = round(config['Powerup Scale'], 1)
-        bui.textwidget(edit=self.txt_scale,
-                       text=str(config['Powerup Scale']))
-
-    def total_percentage(self, power):
-        total = 0
-        pw = powerups[power]
-        for i, i2 in powerups.items():
-            total += i2
-        if total == 0:
-            return float(total)
-        else:
-            ptg = (100 * pw / total)
-            result = round(ptg, 2)
-            return result
-
-    def store_refresh(self, tag: str):
-        if tag == 'Buy Firebombs':
-            powerups['Fire Bombs'] = 3
-            self.default_power_list.append('Fire Bombs')
-        self._set_tab('Action 4')
-
-    def _buy_object(self, tag: str, price: int):
-        store = BearStore(value=tag, price=price,
-                          callback=babase.Call(self.store_refresh, tag))
-        store.buy()
-
-    def _promocode(self):
-        code = bui.textwidget(query=self.promocode_text)
-        promo = PromoCode(code=code)
-        promo.code_confirmation()
-        bui.textwidget(edit=self.promocode_text, text="")
-
-    def _switches(self, tag, m):
-        config[tag] = False if m == 0 else True
-        apg.apply_and_commit()
-
-    def _percentage_window(self):
-        self._set_tab('Percentage')
-
-    def _back(self):
-        bui.containerwidget(edit=self._root_widget, transition='out_left')
-        browser.ProfileBrowserWindow()
-
-
 def enable():
     # browser.ProfileBrowserWindow = NewProfileBrowserWindow
     pupbox.PowerupBoxFactory = NewPowerupBoxFactory
@@ -2663,4 +1580,3 @@ def enable():
     Spaz._get_bomb_type_tex = new_get_bomb_type_tex
     Spaz.on_punch_press = spaz_on_punch_press
     Spaz.on_punch_release = spaz_on_punch_release
-    MainMenuActivity.on_transition_in = new_on_transition_in

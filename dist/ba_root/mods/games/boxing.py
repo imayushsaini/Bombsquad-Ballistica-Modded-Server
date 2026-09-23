@@ -1,4 +1,4 @@
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
@@ -52,8 +52,8 @@ class NewPlayerSpaz(PlayerSpaz):
         self.super_jump_material.add_actions(
             conditions=('they_have_material', shared.footing_material),
             actions=(
-                ('call', 'at_connect', babase.Call(self.jump_state, True)),
-                ('call', 'at_disconnect', babase.Call(self.jump_state, False))
+                ('call', 'at_connect', babase.CallPartial(self.jump_state, True)),
+                ('call', 'at_disconnect', babase.CallPartial(self.jump_state, False))
             ),
         )
         self.node.roller_materials += (self.super_jump_material,)
@@ -98,7 +98,7 @@ class BoxingGame(DeathMatchGame):
     @classmethod
     def get_available_settings(
         cls, sessiontype: type[bs.Session]
-    ) -> list[babase.Setting]:
+    ) -> list[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
