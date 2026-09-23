@@ -9,10 +9,11 @@ import os
 import sys
 import zlib
 import time
-import random
+import signal
 import datetime
 from pathlib import Path
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import urllib3
 import urllib3.util
@@ -22,7 +23,6 @@ import urllib3.exceptions
 from efro.terminal import Clr
 from efro.error import (
     CleanError,
-    Urllib3HttpError,
     raise_for_urllib3_status,
     is_urllib3_communication_error,
 )
@@ -34,27 +34,18 @@ from efro.dataclassio import (
     ioprepped,
 )
 from bacommon.bacloud import (
-    RequestData,
-    ResponseData,
-    StreamFinal,
-    StreamOutput,
+    StandardRequestData,
     BACLOUD_VERSION,
 )
+
+if TYPE_CHECKING:
+    from bacommon.bacloud import ResponseData, StandardResponseData
+
+    from bacommontools.bacloudsession import BacloudSession
 
 TOOL_NAME = 'bacloud'
 
 TIMEOUT_SECONDS = 60 * 5
-
-# Connection-establishment failures (provably pre-send) are retried a
-# few times with exponential backoff + full jitter to ride out
-# transient blips — Cloud Run cold starts and deploy/traffic-ramp
-# windows where the request dies before reaching an app instance and
-# thus leaves no server-side log. Full jitter (sleep in [0, backoff])
-# deliberately de-syncs herds of concurrent CI jobs that would
-# otherwise fail and retry in lockstep.
-CONNECT_RETRIES = 5
-CONNECT_RETRY_BASE_SECONDS = 0.5
-CONNECT_RETRY_MAX_SECONDS = 8.0
 
 VERBOSE = os.environ.get('BACLOUD_VERBOSE') == '1'
 
@@ -279,43 +270,6 @@ def get_tz_offset_seconds() -> float:
     return utc_offset
 
 
-def _is_retryable_connection_error(exc: BaseException) -> bool:
-    """Return whether ``exc`` is a pre-send connection failure.
-
-    Only failures where the request provably never reached the
-    application are retryable: connection-refused, DNS-resolution
-    failures, connect-timeouts, and load-balancer 5xx codes
-    (502/503/504) returned by Cloud Run's front end before a request is
-    handed to an app instance (cold-start / no-instance / bad-gateway
-    during a deploy window). These are idempotency-neutral, so retrying
-    is safe even for mutating commands (publish, etc.).
-
-    Post-send failures are deliberately NOT retried, since the request
-    may already have taken effect: a ``ReadTimeout`` (bytes were sent,
-    the app just didn't answer in time) and an app-level HTTP 500.
-    """
-    # urllib3's ConnectTimeoutError covers connect-timeouts AND the
-    # connection-establishment failures that subclass it
-    # (NewConnectionError = connection-refused, NameResolutionError =
-    # DNS). ReadTimeoutError is a *sibling*, not a subclass, so
-    # post-send read timeouts are correctly excluded here. (We pass
-    # retries=False everywhere so the raw error surfaces directly;
-    # unwrap a MaxRetryError to its reason defensively in case one ever
-    # arrives wrapped.)
-    if isinstance(exc, urllib3.exceptions.MaxRetryError):
-        if exc.reason is None:
-            return False
-        exc = exc.reason
-    if isinstance(exc, urllib3.exceptions.ConnectTimeoutError):
-        return True
-    # 502/503/504 from the LB front-end surface via
-    # raise_for_urllib3_status as a Urllib3HttpError; they're returned
-    # before a request reaches an app instance, so retrying is safe.
-    if isinstance(exc, Urllib3HttpError) and exc.code in (502, 503, 504):
-        return True
-    return False
-
-
 class _TransientDownloadError(Exception):
     """A CAS blob download failed in a retryable way.
 
@@ -328,8 +282,8 @@ class _TransientDownloadError(Exception):
 def _is_retryable_download_error(exc: BaseException) -> bool:
     """Whether a CAS blob-download failure is worth retrying.
 
-    Unlike the mutating-server path
-    (:func:`_is_retryable_connection_error`), a blob download is
+    Unlike a command, which the session delivers exactly once or
+    not at all, a blob download is
     content-idempotent: the signed URL targets one specific content hash
     and the streamed result is size- AND sha256-verified before use. So
     *any* transient fetch failure is safe to retry here -- crucially
@@ -357,7 +311,7 @@ _BACLOUD_STATE_FILENAME = '.bacloudstate.json'
 # argv prefixes for CLI commands that are safe to retry even when a
 # failure is *post-send* (the request may have reached the server).
 # These are read-only or content-idempotent — re-running can't
-# double-apply a mutation. The client stamps RequestData.idempotent
+# double-apply a mutation. The client stamps StandardRequestData.idempotent
 # from this list; basn reads it to decide whether a post-send upstream
 # timeout becomes a retryable 503 or a terminal error. Everything not
 # listed defaults to non-idempotent (fail-closed) — notably publish,
@@ -368,6 +322,14 @@ _IDEMPOTENT_COMMAND_PREFIXES: tuple[tuple[str, ...], ...] = (
     ('assetpackage', '_listing'),
     ('assetpackage', 'wrapper'),
     ('account', 'info'),
+    # Read-only server-side: a listing returns what exists, and a get
+    # reads a snapshot and streams it down (the only writes are to the
+    # caller's own disk). Both were missing here, so an upstream
+    # timeout on either surfaced as a hard error instead of being
+    # retried -- which is what made them the two commands that
+    # intermittently failed the live suite under load.
+    ('workspace', 'list'),
+    ('workspace', 'get'),
 )
 
 
@@ -383,6 +345,35 @@ def _command_is_idempotent(args: list[str]) -> bool:
     )
 
 
+def _install_termination_handler() -> None:
+    """Make SIGTERM unwind the way Ctrl-C does.
+
+    Default SIGTERM kills the process outright, which is exactly the
+    'client fell down a hole' case a live session should never
+    present. Routing it through the same KeyboardInterrupt unwinding
+    means one teardown path instead of two, and the user still sees
+    nothing printed.
+    """
+
+    def _on_term(signum: int, frame: object) -> None:
+        del signum, frame  # Unused.
+        raise KeyboardInterrupt
+
+    try:
+        signal.signal(signal.SIGTERM, _on_term)
+    except ValueError, OSError:
+        # Not the main thread, or a platform without it. The default
+        # disposition still exits; we just don't get to say goodbye.
+        pass
+
+
+def _session_failure_detail() -> str:
+    """A line of 'why' for a failed session, when we have one."""
+    if not VERBOSE:
+        return 'Re-run with BACLOUD_VERBOSE=1 for details.\n'
+    return ''
+
+
 def run_bacloud_main() -> None:
     """Do the thing."""
     # pylint: disable=try-except-raise, raise-missing-from
@@ -391,7 +382,12 @@ def run_bacloud_main() -> None:
     try:
         raise SystemExit(App().run())
     except CleanError as clean_exc:
-        clean_exc.pretty_print()
+        # Errors go to stderr, same as every other diagnostic here.
+        # stdout is the command's *result* (callers parse it -- e.g.
+        # assetpins reads a resolved apverid from it), and wrapper
+        # tooling needs to be able to capture the reason a run failed
+        # without also swallowing its live progress output.
+        clean_exc.pretty_print(file=sys.stderr)
         raise SystemExit(2)
     except SystemExit:
         # Never handle this here.
@@ -414,6 +410,7 @@ class App:
         self._return_code = 0
         self._api_key: str | None = None
         self._server: str | None = None
+        self._session: BacloudSession | None = None
         self._idempotent = False
         # Workspace get/put optimistic-concurrency (v24+): the local dir
         # whose .bacloudstate.json to (re)write, and the snapshot id the
@@ -473,12 +470,22 @@ class App:
         cwd = os.getcwd()
         args = self._prep_workspace_command(list(sys.argv[1:]), cwd)
 
-        # Simply pass all args to the server and let it do the thing.
-        self.run_interactive_command(cwd=cwd, args=args)
+        # A CLI gets interrupted constantly, and a client that just
+        # vanishes leaves the node holding a session (and its task)
+        # until linger expires. Make every exit path -- Ctrl-C,
+        # SIGTERM, a clean finish -- run through the same teardown.
+        _install_termination_handler()
+        try:
+            self._open_session()
 
-        # On a completed get/put the server hands back the workspace's
-        # current snapshot id; stash it for the next put's check.
-        self._finish_workspace_command()
+            # Simply pass all args to the server and let it do the thing.
+            self.run_interactive_command(cwd=cwd, args=args)
+
+            # On a completed get/put the server hands back the workspace's
+            # current snapshot id; stash it for the next put's check.
+            self._finish_workspace_command()
+        finally:
+            self._end_session()
 
         if self._api_key is None:
             self._save_state()
@@ -493,6 +500,15 @@ class App:
         adds ``--expected-snapshotid`` from the dir's
         ``.bacloudstate.json`` so the server can reject a mid-air
         collision (the workspace having changed since our last get).
+
+        That guard is the ONLY thing standing between a routine put and
+        data loss, because ``workspace.json`` is co-owned: the client
+        authors parts of it while the server maintains others
+        (translation up-to-date stamps, wrap params, term-dep and
+        conventions caches). A put always overwrites the server's copy
+        with the local one -- normally harmless because the guard
+        proves the local one is current. ``--force`` removes that proof
+        while keeping the overwrite, which is why it warns loudly.
         """
         if (
             len(args) < 2
@@ -524,7 +540,25 @@ class App:
         if args[1] == 'put':
             force = '--force' in args
             args = [a for a in args if a != '--force']
-            if not force:
+            if force:
+                # Loud and unmissable: forcing is not "push harder", it
+                # is "discard whatever the cloud has". Most costly is
+                # the stale workspace.json going over server-maintained
+                # state (translation stamps etc.), which restales the
+                # package silently -- no error, just a token bill next
+                # time someone runs updates. Warn every single time.
+                print(
+                    f'{Clr.RED}{Clr.BLD}WARNING: --force skips the'
+                    f' changed-since-last-get check.{Clr.RST}\n'
+                    f'{Clr.RED}Your local copy wins outright; nothing is'
+                    f' merged. A stale local workspace.json will overwrite'
+                    f' server-maintained state in it (translation'
+                    f' up-to-date stamps, wrap params, caches), which can'
+                    f' silently restale every string in the package.'
+                    f'{Clr.RST}',
+                    file=sys.stderr,
+                )
+            else:
                 snapshotid = self._read_ws_state_snapshotid(self._ws_state_dir)
                 if snapshotid is not None:
                     args = args + ['--expected-snapshotid', snapshotid]
@@ -651,97 +685,88 @@ class App:
             )
         return host
 
-    def _servercmd(self, cmd: str, payload: dict, stream: bool) -> ResponseData:
-        """Issue a command to the server and get a response."""
+    def _open_session(self) -> None:
+        """Open the session this run will use, or fail saying why.
 
-        response_content: str | None = None
+        Required, not best-effort. A working WebSocket is already a
+        prerequisite for the game itself, so bacloud treats one as a
+        prerequisite too rather than carrying a second transport for
+        environments where the first does not work -- an environment
+        that cannot open a WebSocket cannot run the thing these tools
+        exist to build for.
+
+        Establishment is retried a few times: in prod we dial a
+        regional load-balancer, so a fresh dial re-rolls which node we
+        land on. This papers over transient per-node refusals (a node
+        mid-retirement, a just-terminated instance still in the
+        balancer for a few seconds). Safe because nothing has executed
+        yet at establishment time.
+        """
+        from bacommontools.bacloudsession import BacloudSession
 
         assert self._server is not None
-        url = f'https://{self._server}/bacloudcmd'
-        headers = {'User-Agent': f'bacloud/{BACLOUD_VERSION}'}
-        # Single auth path: API key takes precedence; otherwise the
-        # login_token from interactive sign-in. Either way, it
-        # rides as a standard Authorization Bearer header.
         bearer = self._api_key or self._state.login_token
-        if bearer is not None:
-            headers['Authorization'] = f'Bearer {bearer}'
-
-        rdata = {
-            'v': str(BACLOUD_VERSION),
-            'r': dataclass_to_json(
-                RequestData(
-                    command=cmd,
-                    payload=payload,
-                    tzoffset=get_tz_offset_seconds(),
-                    isatty=sys.stdout.isatty(),
-                    stream=stream,
-                    idempotent=self._idempotent,
-                    build_number=_caller_build_number(),
-                )
-            ),
-        }
-
-        attempt = 0
-        while True:
-            try:
-                # Form-encoded POST (encode_multipart=False) matching the
-                # old requests ``data=dict`` behavior. retries=False so
-                # our own connection-retry loop below owns retry policy
-                # and sees the raw urllib3 error for classification.
-                response_raw = _g_pool.request(
-                    'POST',
-                    url,
-                    fields=rdata,
-                    encode_multipart=False,
-                    headers=headers,
-                    retries=False,
-                )
-                raise_for_urllib3_status(response_raw)
-                response_content = response_raw.data.decode()
-                break
-
-            except Exception as exc:
-                # Ride out transient connection-establishment blips
-                # (cold starts, deploy/traffic-ramp windows). These are
-                # provably pre-send, so retrying is safe even for
-                # mutating commands; post-send failures fall straight
-                # through and surface immediately.
-                if attempt < CONNECT_RETRIES and (
-                    _is_retryable_connection_error(exc)
-                ):
-                    delay = random.uniform(
-                        0.0,
-                        min(
-                            CONNECT_RETRY_MAX_SECONDS,
-                            CONNECT_RETRY_BASE_SECONDS * 2**attempt,
-                        ),
-                    )
-                    attempt += 1
-                    print(
-                        f'{Clr.YLW}Unable to reach bacloud server'
-                        f' ({type(exc).__name__}); retrying in'
-                        f' {delay:.1f}s ({attempt}/{CONNECT_RETRIES})...'
-                        f'{Clr.RST}',
-                        file=sys.stderr,
-                        flush=True,
-                    )
-                    time.sleep(delay)
-                    continue
-
+        attempts = 4
+        for attempt in range(1, attempts + 1):
+            session = BacloudSession.open(self._server, bearer)
+            if session is not None:
+                self._session = session
+                return
+            if attempt < attempts:
                 if VERBOSE:
-                    import traceback
+                    print(
+                        f'bacloud: session attempt {attempt} of'
+                        f' {attempts} failed; retrying...',
+                        file=sys.stderr,
+                    )
+                time.sleep(1.5)
+        raise CleanError(
+            f'Unable to open a connection to {self._server}'
+            f' ({attempts} attempts).\n'
+            f'{_session_failure_detail()}'
+            f'bacloud needs a working WebSocket connection, the same'
+            f' as the game itself. Check for a proxy or firewall'
+            f' blocking WebSocket traffic.'
+        )
 
-                    traceback.print_exc()
-                raise CleanError(
-                    f'Unable to talk to bacloud server:'
-                    f' {type(exc).__name__}: {exc}.'
-                    f' Set env-var BACLOUD_VERBOSE=1 for the full'
-                    f' traceback.'
-                ) from exc
+    def _end_session(self) -> None:
+        """Tell the far end we're going, if we have one."""
+        session = self._session
+        if session is None:
+            return
+        # Clear first: nothing after this point should try to use it,
+        # including anything that runs while we're saying goodbye.
+        self._session = None
+        session.end()
 
-        assert response_content is not None
-        response = dataclass_from_json(ResponseData, response_content)
+    def _servercmd(self, cmd: str, payload: dict) -> StandardResponseData:
+        """Issue a command to the server and get a response."""
+        request = StandardRequestData(
+            command=cmd,
+            payload=payload,
+            tzoffset=get_tz_offset_seconds(),
+            isatty=sys.stdout.isatty(),
+            idempotent=self._idempotent,
+            build_number=_caller_build_number(),
+        )
 
+        session = self._session
+        if session is None or not session.alive:
+            raise CleanError(
+                'Connection to the bacloud server was lost.'
+                ' Please re-run the command.'
+            )
+
+        return self._process_response_inline(session.request(request))
+
+    def _process_response_inline(
+        self, response: StandardResponseData
+    ) -> StandardResponseData:
+        """Apply the handling every response gets, whatever carried it.
+
+        Transport-agnostic on purpose: a command must behave the same
+        whether it rode a session or its own connection.
+        """
         # Handle a few things inline (so this functionality is available
         # even to recursive commands, etc.)
         if response.message is not None:
@@ -763,121 +788,9 @@ class App:
 
         return response
 
-    def _download_file(
-        self, filename: str, call: str, args: dict
-    ) -> int | None:
-        import hashlib
-
-        # Fast out - for repeat batch downloads, most of the time these
-        # will already exist and we can ignore them.
-        if os.path.isfile(filename):
-            return None
-
-        # Update: We now assume all dirs have been created before this
-        # runs. Creating them as we go here could cause race conditions
-        # with multithreaded downloads.
-        dirname = os.path.dirname(filename)
-        assert os.path.isdir(dirname)
-
-        tmp = f'{filename}.tmp'
-        chunk_size = 1024 * 1024
-
-        # CAS blob downloads are content-idempotent -- the signed URL
-        # targets one specific content hash and the streamed bytes are
-        # size- and sha256-verified below -- so any transient fetch
-        # failure is safe to retry. Retry the whole attempt (re-fetching a
-        # fresh signed URL each time, in case the prior one expired) with
-        # the same backoff + full-jitter the server path uses.
-        attempt = 0
-        while True:
-            try:
-                response = self._servercmd(call, args, stream=False)
-
-                # We expect a single sentinel entry in downloads_signed
-                # keyed at 'default'. The server-side per-file handler
-                # doesn't know the client's destination path, so it hands
-                # back one signed URL + hash under that sentinel and we
-                # stream it into ``filename`` here.
-                assert response.downloads_signed is not None
-                assert len(response.downloads_signed) == 1
-                entry = response.downloads_signed[0]
-                assert entry.path == 'default'
-
-                hasher = hashlib.sha256()
-                total = 0
-                with _g_pool.request(
-                    'GET',
-                    entry.download_url,
-                    preload_content=False,
-                    retries=False,
-                ) as resp:
-                    # Transient (5xx) blob-store errors are retryable; any
-                    # other non-2xx (e.g. 403/404) is a real problem.
-                    if resp.status >= 500:
-                        raise _TransientDownloadError(
-                            f'GCS download of {filename} got transient'
-                            f' status={resp.status}.'
-                        )
-                    if not 200 <= resp.status < 300:
-                        raise CleanError(
-                            f'GCS download of {filename} failed:'
-                            f' status={resp.status}'
-                            f' body={_err_body(resp)!r}'
-                        )
-                    with open(tmp, 'wb') as outfile:
-                        for chunk in resp.stream(chunk_size):
-                            if not chunk:
-                                continue
-                            outfile.write(chunk)
-                            hasher.update(chunk)
-                            total += len(chunk)
-
-                # A short read or hash mismatch means a truncated/corrupt
-                # stream -- retryable (re-download).
-                if total != entry.size:
-                    raise _TransientDownloadError(
-                        f'GCS download of {filename} returned {total} bytes;'
-                        f' expected {entry.size} (truncated stream).'
-                    )
-                digest = hasher.hexdigest()
-                if digest != entry.sha256:
-                    raise _TransientDownloadError(
-                        f'GCS download of {filename} sha256 mismatch: got'
-                        f' {digest}, expected {entry.sha256}.'
-                    )
-                os.rename(tmp, filename)
-                return total
-
-            except Exception as exc:
-                # Drop any partial tmp before retrying or giving up.
-                try:
-                    os.unlink(tmp)
-                except OSError:
-                    pass
-                if attempt < CONNECT_RETRIES and _is_retryable_download_error(
-                    exc
-                ):
-                    delay = random.uniform(
-                        0.0,
-                        min(
-                            CONNECT_RETRY_MAX_SECONDS,
-                            CONNECT_RETRY_BASE_SECONDS * 2**attempt,
-                        ),
-                    )
-                    attempt += 1
-                    print(
-                        f'{Clr.YLW}Download of'
-                        f' {os.path.basename(filename)} failed'
-                        f' ({type(exc).__name__}); retrying in {delay:.1f}s'
-                        f' ({attempt}/{CONNECT_RETRIES})...{Clr.RST}',
-                        file=sys.stderr,
-                        flush=True,
-                    )
-                    time.sleep(delay)
-                    continue
-                raise
-
-    def _handle_cas_delivery(self, cas: ResponseData.CasDelivery) -> None:
+    def _handle_cas_delivery(
+        self, cas: StandardResponseData.CasDelivery
+    ) -> None:
         """Download a CAS-delivery assemble's data blobs from a basn node.
 
         The build/mod-time analogue of the game client's Tier-2 download:
@@ -989,110 +902,6 @@ class App:
                 outfile.write(data)
             os.rename(fnametmp, fname)
 
-    def _handle_downloads(self, downloads: ResponseData.Downloads) -> None:
-        from efro.util import data_size_str
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-
-        starttime = time.monotonic()
-
-        # Minor optimization: avoid repeat mkdir calls for the same path
-        # (we may have lots of stuff in a single dir).
-        prepped_dirs = set[str]()
-
-        def _prep_entry(entry: ResponseData.Downloads.Entry) -> None:
-            fullpath = (
-                entry.path
-                if downloads.basepath is None
-                else os.path.join(downloads.basepath, entry.path)
-            )
-            dirname = os.path.dirname(fullpath)
-            if dirname not in prepped_dirs:
-                os.makedirs(dirname, exist_ok=True)
-                prepped_dirs.add(dirname)
-
-        def _download_entry(entry: ResponseData.Downloads.Entry) -> int | None:
-            allargs = downloads.baseargs | entry.args
-            fullpath = (
-                entry.path
-                if downloads.basepath is None
-                else os.path.join(downloads.basepath, entry.path)
-            )
-            return self._download_file(fullpath, downloads.cmd, allargs)
-
-        # Run a single thread pre-pass to create all needed dirs.
-        # Creating dirs while downloading can introduce race conditions.
-        for entry in downloads.entries:
-            _prep_entry(entry)
-
-        total = len(downloads.entries)
-        num_dls = 0
-        total_bytes = 0
-        completed = 0
-
-        # Live progress only helps an interactive terminal; in CI / piped
-        # contexts it would just add log noise, so there we keep the
-        # single end-of-run summary. Progress rides stderr so it never
-        # pollutes stdout (which some callers parse as the result).
-        show_progress = sys.stderr.isatty()
-        last_draw = 0.0
-
-        def _draw_progress() -> None:
-            nonlocal last_draw
-            now = time.monotonic()
-            # Throttle redraws. No forced final frame is needed — the
-            # line is cleared below and replaced by the summary.
-            if now - last_draw < 0.25:
-                return
-            last_draw = now
-            # \r returns to col 0; \x1b[K clears to end-of-line so a
-            # shorter line never leaves stale characters behind.
-            print(
-                f'\r{Clr.BLU}Downloading {completed}/{total} files'
-                f' ({data_size_str(total_bytes)})\u2026{Clr.RST}\x1b[K',
-                end='',
-                file=sys.stderr,
-                flush=True,
-            )
-
-        # Run several downloads simultaneously to maximize throughput.
-        # Each entry costs a master round-trip (to mint its signed URL)
-        # plus a usually-small GCS transfer, so the work is latency-bound
-        # per blob -- more concurrency mostly just hides that latency.
-        # Env-overridable for tuning; the default is kept modest so a herd
-        # of build hosts (CI, cloudshell, devs) each downloading at once
-        # doesn't hammer the master's request pool. Drain via as_completed
-        # (not map) so progress surfaces incrementally, not as one barrier.
-        workers = max(
-            1, int(os.environ.get('BA_BACLOUD_DOWNLOAD_WORKERS', '16'))
-        )
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = [
-                executor.submit(_download_entry, entry)
-                for entry in downloads.entries
-            ]
-            for future in as_completed(futures):
-                # .result() re-raises any download error (matching the
-                # old list(map(...)) fail-fast behavior).
-                result = future.result()
-                completed += 1
-                if result is not None:
-                    num_dls += 1
-                    total_bytes += result
-                if show_progress:
-                    _draw_progress()
-
-        if show_progress:
-            # Clear the in-progress line so the summary lands cleanly.
-            print('\r\x1b[K', end='', file=sys.stderr, flush=True)
-
-        duration = time.monotonic() - starttime
-        if num_dls:
-            print(
-                f'{Clr.BLU}Downloaded {num_dls} files'
-                f' ({data_size_str(total_bytes)}'
-                f' total) in {duration:.2f}s.{Clr.RST}'
-            )
-
     def _handle_dir_prune_empty(self, prunedir: str) -> None:
         """Handle pruning empty directories."""
         # Walk the tree bottom-up so we can properly kill recursive
@@ -1108,7 +917,7 @@ class App:
                 os.rmdir(basename)
 
     def _handle_uploads_signed(
-        self, uploads_signed: list[ResponseData.SignedUploadEntry]
+        self, uploads_signed: list[StandardResponseData.SignedUploadEntry]
     ) -> None:
         """Handle direct-to-GCS streaming uploads via signed URLs.
 
@@ -1153,7 +962,7 @@ class App:
         self._end_command_args['uploads_signed'] = sessions
 
     def _handle_uploads_oneshot(
-        self, uploads_oneshot: list[ResponseData.OneshotUploadEntry]
+        self, uploads_oneshot: list[StandardResponseData.OneshotUploadEntry]
     ) -> None:
         """Handle small-file uploads via the basn one-shot relay.
 
@@ -1214,8 +1023,8 @@ class App:
         self._end_command_args['uploads_oneshot'] = results
 
     def _handle_upload_plan(  # pylint: disable=too-many-locals
-        self, plan: ResponseData.UploadPlan
-    ) -> tuple[str, dict, bool]:
+        self, plan: StandardResponseData.UploadPlan
+    ) -> tuple[str, dict]:
         """Execute an upload plan end-to-end.
 
         Walks ``plan.source_dir``, computes sha256+size for every
@@ -1262,7 +1071,7 @@ class App:
             plan.finalize_command, '_upload_plan_prepare'
         )
         prepare_resp_raw = self._servercmd(
-            prepare_cmd, dataclass_to_dict(prepare_req), stream=False
+            prepare_cmd, dataclass_to_dict(prepare_req)
         )
         if prepare_resp_raw.raw_result is None:
             raise CleanError('Prepare response missing raw_result.')
@@ -1306,7 +1115,7 @@ class App:
             )
             finalize_req = UploadPlanFinalizeRequest(sessions=sessions)
             finalize_resp_raw = self._servercmd(
-                finalize_cmd, dataclass_to_dict(finalize_req), stream=False
+                finalize_cmd, dataclass_to_dict(finalize_req)
             )
             if finalize_resp_raw.raw_result is None:
                 raise CleanError('Finalize response missing raw_result.')
@@ -1318,10 +1127,10 @@ class App:
 
         # Phase 5: hand off to the plan's finalize command.
         commit = UploadPlanCommit(files=resolved, state=plan.finalize_state)
-        return (plan.finalize_command, dataclass_to_dict(commit), False)
+        return (plan.finalize_command, dataclass_to_dict(commit))
 
     def _handle_downloads_signed(
-        self, downloads_signed: list[ResponseData.SignedDownloadEntry]
+        self, downloads_signed: list[StandardResponseData.SignedDownloadEntry]
     ) -> None:
         """Handle direct-from-GCS streaming downloads via signed URLs.
 
@@ -1344,7 +1153,7 @@ class App:
         # when running several fetches concurrently.
         chunk_size = 1024 * 1024
 
-        def _fetch(entry: ResponseData.SignedDownloadEntry) -> None:
+        def _fetch(entry: StandardResponseData.SignedDownloadEntry) -> None:
             # Clear out any existing dir where we want the file to go
             # (mirrors the _handle_downloads_inline contract — file
             # deletes should have run before this, so anything still
@@ -1410,9 +1219,9 @@ class App:
 
         if not downloads_signed:
             return
-        # Cap parallelism at 4 to match _handle_downloads — this is
-        # enough to saturate a typical client uplink without piling
-        # pressure on GCS or running the client out of fds.
+        # Cap parallelism at 4: enough to saturate a typical client
+        # uplink without piling pressure on GCS or running the client
+        # out of fds.
         with ThreadPoolExecutor(max_workers=4) as executor:
             list(executor.map(_fetch, downloads_signed))
 
@@ -1432,24 +1241,9 @@ class App:
                 print(prompt, end='', flush=True)
             self._end_command_args['input'] = input()
 
-    def _consume_via_stream_ws(self, response: ResponseData) -> ResponseData:
-        """Drain a streamcall over WebSocket.
-
-        Thin wrapper over :func:`bacommontools.streamws.consume_via_ws`
-        that injects this app's bearer token. Raises
-        :class:`CleanError` on any WS failure (no HTTP-polling
-        fallback).
-        """
-        # pylint: disable=cyclic-import
-        from bacommontools.streamws import consume_via_ws
-
-        assert self._server is not None
-        bearer = self._api_key or self._state.login_token
-        return consume_via_ws(response, bearer=bearer, host=self._server)
-
     def _servercmd_chained(
-        self, call: tuple[str, dict, bool], retry_window: float
-    ) -> ResponseData:
+        self, call: tuple[str, dict], retry_window: float
+    ) -> StandardResponseData:
         """Run a chained server command, retrying transient failures.
 
         ``retry_window`` comes from the previous response's
@@ -1474,7 +1268,7 @@ class App:
                 )
                 time.sleep(min(3.0, remaining))
 
-    def _apply_response_file_ops(self, response: ResponseData) -> None:
+    def _apply_response_file_ops(self, response: StandardResponseData) -> None:
         """Apply a response's file deletes + downloads.
 
         The non-chaining side-effect ops, factored out of the response
@@ -1494,8 +1288,6 @@ class App:
         # needs to fully handle things like replacing dirs with files.
         if response.deletes:
             self._handle_deletes(response.deletes)
-        if response.downloads:
-            self._handle_downloads(response.downloads)
         if response.cas_delivery is not None:
             self._handle_cas_delivery(response.cas_delivery)
         if response.downloads_inline:
@@ -1511,12 +1303,10 @@ class App:
 
     def run_interactive_command(self, cwd: str, args: list[str]) -> None:
         """Run a single user command to completion."""
-        # pylint: disable=too-many-branches
         assert self._project_root is not None
-        nextcall: tuple[str, dict, bool] | None = (
+        nextcall: tuple[str, dict] | None = (
             '_interactive',
             {'c': cwd, 'p': str(self._project_root), 'a': args},
-            False,
         )
 
         # Now talk to the server in a loop until there's nothing left to
@@ -1527,67 +1317,6 @@ class App:
             response = self._servercmd_chained(nextcall, retry_window)
             nextcall = None
             retry_window = 0.0
-
-            # Phase 2: if the kickoff response carries ``stream_ws``,
-            # drain the stream over WebSocket (basn-hosted). WS
-            # failures raise CleanError; there is no HTTP-polling
-            # fallback. The kickoff response's HTTP ``end_command``
-            # path remains in use only for kickoffs that *don't* get
-            # a ``stream_ws`` injected (older basn or direct-bamaster).
-            if response.stream_ws is not None:
-                response = self._consume_via_stream_ws(response)
-
-            # Stream-mode responses: print incremental output frames in
-            # order. If a StreamFinal is encountered, treat its inner
-            # response as the response to process for this iteration —
-            # it carries the call's terminal message / end_command /
-            # error / etc. If no StreamFinal lands in this poll
-            # iteration, the outer response's other fields are unused
-            # (they are just a polling envelope) and we let the outer
-            # ``end_command`` drive the next poll.
-            if response.stream_frames is not None:
-                terminal: ResponseData | None = None
-                for frame in response.stream_frames:
-                    if isinstance(frame, StreamOutput):
-                        print(frame.text, end='', flush=True)
-                    elif isinstance(frame, StreamFinal):
-                        terminal = frame.response
-                        # Any frames after the terminal would be a
-                        # protocol violation; stop here defensively.
-                        break
-                if terminal is None:
-                    # Not done yet — proceed with the polling envelope's
-                    # end_command (delay_seconds was already applied
-                    # inside _servercmd). Skip the rest of the outer
-                    # response's fields (they are unused in polling
-                    # envelopes).
-                    if response.end_command is not None:
-                        nextcall = response.end_command
-                        retry_window = response.retry_window_seconds
-                        for key, val in self._end_command_args.items():
-                            nextcall[1][key] = val
-                    continue
-                # Terminal frame: replace response with the inner one
-                # and apply the inline handling that _servercmd would
-                # have done if the inner had been the direct response
-                # (message / message_stderr / error). Then fall through
-                # to the regular field processing for the rest.
-                response = terminal
-                if response.message is not None:
-                    print(
-                        response.message,
-                        end=response.message_end,
-                        flush=True,
-                    )
-                if response.message_stderr is not None:
-                    print(
-                        response.message_stderr,
-                        end=response.message_stderr_end,
-                        flush=True,
-                        file=sys.stderr,
-                    )
-                if response.error is not None:
-                    raise CleanError(response.error)
 
             if response.login is not None:
                 self._state.login_token = response.login

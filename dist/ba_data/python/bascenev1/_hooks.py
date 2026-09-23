@@ -26,8 +26,8 @@ def launch_main_menu_session() -> None:
 def get_player_icon(sessionplayer: bascenev1.SessionPlayer) -> dict[str, Any]:
     info = sessionplayer.get_icon_info()
     return {
-        'texture': _bascenev1.gettexture(info['texture']),
-        'tint_texture': _bascenev1.gettexture(info['tint_texture']),
+        'texture': _bascenev1.aptextureget(info['texture']),
+        'tint_texture': _bascenev1.aptextureget(info['tint_texture']),
         'tint_color': info['tint_color'],
         'tint2_color': info['tint2_color'],
     }
@@ -73,8 +73,19 @@ def bcs_verify_client_account_ip(account_id: str, ip: str, client_id: int) -> st
         return
 
 
-def kick_vote_started(by: str, to: str) -> None:
-    print("kick vot started by"+by+" to"+to)
+def kick_vote_started(by: str, to: str) -> bool:
+    """Called from C++ when a kick vote is attempted. Return True to allow or False to reject."""
+    by_id = (by or '').strip('"')
+    to_id = (to or '').strip('"')
+    try:
+        import custom_hooks as chooks
+        if hasattr(chooks, 'kick_vote_started'):
+            res = chooks.kick_vote_started(by_id, to_id)
+            if res is not None:
+                return bool(res)
+    except Exception as e:
+        print(f'Error in custom_hooks.kick_vote_started: {e}')
+    return True
 
 
 def local_chat_message(msg: str) -> None:
@@ -86,3 +97,40 @@ def local_chat_message(msg: str) -> None:
 
     if party_window is not None:
         party_window.on_chat_message(msg)
+
+
+def player_entered_server(
+    client_id: int,
+    account_id: str,
+    display_name: str,
+    ip: str,
+    device_id: str,
+) -> bool | None:
+    """Called when a client has successfully authenticated and entered the server."""
+    try:
+        import custom_hooks as chooks
+    except Exception:
+        return True
+
+    try:
+        if hasattr(chooks, 'player_entered_server'):
+            return chooks.player_entered_server(
+                client_id=client_id,
+                account_id=account_id,
+                display_name=display_name,
+                ip=ip,
+                device_id=device_id,
+            )
+        if hasattr(chooks, 'on_player_enter_server'):
+            return chooks.on_player_enter_server(
+                client_id=client_id,
+                account_id=account_id,
+                display_name=display_name,
+                ip=ip,
+                device_id=device_id,
+            )
+    except Exception as e:
+        print(f"Error in player_entered_server hook: {e}")
+        return True
+    return True
+

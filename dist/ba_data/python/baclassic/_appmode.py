@@ -16,7 +16,7 @@ import babase
 from babase import AppMode
 import bauiv1 as bui
 from bauiv1 import builtinassets
-from bauiv1 import stdassets
+from bauiv1 import classicassets
 from bauiv1lib.connectivity import wait_for_connectivity
 
 import _baclassic
@@ -77,6 +77,40 @@ class ClassicAppMode(AppMode):
         _baclassic.classic_app_mode_handle_app_intent_default()
 
     @override
+    def on_control_permission_request(
+        self,
+        request: babase.ControlPermissionRequest,
+        on_result: Callable[[babase.ControlPermission], None],
+    ) -> None:
+        from baclassic import _controlpermission
+
+        # Standing policy first: a dedicated server, or a requester we
+        # already have a live grant for, needs no prompt.
+        if _controlpermission.handle_request(request, on_result):
+            return
+
+        # pylint: disable=cyclic-import
+        from bauiv1lib.controlpermission import ControlPermissionWindow
+
+        key = request.requester_key
+
+        def _on_answer(allowed: bool, remember: bool) -> None:
+            # 'Always' only means anything for a requester we can
+            # recognize again; the window doesn't offer it otherwise.
+            if allowed and remember and key is not None:
+                _controlpermission.remember_grant(key)
+            on_result(
+                babase.ControlPermission.ALLOW
+                if allowed
+                else babase.ControlPermission.DENY
+            )
+
+        ControlPermissionWindow(
+            on_result=_on_answer,
+            allow_remember=key is not None,
+        )
+
+    @override
     def on_activate(self) -> None:
         # Register the asset-package versions backing our asset
         # wrapper modules so legacy bare asset names arriving from old
@@ -85,12 +119,12 @@ class ClassicAppMode(AppMode):
         # AssetNameCompat in the native layer). Sourcing these from
         # the wrappers means a modder-swapped package keeps working.
         # (The bauiv1 and bascenev1 wrapper flavors carry identical
-        # __asset_package__ ids; builtinassets and stdassets here are
+        # __asset_package__ ids; builtinassets and classicassets here are
         # our module-level bauiv1 imports.)
         babase.set_asset_name_compat_versions(
             {
                 'builtinassets': builtinassets.__asset_package__,
-                'stdassets': stdassets.__asset_package__,
+                'classicassets': classicassets.__asset_package__,
             }
         )
 
@@ -291,7 +325,7 @@ class ClassicAppMode(AppMode):
                 ),
                 clfx.Delay(anim_time),
                 clfx.ScreenMessageV2(
-                    message=stdassets.strings.economy.you_got_tokens(
+                    message=classicassets.strings.economy.you_got_tokens(
                         tokens=tokens
                     ).spec,
                     color=(0, 1, 0),
@@ -302,14 +336,8 @@ class ClassicAppMode(AppMode):
 
         elif item_id.startswith('gold_pass'):
             bui.screenmessage(
-                bui.Lstr(
-                    translate=('serverResponses', 'You got a ${ITEM}!'),
-                    subs=[
-                        (
-                            '${ITEM}',
-                            bui.Lstr(resource='goldPass.goldPassText'),
-                        )
-                    ],
+                builtinassets.strings.account.you_got_item(
+                    item=classicassets.strings.get_tokens.gold_pass
                 ),
                 color=(0, 1, 0),
             )
@@ -323,10 +351,7 @@ class ClassicAppMode(AppMode):
                 'on_purchase_process_end got unexpected item_id: %s.', item_id
             )
             bui.screenmessage(
-                bui.Lstr(
-                    translate=('serverResponses', 'You got a ${ITEM}!'),
-                    subs=[('${ITEM}', item_id)],
-                ),
+                builtinassets.strings.account.you_got_item(item=item_id),
                 color=(0, 1, 0),
             )
             if bui.asset_loads_allowed():
@@ -619,7 +644,7 @@ class ClassicAppMode(AppMode):
             inbox_count=val.inbox_count,
             inbox_count_is_max=val.inbox_count_is_max,
             inbox_announce_text=(
-                bui.Lstr(resource='unclaimedPrizesText').evaluate()
+                classicassets.strings.inbox.unclaimed_prizes.evaluate()
                 if val.inbox_contains_prize
                 else ''
             ),

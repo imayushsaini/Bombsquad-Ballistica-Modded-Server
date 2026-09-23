@@ -60,13 +60,17 @@ async def _resolve_and_run_effects(
     locale = bauiv1.app.locale.current_locale
     try:
         async with asyncio.timeout(_RESOLVE_TIMEOUT_SECONDS):
-            await bauiv1.app.assets.resolve(apverids, language=locale)
+            # Client-effects are decorative — resolve at background priority
+            # so they queue behind (and never delay) interactive resolves.
+            await bauiv1.app.assets.resolve(
+                apverids, language=locale, background=True
+            )
             loop = asyncio.get_running_loop()
-            language = {
+            langdata = {
                 apverid: await loop.run_in_executor(
                     None,
                     partial(
-                        bauiv1.app.assets.get_package_strings,
+                        bauiv1.app.assets.get_package_language_data,
                         apverid,
                         locale,
                     ),
@@ -93,10 +97,26 @@ async def _resolve_and_run_effects(
         )
         strip_exception_tracebacks(exc)
         return
+    # Kinds + components let display-formatted params ({size|data_size})
+    # render rather than passing raw values through; nearly every
+    # package has neither, so pass only non-empty entries.
     _run_effects(
         effects,
         delay=delay,
-        decodectx=LanguageStringNameDecodeContext(language, locale),
+        decodectx=LanguageStringNameDecodeContext(
+            {apverid: data[0] for apverid, data in langdata.items()},
+            locale,
+            param_kinds={
+                apverid: data[1]
+                for apverid, data in langdata.items()
+                if data[1]
+            },
+            components={
+                apverid: data[2]
+                for apverid, data in langdata.items()
+                if data[2]
+            },
+        ),
     )
 
 
@@ -112,23 +132,13 @@ def _run_effects(
     for effect in effects:
         effecttype = effect.get_type_id()
         if effecttype is clfx.EffectTypeID.LEGACY_SCREEN_MESSAGE:
-            assert isinstance(effect, clfx.LegacyScreenMessage)
-            textfin = bauiv1.Lstr(
-                translate=('serverResponses', effect.message)
-            ).evaluate()
-            if effect.subs is not None:
-                # Should always be even.
-                assert len(effect.subs) % 2 == 0
-                for j in range(0, len(effect.subs) - 1, 2):
-                    textfin = textfin.replace(
-                        effect.subs[j],
-                        effect.subs[j + 1],
-                    )
-            bauiv1.apptimer(
-                delay,
-                strict_partial(
-                    bauiv1.screenmessage, textfin, color=effect.color
-                ),
+            # Unreachable on current builds: servers only emit this
+            # effect to pre-v2-effects builds (< 22311), so a build
+            # containing this code never receives one. Ignore rather
+            # than carrying the dead legacy-translation display path.
+            logging.warning(
+                'Ignoring legacy screen-message client-effect'
+                ' (should not be sent to this build).'
             )
         elif effecttype is clfx.EffectTypeID.SCREEN_MESSAGE:
             assert isinstance(effect, clfx.ScreenMessage)
@@ -150,6 +160,14 @@ def _run_effects(
                 logging.error(
                     'Got ScreenMessageV2 effect with no decode context.'
                 )
+            elif isinstance(effect.message, int):
+                # Unfolded during resolve; a folded index here means
+                # that failed. Skip loudly rather than guess.
+                assetslog.error(
+                    'Unfolded string index %d in a client-effect;'
+                    ' skipping it.',
+                    effect.message,
+                )
             else:
                 bauiv1.apptimer(
                     delay,
@@ -165,10 +183,23 @@ def _run_effects(
             assert isinstance(effect, clfx.PlaySoundV2)
             # The referenced package is resolved at this point, so the
             # qualified '<apverid>:<name>' ref loads like any asset.
+            #
+            # An index reaching here means de-indexing was skipped or
+            # failed -- effects can run long after their payload's
+            # manifest is gone, so they are converted to specs during
+            # resolve. Skip the effect loudly rather than play a wrong
+            # sound.
+            if isinstance(effect.sound, int):
+                assetslog.error(
+                    'Un-de-indexed sound ref %d in a client-effect;'
+                    ' skipping it.',
+                    effect.sound,
+                )
+                continue
             bauiv1.apptimer(
                 delay,
                 strict_partial(
-                    bauiv1.getsound(
+                    bauiv1.apsoundget(
                         f'{effect.sound.apverid}:{effect.sound.name}'
                     ).play,
                     volume=effect.volume,

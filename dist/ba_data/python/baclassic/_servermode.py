@@ -186,13 +186,18 @@ class ServerController:
         return False
 
     def _execute_shutdown(self) -> None:
+        # Safe up-call: the featureset is fully imported by the time
+        # this runs; the cycle pylint sees is structural only.
+        # pylint: disable-next=cyclic-import
+        from bascenev1 import classicassets
+
         if self._executing_shutdown:
             return
         self._executing_shutdown = True
         timestrval = time.strftime('%c')
         if self._shutdown_reason is ShutdownReason.RESTARTING:
             bascenev1.broadcastmessage(
-                babase.Lstr(resource='internal.serverRestartingText'),
+                classicassets.strings.server.restarting,
                 color=(1, 0.5, 0.0),
             )
             print(
@@ -201,7 +206,7 @@ class ServerController:
             )
         else:
             bascenev1.broadcastmessage(
-                babase.Lstr(resource='internal.serverShuttingDownText'),
+                classicassets.strings.server.shutting_down,
                 color=(1, 0.5, 0.0),
             )
             print(
@@ -429,6 +434,8 @@ class ServerController:
         # Deprecated; left here in order to not break mods.
         classic.teams_series_length = self._config.teams_series_length
         classic.ffa_series_length = self._config.ffa_series_length
+
+        classic.allow_punch_grab = self._config.allow_punch_grab
 
         bascenev1.set_enable_default_kick_voting(
             self._config.enable_default_kick_voting
