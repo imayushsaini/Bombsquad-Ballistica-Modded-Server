@@ -15,15 +15,16 @@ from efro.dataclassio import dataclass_to_json
 import bacommon.docui.v2 as dui2
 import bauiv1 as bui
 from bauiv1 import builtinassets
-from bauiv1 import stdassets
+from bauiv1 import _commonassets
 
 from bauiv1lib.docui.prep._types import PagePrep, RowPrep, ButtonPrep
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Callable, Sequence
 
+    from bauiv1lib.docui.prep._types import DecorationPrep
     from bacommon.langstr import LangStrSpec
-    from bacommon.assetref import TextureSpec, MeshSpec
+    from bacommon.assetspec import TextureSpec, MeshSpec
     from bauiv1lib.docui import DocUIWindow
 
 
@@ -32,8 +33,20 @@ def _btex(name: str) -> str:
     return f'{builtinassets.__asset_package__}:textures/{name}'
 
 
-def refstr(ref: 'TextureSpec | MeshSpec') -> str:
-    """Qualified engine name for a typed asset ref."""
+def refstr(ref: 'TextureSpec | MeshSpec | int') -> str:
+    """Qualified engine name for a typed asset ref.
+
+    Accepts the flat-index form only to reject it: indices are replaced
+    with specs during resolve (``_resolve.deindex_assets``), so one
+    reaching render means that step was skipped or failed. Raising here
+    states the assumption once, rather than leaving eleven call sites
+    each assuming it silently.
+    """
+    if isinstance(ref, int):
+        raise RuntimeError(
+            f'Un-de-indexed asset ref {ref} reached render; the page was'
+            f' not resolved, or de-indexing failed.'
+        )
     return f'{ref.apverid}:{ref.name}'
 
 
@@ -44,6 +57,7 @@ def prep_page(
     uiscale: bui.UIScale,
     scroll_width: float,
     scroll_height: float,
+    margins: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
     idprefix: str,
     immediate: bool = False,
 ) -> PagePrep:
@@ -55,8 +69,18 @@ def prep_page(
 
     import bauiv1lib.docui.prep._calls2 as prepcalls2
 
-    def _n(lstr: 'LangStrSpec') -> bui.LangStr:
-        """Native handle bound against this payload's package list."""
+    def _n(lstr: 'LangStrSpec | int') -> bui.LangStr:
+        """Native handle bound against this payload's package list.
+
+        Accepts a folded index only to reject it: indices are unfolded
+        during resolve, so one arriving here means that step was
+        skipped or failed.
+        """
+        if isinstance(lstr, int):
+            raise RuntimeError(
+                f'Unfolded language-string index {lstr} reached render;'
+                f' the page was not resolved, or unfolding failed.'
+            )
         return bui.LangStr(dataclass_to_json(lstr), packages=packages)
 
     # Create a filtered list of rows we know how to display.
@@ -67,7 +91,7 @@ def prep_page(
                 pagerow = copy.deepcopy(pagerow)
                 pagerow.buttons.append(
                     dui2.Button(
-                        label=stdassets.strings.ui.nothing_here.spec,
+                        label=_commonassets.strings.status.nothing_here.spec,
                         label_color=(1, 1, 1, 0.3),
                         size=(220, 100),
                         label_scale=0.6,
@@ -87,10 +111,17 @@ def prep_page(
     row_title_height_no_subtitle = 38.0
     row_subtitle_height = 30.0
 
+    # Screen margins our host scroll-widget extends into beyond its
+    # nominal scroll-width/height (space between the virtual bounds
+    # and the actual screen edges in small ui). Our overall size grows
+    # to cover these and h-scroll rows extend through them, but
+    # content itself stays laid out within the virtual bounds.
+    margin_left, margin_right, margin_bottom, margin_top = margins
+
     # Buffers for *everything*. Set bases here that look decent and
     # allow page to offset them.
-    top_buffer = 20.0 + page.padding_top
-    bot_buffer = 20.0 + page.padding_bottom
+    top_buffer = 20.0 + page.padding_top + margin_top
+    bot_buffer = 20.0 + page.padding_bottom + margin_bottom
     left_buffer = 10.0 + page.padding_left
     # Nudge a bit due to scrollbar.
     right_buffer = 20.0 + page.padding_right
@@ -117,7 +148,7 @@ def prep_page(
 
     rootcall: Callable[..., bui.Widget] | None = None
     rows: list[RowPrep] = []
-    width: float = scroll_width + fudge
+    width: float = scroll_width + fudge + margin_left + margin_right
     height: float = (
         top_buffer
         + bot_buffer
@@ -142,6 +173,8 @@ def prep_page(
         this_row_width = (
             left_buffer
             + right_buffer
+            + margin_left
+            + margin_right
             + row.padding_left
             + row.padding_right
             + row.button_spacing * (len(row.buttons) - 1)
@@ -231,7 +264,7 @@ def prep_page(
         )
         prepcalls2.prep_decorations(
             hdecs_l,
-            left_buffer + header_inset_left,
+            margin_left + left_buffer + header_inset_left,
             y + header_height_full * 0.5,
             row.header_scale,
             tdelay=None if immediate else (tdelaybase + 0.05),
@@ -246,7 +279,7 @@ def prep_page(
         )
         prepcalls2.prep_decorations(
             hdecs_c,
-            width * 0.5,
+            margin_left + (width - margin_left - margin_right) * 0.5,
             y + header_height_full * 0.5,
             row.header_scale,
             tdelay=None if immediate else (tdelaybase + 0.05),
@@ -261,7 +294,7 @@ def prep_page(
         )
         prepcalls2.prep_decorations(
             hdecs_r,
-            width - right_buffer - header_inset_right,
+            width - margin_right - right_buffer - header_inset_right,
             y + header_height_full * 0.5,
             row.header_scale,
             tdelay=None if immediate else (tdelaybase + 0.05),
@@ -276,10 +309,20 @@ def prep_page(
                     bui.textwidget,
                     position=(
                         (
-                            ((width - left_buffer - right_buffer) * 0.5)
+                            margin_left
+                            + (
+                                (
+                                    width
+                                    - margin_left
+                                    - margin_right
+                                    - left_buffer
+                                    - right_buffer
+                                )
+                                * 0.5
+                            )
                             + 7.0  # Fudge factor to match hscroll
                             if row.center_title
-                            else (left_buffer + header_inset_left)
+                            else (margin_left + left_buffer + header_inset_left)
                         ),
                         y - row_subtitle_height * 0.5,
                     ),
@@ -294,10 +337,18 @@ def prep_page(
                     shadow=row.title_shadow,
                     scale=1.0,
                     maxwidth=(
-                        (width - left_buffer - right_buffer)
+                        (
+                            width
+                            - margin_left
+                            - margin_right
+                            - left_buffer
+                            - right_buffer
+                        )
                         if row.center_title
                         else (
                             width
+                            - margin_left
+                            - margin_right
                             - left_buffer
                             - right_buffer
                             - header_inset_left
@@ -324,10 +375,20 @@ def prep_page(
                     bui.textwidget,
                     position=(
                         (
-                            ((width - left_buffer - right_buffer) * 0.5)
+                            margin_left
+                            + (
+                                (
+                                    width
+                                    - margin_left
+                                    - margin_right
+                                    - left_buffer
+                                    - right_buffer
+                                )
+                                * 0.5
+                            )
                             + 7.0  # Fudge factor to match hscroll
                             if row.center_title
-                            else (left_buffer + header_inset_left)
+                            else (margin_left + left_buffer + header_inset_left)
                         ),
                         y - row_subtitle_height * 0.5,
                     ),
@@ -342,10 +403,18 @@ def prep_page(
                     shadow=row.subtitle_shadow,
                     scale=0.7,
                     maxwidth=(
-                        (width - left_buffer - right_buffer)
+                        (
+                            width
+                            - margin_left
+                            - margin_right
+                            - left_buffer
+                            - right_buffer
+                        )
                         if row.center_title
                         else (
                             width
+                            - margin_left
+                            - margin_right
                             - left_buffer
                             - right_buffer
                             - header_inset_left
@@ -379,10 +448,14 @@ def prep_page(
                 rowheightfull += row_subtitle_height
             prepcalls2.prep_row_debug(
                 (
-                    width - left_buffer - right_buffer,
+                    width
+                    - margin_left
+                    - margin_right
+                    - left_buffer
+                    - right_buffer,
                     rowheightfull,
                 ),
-                (left_buffer, y),
+                (margin_left + left_buffer, y),
                 None if immediate else tdelaybase,
                 rowprep.decorations,
             )
@@ -391,6 +464,8 @@ def prep_page(
             bui.hscrollwidget,
             size=(width - hscrollinset, rowprep.height),
             position=(hscrollinset, y),
+            button_inset_left=margin_left,
+            button_inset_right=margin_right,
             claims_left_right=True,
             highlight=False,
             border_opacity=0.0,
@@ -412,7 +487,7 @@ def prep_page(
             ),
             background=False,
         )
-        x = left_buffer + row.padding_left
+        x = margin_left + left_buffer + row.padding_left
         # Calc height of buttons themselves (includes button padding but
         # not row padding).
         button_row_height = (
@@ -674,6 +749,93 @@ def prep_page(
     )
 
 
+def prep_frames(
+    frames: Sequence[dui2.Frame],
+    *,
+    packages: list[str],
+    allow_logic_thread: bool = False,
+) -> Callable[..., None]:
+    """Prep frames for drawing into a plain container widget.
+
+    Does every bit of layout math up front and returns a single call
+    that instantiates the whole batch at once; run that on the logic
+    thread with ``parent=<container widget>``. Each frame carries its
+    own center position and scale, so placement is decided here rather
+    than at instantiate time.
+
+    This takes a *sequence* deliberately. A single-frame entry point
+    invites being called in a loop, which is the inefficient shape this
+    batching exists to avoid, so callers drawing one frame should pass
+    a one-element sequence.
+
+    Prep is meant to run off the logic thread; doing otherwise
+    reintroduces exactly the stutter the prep/instantiate split exists
+    to prevent, so it logs a warning. Pass ``allow_logic_thread`` only
+    if a caller genuinely has no other option. (Note this is unrelated
+    to ``prep_page``'s ``immediate``, which concerns transition delays.)
+    """
+    if not allow_logic_thread and bui.in_logic_thread():
+        bui.uilog.warning(
+            'prep_frames() called on the logic thread; this blocks the'
+            ' ui while it runs. Prep from a background thread, or pass'
+            ' allow_logic_thread=True if there is genuinely no option.'
+        )
+
+    # pylint: disable=cyclic-import
+    # Safe up-call; see prep_page.
+    import bauiv1lib.docui.prep._calls2 as prepcalls2
+
+    decoration_preps: list[DecorationPrep] = []
+    for frame in frames:
+        prepcalls2.prep_frame(
+            frame,
+            (0.0, 0.0),
+            1.0,
+            None,
+            decoration_preps,
+            packages=packages,
+            highlight=False,
+        )
+
+    def _instantiate(parent: bui.Widget) -> None:
+        instantiate_decorations(decoration_preps, parent=parent)
+
+    return _instantiate
+
+
+def instantiate_decorations(
+    decorations: list[DecorationPrep],
+    *,
+    parent: bui.Widget,
+    draw_controller: bui.Widget | None = None,
+) -> None:
+    """Instantiate prepped decorations under a parent widget.
+
+    The one place prepped decorations turn into live widgets. Asset
+    refs are resolved here rather than at prep time because prep
+    generally runs off the logic thread.
+
+    Decorations carry no knowledge of where they live, so ``parent``
+    fully determines that; this is what lets the same prepped
+    decorations be drawn into a doc-ui page or into any plain
+    container widget.
+
+    ``draw_controller``, when passed, is applied to decorations whose
+    ``highlight`` is set, tying their draw state to that widget (used
+    for decorations layered over a button). Decorations drawn outside
+    of a button context simply pass nothing here.
+    """
+    for decoration in decorations:
+        kwds: dict = {'parent': parent}
+        if draw_controller is not None and decoration.highlight:
+            kwds['draw_controller'] = draw_controller
+        for texarg, texname in decoration.textures.items():
+            kwds[texarg] = bui.aptextureget(texname)
+        for mesharg, meshname in decoration.meshes.items():
+            kwds[mesharg] = bui.apmeshget(meshname)
+        decoration.call(**kwds)
+
+
 def instantiate_page_prep(
     pageprep: PagePrep,
     *,
@@ -685,7 +847,6 @@ def instantiate_page_prep(
 ) -> bui.Widget:
     """Create a UI using prepped data."""
     # pylint: disable=too-many-locals
-    # pylint: disable=too-many-branches
     outrows: list[tuple[bui.Widget, list[bui.Widget]]] = []
 
     # Now go through and run our prepped ui calls to build our
@@ -698,18 +859,12 @@ def instantiate_page_prep(
             uicall(parent=subcontainer)
         assert rowprep.hscrollcall is not None
         hscroll = rowprep.hscrollcall(parent=subcontainer)
-        for decoration in rowprep.decorations:
-            kwds: dict = {'parent': subcontainer}
-            for texarg, texname in decoration.textures.items():
-                kwds[texarg] = bui.gettexture(texname)
-            for mesharg, meshname in decoration.meshes.items():
-                kwds[mesharg] = bui.getmesh(meshname)
-            decoration.call(**kwds)
+        instantiate_decorations(rowprep.decorations, parent=subcontainer)
         outrow: tuple[bui.Widget, list[bui.Widget]] = (hscroll, [])
         assert rowprep.hsubcall is not None
         hsub = rowprep.hsubcall(parent=hscroll)
         for i, buttonprep in enumerate(rowprep.buttons):
-            kwds = {
+            kwds: dict = {
                 'parent': hsub,
                 'on_activate_call': strict_partial(
                     window.controller.run_action,
@@ -719,19 +874,13 @@ def instantiate_page_prep(
                 ),
             }
             for texarg, texname in buttonprep.textures.items():
-                kwds[texarg] = bui.gettexture(texname)
+                kwds[texarg] = bui.aptextureget(texname)
             btn = buttonprep.buttoncall(**kwds)
             assert buttonprep.buttoneditcall is not None
             buttonprep.buttoneditcall(edit=btn)
-            for decoration in buttonprep.decorations:
-                kwds = {'parent': hsub}
-                if decoration.highlight:
-                    kwds['draw_controller'] = btn
-                for texarg, texname in decoration.textures.items():
-                    kwds[texarg] = bui.gettexture(texname)
-                for mesharg, meshname in decoration.meshes.items():
-                    kwds[mesharg] = bui.getmesh(meshname)
-                decoration.call(**kwds)
+            instantiate_decorations(
+                buttonprep.decorations, parent=hsub, draw_controller=btn
+            )
 
             # Make sure row is scrolled so leftmost button is
             # visible (though it kinda seems like this should happen

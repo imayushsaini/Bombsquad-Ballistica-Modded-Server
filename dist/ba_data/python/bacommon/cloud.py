@@ -8,19 +8,23 @@
   it in mod code.
 """
 
+import datetime
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated, override
 
 from efro.message import Message, Response
+from efro.logging import LogLevel
 from efro.dataclassio import ioprepped, IOAttrs
 from bacommon.analytics import AnalyticsEvent
 from bacommon import securedata
 from bacommon.transfer import DirectoryManifest
 from bacommon.locale import Locale
 from bacommon.login import LoginType
+from bacommon.loggercontrol import LoggerControlConfig
+from bacommon.logreporting import LogReportSpec
 from bacommon.docui import DocUIRequest, DocUIResponse
-import bacommon.displayitem as ditm
+import bacommon.legacydisplayitem as lditm
 import bacommon.clienteffect as clfx
 
 if TYPE_CHECKING:
@@ -36,8 +40,16 @@ class WebLocation(Enum):
 
 @ioprepped
 @dataclass
-class CloudVals:
+class CloudValsPersistent:
     """Engine config values provided by the master server.
+
+    These are stored to the client config and restored at the next
+    launch, so they apply from the start of a run even before
+    connectivity comes up. That also means they can be restored into
+    a newer build than the one the server computed them for, so
+    values here must be safe to apply blindly across app updates;
+    anything tailored to a specific client build belongs in
+    :class:`CloudValsTransient` instead.
 
     Used to convey things such as debug logging.
     """
@@ -50,6 +62,54 @@ class CloudVals:
 
     #: Max number of objects of a given type to emit debug logs for.
     gc_debug_type_limit: Annotated[int, IOAttrs('gdl', store_default=False)] = 2
+
+    #: When present, a logger-level config the server wants applied on
+    #: this client - a diff over the client's base logger config, the
+    #: same shape the user's own ``'Log Levels'`` app-config value
+    #: uses (so it only needs to name loggers it changes). Honored
+    #: only while the user leaves the ``'Cloud Logger Control'``
+    #: app-config toggle enabled (its default; see the client's
+    #: ``babase._cloudloggercontrol`` module). Applied at the
+    #: start of the next run by ``baenv._set_log_levels()``, which
+    #: reads this field's raw stored form - keep the wire keys here
+    #: in sync with that code.
+    logger_control: Annotated[
+        LoggerControlConfig | None, IOAttrs('lc', store_default=False)
+    ] = None
+
+
+@ioprepped
+@dataclass
+class CloudValsTransient:
+    """Engine config values applying only to the current app run.
+
+    Unlike :class:`CloudValsPersistent`, these are never stored to
+    the client config; they take effect once fetched (shortly after
+    connectivity comes up) and evaporate when the run ends. That
+    makes them the right home for values the server tailors to the
+    exact client it sees at request time (its build number, etc.).
+    """
+
+    #: When set, the triggered log-report the client should perform
+    #: this run: what trips it and how much surrounding context
+    #: ships (see :class:`~bacommon.logreporting.LogReportSpec`).
+    #: ``None`` (the default) leaves log reporting off entirely, so a
+    #: client only ever reports when the server explicitly asks it
+    #: to - which is what keeps this off for the whole fleet by
+    #: default and lets us enable it for, say, one build number.
+    log_report: Annotated[
+        LogReportSpec | None, IOAttrs('lr', store_default=False)
+    ] = None
+
+    #: Whether a newer version of the app is available to this client.
+    #: Drives a one-off gentle screen-message shortly after
+    #: connectivity comes up; deliberately transient since whether an
+    #: update exists is a fact about the exact build the server sees,
+    #: not something worth remembering into the next launch (which may
+    #: be the updated build).
+    update_available: Annotated[bool, IOAttrs('ua', store_default=False)] = (
+        False
+    )
 
 
 @ioprepped
@@ -111,6 +171,13 @@ class LoginProxyStateQueryResponse(Response):
 
     # On success, these will be filled out.
     credentials: Annotated[str | None, IOAttrs('tk')]
+
+    # On FAIL: whether the failure is the sign-in window having
+    # expired (client took too long) rather than anything wrong with
+    # the sign-in itself. A flag rather than a State value on purpose:
+    # old clients reject unknown enum values but ignore unknown keys,
+    # so this reaches new clients without breaking old ones.
+    expired: Annotated[bool, IOAttrs('e', soft_default=False)] = False
 
 
 @ioprepped
@@ -533,6 +600,20 @@ class ResolveAssetPackageMessage(Message):
     #: build 0 -- always below the floor.
     build_number: Annotated[int, IOAttrs('bn', soft_default=0)] = 0
 
+    #: End-to-end asset-pipeline test seed. Normally empty. A non-empty
+    #: value asks the master to rebuild this package's entire build graph
+    #: from scratch (workspace compile, every leaf build, and the resolve
+    #: meta-build) rather than serving any of it from cache, so a client
+    #: launch can be measured against a genuinely cold pipeline. Seeded
+    #: output is byte-identical to unseeded output, so this disturbs no
+    #: live cache entry and costs only compute; the master accordingly
+    #: gates it to a single operator account and refuses it (with
+    #: ``ACCESS_DENIED``) for anyone else rather than quietly ignoring
+    #: it. Set on the client via the ``BA_ASSET_TEST_SEED`` env var.
+    #: ``soft_default`` keeps older clients / basn nodes (which don't
+    #: send it) reading as unseeded.
+    testseed: Annotated[str, IOAttrs('ts', soft_default='')] = ''
+
     @override
     @classmethod
     def get_response_types(cls) -> list[type[Response] | None]:
@@ -605,7 +686,14 @@ class CloudValsRequest(Message):
 class CloudValsResponse(Response):
     """Here's them cloud vals ya asked for, boss."""
 
-    vals: Annotated[CloudVals, IOAttrs('v')]
+    persistent: Annotated[CloudValsPersistent, IOAttrs('v')]
+
+    transient: Annotated[
+        CloudValsTransient,
+        IOAttrs(
+            't', store_default=False, soft_default_factory=CloudValsTransient
+        ),
+    ]
 
 
 @ioprepped
@@ -645,7 +733,7 @@ class ChestActionResponse(Response):
 
     # If present, signifies the chest has been opened and we should show
     # the user this stuff that was in it.
-    contents: Annotated[list[ditm.Wrapper] | None, IOAttrs('c')] = None
+    contents: Annotated[list[lditm.Wrapper] | None, IOAttrs('c')] = None
 
     # If contents are present, which of the chest's prize-sets they
     # represent.
@@ -653,6 +741,15 @@ class ChestActionResponse(Response):
 
     # Printable error if something goes wrong.
     error: Annotated[str | None, IOAttrs('e')] = None
+
+    # If True, ``error`` is display-final text already translated to
+    # the client's held locale server-side (the lifetime-rule
+    # convention; see 'Server-sent strings' in efrohome
+    # asset-packages.md). Clients seeing this must render the text via
+    # the literal path -- never legacy serverResponses translation or
+    # Lstr-json interpretation. Absent/False means legacy behavior:
+    # English text the client may translate via its local corpus.
+    error_is_final: Annotated[bool, IOAttrs('ef', store_default=False)] = False
 
     # Printable warning. Shown in orange with an error sound. Does not
     # mean the action failed; only that there's something to tell the
@@ -697,6 +794,101 @@ class FulfillDocUIResponse(Response):
 
 @ioprepped
 @dataclass
+class ClientLogReportMessage(Message):
+    """A slice of a client's log history from a triggered report.
+
+    Sent only when the server has enabled reporting for this client
+    via :attr:`CloudValsTransient.log_report`. A single triggered
+    window is shipped as one or more of these - the pre-trigger
+    context first, then further slices as post-trigger entries
+    accumulate. The sender advances past a slice only once its send
+    round trip completes, re-sending the same range otherwise, so a
+    receiver may see overlapping ranges and should dedupe by app
+    instance and entry index
+    (:func:`bacommon.logreporting.trim_archive_overlap`).
+
+    Unlike the fatal-error reports that arrive at basn's ``/fatalerror``
+    over unauthenticated plaintext, this rides the client's authenticated
+    transport -- so the receiving side knows the account and session and
+    does not have to treat the contents as forgeable.
+    """
+
+    #: A zstd-compressed JSON :class:`~efro.logging.LogArchive`.
+    #:
+    #: Compressed because log text is extremely compressible (~10x is
+    #: typical) and the archive can approach the client's whole log
+    #: cache. That matters here: the message path applies no
+    #: compression of its own, and bytes ride as base64, so an
+    #: uncompressed archive would be the largest thing a client ever
+    #: sends. Decompress with an explicit size cap -- the client is
+    #: authenticated but that is no reason to accept a zip bomb.
+    archive_zstd: Annotated[bytes, IOAttrs('a')]
+
+    #: The level of the log entry that tripped this report's window.
+    #: The entry itself is in (one of) the archives; this saves the
+    #: receiver scanning for it just to bucket the report.
+    trigger_level: Annotated[LogLevel, IOAttrs('tl')]
+
+    #: The trigger phrase that tripped this report's window, or None
+    #: when the level trigger did.
+    trigger_phrase: Annotated[str | None, IOAttrs('tp', soft_default=None)]
+
+    #: Entries the report's window covered that were evicted from the
+    #: client's log cache before this slice could gather them (the
+    #: gap sits immediately before this archive's first entry).
+    #: Nonzero when a long pre-roll outruns the cache or shipping
+    #: falls behind a chatty logger; the receiver surfaces it as an
+    #: explicit placeholder so a gap never reads as a quiet moment.
+    entries_lost: Annotated[int, IOAttrs('el', soft_default=0)]
+
+    #: What the client's own UTC clock read as this report was built.
+    #:
+    #: Entry times come from the device wall clock, so a device whose
+    #: clock is wrong yields entries that cannot be lined up against
+    #: server logs -- and Cloud Logging refuses anything more than a
+    #: day in the future outright. Comparing this against the
+    #: receiver's clock measures the skew, letting the whole archive be
+    #: shifted onto the receiver's timeline. Shifting keeps every
+    #: interval and ordering within the dump intact, which clamping
+    #: individual times would not.
+    #:
+    #: None from clients built before this field existed; those reports
+    #: are submitted with their times exactly as sent.
+    client_time: Annotated[
+        datetime.datetime | None, IOAttrs('ct', soft_default=None)
+    ]
+
+    #: Whether the client's log levels have been under cloud control
+    #: for this entire app run - the ``'Cloud Logger Control'`` toggle
+    #: was enabled at launch and has never been switched off, and no
+    #: local override (the ``BA_LOG_LEVELS`` env var) was in effect.
+    #: Toggling the control off even momentarily clears this for the
+    #: rest of the run. Lets report consumers filter for clients whose
+    #: levels are exactly what the server configured, rather than
+    #: whatever a user or dev happened to dial in. False from clients
+    #: predating the field.
+    cloud_controlled_logging: Annotated[bool, IOAttrs('cc', soft_default=False)]
+
+    #: Build-integrity state of the sender: True is a non-debug build
+    #: with an embedded blessing hash whose computed script hash
+    #: checked out at send time; False is no or failed blessing
+    #: (debug builds included); None means the background hash
+    #: computation hadn't finished when this slice shipped (or the
+    #: client predates the field). Pure build integrity; user-side
+    #: taint rides separately in :attr:`modified`.
+    blessed: Annotated[bool | None, IOAttrs('bl', soft_default=None)]
+
+    #: Whether anything user-driven could have modified engine
+    #: behavior this run as of this slice's send - the user ran
+    #: commands, workspaces are in use, or a custom app-scripts dir
+    #: is active (the same trio the fatal-error reporter sends).
+    #: Those flags only ever latch on within a run, so False means
+    #: clean-so-far. None from clients predating the field.
+    modified: Annotated[bool | None, IOAttrs('md', soft_default=None)]
+
+
+@ioprepped
+@dataclass
 class AnalyticsEventMessage(Message):
     """Have a nice analytics event!"""
 
@@ -716,6 +908,23 @@ class AuthRequestMessage(Message):
         return [AuthRequestResponse]
 
 
+class JoinRejectReason(Enum):
+    """Wire-stable join-rejection reason codes; APPEND ONLY.
+
+    A client renders a recognized reason as its own localized builtin
+    string and any unrecognized value as a generic rejection, so
+    reasons added later degrade gracefully on older clients. Values
+    must stay in sync with the ``BA_REJECT_REASON_*`` defines in the
+    engine's ``networking.h``.
+    """
+
+    UNKNOWN = 0
+    PASSWORD_INCORRECT = 1
+    ACCOUNT_REJECTED = 2
+    AUTH_ERROR = 3
+    MUST_SIGN_IN = 4
+
+
 @ioprepped
 @dataclass
 class AuthRequestResponse(Response):
@@ -723,6 +932,13 @@ class AuthRequestResponse(Response):
 
     error: Annotated[str | None, IOAttrs('e')]
     token: Annotated[str | None, IOAttrs('t')]
+
+    #: Optional :class:`JoinRejectReason` value accompanying a
+    #: rejection. Kept as a plain int on the wire so clients tolerate
+    #: reasons added after they shipped (rendering them as a generic
+    #: rejection). ``None`` (e.g. free-form host-supplied rejection
+    #: text) means no code applies; show ``error`` text instead.
+    reason: Annotated[int | None, IOAttrs('r', soft_default=None)]
 
 
 @ioprepped

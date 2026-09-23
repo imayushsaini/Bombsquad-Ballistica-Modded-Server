@@ -5,13 +5,26 @@
 
 from typing import TYPE_CHECKING, override
 
-from bacommon.locale import Locale, LocaleResolved
+from bacommon.locale import (
+    Locale,
+    LocaleResolved,
+    language_picker_label,
+)
 import bauiv1 as bui
-from bauiv1lib.utils import scroll_fade_bottom, scroll_fade_top
+from bauiv1 import _commonassets, classicassets
+
+from bauiv1lib.utils import (
+    get_screen_margins,
+    scroll_fade_bottom,
+    scroll_fade_top,
+)
 from bauiv1lib.popup import PopupMenu
 
 if TYPE_CHECKING:
     from typing import Any
+
+
+_advstrs = classicassets.strings.settings.advanced
 
 
 class AdvancedSettingsWindow(bui.MainWindow):
@@ -73,6 +86,16 @@ class AdvancedSettingsWindow(bui.MainWindow):
             self._scroll_height += 27
             scroll_bottom += 1
 
+        # In small ui we extend our scrollable area out into the screen
+        # margins (space between the virtual bounds and the actual
+        # screen edges) while keeping content laid out within the
+        # virtual bounds.
+        margin_left, margin_right, margin_bottom, self._margin_top = (
+            get_screen_margins(scale)
+            if uiscale is bui.UIScale.SMALL
+            else (0.0, 0.0, 0.0, 0.0)
+        )
+
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
@@ -127,7 +150,12 @@ class AdvancedSettingsWindow(bui.MainWindow):
         if self._do_net_test_button:
             self._sub_height += self._extra_button_spacing
         self._sub_height += self._spacing * 2.0  # plugins
-        self._sub_height += self._spacing * 2.0  # dev tools
+
+        # Dev tools, plus extra space to cover any screen margins our
+        # scroll area extends into (content stays in virtual bounds).
+        self._sub_height += (
+            self._spacing * 2.0 + margin_bottom + self._margin_top
+        )
 
         self._r = 'settingsWindowAdvanced'
 
@@ -154,10 +182,13 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
-            size=(self._scroll_width, self._scroll_height),
+            size=(
+                self._scroll_width + margin_left + margin_right,
+                self._scroll_height + margin_bottom + self._margin_top,
+            ),
             position=(
-                self._width * 0.5 - self._scroll_width * 0.5,
-                scroll_bottom,
+                self._width * 0.5 - self._scroll_width * 0.5 - margin_left,
+                scroll_bottom - margin_bottom,
             ),
             simple_culling_v=20.0,
             highlight=False,
@@ -177,24 +208,8 @@ class AdvancedSettingsWindow(bui.MainWindow):
             selection_loops_to_parent=True,
         )
 
-        # With full-screen scrolling, fade content as it approaches
-        # toolbars. (but only in the main menu where we're showing said
-        # toolbars).
-        if uiscale is bui.UIScale.SMALL and bui.in_main_menu():
-            scroll_fade_top(
-                self._root_widget,
-                self._width * 0.5 - self._scroll_width * 0.5,
-                scroll_bottom,
-                self._scroll_width,
-                self._scroll_height,
-            )
-            scroll_fade_bottom(
-                self._root_widget,
-                self._width * 0.5 - self._scroll_width * 0.5,
-                scroll_bottom,
-                self._scroll_width,
-                self._scroll_height,
-            )
+        if uiscale is bui.UIScale.SMALL:
+            self._make_scroll_fades(scroll_bottom)
 
         self._title_text = bui.textwidget(
             parent=self._root_widget,
@@ -204,7 +219,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             ),
             size=(0, 0),
             scale=0.75 if uiscale is bui.UIScale.SMALL else 1.0,
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=_advstrs.title,
             color=app.ui_v1.title_color,
             h_align='center',
             v_align='center',
@@ -223,6 +238,31 @@ class AdvancedSettingsWindow(bui.MainWindow):
             {'b': app.env.engine_build_number},
             callback=bui.WeakCallPartial(self._completed_langs_cb),
         )
+
+    def _make_scroll_fades(self, scroll_bottom: float) -> None:
+        # With full-screen scrolling, fade content as it approaches
+        # toolbars (even with the minimal in-game toolbar, the top fade
+        # keeps our title readable; the bottom one applies only in the
+        # main menu where there's actually a bottom toolbar). Note that
+        # we intentionally use the original un-margin-extended scroll
+        # geometry here; the fades were placed to coincide with toolbar
+        # elements, which don't move when we extend out into screen
+        # margins.
+        scroll_fade_top(
+            self._root_widget,
+            self._width * 0.5 - self._scroll_width * 0.5,
+            scroll_bottom,
+            self._scroll_width,
+            self._scroll_height,
+        )
+        if bui.in_main_menu():
+            scroll_fade_bottom(
+                self._root_widget,
+                self._width * 0.5 - self._scroll_width * 0.5,
+                scroll_bottom,
+                self._scroll_width,
+                self._scroll_height,
+            )
 
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
@@ -261,13 +301,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
                     ''
                     if bui.app.lang.language == 'Test'
                     else (
-                        bui.Lstr(
-                            resource=f'{self._r}.translationNoUpdateNeededText'
-                        )
+                        _advstrs.translation_up_to_date
                         if up_to_date
-                        else bui.Lstr(
-                            resource=f'{self._r}.translationUpdateNeededText'
-                        )
+                        else _advstrs.translation_needs_updates
                     )
                 ),
                 color=(
@@ -278,11 +314,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
             bui.textwidget(
                 edit=self._lang_status_text,
                 text=(
-                    bui.Lstr(resource=f'{self._r}.translationFetchErrorText')
+                    _advstrs.translation_fetch_error
                     if self._complete_langs_error
-                    else bui.Lstr(
-                        resource=f'{self._r}.translationFetchingStatusText'
-                    )
+                    else _advstrs.translation_checking
                 ),
                 color=(
                     (1.0, 0.5, 0.2)
@@ -303,12 +337,23 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         locale_ss = bui.app.locale
 
-        # Build a list of long-values for locales we are able to display.
-        available_languages = sorted(
+        # Build a list of long-values for locales we are able to display,
+        # ordered by endonym -- the half of each label the user actually
+        # scans. (Was sorted by long_value, i.e. the English name, which
+        # meant "Svenska — Swedish" filed under S and "Deutsch — German"
+        # under G: correctly ordered by something invisible, so the list
+        # read as unsorted. The master server's picker uses this same key.)
+        available_languages = [
             lr.locale.long_value
-            for lr in LocaleResolved
-            if (locale_ss.can_display_locale(lr.locale))
-        )
+            for lr in sorted(
+                (
+                    lr
+                    for lr in LocaleResolved
+                    if locale_ss.can_display_locale(lr.locale)
+                ),
+                key=lambda lr: lr.endonym_sort_key,
+            )
+        ]
 
         # Don't rebuild if the menu is open or if our language and
         # language-list hasn't changed.
@@ -331,7 +376,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
         for child in children:
             child.delete()
 
-        v = self._sub_height - 35
+        # Start below any screen margin the scroll area extends into;
+        # content itself stays within the virtual bounds.
+        v = self._sub_height - self._margin_top - 35
 
         # For fullscreen scrollable, account for toolbar.
         uiscale = bui.app.ui_v1.uiscale
@@ -343,7 +390,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
         # Update our existing back button and title.
         if self._back_button is not None:
             bui.buttonwidget(
-                edit=self._back_button, label=bui.Lstr(resource='backText')
+                edit=self._back_button, label=_commonassets.strings.actions.back
             )
             bui.buttonwidget(
                 edit=self._back_button, label=bui.charstr(bui.SpecialChar.BACK)
@@ -351,7 +398,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         bui.textwidget(
             edit=self._title_text,
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=_advstrs.title,
         )
 
         this_button_width = 410
@@ -361,7 +408,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(70, v + 10),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.languageText'),
+            text=_advstrs.language,
             maxwidth=150,
             scale=1.2,
             color=bui.app.ui_v1.title_color,
@@ -371,25 +418,23 @@ class AdvancedSettingsWindow(bui.MainWindow):
 
         cur_lang = bui.app.locale.current_locale.long_value
 
-        # We have a special dict of language names in that language so
-        # we don't have to go digging through each full language.
-        lang_names_translated = bui.get_legacy_langdata().get(
-            'lang_names_translated', {}
-        )
-
-        langs_translated = {}
-        for lang in available_languages:
-            langs_translated[lang] = lang_names_translated.get(lang, lang)
+        # Label shape lives in
+        # bacommon.locale.language_picker_label, shared with the master
+        # server's account-settings picker so the two can't drift. (It
+        # documents a known RTL-ordering defect that is engine-level, not
+        # fixable here.)
+        resolved_by_long_value = {
+            lr.locale.long_value: lr for lr in LocaleResolved
+        }
+        locale_strs = _commonassets.strings.locales
 
         langs_full = {}
         for lang in available_languages:
-            lang_translated = bui.Lstr(translate=('languages', lang)).evaluate()
-            if langs_translated[lang] == lang_translated:
-                langs_full[lang] = lang_translated
-            else:
-                langs_full[lang] = (
-                    langs_translated[lang] + ' (' + lang_translated + ')'
-                )
+            lang_resolved = resolved_by_long_value[lang]
+            langs_full[lang] = language_picker_label(
+                lang_resolved,
+                getattr(locale_strs, lang_resolved.value).evaluate(),
+            )
 
         self._language_popup = PopupMenu(
             parent=self._subcontainer,
@@ -404,21 +449,18 @@ class AdvancedSettingsWindow(bui.MainWindow):
             button_size=(300, 60),
             choices_display=(
                 [
-                    bui.Lstr(
-                        value=(
-                            bui.Lstr(resource='autoText').evaluate()
-                            + ' ('
-                            + bui.Lstr(
-                                translate=(
-                                    'languages',
-                                    bui.app.locale.default_locale.long_value,
-                                )
-                            ).evaluate()
-                            + ')'
-                        )
+                    _commonassets.strings.compose.paren_suffix(
+                        main=_commonassets.strings.values.auto,
+                        note=getattr(
+                            locale_strs,
+                            bui.app.locale.default_locale.resolved.value,
+                        ),
                     )
                 ]
-                + [bui.Lstr(value=langs_full[l]) for l in available_languages]
+                + [
+                    bui.langstr_value(langs_full[l])
+                    for l in available_languages
+                ]
             ),
             current_choice=cur_lang,
         )
@@ -436,11 +478,10 @@ class AdvancedSettingsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(90, v + 10),
             size=(0, 0),
-            text=bui.Lstr(
-                resource=f'{self._r}.helpTranslateText',
-                subs=[('${APP_NAME}', bui.Lstr(resource='titleText'))],
+            text=_advstrs.help_translate(
+                app_name=classicassets.strings.ui.app_name
             ),
-            maxwidth=self._sub_width * 0.9,
+            maxwidth=self._sub_width * 0.9 - 10,
             max_height=55,
             flatness=1.0,
             scale=0.65,
@@ -455,9 +496,8 @@ class AdvancedSettingsWindow(bui.MainWindow):
             id=f'{self.main_window_id_prefix}|translationedit',
             position=(self._sub_width / 2 - this_button_width / 2, v - 24),
             size=(this_button_width, 60),
-            label=bui.Lstr(
-                resource=f'{self._r}.translationEditorButtonText',
-                subs=[('${APP_NAME}', bui.Lstr(resource='titleText'))],
+            label=_advstrs.translation_editor(
+                app_name=classicassets.strings.ui.app_name
             ),
             autoselect=True,
             on_activate_call=bui.CallStrict(
@@ -490,7 +530,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             maxwidth=430,
             textcolor=(0.8, 0.8, 0.8),
             value=lang_inform,
-            text=bui.Lstr(resource=f'{self._r}.translationInformMe'),
+            text=_advstrs.translation_inform_me,
             on_value_change_call=bui.WeakCallPartial(
                 self._on_lang_inform_value_change
             ),
@@ -510,7 +550,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(50, v),
             size=(self._sub_width - 100, 30),
             configkey='Kick Idle Players',
-            displayname=bui.Lstr(resource=f'{self._r}.kickIdlePlayersText'),
+            displayname=_advstrs.kick_idle_players,
             scale=1.0,
             maxwidth=430,
         )
@@ -522,7 +562,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(50, v),
             size=(self._sub_width - 100, 30),
             configkey='Show Ping',
-            displayname=bui.Lstr(resource=f'{self._r}.showInGamePingText'),
+            displayname=_advstrs.show_in_game_ping,
             scale=1.0,
             maxwidth=430,
         )
@@ -534,7 +574,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(50, v),
             size=(self._sub_width - 100, 30),
             configkey='Show Demos When Idle',
-            displayname=bui.Lstr(resource=f'{self._r}.showDemosWhenIdleText'),
+            displayname=_advstrs.show_demos_when_idle,
             scale=1.0,
             maxwidth=430,
         )
@@ -548,9 +588,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(50, v),
             size=(self._sub_width - 100, 30),
             configkey='Show Deprecated Login Types',
-            displayname=bui.Lstr(
-                resource=f'{self._r}.showDeprecatedLoginTypesText'
-            ),
+            displayname=_advstrs.show_deprecated_login_types,
             scale=1.0,
             maxwidth=430,
         )
@@ -562,7 +600,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(50, v),
             size=(self._sub_width - 100, 30),
             configkey='Disable Camera Shake',
-            displayname=bui.Lstr(resource=f'{self._r}.disableCameraShakeText'),
+            displayname=_advstrs.disable_camera_shake,
             scale=1.0,
             maxwidth=430,
         )
@@ -576,9 +614,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 position=(50, v),
                 size=(self._sub_width - 100, 30),
                 configkey='Disable Camera Gyro',
-                displayname=bui.Lstr(
-                    resource=f'{self._r}.disableCameraGyroscopeMotionText'
-                ),
+                displayname=_advstrs.disable_camera_gyro,
                 scale=1.0,
                 maxwidth=430,
             )
@@ -601,9 +637,9 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 width=180,
                 choices=['always', 'auto', 'never'],
                 choices_display=[
-                    bui.Lstr(resource='graphicsSettingsWindow.alwaysText'),
-                    bui.Lstr(resource='autoText'),
-                    bui.Lstr(resource='graphicsSettingsWindow.neverText'),
+                    _commonassets.strings.values.always,
+                    _commonassets.strings.values.auto,
+                    _commonassets.strings.values.never,
                 ],
                 current_choice=current_mode,
                 # WeakCallPartial so the popup's callback reference
@@ -622,7 +658,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 parent=self._subcontainer,
                 position=(224, v + 5),
                 size=(0, 0),
-                text=bui.Lstr(resource=f'{self._r}.insecureConnectionsText'),
+                text=_advstrs.insecure_connections,
                 maxwidth=300,
                 color=(0.8, 0.8, 0.8),
                 h_align='left',
@@ -633,9 +669,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 parent=self._subcontainer,
                 position=(90, v - 45),
                 size=(0, 0),
-                text=bui.Lstr(
-                    resource=(f'{self._r}.insecureConnectionsDescriptionText')
-                ),
+                text=_advstrs.insecure_connections_description,
                 maxwidth=400,
                 flatness=1.0,
                 scale=0.65,
@@ -659,9 +693,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 size=(self._sub_width - 100, 30),
                 configkey='Always Use Internal Keyboard',
                 autoselect=True,
-                displayname=bui.Lstr(
-                    resource=f'{self._r}.alwaysUseInternalKeyboardText'
-                ),
+                displayname=_advstrs.always_use_internal_keyboard,
                 scale=1.0,
                 maxwidth=430,
             )
@@ -669,11 +701,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 parent=self._subcontainer,
                 position=(90, v - 10),
                 size=(0, 0),
-                text=bui.Lstr(
-                    resource=(
-                        f'{self._r}.alwaysUseInternalKeyboardDescriptionText'
-                    )
-                ),
+                text=_advstrs.always_use_internal_keyboard_description,
                 maxwidth=400,
                 flatness=1.0,
                 scale=0.65,
@@ -694,7 +722,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 10),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.moddingGuideText'),
+            label=_advstrs.modding_guide,
             text_scale=1.0,
             on_activate_call=bui.CallStrict(
                 bui.open_url, 'https://ballistica.net/wiki/modding-guide'
@@ -709,7 +737,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 10),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.devToolsText'),
+            label=classicassets.strings.settings.dev_tools.title,
             text_scale=1.0,
             on_activate_call=self._on_dev_tools_button_press,
         )
@@ -748,7 +776,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 10),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.showUserModsText'),
+            label=_advstrs.show_mods_folder,
             text_scale=1.0,
             on_activate_call=show_user_scripts,
         )
@@ -761,7 +789,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 10),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource='pluginsText'),
+            label=classicassets.strings.settings.plugins.title,
             text_scale=1.0,
             on_activate_call=self._on_plugins_button_press,
         )
@@ -777,7 +805,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 position=(self._sub_width / 2 - this_button_width / 2, v - 14),
                 size=(this_button_width, 60),
                 autoselect=True,
-                label=bui.Lstr(resource=f'{self._r}.vrTestingText'),
+                label=classicassets.strings.settings.vr_testing.title,
                 text_scale=1.0,
                 on_activate_call=self._on_vr_test_press,
             )
@@ -793,7 +821,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
                 position=(self._sub_width / 2 - this_button_width / 2, v - 14),
                 size=(this_button_width, 60),
                 autoselect=True,
-                label=bui.Lstr(resource=f'{self._r}.netTestingText'),
+                label=classicassets.strings.settings.net_testing.title,
                 text_scale=1.0,
                 on_activate_call=self._on_net_test_press,
             )
@@ -807,7 +835,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 14),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.benchmarksText'),
+            label=classicassets.strings.settings.benchmarks.title,
             text_scale=1.0,
             on_activate_call=self._on_benchmark_press,
         )
@@ -819,7 +847,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
             position=(self._sub_width / 2 - this_button_width / 2, v - 14),
             size=(this_button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.sendInfoText'),
+            label=_advstrs.send_info,
             text_scale=1.0,
             on_activate_call=self._on_send_info_press,
         )
@@ -838,7 +866,7 @@ class AdvancedSettingsWindow(bui.MainWindow):
     def _show_restart_needed(self, value: Any) -> None:
         del value  # Unused.
         bui.screenmessage(
-            bui.Lstr(resource=f'{self._r}.mustRestartText'), color=(1, 1, 0)
+            _commonassets.strings.status.must_restart, color=(1, 1, 0)
         )
 
     def _on_lang_inform_value_change(self, val: bool) -> None:

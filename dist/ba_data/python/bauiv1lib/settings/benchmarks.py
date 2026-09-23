@@ -6,7 +6,12 @@ import logging
 from typing import cast, override
 
 import bauiv1 as bui
+from bauiv1 import _commonassets, classicassets
+from bauiv1lib.utils import get_screen_margins, scroll_fade_top
+
 import bascenev1 as bs
+
+_bmstrs = classicassets.strings.settings.benchmarks
 
 
 class BenchmarksAndStressTestsWindow(bui.MainWindow):
@@ -55,8 +60,36 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
         self._scroll_height = target_height - 31
         self._scroll_bottom = yoffs - 60 - self._scroll_height
 
+        # In small ui we extend our scrollable area out into the screen
+        # margins (space between the virtual bounds and the actual
+        # screen edges) while keeping content laid out within the
+        # virtual bounds.
+        margin_left, margin_right, margin_bottom, margin_top = (
+            get_screen_margins(scale)
+            if uiscale is bui.UIScale.SMALL
+            else (0.0, 0.0, 0.0, 0.0)
+        )
+
+        # In small ui we also extend the scroll's top edge all the way
+        # up to the top of the screen; soft blobs then keep our title
+        # legible over any content scrolled up there. Content gets
+        # padded to stay exactly where it would be with the top edge
+        # in its standard spot below the title.
+        top_extend = (
+            (0.5 * self._height + 0.5 * (screensize[1] / scale))
+            - (self._scroll_bottom + self._scroll_height)
+            + margin_top
+            if uiscale is bui.UIScale.SMALL
+            else 0.0
+        )
+
+        # A bit of extra padding above our content so the soft blobs
+        # fading things out under the title don't eat into our top
+        # button when scrolled to the top.
+        top_pad = 15.0
+
         self._sub_width = min(510.0, self._scroll_width)
-        self._sub_height = 520
+        self._sub_height = 520 + margin_bottom + top_extend + top_pad
 
         self._r = 'debugWindow'
         uiscale = bui.app.ui_v1.uiscale
@@ -95,6 +128,40 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, cancel_button=btn)
 
+        self._scrollwidget = bui.scrollwidget(
+            parent=self._root_widget,
+            highlight=False,
+            size=(
+                self._scroll_width + margin_left + margin_right,
+                self._scroll_height + margin_bottom + top_extend,
+            ),
+            position=(
+                self._width * 0.5 - self._scroll_width * 0.5 - margin_left,
+                self._scroll_bottom - margin_bottom,
+            ),
+            border_opacity=0.4,
+            center_small_content_horizontally=True,
+        )
+        bui.containerwidget(edit=self._scrollwidget, claims_left_right=True)
+
+        # Our scroll area extends up past our title; these soft blobs
+        # (plus the title being drawn after the scroll area) keep the
+        # title legible over content scrolled up there. Note that we
+        # intentionally use the original un-margin-extended scroll
+        # geometry here so the blobs coincide with the title, which
+        # doesn't move when we extend out into screen margins.
+        if uiscale is bui.UIScale.SMALL:
+            scroll_fade_top(
+                self._root_widget,
+                self._width * 0.5 - self._scroll_width * 0.5,
+                self._scroll_bottom,
+                self._scroll_width,
+                self._scroll_height,
+                # Nudge the blobs up so their most-opaque core sits
+                # just above our title instead of below it.
+                yoffs_extra=30.0,
+            )
+
         bui.textwidget(
             parent=self._root_widget,
             position=(
@@ -104,24 +171,11 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             size=(0, 0),
             maxwidth=360,
             scale=0.8 if uiscale is bui.UIScale.SMALL else 1.0,
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=_bmstrs.title,
             h_align='center',
             v_align='center',
             color=bui.app.ui_v1.title_color,
         )
-
-        self._scrollwidget = bui.scrollwidget(
-            parent=self._root_widget,
-            highlight=False,
-            size=(self._scroll_width, self._scroll_height),
-            position=(
-                self._width * 0.5 - self._scroll_width * 0.5,
-                self._scroll_bottom,
-            ),
-            border_opacity=0.4,
-            center_small_content_horizontally=True,
-        )
-        bui.containerwidget(edit=self._scrollwidget, claims_left_right=True)
 
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
@@ -129,7 +183,9 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             background=False,
         )
 
-        v = self._sub_height - 70
+        # (start below the top-edge extension plus padding so content
+        # sits just below where the soft blobs fade things out).
+        v = self._sub_height - top_extend - top_pad - 70
         button_width = 300
         btn = bui.buttonwidget(
             parent=self._subcontainer,
@@ -137,7 +193,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             position=((self._sub_width - button_width) * 0.5, v),
             size=(button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.runCPUBenchmarkText'),
+            label=_bmstrs.run_cpu_benchmark,
             on_activate_call=self._run_cpu_benchmark_pressed,
         )
         bui.widget(
@@ -151,7 +207,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             position=((self._sub_width - button_width) * 0.5, v),
             size=(button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.runMediaReloadBenchmarkText'),
+            label=_bmstrs.run_media_reload_benchmark,
             on_activate_call=self._run_media_reload_benchmark_pressed,
         )
         v -= 60
@@ -160,7 +216,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(self._sub_width * 0.5, v + 22),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.stressTestTitleText'),
+            text=_bmstrs.stress_test,
             maxwidth=200,
             color=bui.app.ui_v1.heading_color,
             scale=0.85,
@@ -174,7 +230,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(x_offs - 10, v + 22),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.stressTestPlaylistTypeText'),
+            text=_bmstrs.playlist_type,
             maxwidth=130,
             color=bui.app.ui_v1.heading_color,
             scale=0.65,
@@ -189,12 +245,9 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             width=150,
             choices=['Random', 'Teams', 'Free-For-All'],
             choices_display=[
-                bui.Lstr(resource=a)
-                for a in [
-                    'randomText',
-                    'playModes.teamsText',
-                    'playModes.freeForAllText',
-                ]
+                _commonassets.strings.values.random,
+                classicassets.strings.play_modes.teams,
+                classicassets.strings.play_modes.free_for_all,
             ],
             current_choice='Auto',
             on_value_change_call=self._stress_test_game_type_selected,
@@ -205,7 +258,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(x_offs - 10, v + 22),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.stressTestPlaylistNameText'),
+            text=_bmstrs.playlist_name,
             maxwidth=130,
             color=bui.app.ui_v1.heading_color,
             scale=0.65,
@@ -223,9 +276,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             v_align='center',
             autoselect=True,
             color=(0.9, 0.9, 0.9, 1.0),
-            description=bui.Lstr(
-                resource=f'{self._r}.stressTestPlaylistDescriptionText'
-            ),
+            description=_bmstrs.playlist_description,
             editable=True,
             padding=4,
         )
@@ -237,7 +288,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(x_offs - 10, v),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.stressTestPlayerCountText'),
+            text=_bmstrs.player_count,
             color=(0.8, 0.8, 0.8, 1.0),
             h_align='right',
             v_align='center',
@@ -288,7 +339,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             parent=self._subcontainer,
             position=(x_offs - 10, v),
             size=(0, 0),
-            text=bui.Lstr(resource=f'{self._r}.stressTestRoundDurationText'),
+            text=_bmstrs.round_duration,
             color=(0.8, 0.8, 0.8, 1.0),
             h_align='right',
             v_align='center',
@@ -339,7 +390,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             position=((self._sub_width - button_width) * 0.5, v),
             size=(button_width, 60),
             autoselect=True,
-            label=bui.Lstr(resource=f'{self._r}.runStressTestText'),
+            label=_bmstrs.run_stress_test,
             on_activate_call=self._stress_test_pressed,
         )
         bui.widget(edit=btn, show_buffer_bottom=50)
@@ -425,6 +476,4 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
             )
             bui.containerwidget(edit=self._root_widget, transition='out_right')
         else:
-            bui.screenmessage(
-                bui.Lstr(value='Already present in another activity.')
-            )
+            bui.screenmessage(_bmstrs.already_running_in_activity)

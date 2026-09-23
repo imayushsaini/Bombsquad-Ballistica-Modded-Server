@@ -1,5 +1,5 @@
 # Released under the MIT License. See LICENSE for details.
-"""In-game automation helpers for the opt-in FIFO control channel.
+"""In-game automation helpers for the opt-in control channel.
 
 .. warning::
 
@@ -7,22 +7,25 @@
    notice. No backward-compatibility guarantees across versions.
    Use at your own risk.
 
-The automation channel is an optional dev tool that lets external
-tools (scripts, test harnesses, Claude Code, etc.) drive a running
-game in-process by writing Python lines to ``<silo>/cmd.fifo``,
-which a reader thread dispatches on the logic thread.
+Automation is an optional dev tool that lets external tools (scripts,
+test harnesses, Claude Code, etc.) drive a running game in-process.
+These helpers run wherever driver-supplied Python is exec'd: over the
+automation channel to the game's basn node (see
+:mod:`baplus._automationsession` and ``tools/pcommand
+automation_drive``), or through the cloud console.
 
-Two-stage opt-in:
+Gating:
 
 * **Compile time** — the whole subsystem is gated on the
   ``BA_ENABLE_AUTOMATION`` build define (CMake:
-  ``-DENABLE_AUTOMATION=ON``). When off, no FIFO is created, no
-  native hooks are compiled in, and the helpers below emit a
-  ``[automation] <tag> fail not_compiled_in`` line if called.
-* **Runtime** — even in builds that compiled it in, the subsystem
-  stays dormant unless ``BA_AUTOMATION_FIFO`` is set to a path at
-  startup (``tools/pcommand test_game_run`` sets this
-  automatically).
+  ``-DENABLE_AUTOMATION=ON``). When off, no native hooks are compiled
+  in, and the helpers below emit a ``[automation] <tag> fail
+  not_compiled_in`` line if called.
+* **Runtime** — in builds that compiled it in, the native
+  capabilities are stood up on developer builds. Offering the game
+  up for *remote* driving additionally requires the channel's own
+  runtime opt-in (``BA_AUTOMATION_CHANNEL``; ``tools/pcommand
+  test_game_run --automation-channel`` sets it).
 
 This module holds the UI-agnostic helpers. Anything that reaches
 into the live widget tree (press/scroll by id or label, widget
@@ -69,14 +72,41 @@ def _emit(tag: str, status: str, payload: str = '') -> None:
         automationlog.info('[automation] %s %s', tag, status)
 
 
+def available() -> bool:
+    """Whether automation was compiled into this build.
+
+    The native hooks are simply absent otherwise, so this is a
+    legitimate question to ask in any build -- unlike a build-flavor
+    attribute, which may not exist to be read at all.
+
+    Exists for callers outside babase (the automation channel lives
+    in baplus, which may not reach the private ``_babase`` module) so
+    they need not reimplement the check.
+    """
+    return hasattr(_babase, 'automation_capture_screenshot')
+
+
 def ping(tag: str = 'ping') -> None:
     """Round-trip sanity check: emits ``[automation] <tag> ok pong``.
 
     Useful as a "is the channel alive?" probe at the start of a test
     script; if you see the matching line in the log within a tick of
-    sending it, the FIFO + reader thread + dispatcher are all healthy.
+    sending it, the automation dispatch path is all healthy.
     """
     _emit(tag, 'ok', 'pong')
+
+
+def fps(tag: str = 'fps') -> None:
+    """Report the current render frame rate.
+
+    Emits ``[automation] <tag> ok <fps>``, where ``<fps>`` is the
+    number of frames rendered over the most recent one-second stats
+    window -- the same value the in-game 'Show FPS' display shows,
+    tracked whether or not that display is enabled. Always ``0`` in
+    headless builds, which render no frames. Note the window updates
+    once per second, so a just-launched app can briefly report ``0``.
+    """
+    _emit(tag, 'ok', str(_babase.get_last_fps()))
 
 
 def shutdown(tag: str = 'shutdown') -> None:
@@ -91,28 +121,30 @@ def shutdown(tag: str = 'shutdown') -> None:
 
 
 def screenshot(path: str, tag: str = 'screenshot') -> None:
-    """Save the next-rendered framebuffer as a PNG.
+    """Save the next-rendered framebuffer as an image file.
 
-    Fire-and-forget — the actual capture happens on the graphics
-    thread between frames; a ``[automation] <tag> ok|fail <details>``
+    Fire-and-forget — the actual capture happens in the graphics
+    context between frames; a ``[automation] <tag> ok|fail <details>``
     line lands in the log (``ba.app``) when it completes.
+
+    The path's extension picks the format — **prefer ``.jpg``**: it
+    gets lossy JPEG, which for photographic game frames is a fraction
+    of PNG's size (what makes captures cheap to store and move over
+    the wire). Any other extension gets lossless PNG, which should
+    only be used where pixel-perfect data is actually needed
+    (exact-color assertions, render-output comparisons, etc.).
+
+    This writes on the *device*. A remote driver that wants the bytes
+    should use ``automation_drive --screenshot`` instead, which
+    captures to a temp file and ships the image back.
 
     Path resolution:
 
-    * **Absolute path** (``/tmp/x.png``, ``/Users/.../shot.png``) —
-      used as-is. Note: writing outside the project tree will trigger
-      sandbox permission prompts.
-    * **Relative path or bare filename** (``home.png``,
-      ``menus/main.png``) — resolved under the per-instance silo's
-      screenshots dir (``<silo>/screenshots/``). That dir is sandbox-
-      writable and gets cleaned up automatically when the silo is
-      removed via ``rm -rf build/test_run/<n>``.
-      Subdirs are created as needed.
-
-    Default-case usage is therefore prompt-free:
-
-    >>> auto.screenshot('main_menu.png')
-    # Writes to build/test_run/<instance>/screenshots/main_menu.png
+    * **Absolute path** (``/tmp/x.jpg``, ``/Users/.../shot.jpg``) —
+      used as-is.
+    * **Relative path or bare filename** (``home.jpg``,
+      ``menus/main.jpg``) — resolved under ``screenshots/`` beneath
+      the process cwd; subdirs are created as needed.
 
     Native-resolution capture: on retina displays the image will be
     at physical pixel dimensions (e.g. 2880x1800), not logical
@@ -134,26 +166,120 @@ def screenshot(path: str, tag: str = 'screenshot') -> None:
         os.makedirs(screenshots_dir, exist_ok=True)
         abs_path = os.path.join(screenshots_dir, path)
         # Ensure subdirs in the relative path exist too
-        # (e.g. screenshot('menus/main.png')).
+        # (e.g. screenshot('menus/main.jpg')).
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
     _badev.automation_capture_screenshot(path=abs_path, tag=tag)
 
 
 def _automation_screenshots_dir() -> str:
-    """Resolve the per-silo screenshots dir from BA_AUTOMATION_FIFO.
+    """Dir a relative screenshot path resolves under.
 
-    The game is launched with ``BA_AUTOMATION_FIFO=<silo>/cmd.fifo``;
-    derive the silo dir from that and append ``screenshots/``. If the
-    env var isn't set (shouldn't happen — automation can't be active
-    without it) we fall back to the cwd.
+    ``screenshots/`` beneath the process cwd. This is only for code
+    that execs ``screenshot('foo.jpg')`` on the device directly; a
+    remote driver's ``--screenshot`` captures to a temp file and
+    ships the bytes back instead (see ``baplus._automationsession``).
     """
     import os
 
-    fifo_path = os.environ.get('BA_AUTOMATION_FIFO')
-    if fifo_path:
-        silo_dir = os.path.dirname(fifo_path)
-        return os.path.join(silo_dir, 'screenshots')
     return os.path.join(os.getcwd(), 'screenshots')
+
+
+def drag_at(
+    x: float,
+    y: float,
+    x2: float,
+    y2: float,
+    *,
+    steps: int = 8,
+    tag: str = 'drag',
+) -> None:
+    """Synthesize a mouse drag between two virtual-screen points.
+
+    Presses at ``(x, y)``, delivers ``steps`` interpolated motion
+    events towards ``(x2, y2)``, and releases there -- all through the
+    normal UI dispatch path, so anything with real press/drag/release
+    behavior (the draggable dev-console button, for one) responds the
+    way it would to a real pointer. Same coordinate system as
+    :func:`click_at` (origin bottom-left, y up).
+
+    Emits ``[automation] <tag> fail not_compiled_in`` when the build
+    was made without ``BA_ENABLE_AUTOMATION``, or ``fail
+    headless_mode`` when called from a headless build.
+    """
+    if not hasattr(_babase, 'automation_drag_at_virtual'):
+        _emit(tag, 'fail', 'not_compiled_in')
+        return
+    try:
+        _badev.automation_drag_at_virtual(x=x, y=y, x2=x2, y2=y2, steps=steps)
+    except RuntimeError as exc:
+        if 'headless' in str(exc).lower():
+            _emit(tag, 'fail', 'headless_mode')
+            return
+        raise
+    _emit(tag, 'ok', f'{x:.0f},{y:.0f} -> {x2:.0f},{y2:.0f}')
+
+
+def window_size(tag: str = 'window_size') -> None:
+    """Report the app's current OS-window size.
+
+    Emits ``[automation] <tag> ok <W>x<H>`` (logical units, which is
+    what :func:`set_window_size` accepts -- on retina displays the
+    backing framebuffer, and thus screenshot captures, will be larger).
+    Only functions where the app runs in a desktop window (the SDL /
+    cmake builds); elsewhere emits ``fail not_supported``.
+
+    Fire-and-forget -- the query runs on the main thread and the result
+    line lands in the log shortly after.
+
+    Emits ``[automation] <tag> fail not_compiled_in`` when the build
+    was made without ``BA_ENABLE_AUTOMATION``, or ``fail
+    headless_mode`` when called from a headless build.
+    """
+    if not hasattr(_babase, 'automation_get_window_size'):
+        _emit(tag, 'fail', 'not_compiled_in')
+        return
+    try:
+        _badev.automation_get_window_size(tag=tag)
+    except RuntimeError as exc:
+        if 'headless' in str(exc).lower():
+            _emit(tag, 'fail', 'headless_mode')
+            return
+        raise
+
+
+def set_window_size(
+    width: int, height: int, *, tag: str = 'set_window_size'
+) -> None:
+    """Resize the app's OS window.
+
+    Takes logical units (the same ones :func:`window_size` reports).
+    Only functions where the app runs in a desktop window (the SDL /
+    cmake builds) and only in windowed mode; emits ``fail fullscreen``
+    or ``fail not_supported`` otherwise. The resize goes through the
+    same OS window-resized path a hand-drag does, so UI reflow /
+    aspect-clamp behavior gets exercised for real -- useful for
+    checking layouts at multiple window shapes within one run.
+
+    Fire-and-forget -- the resize runs on the main thread and a
+    ``[automation] <tag> ok <W>x<H>`` line reporting the size actually
+    applied (the OS may clamp; e.g. macOS to display bounds) lands in
+    the log shortly after. Give the UI a beat to reflow before
+    capturing a screenshot of the result.
+
+    Emits ``[automation] <tag> fail not_compiled_in`` when the build
+    was made without ``BA_ENABLE_AUTOMATION``, or ``fail
+    headless_mode`` when called from a headless build.
+    """
+    if not hasattr(_babase, 'automation_set_window_size'):
+        _emit(tag, 'fail', 'not_compiled_in')
+        return
+    try:
+        _badev.automation_set_window_size(width=width, height=height, tag=tag)
+    except RuntimeError as exc:
+        if 'headless' in str(exc).lower():
+            _emit(tag, 'fail', 'headless_mode')
+            return
+        raise
 
 
 def _evaluate_lstr_json(raw: str) -> str:
@@ -163,6 +289,43 @@ def _evaluate_lstr_json(raw: str) -> str:
     without reaching into the private ``_babase`` module directly.
     """
     return str(_babase.evaluate_lstr(raw))
+
+
+def click_at(x: float, y: float, *, tag: str = 'click') -> None:
+    """Synthesize a mouse click at virtual-screen coords.
+
+    Coords are absolute virtual-screen, origin **bottom-left**, y
+    growing upward (the OpenGL convention the rest of the automation
+    surface uses). To convert from a screenshot pixel ``(px, py)``
+    measured top-left in an image of size ``(iw, ih)``::
+
+        vx = px * vw / iw
+        vy = vh - py * vh / ih
+
+    where ``(vw, vh)`` is :func:`babase.get_virtual_screen_size()`.
+
+    Prefer :func:`bauiv1._automation.press_by_id` or ``press_by_label``
+    whenever the target is a widget you can name -- they are stable
+    against layout changes, where coords are not. This exists for the
+    cases those cannot reach: overlays and popups that never appear in
+    the main-window widget tree (the get-remote window, for one), and
+    non-widget hit targets.
+
+    Emits ``[automation] <tag> fail not_compiled_in`` when the build
+    was made without ``BA_ENABLE_AUTOMATION``, or ``fail
+    headless_mode`` when called from a headless build.
+    """
+    if not hasattr(_babase, 'automation_press_at_virtual'):
+        _emit(tag, 'fail', 'not_compiled_in')
+        return
+    try:
+        _badev.automation_press_at_virtual(button=1, x=x, y=y)
+    except RuntimeError as exc:
+        if 'headless' in str(exc).lower():
+            _emit(tag, 'fail', 'headless_mode')
+            return
+        raise
+    _emit(tag, 'ok', f'@ {x:.0f},{y:.0f}')
 
 
 def scroll_at(

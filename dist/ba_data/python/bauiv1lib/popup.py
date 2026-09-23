@@ -34,6 +34,22 @@ class PopupWindow:
         darken_behind: bool = True,
     ):
         # pylint: disable=too-many-locals
+
+        # Unique-per-instance prefix for widget ids -- the popup
+        # analogue of MainWindow.main_window_id_prefix, and the same
+        # `_idprefix` several popups already roll by hand (which is why
+        # we leave theirs alone if they set it before calling us).
+        #
+        # Popups are the surface automation has the most trouble
+        # reaching: they are modal, they appear unbidden, and several
+        # can be onscreen at once, so labels alone are often ambiguous.
+        # Subclasses should id at least their close/action buttons as
+        # f'{self._idprefix}|<thing>'.
+        if not hasattr(self, '_idprefix'):
+            self._idprefix = bui.app.ui_v1.new_id_prefix(
+                type(self).__name__.lower()
+            )
+
         if focus_size is None:
             focus_size = size
 
@@ -126,7 +142,7 @@ class PopupMenuWindow(PopupWindow):
         maxwidth: float | None = None,
         scale: float = 1.0,
         choices_disabled: Sequence[str] | None = None,
-        choices_display: Sequence[bui.Lstr] | None = None,
+        choices_display: Sequence[bui.Lstr | bui.LangStr] | None = None,
     ):
         # FIXME: Clean up a bit.
         # pylint: disable=too-many-branches
@@ -174,7 +190,9 @@ class PopupMenuWindow(PopupWindow):
                     min(
                         maxwidth,
                         bui.get_string_width(
-                            choice_display_name, suppress_warning=True
+                            choice_display_name,
+                            suppress_warning=True,
+                            suppress_logic_thread_warning=True,
                         ),
                     )
                     + 75,
@@ -185,7 +203,9 @@ class PopupMenuWindow(PopupWindow):
                     min(
                         maxwidth,
                         bui.get_string_width(
-                            choice_display_name, suppress_warning=True
+                            choice_display_name,
+                            suppress_warning=True,
+                            suppress_logic_thread_warning=True,
                         ),
                     )
                     + 60,
@@ -320,7 +340,7 @@ class PopupMenu:
         maxwidth: float | None = None,
         scale: float | None = None,
         choices_disabled: Sequence[str] | None = None,
-        choices_display: Sequence[bui.Lstr] | None = None,
+        choices_display: Sequence[bui.Lstr | bui.LangStr] | None = None,
         button_size: tuple[float, float] = (160.0, 50.0),
         autoselect: bool = True,
     ):
@@ -423,7 +443,7 @@ class PopupMenu:
     def set_choice(self, choice: str) -> None:
         """Set the selected choice."""
         self._current_choice = choice
-        displayname: str | bui.Lstr
+        displayname: str | bui.Lstr | bui.LangStr
         if len(self._choices_display) == len(self._choices):
             displayname = self._choices_display[self._choices.index(choice)]
         else:

@@ -8,11 +8,12 @@ from typing import override, TYPE_CHECKING
 
 from efro.util import asserttype
 import bacommon.docui.v2 as dui2
-from bacommon.assetref import TextureSpec
+from bacommon.assetspec import TextureSpec
 from bacommon.langstr import LangStrSpecValue
 import bauiv1 as bui
+from bascenev1lib.actor import spazappearance
 from bauiv1 import builtinassets
-from bauiv1 import stdassets
+from bauiv1 import classicassets
 
 from bauiv1lib.docui import DocUIController
 
@@ -44,9 +45,9 @@ class InventoryUIController(DocUIController):
     @override
     def fulfill_request(self, request: DocUIRequest) -> DocUIResponse:
         # All local authoring here uses strings from BUNDLED packages
-        # (bastdassets/builtin) so these pages keep working offline.
-        invstrs = stdassets.strings.inventory
-        profstrs = stdassets.strings.profiles
+        # (baclassicassets/builtin) so these pages keep working offline.
+        invstrs = classicassets.strings.inventory
+        profstrs = classicassets.strings.profiles
 
         response: DocUIResponse
 
@@ -143,7 +144,7 @@ class InventoryUIController(DocUIController):
                             default_sound=False,
                             immediate_local_action='new_profile',
                         ),
-                        icon=stdassets.textures.plus_button,
+                        icon=classicassets.textures.plus_button,
                         icon_scale=1.3,
                         icon_color=(0.7, 0.6, 0.9, 1),
                         style=dui2.ButtonStyle.MEDIUM,
@@ -287,21 +288,26 @@ class InventoryUIController(DocUIController):
                     widget_id=f'profile.{p_name}',
                     decorations=[
                         dui2.Image(
-                            _tex_from_qualified(appearance.icon_texture),
+                            spazappearance.texture_spec(
+                                appearance.icon_texture
+                            ),
                             position=(0, 15),
                             size=(140, 140),
                             mask_texture=(
                                 builtinassets.textures.character_icon_mask
                             ),
-                            tint_texture=_tex_from_qualified(
+                            tint_texture=spazappearance.texture_spec(
                                 appearance.icon_mask_texture
                             ),
                             tint_color=color,
                             tint2_color=highlight,
                         ),
                         dui2.Text(
-                            # Raw profile name (+icon glyph); verbatim.
-                            LangStrSpecValue(tval),
+                            # Raw profile name (+icon glyph); the
+                            # literal form brace-escapes so a name
+                            # like '{test}' displays verbatim instead
+                            # of erroring as a substitution token.
+                            LangStrSpecValue.literal(tval),
                             position=(0, -75),
                             size=(130, 40),
                             flatness=1.0,
@@ -328,12 +334,7 @@ class InventoryUIController(DocUIController):
         profiles = bui.app.config.get('Player Profiles', {})
         if len(profiles) > 100:
             bui.screenmessage(
-                bui.Lstr(
-                    translate=(
-                        'serverResponses',
-                        'Max number of profiles reached.',
-                    )
-                ),
+                classicassets.strings.profiles.max_reached,
                 color=(1, 0, 0),
             )
             builtinassets.audio.error.get().play()
@@ -365,13 +366,13 @@ class InventoryUIController(DocUIController):
                 char = p_info.get('character', 'Spaz')
                 appearance = classic.spaz_appearances.get(char)
                 if appearance:
-                    sounds = (
-                        appearance.jump_sounds
-                        + appearance.attack_sounds
-                        + appearance.pickup_sounds
-                    )
+                    sounds = [
+                        *appearance.jump_sounds,
+                        *appearance.attack_sounds,
+                        *appearance.pickup_sounds,
+                    ]
                     if sounds:
-                        bui.getsound(random.choice(sounds)).play()
+                        spazappearance.ui_sound(random.choice(sounds)).play()
 
         action.window.main_window_replace(
             lambda: EditProfileWindow(

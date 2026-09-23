@@ -8,7 +8,9 @@ from enum import Enum
 from typing import override, TYPE_CHECKING
 
 from bauiv1lib.tabs import TabRow
+from bauiv1lib.utils import get_screen_margins
 import bauiv1 as bui
+from bauiv1 import classicassets
 from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
@@ -121,6 +123,18 @@ class GatherWindow(bui.MainWindow):
         self._scroll_bottom = yoffs - 93 - self._scroll_height
         self._scroll_left = (self._width - self._scroll_width) * 0.5
 
+        # In small ui (where we cover the screen), our backing imagery
+        # and region-spanning scrolls extend out to cover any margins
+        # between the virtual rect and the visible screen edges on the
+        # left/right/bottom (the top edge carries the tab row and stays
+        # put). Tabs consult these to extend their own region-spanning
+        # bits, insetting content to match so it stays put.
+        self.margin_left, self.margin_right, self.margin_bottom = (
+            get_screen_margins(scale)[:3]
+            if uiscale is bui.UIScale.SMALL
+            else (0.0, 0.0, 0.0)
+        )
+
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
@@ -174,30 +188,26 @@ class GatherWindow(bui.MainWindow):
             scale=1.3 if uiscale is bui.UIScale.SMALL else 1.0,
             h_align='left' if uiscale is bui.UIScale.SMALL else 'center',
             v_align='center',
-            text=(bui.Lstr(resource=f'{self._r}.titleText')),
+            text=(classicassets.strings.gather.title),
             maxwidth=135 if uiscale is bui.UIScale.SMALL else 320,
         )
 
         # Build up the set of tabs we want.
-        tabdefs: list[tuple[GatherWindow.TabID, bui.Lstr]] = [
-            (self.TabID.ABOUT, bui.Lstr(resource=f'{self._r}.aboutText'))
+        tabdefs: list[tuple[GatherWindow.TabID, bui.Lstr | bui.LangStr]] = [
+            (self.TabID.ABOUT, classicassets.strings.gather.about)
         ]
         if plus.get_v1_account_misc_read_val('enablePublicParties', True):
             tabdefs.append(
                 (
                     self.TabID.INTERNET,
-                    bui.Lstr(resource=f'{self._r}.publicText'),
+                    classicassets.strings.gather.public,
                 )
             )
         tabdefs.append(
-            (self.TabID.PRIVATE, bui.Lstr(resource=f'{self._r}.privateText'))
+            (self.TabID.PRIVATE, classicassets.strings.gather.private)
         )
-        tabdefs.append(
-            (self.TabID.NEARBY, bui.Lstr(resource=f'{self._r}.nearbyText'))
-        )
-        tabdefs.append(
-            (self.TabID.MANUAL, bui.Lstr(resource=f'{self._r}.manualText'))
-        )
+        tabdefs.append((self.TabID.NEARBY, classicassets.strings.gather.nearby))
+        tabdefs.append((self.TabID.MANUAL, classicassets.strings.gather.manual))
 
         tab_inset = 250.0 if uiscale is bui.UIScale.SMALL else 100.0
 
@@ -241,12 +251,17 @@ class GatherWindow(bui.MainWindow):
             )
 
         # Not actually using a scroll widget anymore; just an image.
+        # It extends left/right/bottom across any screen margins; the
+        # top edge stays put since the tab row hangs off it.
         bui.imagewidget(
             parent=self._root_widget,
-            size=(self._scroll_width, self._scroll_height),
+            size=(
+                self._scroll_width + self.margin_left + self.margin_right,
+                self._scroll_height + self.margin_bottom,
+            ),
             position=(
-                self._width * 0.5 - self._scroll_width * 0.5,
-                self._scroll_bottom,
+                self._width * 0.5 - self._scroll_width * 0.5 - self.margin_left,
+                self._scroll_bottom - self.margin_bottom,
             ),
             texture=builtinassets.textures.scroll_widget.get(),
             mesh_transparent=builtinassets.meshes.soft_edge_outside.get(),

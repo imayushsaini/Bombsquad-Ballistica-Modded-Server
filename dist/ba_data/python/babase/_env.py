@@ -13,7 +13,6 @@ import threading
 from typing import TYPE_CHECKING, override
 
 import urllib3
-from efro.logging import LogLevel
 
 if TYPE_CHECKING:
     from typing import Any
@@ -187,8 +186,27 @@ def _bootstrap_networking() -> None:
 
     # Our shared SSL context. Creating these can be expensive so we
     # create it here once and recycle for our various connections.
+    #
+    # When we bring our own Python, baenv points SSL_CERT_FILE at our
+    # bundled certifi root certs; in that case we trust ONLY those and
+    # deliberately do NOT pull in the OS certificate store. Passing
+    # cafile= makes create_default_context() skip load_default_certs(),
+    # which on Windows would otherwise load the system cert store on top
+    # of ours -- and expired legacy roots lingering there (old DST/ISRG
+    # cross-signs and the like) can poison OpenSSL's chain-building and
+    # make it reject currently-valid server certs as expired. The other
+    # platforms never load the OS store anyway, so this just brings
+    # Windows in line with them. Set BA_USE_SYSTEM_CERTS=1 to fall back
+    # to the OS store (e.g. behind a corporate/AV TLS-inspection proxy
+    # whose root lives only in the system store).
     global _g_net_warm_start_ssl_context  # pylint: disable=global-statement
-    _g_net_warm_start_ssl_context = ssl.create_default_context()
+    bundled_ca_file = os.environ.get('SSL_CERT_FILE')
+    if bundled_ca_file and os.environ.get('BA_USE_SYSTEM_CERTS') != '1':
+        _g_net_warm_start_ssl_context = ssl.create_default_context(
+            cafile=bundled_ca_file
+        )
+    else:
+        _g_net_warm_start_ssl_context = ssl.create_default_context()
 
     # I'm finding that urllib3 exceptions tend to give us reference
     # cycles, which we want to avoid as much as possible. We can work
@@ -611,6 +629,18 @@ def _feed_logs_to_babase(log_handler: LogHandler) -> None:
     """Route log/print output to internal ballistica console/etc."""
     import _babase
 
+    from babase._logreporting import create_log_reporter
+
+    # Watches for warning-or-worse entries and ships a slice of our log
+    # history to the cloud. Inert unless the server enables it for this
+    # client, and it spins up no thread until something triggers it.
+    #
+    # It registers its own app-shutdown task once reporting is enabled
+    # (the only path by which it can have a thread to stop); we cannot
+    # do that here since no App exists yet at native-module-import
+    # time.
+    log_reporter = create_log_reporter(log_handler)
+
     def _on_log(entry: LogEntry) -> None:
         # Forward this along to the engine to display in the in-app
         # console, in the Android log, etc.
@@ -621,15 +651,10 @@ def _feed_logs_to_babase(log_handler: LogHandler) -> None:
             message=entry.message,
         )
 
-        # We also want to feed some logs to the old v1-cloud-log system.
-        # Let's go with anything warning or higher as well as the
-        # stdout/stderr log messages that babase.app.log_handler creates
-        # for us. We should retire or upgrade this system at some point.
-        if entry.level.value >= LogLevel.WARNING.value or entry.name in (
-            'stdout',
-            'stderr',
-        ):
-            _babase.v1_cloud_log(entry.message)
+        # Let the log-reporter decide whether this warrants shipping
+        # our log history to the cloud. Cheap and non-blocking; all the
+        # real work happens on its own thread.
+        log_reporter.handle_log_entry(entry)
 
     # Add our callback and also feed it all entries already in the
     # cache. This will feed the engine any logs that happened between

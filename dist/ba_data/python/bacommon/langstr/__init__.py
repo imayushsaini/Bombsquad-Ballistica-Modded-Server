@@ -44,14 +44,32 @@ from bacommon.langstr._core import (
     contains_resource_form,
     collect_apverids,
 )
+from bacommon.langstr._flatindex import (
+    LANGSTR_FLAT_MIN_BUILD,
+    LangStrFlatIndexContext,
+    LangStrIndexError,
+)
 from bacommon.langstr._wrapper import (
     LangStrDir,
     WrapperTree,
+    convert_time_subs,
+    time_sub_millis,
     package_structure,
+)
+from bacommon.langstr._format import (
+    COMPONENT_GROUP_BY_KIND,
+    DATA_SIZE_GROUP,
+    DURATION_GROUP,
+    data_size_str,
+    duration_str,
+    format_number,
+    render_display_param,
 )
 from bacommon.langstr._blob import (
     serialize_language_blob,
     parse_language_blob,
+    parse_language_components,
+    parse_language_param_kinds,
     LANGUAGE_BLOB_STRINGS_KEY,
 )
 
@@ -61,6 +79,9 @@ __all__ = [
     'LangStrSpecResource',
     'LangStrSpecValue',
     'LangStrSpecResourceIndexed',
+    'LANGSTR_FLAT_MIN_BUILD',
+    'LangStrFlatIndexContext',
+    'LangStrIndexError',
     'LangStrSpecTypeID',
     'LANGSTR_EXT_MIN_BUILD',
     'MAX_NESTING_DEPTH',
@@ -76,8 +97,19 @@ __all__ = [
     'collect_apverids',
     'LangStrDir',
     'WrapperTree',
+    'convert_time_subs',
+    'time_sub_millis',
     'package_structure',
     'serialize_language_blob',
     'parse_language_blob',
+    'parse_language_components',
+    'COMPONENT_GROUP_BY_KIND',
+    'DATA_SIZE_GROUP',
+    'DURATION_GROUP',
+    'duration_str',
+    'data_size_str',
+    'format_number',
+    'render_display_param',
+    'parse_language_param_kinds',
     'LANGUAGE_BLOB_STRINGS_KEY',
 ]

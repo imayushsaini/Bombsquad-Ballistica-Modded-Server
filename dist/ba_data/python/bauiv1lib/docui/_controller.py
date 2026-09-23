@@ -2,6 +2,12 @@
 #
 """Controller functionality for DocUI."""
 
+# This is the primary hand-written doc-ui controller module. The
+# cleanly-separable pieces (the bg-thread runner and shared types)
+# already live in their own modules; what remains is cohesive controller
+# logic, so allow it to run a bit long.
+# pylint: disable=too-many-lines
+
 from typing import TYPE_CHECKING, assert_never
 from dataclasses import dataclass
 from enum import Enum
@@ -21,6 +27,8 @@ from bacommon.docui import (
 import bauiv1 as bui
 from bauiv1 import builtinassets
 
+from bauiv1lib.docui import _bgrunner
+from bauiv1lib.docui._types import DocUILocalAction
 from bauiv1lib.docui._window import DocUIWindow
 
 if TYPE_CHECKING:
@@ -219,6 +227,10 @@ class DocUIController:
         """
         import bacommon.cloud
 
+        bui.uilog.debug(
+            'Fetching doc-ui request from cloud (domain=%r).', domain
+        )
+
         try:
             plus = bui.app.plus
             if plus is None:
@@ -243,12 +255,23 @@ class DocUIController:
             self._check_server_response(mresponse.response)
             return mresponse.response
 
-        except CommunicationError:
+        except CommunicationError as exc:
             # Label comm-errors so we can possibly show retry buttons.
+            # Expected/transient (bad network, server hiccup), so warn
+            # rather than dumping a traceback.
+            bui.uilog.warning(
+                'Communication error fetching doc-ui (domain=%r): %s',
+                domain,
+                exc,
+            )
             return self.error_response(
                 request, self.ErrorType.COMMUNICATION_ERROR
             )
         except Exception:
+            # Unexpected; this is a real bug worth a full traceback.
+            bui.uilog.exception(
+                'Unexpected error fetching doc-ui (domain=%r).', domain
+            )
             return self.error_response(request)
 
     @staticmethod
@@ -284,25 +307,28 @@ class DocUIController:
         import bacommon.docui.v2 as dui2
         from bacommon.langstr import LangStrSpecValue
 
-        from bauiv1 import stdassets
+        from bauiv1 import _commonassets
 
-        uistrs = stdassets.strings.ui
+        uiact = _commonassets.strings.actions
+        uistat = _commonassets.strings.status
+        uival = _commonassets.strings.values
 
         error_msg: LangStrSpec
 
         status_code = dui2.ResponseStatus.UNKNOWN_ERROR
 
         if custom_message is not None:
-            error_msg = LangStrSpecValue(custom_message)
+            # Literal form: arbitrary error text can contain braces.
+            error_msg = LangStrSpecValue.literal(custom_message)
         elif error_type is self.ErrorType.GENERIC:
-            error_msg = uistrs.error_occurred.spec
+            error_msg = uistat.error_occurred.spec
         elif error_type is self.ErrorType.NEED_UPDATE:
-            error_msg = uistrs.need_update.spec
+            error_msg = uistat.need_update.spec
         elif error_type is self.ErrorType.UNDER_CONSTRUCTION:
-            error_msg = uistrs.under_construction.spec
+            error_msg = uistat.under_construction.spec
         elif error_type is self.ErrorType.COMMUNICATION_ERROR:
             status_code = dui2.ResponseStatus.COMMUNICATION_ERROR
-            error_msg = uistrs.server_error.spec
+            error_msg = uistat.server_error.spec
         else:
             assert_never(error_type)
 
@@ -320,13 +346,13 @@ class DocUIController:
         return dui2.Response(
             status=status_code,
             page=dui2.Page(
-                title=uistrs.error.spec,
+                title=uival.error.spec,
                 center_vertically=True,
                 rows=[
                     dui2.ButtonRow(
                         buttons=[
                             dui2.Button(
-                                (uistrs.retry if do_retry else uistrs.ok).spec,
+                                (uiact.retry if do_retry else uiact.ok).spec,
                                 action=(
                                     dui2.Replace(
                                         asserttype(request, dui2.Request)
@@ -386,7 +412,7 @@ class DocUIController:
 
         # Lock its ui and kick off a bg task to populate it.
         win.lock_ui()
-        bui.app.threadpool.submit_no_wait(
+        _bgrunner.submit(
             bui.CallStrict(
                 self._process_request_in_bg,
                 request,
@@ -394,6 +420,7 @@ class DocUIController:
                 uiscale=bui.app.ui_v1.uiscale,
                 scroll_width=win.scroll_width,
                 scroll_height=win.scroll_height,
+                margins=win.screen_margins,
                 idprefix=win.main_window_id_prefix,
                 immediate=False,
             )
@@ -468,7 +495,7 @@ class DocUIController:
 
         # Lock the ui and kick off this update.
         win.lock_ui()
-        bui.app.threadpool.submit_no_wait(
+        _bgrunner.submit(
             bui.CallStrict(
                 self._process_request_in_bg,
                 win.request,
@@ -476,6 +503,7 @@ class DocUIController:
                 uiscale=bui.app.ui_v1.uiscale,
                 scroll_width=win.scroll_width,
                 scroll_height=win.scroll_height,
+                margins=win.screen_margins,
                 idprefix=win.main_window_id_prefix,
                 # If this window has had a response already, snap things
                 # in immediately with no transitions.
@@ -557,7 +585,7 @@ class DocUIController:
             ),
         )
         win.lock_ui(origin_widget)
-        bui.app.threadpool.submit_no_wait(
+        _bgrunner.submit(
             bui.CallStrict(
                 self._process_request_in_bg,
                 win.request,
@@ -565,6 +593,7 @@ class DocUIController:
                 uiscale=bui.app.ui_v1.uiscale,
                 scroll_width=win.scroll_width,
                 scroll_height=win.scroll_height,
+                margins=win.screen_margins,
                 idprefix=win.main_window_id_prefix,
                 immediate=True,
                 explicit_error=explicit_error,
@@ -589,8 +618,11 @@ class DocUIController:
         # If locked, been and tell them to try again.
         if window.locked:
             builtinassets.audio.error.get().play()
+            from bauiv1 import _commonassets
+
             bui.screenmessage(
-                bui.Lstr(resource='pageRefreshingTryAgainText'), color=(1, 0, 0)
+                _commonassets.strings.status.page_refreshing_try_again,
+                color=(1, 0, 0),
             )
             return
 
@@ -744,6 +776,7 @@ class DocUIController:
         uiscale: bui.UIScale,
         scroll_width: float,
         scroll_height: float,
+        margins: tuple[float, float, float, float],
         idprefix: str,
         immediate: bool,
         explicit_error: ErrorType | None = None,
@@ -805,6 +838,12 @@ class DocUIController:
                     minbuild is not None
                     and minbuild > bui.app.env.engine_build_number
                 ):
+                    bui.uilog.debug(
+                        'doc-ui response requires engine build %d but we'
+                        ' are %d; showing need-update prompt.',
+                        minbuild,
+                        bui.app.env.engine_build_number,
+                    )
                     error = self.ErrorType.NEED_UPDATE
                     response = None
                 else:
@@ -844,6 +883,7 @@ class DocUIController:
             uiscale=uiscale,
             scroll_width=scroll_width,
             scroll_height=scroll_height,
+            margins=margins,
             immediate=immediate,
             idprefix=idprefix,
         )
@@ -985,13 +1025,3 @@ class DocUIController:
             )
             return
         self.run_action(win, widgetid=None, action=action, is_timed=True)
-
-
-@dataclass
-class DocUILocalAction:
-    """Context for a local-action."""
-
-    name: str
-    args: dict
-    widget: bui.Widget | None
-    window: DocUIWindow

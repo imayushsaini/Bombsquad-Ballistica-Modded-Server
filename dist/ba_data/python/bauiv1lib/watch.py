@@ -9,8 +9,10 @@ from typing import TYPE_CHECKING, cast, override
 
 import bascenev1 as bs
 import bauiv1 as bui
-from bauiv1 import stdassets
+from bauiv1 import _commonassets, classicassets
 from bauiv1 import builtinassets
+
+from bauiv1lib.utils import get_screen_margins
 
 if TYPE_CHECKING:
     from typing import Any
@@ -39,6 +41,7 @@ class WatchWindow(bui.MainWindow):
         self._scrollwidget: bui.Widget | None = None
         self._columnwidget: bui.Widget | None = None
         self._my_replay_selected: str | None = None
+        self._replay_play_in_flight = False
         self._my_replays_rename_window: bui.Widget | None = None
         self._my_replay_rename_text: bui.Widget | None = None
         self._r = 'watchWindow'
@@ -72,6 +75,16 @@ class WatchWindow(bui.MainWindow):
         self._scroll_width = target_width
         self._scroll_height = target_height - 55
         self._scroll_y = self.yoffs - 85 - self._scroll_height
+
+        # In small ui (where we cover the screen), extend our backing
+        # imagery out to cover any margins between the virtual rect and
+        # the visible screen edges (cutout insets and whatnot). Content
+        # positioning is unaffected; only the imagery reaches further.
+        margin_left, margin_right, margin_bottom, _margin_top = (
+            get_screen_margins(scale)
+            if uiscale is bui.UIScale.SMALL
+            else (0.0, 0.0, 0.0, 0.0)
+        )
 
         super().__init__(
             root_widget=bui.containerwidget(
@@ -126,14 +139,14 @@ class WatchWindow(bui.MainWindow):
             scale=1.3 if uiscale is bui.UIScale.SMALL else 1.5,
             h_align='left' if uiscale is bui.UIScale.SMALL else 'center',
             v_align='center',
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=classicassets.strings.watch.title,
             maxwidth=200,
         )
 
         tabdefs = [
             (
                 self.TabID.MY_REPLAYS,
-                bui.Lstr(resource=f'{self._r}.myReplaysText'),
+                classicassets.strings.watch.my_replays,
             ),
         ]
 
@@ -163,12 +176,17 @@ class WatchWindow(bui.MainWindow):
             bui.widget(edit=first_tab.button, up_widget=bbtn, left_widget=bbtn)
 
         # Not actually using a scroll widget anymore; just an image.
+        # It extends left/right/bottom across any screen margins; the
+        # top edge stays put since the tab row hangs off it.
         bui.imagewidget(
             parent=self._root_widget,
-            size=(self._scroll_width, self._scroll_height),
+            size=(
+                self._scroll_width + margin_left + margin_right,
+                self._scroll_height + margin_bottom,
+            ),
             position=(
-                self._width * 0.5 - self._scroll_width * 0.5,
-                self._scroll_y,
+                self._width * 0.5 - self._scroll_width * 0.5 - margin_left,
+                self._scroll_y - margin_bottom,
             ),
             texture=builtinassets.textures.scroll_widget.get(),
             mesh_transparent=builtinassets.meshes.soft_edge_outside.get(),
@@ -250,14 +268,8 @@ class WatchWindow(bui.MainWindow):
                 maxwidth=c_width * 0.9,
                 h_align='center',
                 v_align='center',
-                text=bui.Lstr(
-                    resource='replayRenameWarningText',
-                    subs=[
-                        (
-                            '${REPLAY}',
-                            bui.Lstr(resource='replayNameDefaultText'),
-                        )
-                    ],
+                text=classicassets.strings.watch.rename_warning(
+                    replay=classicassets.strings.watch.replay_name_default
                 ),
             )
 
@@ -301,7 +313,7 @@ class WatchWindow(bui.MainWindow):
                 textcolor=b_textcolor,
                 on_activate_call=self._on_my_replay_play_press,
                 text_scale=tscl,
-                label=bui.Lstr(resource=f'{self._r}.watchReplayButtonText'),
+                label=classicassets.strings.watch.watch_replay_button,
                 autoselect=True,
             )
             bui.widget(edit=btn1, up_widget=self._tab_row.tabs[tab_id].button)
@@ -322,7 +334,7 @@ class WatchWindow(bui.MainWindow):
                 textcolor=b_textcolor,
                 on_activate_call=self._on_my_replay_rename_press,
                 text_scale=tscl,
-                label=bui.Lstr(resource=f'{self._r}.renameReplayButtonText'),
+                label=classicassets.strings.watch.rename_replay_button,
                 autoselect=True,
             )
             btnv -= b_height + b_space_extra
@@ -336,7 +348,7 @@ class WatchWindow(bui.MainWindow):
                 textcolor=b_textcolor,
                 on_activate_call=self._on_my_replay_delete_press,
                 text_scale=tscl,
-                label=bui.Lstr(resource=f'{self._r}.deleteReplayButtonText'),
+                label=classicassets.strings.watch.delete_replay_button,
                 autoselect=True,
             )
 
@@ -370,7 +382,7 @@ class WatchWindow(bui.MainWindow):
 
     def _no_replay_selected_error(self) -> None:
         bui.screenmessage(
-            bui.Lstr(resource=f'{self._r}.noReplaySelectedErrorText'),
+            classicassets.strings.watch.no_replay_selected,
             color=(1, 0, 0),
         )
         builtinassets.audio.error.get().play()
@@ -381,7 +393,52 @@ class WatchWindow(bui.MainWindow):
             return
         bui.increment_analytics_count('Replay watch')
 
-        # Save our place in the UI so we return there when done.
+        # Starting a replay disconnects any connected clients (we don't
+        # broadcast replays -- they never prepped the replay's content);
+        # confirm first if we have any. Roster client_id -1 is us.
+        num_clients = sum(
+            1 for c in bs.get_game_roster() if c['client_id'] != -1
+        )
+        if num_clients > 0:
+            from bauiv1lib import confirm
+
+            confirm.ConfirmWindow(
+                classicassets.strings.gather.disconnect_clients(
+                    count=num_clients
+                ),
+                self._start_replay_playback,
+            )
+        else:
+            self._start_replay_playback()
+
+    def _start_replay_playback(self) -> None:
+        # A double press (or a second confirm) would otherwise spawn two
+        # concurrent launch tasks: two launch_replay calls and a second
+        # transition-out on our root widget (seen in the field as
+        # 'ContainerWidget was set to transition out twice' reports).
+        if self._replay_play_in_flight:
+            return
+        self._replay_play_in_flight = True
+        bui.app.create_async_task(self._prepare_and_play_replay())
+
+    async def _prepare_and_play_replay(self) -> None:
+        assert self._my_replay_selected is not None
+        path = f'{bui.get_replays_dir()}/{self._my_replay_selected}'
+
+        # Resolve the replay's required content FIRST, while this window
+        # is still up. That way a cancel/failure just closes the
+        # progress dialog and leaves the user here, rather than
+        # stranding them on a torn-down UI (mirrors how connect_to_party
+        # preps with the gather UI still present).
+        if not await bs.prepare_replay(path):
+            # Prep failed/cancelled; we're staying here, so allow
+            # another play attempt.
+            self._replay_play_in_flight = False
+            return
+
+        # Content is ready; now do the fade-out -> launch -> fade-in and
+        # tear our window down. Save our place in the UI so we return
+        # here when the replay ends.
         if bui.app.classic is not None:
             bui.app.classic.save_ui_state()
 
@@ -390,10 +447,8 @@ class WatchWindow(bui.MainWindow):
                 # Reset to normal speed.
                 bs.set_replay_speed_exponent(0)
                 bui.fade_screen(True)
-                assert self._my_replay_selected is not None
-                bs.new_replay_session(
-                    f'{bui.get_replays_dir()}/{self._my_replay_selected}'
-                )
+                # Content already resolved above, so launch directly.
+                bs.launch_replay(path)
             except Exception:
                 logging.exception('Error running replay session.')
 
@@ -404,7 +459,11 @@ class WatchWindow(bui.MainWindow):
                 bs.new_host_session(mainmenu.MainMenuSession)
 
         bui.fade_screen(False, endcall=bui.CallStrict(bui.pushcall, do_it))
-        bui.containerwidget(edit=self._root_widget, transition='out_left')
+        # The user may have navigated away during the async prep above,
+        # in which case our window is already gone or on its way out;
+        # transitioning it out again logs a warning.
+        if self._root_widget and not self._root_widget.transitioning_out:
+            bui.containerwidget(edit=self._root_widget, transition='out_left')
 
     def _on_my_replay_rename_press(self) -> None:
         if self._my_replay_selected is None:
@@ -431,10 +490,7 @@ class WatchWindow(bui.MainWindow):
             size=(0, 0),
             h_align='center',
             v_align='center',
-            text=bui.Lstr(
-                resource=f'{self._r}.renameReplayText',
-                subs=[('${REPLAY}', dname)],
-            ),
+            text=classicassets.strings.watch.rename_replay(replay=dname),
             maxwidth=c_width * 0.8,
             position=(c_width * 0.5, c_height - 60),
         )
@@ -446,7 +502,7 @@ class WatchWindow(bui.MainWindow):
             v_align='center',
             text=dname,
             editable=True,
-            description=bui.Lstr(resource=f'{self._r}.replayNameText'),
+            description=classicassets.strings.watch.replay_name,
             position=(c_width * 0.1, c_height - 140),
             autoselect=True,
             maxwidth=c_width * 0.7,
@@ -455,7 +511,7 @@ class WatchWindow(bui.MainWindow):
         cbtn = bui.buttonwidget(
             parent=cnt,
             id=f'{self.main_window_id_prefix}|replayrenamecancel',
-            label=bui.Lstr(resource='cancelText'),
+            label=_commonassets.strings.actions.cancel,
             on_activate_call=bui.CallStrict(
                 lambda c: bui.containerwidget(edit=c, transition='out_scale'),
                 cnt,
@@ -467,7 +523,7 @@ class WatchWindow(bui.MainWindow):
         okb = bui.buttonwidget(
             parent=cnt,
             id=f'{self.main_window_id_prefix}|replayrename',
-            label=bui.Lstr(resource=f'{self._r}.renameText'),
+            label=_commonassets.strings.actions.rename,
             size=(180, 60),
             position=(c_width - 230, 30),
             on_activate_call=bui.CallStrict(
@@ -507,18 +563,15 @@ class WatchWindow(bui.MainWindow):
                 if os.path.exists(new_name_full):
                     builtinassets.audio.error.get().play()
                     bui.screenmessage(
-                        bui.Lstr(
-                            resource=self._r
-                            + '.replayRenameErrorAlreadyExistsText'
-                        ),
+                        (
+                            classicassets.strings.watch
+                        ).replay_rename_error_already_exists,
                         color=(1, 0, 0),
                     )
                 elif any(char in new_name_raw for char in ['/', '\\', ':']):
                     builtinassets.audio.error.get().play()
                     bui.screenmessage(
-                        bui.Lstr(
-                            resource=f'{self._r}.replayRenameErrorInvalidName'
-                        ),
+                        classicassets.strings.watch.replay_rename_error_invalid,
                         color=(1, 0, 0),
                     )
                 else:
@@ -532,7 +585,7 @@ class WatchWindow(bui.MainWindow):
             )
             builtinassets.audio.error.get().play()
             bui.screenmessage(
-                bui.Lstr(resource=f'{self._r}.replayRenameErrorText'),
+                classicassets.strings.watch.replay_rename_error,
                 color=(1, 0, 0),
             )
 
@@ -547,14 +600,8 @@ class WatchWindow(bui.MainWindow):
             self._no_replay_selected_error()
             return
         confirm.ConfirmWindow(
-            bui.Lstr(
-                resource=f'{self._r}.deleteConfirmText',
-                subs=[
-                    (
-                        '${REPLAY}',
-                        self._get_replay_display_name(self._my_replay_selected),
-                    )
-                ],
+            classicassets.strings.watch.delete_confirm(
+                replay=self._get_replay_display_name(self._my_replay_selected)
             ),
             bui.CallStrict(self._delete_replay, self._my_replay_selected),
             width=450,
@@ -565,7 +612,7 @@ class WatchWindow(bui.MainWindow):
         if replay.endswith('.brp'):
             replay = replay[:-4]
         if replay == '__lastReplay':
-            return bui.Lstr(resource='replayNameDefaultText').evaluate()
+            return classicassets.strings.watch.replay_name_default.evaluate()
         return replay
 
     def _delete_replay(self, replay: str) -> None:
@@ -573,14 +620,14 @@ class WatchWindow(bui.MainWindow):
             bui.increment_analytics_count('Replay delete')
             os.remove((bui.get_replays_dir() + '/' + replay).encode('utf-8'))
             self._refresh_my_replays()
-            stdassets.audio.shield_down.get().play()
+            classicassets.audio.shield_down.get().play()
             if replay == self._my_replay_selected:
                 self._my_replay_selected = None
         except Exception:
             logging.exception("Error deleting replay '%s'.", replay)
             builtinassets.audio.error.get().play()
             bui.screenmessage(
-                bui.Lstr(resource=f'{self._r}.replayDeleteErrorText'),
+                classicassets.strings.watch.replay_delete_error,
                 color=(1, 0, 0),
             )
 

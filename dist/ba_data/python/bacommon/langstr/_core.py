@@ -196,6 +196,12 @@ class LangStrSpecValue(LangStrSpec):
     package entry. The value is locale-independent; ``subs`` are
     substituted into ``{name}`` tokens exactly like a plain resource
     value (nested language-strings allowed).
+
+    Note that ``value`` is a *template*, not raw display text: a
+    ``{name}`` token with no matching sub is a fail-visible error at
+    display time. Text not authored against this contract (user input,
+    error messages, anything that could contain a brace) must go
+    through :meth:`literal` instead.
     """
 
     value: Annotated[str, IOAttrs('v')]
@@ -203,6 +209,19 @@ class LangStrSpecValue(LangStrSpec):
         dict[str, str | int | LangStrSpec],
         IOAttrs('s', store_default=False),
     ] = field(default_factory=dict)
+
+    @classmethod
+    def literal(cls, text: str) -> LangStrSpecValue:
+        """Return a spec displaying ``text`` verbatim in every locale.
+
+        Escapes brace characters (``{`` -> ``{{``, ``}`` -> ``}}``) so
+        the substitution engine renders them literally rather than
+        treating ``{...}`` runs as substitution tokens. Use this for
+        any dynamic text not authored as a template -- otherwise text
+        that happens to contain braces displays as a
+        ``LANGSTR_ERROR:...`` sentinel.
+        """
+        return cls(text.replace('{', '{{').replace('}', '}}'))
 
     @override
     @classmethod
@@ -349,6 +368,14 @@ class PackageStructure:
             name: tuple(sorted(params)) for name, params in strings.items()
         }
 
+    def string_count(self) -> int:
+        """How many strings this package holds.
+
+        The size of the canonical sorted name list -- all a producer
+        needs to fold indices into one flat domain across a manifest.
+        """
+        return len(self._names)
+
     def index_of(self, name: str) -> int:
         """Return the integer index for a string name."""
         return self._index[name]
@@ -377,11 +404,18 @@ class LanguageStringEncodeContext:
         self,
         lstrs: list[LangStrSpec],
         structures: dict[str, PackageStructure],
+        also: set[str] | None = None,
     ) -> None:
         self._structures = structures
         apverids: set[str] = set()
         for lstr in lstrs:
             self._collect(lstr, apverids)
+        # ``also`` folds in packages referenced by something other than
+        # strings -- asset refs, above all -- so one manifest and one
+        # package-index space serves every indexed thing in a payload
+        # rather than strings having a private one.
+        if also:
+            apverids |= also
         # Sorted -> deterministic indices for a given apverid set.
         self._pkg_index = {av: i for i, av in enumerate(sorted(apverids))}
 
@@ -792,10 +826,49 @@ class LanguageStringNameDecodeContext:
         self,
         language: dict[str, dict[str, str | StringSelector]],
         locale: Locale,
+        *,
+        param_kinds: dict[str, dict[str, dict[str, str]]] | None = None,
+        components: dict[str, dict[str, str | StringSelector]] | None = None,
     ) -> None:
         #: ``language`` maps apverid -> {string-name: value} for ``locale``.
         self._language = language
         self._locale = locale
+        #: apverid -> {string-name: {param: kind}} for params the
+        #: translated text cannot describe (a byte count renders as
+        #: "1.2 GB", but the text holds only a ``{size}`` token).
+        self._param_kinds = param_kinds or {}
+        #: apverid -> that package's build-embedded formatter
+        #: components. Embedded rather than resolved cross-package, so
+        #: rendering never depends on another package being present.
+        self._components = components or {}
+
+    def _render_param(
+        self, kindexpr: str, value: str | int, apverid: str
+    ) -> str:
+        """Render one spec'd param value for this locale.
+
+        ``kindexpr`` is the blob's display-kind expression -- the bare
+        kind, or kind plus spec args (``'bytes(compact=true)'``); see
+        :attr:`~bacommon.strbrief.BriefTag.display_kind`. Routes
+        through the shared dispatch
+        (:func:`~bacommon.langstr._format.render_display_param`) so
+        this and the client wrapper runtime can't drift.
+        """
+        from bacommon.langstr._format import render_display_param
+
+        try:
+            return render_display_param(
+                kindexpr,
+                value,
+                self._locale,
+                self._components.get(apverid, {}),
+            )
+        except _DecodeFail:
+            raise
+        except Exception as exc:
+            raise _DecodeFail(
+                f'display param render failed ({kindexpr!r}): {exc}'
+            ) from exc
 
     def decode(self, lstr: LangStrSpec) -> str:
         """Resolve a :class:`LangStrSpec` to a flat string in this locale.
@@ -813,6 +886,10 @@ class LanguageStringNameDecodeContext:
         if depth > MAX_NESTING_DEPTH:
             raise _DecodeFail('max nesting depth exceeded')
         value: str | StringSelector
+        # Only a resource carries spec'd params; a literal has no
+        # package to have declared them.
+        kinds: dict[str, str] = {}
+        kindsrc = ''
         if isinstance(lstr, LangStrSpecValue):
             # A raw literal; the value itself is the (locale-free) text.
             value = lstr.value
@@ -830,16 +907,25 @@ class LanguageStringNameDecodeContext:
             value = resval
             subs = lstr.subs
             desc = lstr.name
+            kinds = self._param_kinds.get(lstr.apverid, {}).get(lstr.name, {})
+            kindsrc = lstr.apverid
         else:
             # The indexed form needs an index context, not this one.
             raise _DecodeFail(f'cannot name-decode a {type(lstr).__name__}.')
         kwargs: dict[str, str | int] = {}
         for key, sub in subs.items():
-            # A nested LangStrSpec renders recursively to a flat string.
+            if isinstance(sub, LangStrSpec):
+                # A nested LangStrSpec renders recursively to a flat
+                # string.
+                kwargs[key] = self._decode(sub, depth + 1)
+                continue
+            kind = kinds.get(key)
+            # A spec'd param renders through locale-aware formatting
+            # here, at display time -- which is what keeps the string a
+            # template with a slot rather than a value baked in at
+            # construction (so a live value can re-render cheaply).
             kwargs[key] = (
-                self._decode(sub, depth + 1)
-                if isinstance(sub, LangStrSpec)
-                else sub
+                sub if kind is None else self._render_param(kind, sub, kindsrc)
             )
         try:
             return evaluate(value, self._locale, **kwargs)

@@ -3,13 +3,13 @@
 """Examples/tests for using DocUI to build UIs."""
 
 import time
-import copy
 from typing import TYPE_CHECKING, override
 
 from efro.error import CleanError
+from bacommon.langstr import LangStrSpecValue
 import bauiv1 as bui
 from bauiv1 import builtinassets
-from bauiv1 import stdassets
+from bauiv1 import classicassets
 
 from bauiv1lib.docui import DocUIWindow, DocUIController
 
@@ -27,8 +27,8 @@ def _btex(name: str) -> str:
 
 
 def _stex(name: str) -> str:
-    """Qualified stdassets texture ref."""
-    return f'{stdassets.__asset_package__}:textures/{name}'
+    """Qualified classicassets texture ref."""
+    return f'{classicassets.__asset_package__}:textures/{name}'
 
 
 def show_test_doc_ui_v2_window() -> None:
@@ -79,7 +79,13 @@ class TestDocUIV2Controller(DocUIController):
         if request.path == '/timedactions':
             return _test_v2_page_timed_actions(request)
         if request.path == '/displayitems':
-            return _test_v2_page_display_items(request)
+            from bauiv1lib.docuitestitems import test_page_display_items
+
+            return test_page_display_items(request)
+        if request.path == '/frames':
+            from bauiv1lib.docuitestframes import test_page_frames
+
+            return test_page_frames(request)
         if request.path == '/emptypage':
             return _test_v2_page_empty(request)
         if request.path == '/boundstests':
@@ -112,7 +118,7 @@ def _test_v2_page_root(
     The full v1 test root page, with all text authored as
     language-agnostic ``LangStrSpec`` values from the ``badocuiv2testassets``
     package, textures/meshes as typed refs from
-    ``builtinassets``/``stdassets``, and multi-line labels wrapped via
+    ``builtinassets``/``classicassets``, and multi-line labels wrapped via
     definition-time :class:`~bacommon.langstr.WrapParams` on the
     package's string definitions (decision D-t) instead of v1's
     hand-baked newlines. The client resolves the referenced packages
@@ -309,6 +315,12 @@ def _test_v2_page_root(
                             action=dui2.Browse(dui2.Request('/displayitems')),
                         ),
                         dui2.Button(
+                            # Dev-only page, so a baked literal label.
+                            label=LangStrSpecValue.literal('Frames'),
+                            size=(120, 80),
+                            action=dui2.Browse(dui2.Request('/frames')),
+                        ),
+                        dui2.Button(
                             label=strs.layout.empty_page.spec,
                             size=(120, 80),
                             action=dui2.Browse(dui2.Request('/emptypage')),
@@ -421,12 +433,12 @@ def _test_v2_page_root(
                             size=(150, 100),
                             decorations=[
                                 dui2.Image(
-                                    texture=stdassets.textures.zoe_icon,
+                                    texture=classicassets.textures.zoe_icon,
                                     position=(0, 0),
                                     size=(70, 70),
                                     tint_texture=(
-                                        stdassets.textures.zoe_icon_color_mask
-                                    ),
+                                        classicassets.textures
+                                    ).zoe_icon_color_mask,
                                     tint_color=(1, 0, 0),
                                     tint2_color=(0, 1, 0),
                                     mask_texture=(
@@ -439,17 +451,19 @@ def _test_v2_page_root(
                             size=(150, 100),
                             decorations=[
                                 dui2.Image(
-                                    texture=stdassets.textures.bridgit_preview,
+                                    texture=(
+                                        classicassets.textures
+                                    ).bridgit_preview,
                                     position=(0, 10),
                                     size=(120, 60),
                                     mask_texture=(
-                                        stdassets.textures.map_preview_mask
+                                        classicassets.textures.map_preview_mask
                                     ),
                                     mesh_opaque=(
-                                        stdassets.meshes
+                                        classicassets.meshes
                                     ).level_select_button_opaque,
                                     mesh_transparent=(
-                                        stdassets.meshes
+                                        classicassets.meshes
                                     ).level_select_button_transparent,
                                 ),
                             ],
@@ -493,7 +507,7 @@ def _test_v2_page_root(
                             size=(300, 80),
                             style=dui2.ButtonStyle.MEDIUM,
                             color=(0.8, 0.8, 0.8, 1),
-                            icon=stdassets.textures.button_punch,
+                            icon=classicassets.textures.button_punch,
                             icon_color=(0.5, 0.3, 1.0, 1.0),
                             icon_scale=1.2,
                         ),
@@ -558,13 +572,13 @@ def _layout_test_decos(debug: bool) -> list[bacommon.docui.v2.Decoration]:
 
     return [
         dui2.Image(
-            texture=stdassets.textures.powerup_punch,
+            texture=classicassets.textures.powerup_punch,
             position=(-70, 0),
             size=(40, 40),
             h_align=dui2.HAlign.LEFT,
         ),
         dui2.Image(
-            texture=stdassets.textures.powerup_speed,
+            texture=classicassets.textures.powerup_speed,
             position=(0, 75),
             size=(35, 35),
             v_align=dui2.VAlign.TOP,
@@ -743,146 +757,6 @@ def _test_v2_page_empty(
         page=dui2.Page(
             title=_docuiv2testassets.strings.layout.empty_page_title.spec,
             rows=[],
-        )
-    )
-
-
-def _test_v2_page_display_items(
-    request: bacommon.docui.v2.Request,
-) -> bacommon.docui.v2.Response:
-    """Testing display-items (v2 mirror of '/displayitems')."""
-    from bacommon.classic import ClassicChestAppearance, ClassicChestDisplayItem
-    import bacommon.displayitem as ditm
-    import bacommon.docui.v2 as dui2
-
-    from bauiv1 import _docuiv2testassets
-
-    strs = _docuiv2testassets.strings
-
-    # Show some specific debug bits if they ask us to.
-    debug = bool(request.args.get('debug', False))
-
-    def _make_test_button(
-        scale: float,
-        wrapper: ditm.Wrapper,
-    ) -> bacommon.docui.v2.Button:
-
-        # See how this looks when unrecognized (relying on wrapper info
-        # only).
-        uwrapper = copy.deepcopy(wrapper)
-        uwrapper.item = ditm.Unknown()
-
-        return dui2.Button(
-            size=(300, 400),
-            scale=scale,
-            decorations=[
-                dui2.DisplayItem(
-                    wrapper=wrapper,
-                    style=dui2.DisplayItemStyle.FULL,
-                    position=(-62, 100),
-                    size=(120, 120),
-                    debug=debug,
-                ),
-                dui2.DisplayItem(
-                    wrapper=uwrapper,
-                    style=dui2.DisplayItemStyle.FULL,
-                    position=(62, 100),
-                    size=(120, 120),
-                    debug=debug,
-                ),
-                dui2.DisplayItem(
-                    wrapper=wrapper,
-                    style=dui2.DisplayItemStyle.COMPACT,
-                    position=(-55, -20),
-                    size=(80, 80),
-                    debug=debug,
-                ),
-                dui2.DisplayItem(
-                    wrapper=uwrapper,
-                    style=dui2.DisplayItemStyle.COMPACT,
-                    position=(55, -20),
-                    size=(80, 80),
-                    debug=debug,
-                ),
-                dui2.DisplayItem(
-                    wrapper=wrapper,
-                    style=dui2.DisplayItemStyle.ICON,
-                    position=(-55, -120),
-                    size=(100, 80),
-                    debug=debug,
-                ),
-                dui2.DisplayItem(
-                    wrapper=uwrapper,
-                    style=dui2.DisplayItemStyle.ICON,
-                    position=(55, -120),
-                    size=(100, 80),
-                    debug=debug,
-                ),
-            ],
-        )
-
-    return dui2.Response(
-        page=dui2.Page(
-            padding_left=20,
-            padding_right=20,
-            title=strs.items.display_items.spec,
-            rows=[
-                dui2.ButtonRow(
-                    debug=debug,
-                    padding_left=-10,
-                    title=strs.items.display_item_tests.spec,
-                    subtitle=strs.items.display_items_sub.spec,
-                    buttons=[
-                        _make_test_button(
-                            1.0,
-                            ditm.Wrapper.for_item(ditm.Tickets(count=213)),
-                        ),
-                        _make_test_button(
-                            0.47,
-                            ditm.Wrapper.for_item(ditm.Tickets(count=213)),
-                        ),
-                        _make_test_button(
-                            1.0,
-                            ditm.Wrapper.for_item(
-                                ClassicChestDisplayItem(
-                                    appearance=ClassicChestAppearance.L3
-                                )
-                            ),
-                        ),
-                        _make_test_button(
-                            1.0,
-                            ditm.Wrapper.for_item(ditm.Tokens(count=3)),
-                        ),
-                        _make_test_button(
-                            1.0,
-                            ditm.Wrapper.for_item(ditm.Tokens(count=1414287)),
-                        ),
-                        _make_test_button(
-                            1.0,
-                            ditm.Wrapper.for_item(ditm.Test()),
-                        ),
-                    ],
-                ),
-                dui2.ButtonRow(
-                    buttons=[
-                        dui2.Button(
-                            label=(
-                                strs.common.hide_debug.spec
-                                if debug
-                                else strs.common.show_debug.spec
-                            ),
-                            style=dui2.ButtonStyle.MEDIUM,
-                            size=(240, 60),
-                            color=(0.6, 0.4, 0.8, 1.0),
-                            action=dui2.Replace(
-                                dui2.Request(
-                                    request.path, args={'debug': not debug}
-                                )
-                            ),
-                        )
-                    ],
-                ),
-            ],
         )
     )
 

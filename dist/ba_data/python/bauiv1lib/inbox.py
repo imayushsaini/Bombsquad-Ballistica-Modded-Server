@@ -8,20 +8,29 @@ from functools import partial
 from dataclasses import dataclass
 from typing import override, assert_never, TYPE_CHECKING
 
-from efro.util import strict_partial, pairs_from_flat
+from efro.util import (
+    strict_partial,
+    pairs_from_flat,
+    strip_exception_tracebacks,
+)
 from efro.error import CommunicationError
 import bacommon.clouddialog as cdlg
 import bacommon.clouddialog.basic as bcdlg
 import bacommon.classic
-from bauiv1lib.utils import scroll_fade_bottom, scroll_fade_top
+from bauiv1lib.utils import (
+    get_screen_margins,
+    scroll_fade_bottom,
+    scroll_fade_top,
+)
 import bauiv1 as bui
+from bauiv1 import _commonassets, classicassets
 from bauiv1 import builtinassets
 
 if TYPE_CHECKING:
     import datetime
     from typing import Callable
 
-    import bacommon.displayitem as ditm
+    import bacommon.legacydisplayitem as lditm
 
 
 class _Section:
@@ -43,7 +52,7 @@ class _TextSection(_Section):
         self,
         *,
         sub_width: float,
-        text: bui.Lstr | str,
+        text: bui.Lstr | bui.LangStr | str,
         spacing_top: float = 0.0,
         spacing_bottom: float = 0.0,
         scale: float = 0.6,
@@ -56,20 +65,33 @@ class _TextSection(_Section):
 
         # We need to bake this down since we plug its final size into
         # our math.
-        self.textbaked = text.evaluate() if isinstance(text, bui.Lstr) else text
+        self.textbaked = (
+            text.evaluate()
+            if isinstance(text, (bui.Lstr, bui.LangStr))
+            else text
+        )
 
         # Calc scale to fit width and then see what height we need at
         # that scale.
         t_width = max(
             10.0,
-            bui.get_string_width(self.textbaked, suppress_warning=True) * scale,
+            bui.get_string_width(
+                self.textbaked,
+                suppress_warning=True,
+                suppress_logic_thread_warning=True,
+            )
+            * scale,
         )
         self.text_scale = scale * min(1.0, (sub_width * 0.9) / t_width)
 
         self.text_height = (
             0.0
             if not self.textbaked
-            else bui.get_string_height(self.textbaked, suppress_warning=True)
+            else bui.get_string_height(
+                self.textbaked,
+                suppress_warning=True,
+                suppress_logic_thread_warning=True,
+            )
         ) * self.text_scale
 
         self.full_height = self.text_height + spacing_top + spacing_bottom
@@ -103,7 +125,7 @@ class _ButtonSection(_Section):
         self,
         *,
         sub_width: float,
-        label: bui.Lstr | str,
+        label: bui.Lstr | bui.LangStr | str,
         color: tuple[float, float, float],
         label_color: tuple[float, float, float],
         call: Callable[[_ButtonSection], None],
@@ -167,7 +189,7 @@ class _DisplayItemsSection(_Section):
         self,
         *,
         sub_width: float,
-        items: list[ditm.Wrapper],
+        items: list[lditm.Wrapper],
         width: float = 100.0,
         spacing_top: float = 0.0,
         spacing_bottom: float = 0.0,
@@ -242,32 +264,24 @@ class _ExpireTimeSection(_Section):
 
         now = bui.utc_now_cloud()
 
-        val: bui.Lstr
+        val: bui.LangStr
         if now < self.time:
             color = (1.0, 1.0, 1.0, 0.3)
-            val = bui.Lstr(
-                resource='expiresInText',
-                subs=[
-                    (
-                        '${T}',
-                        bui.timestring(
-                            (self.time - now).total_seconds(), centi=False
-                        ),
-                    ),
-                ],
+            val = classicassets.strings.inbox.expires_in(
+                t=bui.timestring(
+                    (self.time - now).total_seconds(),
+                    centi=False,
+                    langstr=True,
+                )
             )
         else:
             color = (1.0, 0.3, 0.3, 0.5)
-            val = bui.Lstr(
-                resource='expiredAgoText',
-                subs=[
-                    (
-                        '${T}',
-                        bui.timestring(
-                            (now - self.time).total_seconds(), centi=False
-                        ),
-                    ),
-                ],
+            val = classicassets.strings.inbox.expired_ago(
+                t=bui.timestring(
+                    (now - self.time).total_seconds(),
+                    centi=False,
+                    langstr=True,
+                )
             )
         bui.textwidget(edit=self._widget, text=val, color=color)
 
@@ -331,7 +345,13 @@ class InboxWindow(bui.MainWindow):
 
         self._entry_displays: list[_EntryDisplay] = []
 
-        self._width = 900 if uiscale is bui.UIScale.SMALL else 500
+        # Small-ui width is sized so our backing covers the widest
+        # possible visible area (21:9 aspect -> 1680 virtual units,
+        # plus max screen margins -> ~1840; 1000 * 1.9 scale = 1900),
+        # and so the scroll's window-width clamp never stops it short
+        # of the screen edges. Contents are all centered, so extra
+        # backing width changes nothing visually on narrower screens.
+        self._width = 1000 if uiscale is bui.UIScale.SMALL else 500
         self._height = (
             600
             if uiscale is bui.UIScale.SMALL
@@ -364,6 +384,23 @@ class InboxWindow(bui.MainWindow):
         if uiscale is bui.UIScale.SMALL:
             scroll_height += 36
             scroll_bottom -= 4
+
+        # In small ui (where we cover the screen), extend our scroll
+        # area out to cover any margins between the virtual rect and
+        # the visible screen edges (cutout insets and whatnot),
+        # insetting content vertically to match so it stays put.
+        # Horizontally our fixed-width message column just stays
+        # centered in the (possibly widened) scroll.
+        (
+            self._screen_margin_left,
+            self._screen_margin_right,
+            self._screen_margin_bottom,
+            self._screen_margin_top,
+        ) = (
+            get_screen_margins(scale)
+            if uiscale is bui.UIScale.SMALL
+            else (0.0, 0.0, 0.0, 0.0)
+        )
 
         super().__init__(
             root_widget=bui.containerwidget(
@@ -428,8 +465,20 @@ class InboxWindow(bui.MainWindow):
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
             id=f'{self.main_window_id_prefix}|scroll',
-            size=(scroll_width, scroll_height),
-            position=(self._width * 0.5 - scroll_width * 0.5, scroll_bottom),
+            size=(
+                scroll_width
+                + self._screen_margin_left
+                + self._screen_margin_right,
+                scroll_height
+                + self._screen_margin_bottom
+                + self._screen_margin_top,
+            ),
+            position=(
+                self._width * 0.5
+                - scroll_width * 0.5
+                - self._screen_margin_left,
+                scroll_bottom - self._screen_margin_bottom,
+            ),
             capture_arrows=True,
             simple_culling_v=200,
             claims_left_right=True,
@@ -448,18 +497,22 @@ class InboxWindow(bui.MainWindow):
             )
 
         # When we're doing fullscreen scrolling, fade content around
-        # toolbars.
+        # toolbars. Note that we intentionally use the original
+        # un-margin-extended scroll geometry here; the fades were
+        # placed to coincide with toolbar elements, which don't move
+        # when we extend out into screen margins.
         if uiscale is bui.UIScale.SMALL:
+            fade_left = self._width * 0.5 - scroll_width * 0.5
             scroll_fade_top(
                 self._root_widget,
-                self._width * 0.5 - scroll_width * 0.5,
+                fade_left,
                 scroll_bottom,
                 scroll_width,
                 scroll_height,
             )
             scroll_fade_bottom(
                 self._root_widget,
-                self._width * 0.5 - scroll_width * 0.5,
+                fade_left,
                 scroll_bottom,
                 scroll_width,
                 scroll_height,
@@ -481,7 +534,7 @@ class InboxWindow(bui.MainWindow):
             h_align='center',
             v_align='center',
             scale=0.6 if uiscale is bui.UIScale.SMALL else 0.8,
-            text=bui.Lstr(resource='inboxText'),
+            text=classicassets.strings.ui.inbox,
             maxwidth=200,
             color=bui.app.ui_v1.title_color,
         )
@@ -489,16 +542,12 @@ class InboxWindow(bui.MainWindow):
         # Kick off request.
         plus = bui.app.plus
         if plus is None or plus.accounts.primary is None:
-            self._error(bui.Lstr(resource='notSignedInText'))
+            self._error(classicassets.strings.ui.not_signed_in_status)
             return
 
-        with plus.accounts.primary:
-            plus.cloud.send_message_cb(
-                bacommon.classic.InboxRequestMessage(),
-                on_response=bui.WeakCallPartial(
-                    self._on_inbox_request_response
-                ),
-            )
+        bui.app.create_async_task(
+            self._fetch_inbox(plus.accounts.primary), name='inbox fetch'
+        )
 
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
@@ -514,7 +563,7 @@ class InboxWindow(bui.MainWindow):
     def main_window_should_preserve_selection(self) -> bool:
         return True
 
-    def _error(self, errmsg: bui.Lstr | str) -> None:
+    def _error(self, errmsg: bui.Lstr | bui.LangStr | str) -> None:
         """Put ourself in a permanent error state."""
         bui.spinnerwidget(edit=self._loading_spinner, visible=False)
         bui.textwidget(
@@ -547,7 +596,7 @@ class InboxWindow(bui.MainWindow):
         plus = bui.app.plus
         if plus is None or plus.accounts.primary is None:
             bui.screenmessage(
-                bui.Lstr(resource='notSignedInText'), color=(1, 0, 0)
+                classicassets.strings.ui.not_signed_in_status, color=(1, 0, 0)
             )
             builtinassets.audio.error.get().play()
             return
@@ -651,18 +700,26 @@ class InboxWindow(bui.MainWindow):
             bui.spinnerwidget(edit=button_spinner, visible=False)
 
         # See if we should show an error message.
+        error_message: bui.Lstr | bui.LangStr | None
         if isinstance(response, Exception):
             if isinstance(response, CommunicationError):
-                error_message = bui.Lstr(
-                    resource='internal.unavailableNoConnectionText'
+                error_message = (
+                    _commonassets.strings.status.unavailable_no_connection
                 )
             else:
-                error_message = bui.Lstr(resource='errorText')
+                error_message = _commonassets.strings.values.error
         elif response.error_type is not None:
             # If error_type is set, error should be also.
             assert response.error_message is not None
-            error_message = bui.Lstr(
-                translate=('serverResponses', response.error_message)
+            # Final-form errors arrive pre-translated to our locale
+            # (the lifetime rule); display verbatim. Otherwise it's
+            # legacy English we translate against our local corpus.
+            error_message = (
+                bui.langstr_value(response.error_message)
+                if response.error_message_is_final
+                else bui.Lstr(
+                    translate=('serverResponses', response.error_message)
+                )
             )
         else:
             error_message = None
@@ -673,7 +730,7 @@ class InboxWindow(bui.MainWindow):
             builtinassets.audio.error.get().play()
             if button is not None:
                 bui.buttonwidget(
-                    edit=button, label=bui.Lstr(resource='errorText')
+                    edit=button, label=_commonassets.strings.values.error
                 )
             return
 
@@ -687,15 +744,35 @@ class InboxWindow(bui.MainWindow):
         # Whee; no error. Mark as done.
         if button is not None:
             # If we have full unicode, just show a checkmark in all cases.
-            label: str | bui.Lstr
+            label: str | bui.Lstr | bui.LangStr
             if bui.supports_unicode_display():
                 label = '✓'
             else:
-                label = bui.Lstr(resource='doneText')
+                label = _commonassets.strings.actions.done
             bui.buttonwidget(edit=button, label=label)
 
+    async def _fetch_inbox(self, account: bui.AccountV2Handle) -> None:
+        """Fetch our inbox contents and populate our UI."""
+        plus = bui.app.plus
+        assert plus is not None
+        try:
+            with account:
+                response = await plus.cloud.send_message_async(
+                    bacommon.classic.InboxRequestMessage()
+                )
+        except Exception as exc:
+            if self._root_widget and not self._root_widget.transitioning_out:
+                self._error(
+                    _commonassets.strings.status.unavailable_no_connection
+                )
+            # We're done with the exception, so strip its tracebacks
+            # to avoid reference cycles.
+            strip_exception_tracebacks(exc)
+            return
+        self._on_inbox_request_response(response)
+
     def _on_inbox_request_response(
-        self, response: bacommon.classic.InboxRequestResponse | Exception
+        self, response: bacommon.classic.InboxRequestResponse
     ) -> None:
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
@@ -705,23 +782,9 @@ class InboxWindow(bui.MainWindow):
         if not self._root_widget or self._root_widget.transitioning_out:
             return
 
-        errmsg: str | bui.Lstr
-        if isinstance(response, Exception):
-            errmsg = bui.Lstr(resource='internal.unavailableNoConnectionText')
-            is_error = True
-        else:
-            is_error = response.error is not None
-            errmsg = (
-                ''
-                if response.error is None
-                else bui.Lstr(translate=('serverResponses', response.error))
-            )
-
-        if is_error:
-            self._error(errmsg)
+        if response.error is not None:
+            self._error(bui.Lstr(translate=('serverResponses', response.error)))
             return
-
-        assert isinstance(response, bacommon.classic.InboxRequestResponse)
 
         # If we got no messages, don't touch anything. This keeps
         # keyboard control working in the empty case.
@@ -730,7 +793,7 @@ class InboxWindow(bui.MainWindow):
             bui.textwidget(
                 edit=self._infotext,
                 color=(0.4, 0.4, 0.5),
-                text=bui.Lstr(resource='noMessagesText'),
+                text=classicassets.strings.inbox.no_messages,
             )
             return
 
@@ -851,23 +914,17 @@ class InboxWindow(bui.MainWindow):
                         assert bui.app.classic is not None
                         campaign = bui.app.classic.getcampaign(campaignname)
 
-                        tourney_name = bui.Lstr(
-                            value='${A} ${B}',
-                            subs=[
-                                (
-                                    '${A}',
-                                    campaign.getlevel(levelname).displayname,
+                        tourney_name = (
+                            _commonassets.strings.compose.spaced_pair(
+                                first=campaign.getlevel(
+                                    levelname
+                                ).displayname_langstr,
+                                second=(
+                                    classicassets.strings.coop
+                                ).player_count_abbreviated(
+                                    count=str(component.players)
                                 ),
-                                (
-                                    '${B}',
-                                    bui.Lstr(
-                                        resource='playerCountAbbreviatedText',
-                                        subs=[
-                                            ('${COUNT}', str(component.players))
-                                        ],
-                                    ),
-                                ),
-                            ],
+                            )
                         )
 
                         if component.trophy is not None:
@@ -933,9 +990,7 @@ class InboxWindow(bui.MainWindow):
 
                         section = _ButtonSection(
                             sub_width=sub_width,
-                            label=bui.Lstr(
-                                resource='tournamentFinalStandingsText'
-                            ),
+                            label=classicassets.strings.inbox.final_standings,
                             color=color,
                             call=partial(
                                 _do_tourney_scores, component.tournament_id
@@ -950,7 +1005,7 @@ class InboxWindow(bui.MainWindow):
                         if component.prizes:
                             section = _TextSection(
                                 sub_width=sub_width,
-                                text=bui.Lstr(resource='yourPrizeText'),
+                                text=classicassets.strings.inbox.your_prize,
                                 spacing_top=6,
                                 color=(1.0, 1.0, 1.0, 0.4),
                                 scale=0.35,
@@ -996,9 +1051,7 @@ class InboxWindow(bui.MainWindow):
 
                 section = _TextSection(
                     sub_width=sub_width,
-                    text=bui.Lstr(
-                        value='You must update the app to view this.'
-                    ),
+                    text=classicassets.strings.inbox.must_update,
                 )
                 total_height += section.get_height()
                 sections.append(section)
@@ -1018,6 +1071,14 @@ class InboxWindow(bui.MainWindow):
 
         sub_height += margin_bottom
 
+        # Grow to cover any screen margins; the screen-margin-top shift
+        # on our start position below insets content to match, leaving
+        # screen-margin-bottom of extra padding at the bottom. (This
+        # also keeps content pinned in the vertically-centered
+        # short-content case; the extra height offsets the view's own
+        # center shift.)
+        sub_height += self._screen_margin_bottom + self._screen_margin_top
+
         subcontainer = bui.containerwidget(
             id=f'{self.main_window_id_prefix}|subc',
             parent=self._scrollwidget,
@@ -1033,7 +1094,7 @@ class InboxWindow(bui.MainWindow):
         assert bui.app.classic is not None
 
         buttonrows: list[list[bui.Widget]] = []
-        y = sub_height - margin_top
+        y = sub_height - self._screen_margin_top - margin_top
 
         # For fullscreen scrollable, account for toolbar.
         uiscale = bui.app.ui_v1.uiscale

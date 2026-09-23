@@ -38,6 +38,7 @@ from _babase import (
     can_display_chars,
     charstr,
     clipboard_get_text,
+    clipboard_get_text_async,
     clipboard_has_text,
     clipboard_is_supported,
     clipboard_set_text,
@@ -55,17 +56,16 @@ from _babase import (
     get_display_resolution,
     get_immediate_return_code,
     get_input_idle_time,
-    get_low_level_config_value,
     get_max_graphics_quality,
     get_replays_dir,
     get_string_height,
     get_string_width,
     get_suppress_config_and_state_writes,
     get_ui_scale,
-    get_v1_cloud_log_file_path,
+    get_virtual_outer_rect,
     get_virtual_safe_area_size,
     get_virtual_screen_size,
-    getsimplesound,
+    apsimplesoundget,
     has_user_run_commands,
     have_permission,
     in_logic_thread,
@@ -102,12 +102,12 @@ from _babase import (
     reload_hooks,
     reload_media,
     request_permission,
+    resolve_legacy_asset_name,
     safecolor,
     screenmessage,
     set_analytics_screen,
     set_app_exit_code,
     set_asset_name_compat_versions,
-    set_low_level_config_value,
     set_thread_name,
     set_main_ui_input_device,
     set_account_sign_in_state,
@@ -136,18 +136,28 @@ from babase._app import App, AppState
 from babase._appcomponent import AppComponentSubsystem
 from babase._appconfig import commit_app_config
 from babase._appintent import AppIntent, AppIntentDefault, AppIntentExec
-from babase._asset_packages import loaded_asset_package_apverids
-from babase._appmode import AppMode
+from babase._asset_packages import (
+    check_asset_package_load,
+    loaded_asset_package_apverids,
+    asset_package_bucket_paths,
+    asset_package_string_count,
+)
+from babase._assetref import SimpleSoundHandle, getsimplesound
+from babase._appmode import (
+    AppMode,
+    ControlPermission,
+    ControlPermissionRequest,
+)
 from babase._appsubsystem import AppSubsystem
 from babase._appmodeselector import AppModeSelector
 from babase._appconfig import AppConfig
 from babase._apputils import (
     AppHealthSubsystem,
-    get_remote_app_name,
-    handle_leftover_v1_cloud_log_file,
     is_browser_likely_available,
     utc_now_cloud,
 )
+from babase._cloudloggercontrol import handle_cloud_logger_config_changed
+from babase._logreporting import get_log_reporter
 from babase._cloud import CloudSubscription
 from babase._devconsole import (
     DevConsoleButtonDef,
@@ -195,6 +205,9 @@ from babase._language import (
     LanguageSubsystem,
     Lstr,
     get_legacy_langdata,
+    langstr_value,
+    resolve_langstrs,
+    translate_server_text,
 )
 from babase._locale import LocaleSubsystem
 from babase._logging import (
@@ -205,6 +218,7 @@ from babase._logging import (
     lifecyclelog,
     netlog,
     uilog,
+    userlog,
 )
 from babase._login import LoginAdapter, LoginInfo, discord_sign_in
 from babase._generated.enums import (
@@ -228,7 +242,11 @@ from babase._env import DEFAULT_REQUEST_TIMEOUT_SECONDS
 from babase._net import get_ip_address_type, NetworkSubsystem
 from babase._plugin import PluginSpec, Plugin, PluginSubsystem
 from babase._simpledialog import SimpleDialog
-from babase._stringedit import StringEditAdapter, StringEditSubsystem
+from babase._stringedit import (
+    StringEditAdapter,
+    StringEditKind,
+    StringEditSubsystem,
+)
 from babase._text import timestring
 from babase._workspace import WorkspaceSubsystem
 
@@ -257,6 +275,8 @@ __all__ = [
     'AppIntentDefault',
     'AppIntentExec',
     'AppMode',
+    'ControlPermission',
+    'ControlPermissionRequest',
     'AppState',
     'applog',
     'appname',
@@ -284,6 +304,7 @@ __all__ = [
     'can_display_chars',
     'charstr',
     'clipboard_get_text',
+    'clipboard_get_text_async',
     'clipboard_has_text',
     'clipboard_is_supported',
     'CloudSubscription',
@@ -318,21 +339,21 @@ __all__ = [
     'get_input_idle_time',
     'get_ip_address_type',
     'get_legacy_langdata',
-    'get_low_level_config_value',
     'get_max_graphics_quality',
-    'get_remote_app_name',
     'get_replays_dir',
     'get_string_height',
     'get_string_width',
     'get_suppress_config_and_state_writes',
     'get_type_name',
     'get_ui_scale',
+    'get_virtual_outer_rect',
     'get_virtual_safe_area_size',
     'get_virtual_screen_size',
-    'get_v1_cloud_log_file_path',
     'getclass',
+    'apsimplesoundget',
     'getsimplesound',
-    'handle_leftover_v1_cloud_log_file',
+    'get_log_reporter',
+    'handle_cloud_logger_config_changed',
     'has_user_run_commands',
     'have_permission',
     'in_logic_thread',
@@ -347,7 +368,10 @@ __all__ = [
     'is_point_in_box',
     'is_xcode_build',
     'LanguageSubsystem',
+    'check_asset_package_load',
     'loaded_asset_package_apverids',
+    'asset_package_bucket_paths',
+    'asset_package_string_count',
     'LocaleSubsystem',
     'lifecyclelog',
     'LangStr',
@@ -394,11 +418,15 @@ __all__ = [
     'quit',
     'QuitType',
     'reload_hooks',
+    'langstr_value',
     'reload_media',
     'request_permission',
+    'resolve_langstrs',
+    'translate_server_text',
     'ResolveResult',
     'ResolveProgress',
     'ResolvePhase',
+    'resolve_legacy_asset_name',
     'safecolor',
     'screenmessage',
     'SessionNotFoundError',
@@ -407,7 +435,6 @@ __all__ = [
     'set_analytics_screen',
     'set_app_exit_code',
     'set_asset_name_compat_versions',
-    'set_low_level_config_value',
     'set_main_ui_input_device',
     'set_thread_name',
     'set_account_sign_in_state',
@@ -419,10 +446,12 @@ __all__ = [
     'shutdown_suppress_count',
     'SimpleDialog',
     'SimpleSound',
+    'SimpleSoundHandle',
     'suppress_config_and_state_writes',
     'SpecialChar',
     'storagename',
     'StringEditAdapter',
+    'StringEditKind',
     'StringEditSubsystem',
     'supports_max_fps',
     'supports_vsync',
@@ -430,6 +459,7 @@ __all__ = [
     'TeamNotFoundError',
     'timestring',
     'uilog',
+    'userlog',
     'UIScale',
     'unlock_all_input',
     'update_internal_logger_levels',
