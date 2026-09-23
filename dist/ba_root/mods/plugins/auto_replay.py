@@ -8,6 +8,7 @@ import threading
 import babase
 import bascenev1 as bs
 
+
 class AutoReplayManager:
     def __init__(self) -> None:
         self._recording = False
@@ -26,7 +27,8 @@ class AutoReplayManager:
         # Run cleanup once on server boot in a separate thread.
         try:
             replays_dir = babase.get_replays_dir()
-            thread = threading.Thread(target=self._run_cleanup_thread, args=(replays_dir,))
+            thread = threading.Thread(
+                target=self._run_cleanup_thread, args=(replays_dir,))
             thread.daemon = True
             thread.start()
         except Exception as e:
@@ -61,7 +63,7 @@ class AutoReplayManager:
             # If the session changed while recording (e.g. playlist series ended),
             # clean up previous recording state and start fresh.
             if self._recording and self._recorded_session != session:
-                print("AutoReplay: HostSession changed, restarting recording.")
+                # print("AutoReplay: HostSession changed, restarting recording.")
                 self._stop_recording(now)
 
             if not self._recording:
@@ -70,12 +72,12 @@ class AutoReplayManager:
             else:
                 # We are recording. Check if we reached the 10-minute limit (600 seconds).
                 if now - self._recording_start_time >= 600.0:
-                    print("AutoReplay: 10 minutes limit reached, restarting recording.")
+                    # print("AutoReplay: 10 minutes limit reached, restarting recording.")
                     self._stop_recording(now)
                     self._start_recording(session, now)
         else:
             if self._recording:
-                print("AutoReplay: No players or no active session, stopping recording.")
+                # print("AutoReplay: No players or no active session, stopping recording.")
                 self._stop_recording(now)
 
     def _start_recording(self, session: bs.Session, now: float) -> None:
@@ -83,8 +85,8 @@ class AutoReplayManager:
         timestamp_str = dt.strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"replay_{timestamp_str}"
         self._current_filename = filename
-        
-        print(f"AutoReplay: Starting replay recording: {filename}")
+
+        # print(f"AutoReplay: Starting replay recording: {filename}")
         try:
             with session.context:
                 bs.start_replay_recording(filename)
@@ -92,7 +94,7 @@ class AutoReplayManager:
             self._recording_start_time = now
             self._recorded_session = session
         except Exception as e:
-            print(f"AutoReplay: Failed to start recording: {e}")
+            # print(f"AutoReplay: Failed to start recording: {e}")
             self._current_filename = ""
 
     def _stop_recording(self, now: float | None = None) -> None:
@@ -123,35 +125,39 @@ class AutoReplayManager:
                 filepath = os.path.join(replays_dir, f"{filename}.brp")
                 if os.path.isfile(filepath):
                     os.remove(filepath)
-                    print(f"AutoReplay: Discarded short replay ({duration:.1f}s): {filename}")
+                    # print(f"AutoReplay: Discarded short replay ({duration:.1f}s): {filename}")
             except Exception as e:
-                print(f"AutoReplay: Error removing short replay: {e}")
+                # print(f"AutoReplay: Error removing short replay: {e}")
+                pass
 
     def _run_cleanup_thread(self, replays_dir: str) -> None:
         try:
             if not os.path.exists(replays_dir):
                 return
-            
+
             now = time.time()
             # 2 days in seconds = 2 * 24 * 60 * 60 = 172800
             max_age = 2 * 24 * 60 * 60
-            
+
             for name in os.listdir(replays_dir):
                 if name.endswith('.brp'):
                     file_path = os.path.join(replays_dir, name)
                     if os.path.isfile(file_path):
                         mtime = os.path.getmtime(file_path)
                         if now - mtime > max_age:
-                            print(f"AutoReplay: Deleting old replay: {name} (age: {now - mtime:.1f}s)")
+                            # print(f"AutoReplay: Deleting old replay: {name} (age: {now - mtime:.1f}s)")
                             try:
                                 os.remove(file_path)
                             except Exception as e:
-                                print(f"AutoReplay: Error removing {name}: {e}")
+                                print(
+                                    f"AutoReplay: Error removing {name}: {e}")
         except Exception as e:
             print(f"AutoReplay: Error in background cleanup: {e}")
 
+
 # Global instance to keep the manager alive.
 _manager = None
+
 
 def enable() -> None:
     global _manager
@@ -160,6 +166,8 @@ def enable() -> None:
         _manager.start()
 
 # Plugin entry point (for general compatibility if loaded as standard plugin).
+
+
 class AutoReplayPlugin(babase.Plugin):
     def on_app_running(self) -> None:
         enable()

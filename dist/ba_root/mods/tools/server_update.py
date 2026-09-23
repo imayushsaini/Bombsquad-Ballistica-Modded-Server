@@ -15,21 +15,9 @@ VERSION = 81
 
 
 def check():
-    _thread.start_new_thread(updateProfilesJson, ())
     _thread.start_new_thread(checkChangelog, ())
 
     bascenev1.apptimer(15, postStatus)
-
-
-def updateProfilesJson():
-    profiles = pdata.get_profiles()
-
-    for id in profiles:
-        if "spamCount" not in profiles[id]:
-            profiles[id]["spamCount"] = 0
-            profiles[id]["lastSpam"] = time.time()
-
-    pdata.commit_profiles(profiles)
 
 
 def postStatus():

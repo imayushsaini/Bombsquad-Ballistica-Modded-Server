@@ -4,7 +4,7 @@
     "BrodcastCommand": true
   },
   "HostDeviceName": "v1.4",
-  "HostName": "BCSv2",
+  "HostName": "\uE047 BCSv2 \uE047",
   "KickVoteMsgType": "chat",
   "ScoreScreenAnnouncement": {
     "enable": true,
@@ -190,7 +190,7 @@
     "enforce_for_accounts": [ "HeySmoothy", "test" ]
   },
   "accountApiToken": "your-api-token-here",
-  "useSqlite": true
+  "useSqlite": true,
   "instant_replay": {
     "enable": true,
     "duration": 3,
