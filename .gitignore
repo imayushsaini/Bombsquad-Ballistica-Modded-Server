@@ -14,3 +14,7 @@ dist/ba_root/cache/*
 dist/ba_root/*.json
 dist/ba_root/config.json
 dist/*.keys
+dist/ba_root/mods/features/stumbled_score_screen.py
+dist/ba_root/mods/private_hud.py
+dist/ba_root/mods/stats/stats.json
+dist/ba_root/mods/stats/stats.json.backup
