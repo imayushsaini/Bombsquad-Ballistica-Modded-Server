@@ -6,7 +6,7 @@
 
 # Feel free to edit.
 
-# ba_meta require api 8
+# ba_meta require api 9
 from __future__ import annotations
 
 from enum import Enum
@@ -57,7 +57,7 @@ class Ball(bs.Actor):
     def __init__(self,
                  position: Sequence[float],
                  velocity: Sequence[float],
-                 texture: babase.Texture,
+                 texture: bs.Texture,
                  body_scale: float = 1.0,
                  gravity_scale: float = 1.0,
                  ) -> NoReturn:
@@ -99,7 +99,7 @@ class Ball(bs.Actor):
         )
 
         # die the ball manually incase the ball doesn't fall the outside of the map
-        bs.timer(2.5, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+        bs.timer(2.5, bs.WeakCallPartial(self.handlemessage, bs.DieMessage()))
 
     # i am not handling anything in this ball Class(except for diemessage).
     # all game things and logics going to be in the box class
@@ -213,7 +213,7 @@ class Box(bs.Actor):
         self.force_shoot_speed: float = 0.0
         self.ball_mag = 3000
         self.ball_gravity: float = 1.0
-        self.ball_tex: babase.Texture | None = None
+        self.ball_tex: bs.Texture | None = None
         # only for Hard ball_type
         self.player_facing_direction: list[float, float] = [0.0, 0.0]
         # ball shoot soound.
@@ -384,7 +384,7 @@ class Box(bs.Actor):
         # And a circle outline with ugly animation.
         circle_outline = bs.newnode(
             "locator",
-            owner=player.actor.node,
+            owner=player.node,
             attrs={
                 'shape': 'circleOutline',
                 'color': (1.0, 0.0, 0.0),
@@ -409,8 +409,8 @@ class Box(bs.Actor):
         )
 
         # coonect it and...
-        player.actor.node.connectattr("position", light, "position")
-        player.actor.node.connectattr("position", circle_outline, "position")
+        player.node.connectattr("position", light, "position")
+        player.node.connectattr("position", circle_outline, "position")
 
         # immediately delete the node after another player has been targeted.
         self.shoot_speed = 0.5 if self.shoot_speed == 0.0 else self.shoot_speed
@@ -424,8 +424,11 @@ class Box(bs.Actor):
         # and i got it how analog stick values are works.
         # just need to store analog stick facing direction and need some calculation according how far player pushed analog stick.
         # Notice that how vertical direction is inverted, so we need to put a minus infront of veriable.(so ball isn't shoot at wrong direction).
-        self.player_facing_direction[0] = player.actor.node.move_left_right
-        self.player_facing_direction[1] = -player.actor.node.move_up_down
+        try:
+            self.player_facing_direction[0] = player.node.move_left_right
+            self.player_facing_direction[1] = -player.node.move_up_down
+        except:
+            pass
 
         # if player is too close and the player pushing his analog stick fully the ball shoot's too far away to player.
         # so, we need to reduce the value of "self.player_facing_direction" to fix this problem.
@@ -485,8 +488,6 @@ class Team(bs.Team[Player]):
 # and main thing don't allow player to camp inside of box are going in this class.
 
 # ba_meta export bascenev1.GameActivity
-
-
 class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
     # defining name, description and settings..
     name = 'Dodge the ball'

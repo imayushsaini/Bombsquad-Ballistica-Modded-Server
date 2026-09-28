@@ -1,16 +1,20 @@
+# Released under the MIT License. See LICENSE for details.
+"""Module to handle player overhead tags (custom tags, rank, hp, ping)."""
+
 import setting
 from playersdata import pdata
 from stats import mystats
 
 import babase
 import bascenev1 as bs
+import _bascenev1
 
 sett = setting.get_settings_data()
 
 
 def addtag(node, player):
     session_player = player.sessionplayer
-    account_id = session_player.get_v1_account_id()
+    account_id = session_player.get_account_id()
     customtag_ = pdata.get_custom()
     customtag = customtag_['customtag']
     roles = pdata.get_roles()
@@ -33,7 +37,7 @@ def addtag(node, player):
 
 def addrank(node, player):
     session_player = player.sessionplayer
-    account_id = session_player.get_v1_account_id()
+    account_id = session_player.get_account_id()
     rank = mystats.getRank(account_id)
 
     if rank:
@@ -41,15 +45,22 @@ def addrank(node, player):
 
 
 def addhp(node, spaz):
+    hp_tag = HitPoint(owner=node, position=(0, 1.75, 0), shad=1.4)
+
     def showHP():
-        hp = spaz.hitpoints
-        if spaz.node.exists():
-            HitPoint(owner=node, prefix=str(int(hp)),
-                     position=(0, 1.75, 0), shad=1.4)
-        else:
+        if not spaz.node.exists() or not node.exists():
             spaz.hptimer = None
-    spaz.hptimer = bs.Timer(2, babase.Call(
-        showHP), repeat=True)
+            return
+        hp_tag.update(spaz.hitpoints)
+
+    showHP()
+    spaz.hptimer = bs.Timer(1.5, babase.CallStrict(showHP), repeat=True)
+
+
+def addping(node, player):
+    session_player = player.sessionplayer
+    client_id = getattr(session_player.inputdevice, 'client_id', -1)
+    Ping(owner=node, client_id=client_id)
 
 
 class Tag(object):
@@ -93,7 +104,11 @@ class Tag(object):
                                        'h_align': 'center'
                                    })
         mnode.connectattr('output', self.tag_text, 'position')
-        if sett["enableTagAnimation"]:
+
+        import private_hud
+        private_hud.register_node(self.tag_text, 'tag', 'scale', 0.01)
+
+        if sett.get("enableTagAnimation", False):
             bs.animate_array(node=self.tag_text, attr='color', size=3, keys={
                 0.2: (2, 0, 2),
                 0.4: (2, 2, 0),
@@ -137,32 +152,99 @@ class Rank(object):
                                     })
         mnode.connectattr('output', self.rank_text, 'position')
 
+        import private_hud
+        private_hud.register_node(self.rank_text, 'rank', 'scale', 0.01)
+
 
 class HitPoint(object):
-    def __init__(self, position=(0, 1.5, 0), owner=None, prefix='0', shad=1.2):
+    def __init__(self, position=(0, 1.75, 0), owner=None, shad=1.4):
         self.position = position
         self.node = owner
-        m = bs.newnode('math', owner=self.node, attrs={
+        self.m = bs.newnode('math', owner=self.node, attrs={
             'input1': self.position, 'operation': 'add'})
-        self.node.connectattr('torso_position', m, 'input2')
-        prefix = int(prefix) / 10
-        preFix = u"\ue047" + str(prefix) + u"\ue047"
+        self.node.connectattr('torso_position', self.m, 'input2')
         self._Text = bs.newnode('text',
                                 owner=self.node,
                                 attrs={
-                                    'text': preFix,
+                                    'text': '',
                                     'in_world': True,
                                     'shadow': shad,
                                     'flatness': 1.0,
-                                    'color': (1, 1, 1) if int(
-                                        prefix) >= 20 else (1.0, 0.2, 0.2),
+                                    'color': (1, 1, 1),
                                     'scale': 0.01,
                                     'h_align': 'center'})
-        m.connectattr('output', self._Text, 'position')
+        self.m.connectattr('output', self._Text, 'position')
 
-        def a():
-            self._Text.delete()
-            m.delete()
+        import private_hud
+        private_hud.register_node(self._Text, 'hptag', 'scale', 0.01)
 
-        self.timer = bs.Timer(2, babase.Call(
-            a))
+    def update(self, hp):
+        if not self._Text or not self._Text.exists():
+            return
+        prefix = int(hp) / 10
+        preFix = u"\ue047" + str(prefix) + u"\ue047"
+        self._Text.text = preFix
+        self._Text.color = (1, 1, 1) if int(prefix) >= 20 else (1.0, 0.2, 0.2)
+
+
+class Ping(object):
+    def __init__(self, owner=None, client_id=-1):
+        self.node = owner
+        self.client_id = client_id
+        self.m = bs.newnode('math',
+                            owner=self.node,
+                            attrs={
+                                'input1': (0, 2.0, 0),
+                                'operation': 'add'
+                            })
+        self.node.connectattr('torso_position', self.m, 'input2')
+
+        self.ping_text = bs.newnode('text',
+                                    owner=self.node,
+                                    attrs={
+                                        'text': '',
+                                        'in_world': True,
+                                        'shadow': 1.0,
+                                        'flatness': 1.0,
+                                        'color': (0.2, 1.0, 0.2),
+                                        'scale': 0.01,
+                                        'h_align': 'center'
+                                    })
+        self.m.connectattr('output', self.ping_text, 'position')
+
+        import private_hud
+        private_hud.register_node(self.ping_text, 'ping', 'scale', 0.01)
+
+        self.update()
+        self.timer = bs.Timer(1.5, babase.CallStrict(self.update), repeat=True)
+
+    def update(self):
+        if not self.node or not self.node.exists() or not self.ping_text or not self.ping_text.exists():
+            self.timer = None
+            return
+
+        try:
+            if self.client_id == -1:
+                ping = 0
+            else:
+                ping = _bascenev1.get_client_ping(int(self.client_id))
+        except Exception:
+            ping = None
+
+        if ping is None or ping < 0:
+            ping_val = 0
+            ping_str = "0ms"
+        else:
+            ping_val = int(ping)
+            ping_str = f"{ping_val}ms"
+
+        # Colors based on ping value: Green (<80ms), Yellow (80-160ms), Red (>=160ms)
+        if ping_val < 80:
+            col = (0.2, 1.0, 0.2)
+        elif ping_val < 160:
+            col = (1.0, 1.0, 0.2)
+        else:
+            col = (1.0, 0.2, 0.2)
+
+        self.ping_text.text = ping_str
+        self.ping_text.color = col

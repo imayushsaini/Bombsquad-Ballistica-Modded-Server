@@ -2,8 +2,6 @@
 #
 """Functionality related to classic analytics."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 import babase
@@ -15,7 +13,6 @@ if TYPE_CHECKING:
 
 def game_begin_analytics() -> None:
     """Update analytics events for the start of a game."""
-    # pylint: disable=too-many-branches
     # pylint: disable=cyclic-import
     from bascenev1 import (
         DualTeamSession,

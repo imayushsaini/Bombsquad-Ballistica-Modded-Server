@@ -6,8 +6,6 @@ We do all layout math and bake out partial ui calls in a background
 thread so there's as little work to do in the ui thread as possible.
 """
 
-from __future__ import annotations
-
 import copy
 from functools import partial
 from typing import TYPE_CHECKING, assert_never
@@ -15,6 +13,7 @@ from typing import TYPE_CHECKING, assert_never
 from efro.util import strict_partial
 import bacommon.docui.v1 as dui1
 import bauiv1 as bui
+from bauiv1 import builtinassets
 
 from bauiv1lib.docui.v1prep._types import PagePrep, RowPrep, ButtonPrep
 
@@ -22,6 +21,11 @@ if TYPE_CHECKING:
     from typing import Callable
 
     from bauiv1lib.docui import DocUIWindow
+
+
+def _btex(name: str) -> str:
+    """Qualified ref for a texture in the builtin asset-package."""
+    return f'{builtinassets.__asset_package__}:textures/{name}'
 
 
 def prep_page(
@@ -33,8 +37,8 @@ def prep_page(
     idprefix: str,
     immediate: bool = False,
 ) -> PagePrep:
-    """Prep a page."""
     # pylint: disable=too-many-statements
+    """Prep a page."""
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-locals
     # pylint: disable=cyclic-import
@@ -59,7 +63,7 @@ def prep_page(
                         label_is_lstr=True,
                         size=(220, 100),
                         label_scale=0.6,
-                        texture='buttonSquareWide',
+                        texture=_btex('button_square_wide'),
                         padding_top=-8,
                         padding_bottom=-10,
                         color=(0.2, 0.2, 0.2, 0.15),
@@ -203,7 +207,7 @@ def prep_page(
     for i, (row, rowprep) in enumerate(
         zip(page_rows_filtered, rows, strict=True)
     ):
-        tdelaybase = 0.06 * (i + 1)
+        tdelaybase = 0.15 + 0.06 * i
 
         y -= row.spacing_top
 
@@ -296,6 +300,7 @@ def prep_page(
                     transition_delay=(
                         None if immediate else (tdelaybase + 0.1)
                     ),
+                    transition_type='scale',
                 )
             )
             y -= (
@@ -343,6 +348,7 @@ def prep_page(
                     transition_delay=(
                         None if immediate else (tdelaybase + 0.2)
                     ),
+                    transition_type='scale',
                 )
             )
             y -= row_subtitle_height
@@ -407,9 +413,8 @@ def prep_page(
         # Clamp or max delay if we've got lots of buttons.
         bdelaymax = min(0.5, 0.03 * bcount)
         for j, button in enumerate(row.buttons):
-            # Calc amt 1 -> 0 across the row.
-            tdelayamt = 1.0 - (j / max(1, bcount - 1))
-            # Rightmost buttons slide in first.
+            # Leftmost buttons appear first; pop-in sweeps left-to-right.
+            tdelayamt = j / max(1, bcount - 1)
             tdelay = tdelaybase + tdelayamt * bdelaymax
 
             xorig = x
@@ -529,6 +534,7 @@ def prep_page(
                     autoselect=True,
                     enable_sound=False,
                     transition_delay=None if immediate else tdelay,
+                    transition_type='scale',
                     icon_color=button.icon_color,
                     iconscale=button.icon_scale,
                     better_bg_fit=True,

@@ -2,8 +2,6 @@
 #
 """Playlist related functionality."""
 
-from __future__ import annotations
-
 import copy
 import logging
 from typing import Any, TYPE_CHECKING
@@ -17,6 +15,31 @@ if TYPE_CHECKING:
 
 PlaylistType = list[dict[str, Any]]
 
+#: Playlist problems already warned about this run, as (kind, playlist
+#: name, detail) tuples. Playlists get rescanned repeatedly (menus,
+#: session setup, etc.), and a playlist referencing a since-removed map
+#: or mod is a steady state rather than an event, so warning per scan
+#: buries the log in duplicates -- one field app instance emitted the
+#: same two warnings 284 times. The problems are worth telling the user
+#: about exactly once; a rescan finding the same thing again is not
+#: news. Bounded by the number of distinct broken entries, so no
+#: pruning needed.
+_g_warned_playlist_problems: set[tuple[str, str, str]] = set()
+
+
+def _warn_playlist_problem_once(
+    kind: str, playlistname: str, detail: str, message: str, *args: Any
+) -> None:
+    """Log a playlist problem the first time it is seen this run."""
+    key = (kind, playlistname, detail)
+    if key in _g_warned_playlist_problems:
+        return
+    _g_warned_playlist_problems.add(key)
+    # ba.user: the cause and the fix both live on this user's machine
+    # (a removed map, an uninstalled mod), so this is for them to see
+    # and act on, not something to report to us.
+    babase.userlog.warning(message, *args)
+
 
 def filter_playlist(
     playlist: PlaylistType,
@@ -27,15 +50,14 @@ def filter_playlist(
     mark_unowned: bool = False,
     name: str = '?',
 ) -> PlaylistType:
+    # pylint: disable=too-many-statements
     """Return a filtered version of a playlist.
 
     Strips out or replaces invalid or unowned game types, makes sure all
     settings are present, and adds in a 'resolved_type' which is the actual
     type.
     """
-    # pylint: disable=too-many-locals
     # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
     from bascenev1._map import get_filtered_map_name
     from bascenev1._gameactivity import GameActivity
 
@@ -43,7 +65,6 @@ def filter_playlist(
 
     goodlist: list[dict] = []
     unowned_maps: Sequence[str]
-    available_maps: list[str] = list(babase.app.classic.maps.keys())
     if (remove_unowned or mark_unowned) and babase.app.classic is not None:
         unowned_maps = babase.app.classic.store.get_unowned_maps()
         unowned_game_types = babase.app.classic.store.get_unowned_game_types()
@@ -186,7 +207,10 @@ def filter_playlist(
 
             gameclass = babase.getclass(entry['type'], GameActivity)
 
-            if entry['settings']['map'] not in available_maps:
+            # Check the map registry *after* the game-class import
+            # above; importing a mod's game module may have just
+            # registered its maps.
+            if entry['settings']['map'] not in babase.app.classic.maps:
                 raise babase.MapNotFoundError()
 
             if remove_unowned and gameclass in unowned_game_types:
@@ -207,14 +231,23 @@ def filter_playlist(
             goodlist.append(entry)
 
         except babase.MapNotFoundError:
-            logging.warning(
+            mapname = entry['settings']['map']
+            _warn_playlist_problem_once(
+                'map',
+                name,
+                str(mapname),
                 'Map \'%s\' not found while scanning playlist \'%s\'.',
-                entry['settings']['map'],
+                mapname,
                 name,
             )
         except ImportError as exc:
-            logging.warning(
-                'Import failed while scanning playlist \'%s\': %s', name, exc
+            _warn_playlist_problem_once(
+                'import',
+                name,
+                str(exc),
+                'Import failed while scanning playlist \'%s\': %s',
+                name,
+                exc,
             )
         except Exception:
             logging.exception('Error in filter_playlist.')

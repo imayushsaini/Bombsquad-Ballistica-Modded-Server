@@ -146,40 +146,40 @@ def __init__(self, vpos: float, sessionplayer: bs.SessionPlayer,
 
 def _set_ready(self, ready: bool) -> None:
     # pylint: disable=cyclic-import
-    from bauiv1lib.profile import browser as pbrowser
-    from babase._general import Call
+    classic = babase.app.classic
+    
     profilename = self._profilenames[self._profileindex]
 
     # Handle '_edit' as a special case.
     if profilename == '_edit' and ready:
         with babase.ContextRef.empty():
-            pbrowser.ProfileBrowserWindow(in_main_menu=False)
+            classic.profile_browser_window()
 
             # Give their input-device UI ownership too
             # (prevent someone else from snatching it in crowded games)
-            _babase.set_ui_input_device(self._sessionplayer.inputdevice)
+            babase.set_ui_input_device(self._sessionplayer.inputdevice.id)
         return
 
     if not ready:
         self._sessionplayer.assigninput(
             babase.InputType.LEFT_PRESS,
-            Call(self.handlemessage, ChangeMessage('team', -1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('team', -1)))
         self._sessionplayer.assigninput(
             babase.InputType.RIGHT_PRESS,
-            Call(self.handlemessage, ChangeMessage('team', 1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('team', 1)))
         self._sessionplayer.assigninput(
             babase.InputType.BOMB_PRESS,
-            Call(self.handlemessage, ChangeMessage('character', 1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('character', 1)))
         self._sessionplayer.assigninput(
             babase.InputType.UP_PRESS,
-            Call(self.handlemessage, ChangeMessage('profileindex', -1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('profileindex', -1)))
         self._sessionplayer.assigninput(
             babase.InputType.DOWN_PRESS,
-            Call(self.handlemessage, ChangeMessage('profileindex', 1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('profileindex', 1)))
         self._sessionplayer.assigninput(
             (babase.InputType.JUMP_PRESS, babase.InputType.PICK_UP_PRESS,
              babase.InputType.PUNCH_PRESS),
-            Call(self.handlemessage, ChangeMessage('ready', 1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('ready', 1)))
         self._ready = False
         self._update_text()
         self._sessionplayer.setname('untitled', real=False)
@@ -192,18 +192,18 @@ def _set_ready(self, ready: bool) -> None:
              babase.InputType.PICK_UP_PRESS), self._do_nothing)
         self._sessionplayer.assigninput(
             (babase.InputType.UP_PRESS),
-            Call(self.handlemessage, ChangeMessage('characterchooser', -1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('characterchooser', -1)))
         self._sessionplayer.assigninput(
             (babase.InputType.DOWN_PRESS),
-            Call(self.handlemessage, ChangeMessage('characterchooser', 1)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('characterchooser', 1)))
         self._sessionplayer.assigninput(
             (babase.InputType.BOMB_PRESS),
-            Call(self.handlemessage, ChangeMessage('ready', 0)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('ready', 0)))
 
         self._sessionplayer.assigninput(
             (babase.InputType.JUMP_PRESS, babase.InputType.PICK_UP_PRESS,
              babase.InputType.PUNCH_PRESS),
-            Call(self.handlemessage, ChangeMessage('ready', 2)))
+            babase.CallStrict(self.handlemessage, ChangeMessage('ready', 2)))
 
         # Store the last profile picked by this input for reuse.
         input_device = self._sessionplayer.inputdevice

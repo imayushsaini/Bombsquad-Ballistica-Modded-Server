@@ -2,11 +2,10 @@
 #
 """UI for top level settings categories."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
+from bauiv1 import classicassets
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -21,7 +20,6 @@ class AllSettingsWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
         auxiliary_style: bool = True,
     ):
-        # pylint: disable=too-many-locals
 
         # Preload some modules we use in a background thread so we won't
         # have a visual hitch when the user taps them.
@@ -107,7 +105,7 @@ class AllSettingsWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(0, yoffs - (70 if uiscale is bui.UIScale.SMALL else 60)),
             size=(width, 25),
-            text=bui.Lstr(resource=f'{self._r}.titleText'),
+            text=classicassets.strings.settings.title,
             color=bui.app.ui_v1.title_color,
             h_align='center',
             v_align='center',
@@ -135,7 +133,7 @@ class AllSettingsWindow(bui.MainWindow):
             *,
             widgetid: str,
             position: tuple[float, float],
-            label: bui.Lstr,
+            label: bui.Lstr | bui.LangStr,
             call: Callable[[], None],
             texture: bui.Texture,
             imgsize: float,
@@ -180,9 +178,9 @@ class AllSettingsWindow(bui.MainWindow):
         self._controllers_button = _button(
             widgetid=f'{self.main_window_id_prefix}|controllers',
             position=(x, y),
-            label=bui.Lstr(resource=f'{self._r}.controllersText'),
+            label=classicassets.strings.settings.controllers.title,
             call=self._do_controllers,
-            texture=bui.gettexture('controllerIcon'),
+            texture=classicassets.textures.controller_icon.get(),
             imgsize=150,
             imgoffs=(-2.0, 2.0),
         )
@@ -191,9 +189,9 @@ class AllSettingsWindow(bui.MainWindow):
         self._graphics_button = _button(
             widgetid=f'{self.main_window_id_prefix}|graphics',
             position=(x, y),
-            label=bui.Lstr(resource=f'{self._r}.graphicsText'),
+            label=classicassets.strings.settings.graphics.title,
             call=self._do_graphics,
-            texture=bui.gettexture('graphicsIcon'),
+            texture=classicassets.textures.graphics_icon.get(),
             imgsize=135,
             imgoffs=(0, 4.0),
         )
@@ -202,9 +200,9 @@ class AllSettingsWindow(bui.MainWindow):
         self._audio_button = _button(
             widgetid=f'{self.main_window_id_prefix}|audio',
             position=(x, y),
-            label=bui.Lstr(resource=f'{self._r}.audioText'),
+            label=classicassets.strings.settings.audio.title,
             call=self._do_audio,
-            texture=bui.gettexture('audioIcon'),
+            texture=classicassets.textures.audio_icon.get(),
             imgsize=150,
             color=(1, 1, 0),
         )
@@ -213,9 +211,9 @@ class AllSettingsWindow(bui.MainWindow):
         self._advanced_button = _button(
             widgetid=f'{self.main_window_id_prefix}|advanced',
             position=(x, y),
-            label=bui.Lstr(resource=f'{self._r}.advancedText'),
+            label=classicassets.strings.settings.advanced.title,
             call=self._do_advanced,
-            texture=bui.gettexture('advancedIcon'),
+            texture=classicassets.textures.advanced_icon.get(),
             imgsize=150,
             color=(0.8, 0.95, 1),
             imgoffs=(0, 5.0),

@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     pass
 
-SETTINGS_PATH = _babase.env().get("python_directory_user", "") + "/setting.json"
+SETTINGS_PATH = (_babase.env().get("python_directory_user") or ".") + "/setting.json"
 
 
 @lru_cache(maxsize=None)

@@ -2,8 +2,6 @@
 #
 """Dev-Console functionality."""
 
-from __future__ import annotations
-
 import os
 import logging
 from dataclasses import dataclass
@@ -180,6 +178,17 @@ class DevConsoleSubsystem:
         """Called by the C++ layer when we should store tab to config."""
         cfg = _babase.app.config
         cfg['Dev Console Tab'] = tabname
+        cfg.commit()
+
+    def save_button_position(self, x: float, y: float) -> None:
+        """Called by the C++ layer when the button has been dragged.
+
+        Stores the on-screen dev-console button's custom center
+        (virtual-screen coords) to config.
+        """
+        cfg = _babase.app.config
+        cfg['Dev Console Button Pos X'] = x
+        cfg['Dev Console Button Pos Y'] = y
         cfg.commit()
 
     def do_refresh_tab(self, tabname: str) -> None:

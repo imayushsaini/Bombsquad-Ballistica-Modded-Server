@@ -112,8 +112,9 @@ class PopupText(bs.Actor):
 
         # kill ourself
         self._die_timer = bs.Timer(
-            lifespan, bs.WeakCall(self.handlemessage, bs.DieMessage())
-        )
+            lifespan, bs.WeakCallPartial(
+                self.handlemessage, bs.DieMessage()
+        ))
 
     def handlemessage(self, msg: Any) -> Any:
         assert not self.expired

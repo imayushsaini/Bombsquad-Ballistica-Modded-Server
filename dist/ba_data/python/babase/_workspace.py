@@ -2,8 +2,6 @@
 #
 """Workspace related functionality."""
 
-from __future__ import annotations
-
 import os
 import sys
 import logging
@@ -21,6 +19,8 @@ if TYPE_CHECKING:
     from typing import Callable
 
     import babase
+
+_log = logging.getLogger('ba.workspace')
 
 
 class WorkspaceSubsystem:
@@ -57,13 +57,17 @@ class WorkspaceSubsystem:
             )
         ).start()
 
-    def _errmsg(self, msg: babase.Lstr) -> None:
-        _babase.screenmessage(msg, color=(1, 0, 0))
-        _babase.getsimplesound('error').play()
+    def _errmsg(self, msg: str | babase.LangStr) -> None:
+        from babase import builtinassets
 
-    def _successmsg(self, msg: babase.Lstr) -> None:
+        _babase.screenmessage(msg, color=(1, 0, 0))
+        builtinassets.audio.error.get().play()
+
+    def _successmsg(self, msg: str | babase.LangStr) -> None:
+        from babase import builtinassets
+
         _babase.screenmessage(msg, color=(0, 1, 0))
-        _babase.getsimplesound('gunCocking').play()
+        builtinassets.audio.gun_cocking.get().play()
 
     def _set_active_workspace_bg(
         self,
@@ -72,8 +76,7 @@ class WorkspaceSubsystem:
         workspacename: str,
         on_completed: Callable[[], None],
     ) -> None:
-        # pylint: disable=too-many-locals
-        from babase._language import Lstr
+        from babase import builtinassets
 
         class _SkipSyncError(RuntimeError):
             pass
@@ -90,12 +93,13 @@ class WorkspaceSubsystem:
             # allow using the previous synced state. (is this a good
             # idea?)
             if not plus.cloud.is_connected():
+                _log.info("Offline; skipping sync for '%s'.", workspacename)
                 raise _SkipSyncError()
+
+            _log.info("Syncing workspace '%s'...", workspacename)
 
             manifest = DirectoryManifest.create_from_disk(wspath)
 
-            # FIXME: Should implement a way to pass account credentials
-            # in from the logic thread.
             state = bacommon.cloud.WorkspaceFetchState(manifest=manifest)
 
             while True:
@@ -115,6 +119,11 @@ class WorkspaceSubsystem:
                             workspaceid=workspaceid, state=state
                         )
                     )
+
+                # Server can signal a user-facing error in-band.
+                if response.error is not None:
+                    raise CleanError(response.error)
+
                 state = response.state
                 self._handle_deletes(
                     workspace_dir=wspath, deletes=response.deletes
@@ -130,12 +139,12 @@ class WorkspaceSubsystem:
                     break
                 state.iteration += 1
 
+            _log.info("Workspace '%s' synced successfully.", workspacename)
             _babase.pushcall(
                 partial(
                     self._successmsg,
-                    Lstr(
-                        resource='activatedText',
-                        subs=[('${THING}', workspacename)],
+                    builtinassets.strings.workspace.activated(
+                        thing=workspacename
                     ),
                 ),
                 from_other_thread=True,
@@ -145,9 +154,8 @@ class WorkspaceSubsystem:
             _babase.pushcall(
                 partial(
                     self._errmsg,
-                    Lstr(
-                        resource='workspaceSyncReuseText',
-                        subs=[('${WORKSPACE}', workspacename)],
+                    builtinassets.strings.workspace.sync_reuse(
+                        workspace=workspacename
                     ),
                 ),
                 from_other_thread=True,
@@ -157,20 +165,20 @@ class WorkspaceSubsystem:
             # Avoid reusing existing if we fail in the middle; could be
             # in wonky state.
             set_path = False
+            _log.warning("Workspace '%s' sync error: %s", workspacename, exc)
             _babase.pushcall(
-                partial(self._errmsg, Lstr(value=str(exc))),
+                partial(self._errmsg, str(exc)),
                 from_other_thread=True,
             )
         except Exception:
             # Ditto.
             set_path = False
-            logging.exception("Error syncing workspace '%s'.", workspacename)
+            _log.exception("Error syncing workspace '%s'.", workspacename)
             _babase.pushcall(
                 partial(
                     self._errmsg,
-                    Lstr(
-                        resource='workspaceSyncErrorText',
-                        subs=[('${WORKSPACE}', workspacename)],
+                    builtinassets.strings.workspace.sync_error(
+                        workspace=workspacename
                     ),
                 ),
                 from_other_thread=True,

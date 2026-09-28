@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # coding: utf-8
 
-# ba_meta require api 8
+# ba_meta require api 9
 # from gunicorn.app.base import BaseApplication
 # from gunicorn.workers import ggevent as gevent_worker
 
@@ -12,7 +12,7 @@ from threading import Thread
 
 import _babase
 import _bascenev1
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 
 # import uvicorn
 from . import bombsquad_service
@@ -27,23 +27,34 @@ app.config["DEBUG"] = False
 SECRET_KEY = 'default'
 
 
+@app.before_request
+def handle_options():
+    if request.method == 'OPTIONS':
+        return jsonify({"message": "OK"}), 200
+
+
 @app.after_request
 def add_cors_headers(response):
     # Allow requests from any origin
     response.headers['Access-Control-Allow-Origin'] = '*'
     # Allow specific headers
     response.headers[
-        'Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Secret-Key'
+        'Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Secret-Key,bs-host'
     # Allow specific HTTP methods
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     return response
 
 
 def check_admin(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if "Secret-Key" not in request.headers or request.headers[
-                "Secret-Key"] != SECRET_KEY:
+        secret = (
+            request.headers.get("Secret-Key")
+            or request.args.get("secret_key")
+            or request.args.get("Secret-Key")
+            or request.args.get("key")
+        )
+        if not secret or secret != SECRET_KEY:
             return jsonify({"message": "Invalid secret key provided."}), 401
         return func(*args, **kwargs)
 
@@ -251,6 +262,266 @@ def update_server_config():
             {'message': 'Error processing request', 'error': str(e)}), 400
 
 
+#  ============ V2 API Endpoints =========
+
+
+@app.route('/v2/player-stats', methods=['GET'])
+def get_player_stats_v2():
+    account_id = request.args.get('account_id')
+    if not account_id:
+        return jsonify({"message": "account_id required"}), 400
+    stats = bombsquad_service.get_player_stats(account_id)
+    if stats is None:
+        return jsonify({"message": "Player stats not found"}), 404
+    return jsonify(stats), 200
+
+
+@app.route('/v2/whitelist', methods=['GET'])
+@check_admin
+def get_whitelist_v2():
+    return jsonify(bombsquad_service.get_whitelist()), 200
+
+
+@app.route('/v2/whitelist', methods=['POST'])
+@check_admin
+def update_whitelist_v2():
+    try:
+        data = request.get_json()
+        action = data.get("action")
+        account_id = data.get("account_id")
+        if not action or not account_id:
+            return jsonify({"message": "action and account_id required"}), 400
+
+        if action == "add":
+            bombsquad_service.add_to_whitelist(account_id)
+            return jsonify({"message": f"Added {account_id} to whitelist"}), 200
+        elif action == "remove":
+            bombsquad_service.remove_from_whitelist(account_id)
+            return jsonify({"message": f"Removed {account_id} from whitelist"}), 200
+        else:
+            return jsonify({"message": f"Invalid action: {action}"}), 400
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/blacklist', methods=['GET'])
+@check_admin
+def get_blacklist_v2():
+    return jsonify(bombsquad_service.get_blacklist()), 200
+
+
+@app.route('/v2/kickvote', methods=['GET'])
+@check_admin
+def get_kickvote_v2():
+    return jsonify(bombsquad_service.get_kickvote_data()), 200
+
+
+@app.route('/v2/kickvote/restricted', methods=['POST'])
+@check_admin
+def add_kickvote_restricted_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        duration = float(data.get("duration", 30.0))
+        reason = data.get("reason", "restricted via REST API")
+        if not account_id:
+            return jsonify({"message": "account_id required"}), 400
+        bombsquad_service.disable_kick_vote(account_id, duration)
+        return jsonify({"message": f"Kick vote restricted for {account_id} for {duration} days"}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/kickvote/restricted', methods=['DELETE'])
+@check_admin
+def remove_kickvote_restricted_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id") or request.args.get("account_id")
+        if not account_id:
+            return jsonify({"message": "account_id required"}), 400
+        bombsquad_service.enable_kick_vote(account_id)
+        return jsonify({"message": f"Kick vote restriction removed for {account_id}"}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/kickvote/immune', methods=['POST'])
+@check_admin
+def add_kickvote_immune_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        if not account_id:
+            return jsonify({"message": "account_id required"}), 400
+        bombsquad_service.set_kick_vote_immune(account_id, True)
+        return jsonify({"message": f"Kick vote immunity granted to {account_id}"}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/kickvote/immune', methods=['DELETE'])
+@check_admin
+def remove_kickvote_immune_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id") or request.args.get("account_id")
+        if not account_id:
+            return jsonify({"message": "account_id required"}), 400
+        bombsquad_service.set_kick_vote_immune(account_id, False)
+        return jsonify({"message": f"Kick vote immunity revoked from {account_id}"}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+# ==================== Replays API Endpoints ====================
+
+
+@app.route('/v2/replays', methods=['GET'])
+@app.route('/api/replays', methods=['GET'])
+@check_admin
+def get_replays_v2():
+    """List all available replay files with metadata, sorting, search, and pagination."""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search = request.args.get('search', '', type=str)
+        sort_by = request.args.get('sort_by', 'modified', type=str)
+        sort_order = request.args.get('sort_order', 'desc', type=str)
+
+        result = bombsquad_service.get_replays_list(
+            page=page,
+            per_page=per_page,
+            search=search,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'message': 'Error retrieving replays', 'error': str(e)}), 500
+
+
+@app.route('/v2/replays/download', methods=['GET'])
+@app.route('/v2/replays/<path:filename>/download', methods=['GET'])
+@app.route('/api/replays/download', methods=['GET'])
+@check_admin
+def download_replay_v2(filename: str = None):
+    """Download a specific replay file."""
+    try:
+        if filename is None:
+            filename = request.args.get('filename')
+        if not filename:
+            return jsonify({'message': 'filename query parameter or path required'}), 400
+
+        filepath = bombsquad_service.get_replay_filepath(filename)
+        if not filepath or not os.path.isfile(filepath):
+            return jsonify({'message': f'Replay file not found: {filename}'}), 404
+
+        download_name = os.path.basename(filepath)
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=download_name,
+            mimetype='application/octet-stream',
+        )
+    except Exception as e:
+        return jsonify({'message': 'Error downloading replay', 'error': str(e)}), 500
+
+
+@app.route('/v2/replays/<path:filename>', methods=['DELETE'])
+@app.route('/v2/replays', methods=['DELETE'])
+@app.route('/api/replays', methods=['DELETE'])
+@check_admin
+def delete_replay_v2(filename: str = None):
+    """Delete a single or batch of replay files."""
+    try:
+        # Check if multiple filenames are provided in request JSON body
+        data = request.get_json(silent=True) or {}
+        if 'filenames' in data and isinstance(data['filenames'], list):
+            res = bombsquad_service.delete_replays_batch(data['filenames'])
+            return jsonify(res), 200
+
+        if filename is None:
+            filename = data.get('filename') or request.args.get('filename')
+
+        if not filename:
+            return jsonify({'message': 'filename required in path, query parameter, or JSON body'}), 400
+
+        success = bombsquad_service.delete_replay(filename)
+        if success:
+            return jsonify({'message': f'Replay {filename} deleted successfully'}), 200
+        return jsonify({'message': f'Replay file not found or could not be deleted: {filename}'}), 404
+    except Exception as e:
+        return jsonify({'message': 'Error deleting replay', 'error': str(e)}), 500
+
+
+@app.route('/v2/recents', methods=['GET'])
+@check_admin
+def get_recents_v2():
+    return jsonify(bombsquad_service.get_recents()), 200
+
+
+@app.route('/v2/players', methods=['GET'])
+@app.route('/v1/player', methods=['GET'])
+@app.route('/v1/players', methods=['GET'])
+@check_admin
+def get_players_v2():
+    try:
+        account_id = request.args.get('account_id') or request.args.get('account-id')
+        if account_id:
+            player = bombsquad_service.get_player_by_id(account_id)
+            if player is None:
+                return jsonify({"message": "Player profile not found"}), 404
+            return jsonify(player), 200
+
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search = request.args.get('search', '', type=str)
+        sort_by = request.args.get(
+            'sort_by', 'server_profile_created_at', type=str)
+        sort_order = request.args.get('sort_order', 'desc', type=str)
+
+        result = bombsquad_service.get_players_paginated(
+            page=page, per_page=per_page, search=search,
+            sort_by=sort_by, sort_order=sort_order
+        )
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/players/<account_id>', methods=['GET'])
+@app.route('/v1/player/<account_id>', methods=['GET'])
+@app.route('/v1/players/<account_id>', methods=['GET'])
+@check_admin
+def get_player_by_id_v2(account_id):
+    try:
+        player = bombsquad_service.get_player_by_id(account_id)
+        if player is None:
+            return jsonify({"message": "Player profile not found"}), 404
+        return jsonify(player), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
+@app.route('/v2/players/<account_id>', methods=['PUT'])
+@app.route('/v1/player/<account_id>', methods=['PUT'])
+@app.route('/v1/players/<account_id>', methods=['PUT'])
+@check_admin
+def update_player_profile_v2(account_id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"message": "JSON body required"}), 400
+
+        success = bombsquad_service.update_player_profile(account_id, data)
+        if not success:
+            return jsonify({"message": "Player profile not found"}), 404
+        return jsonify({"message": "Player profile updated successfully"}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error processing request', 'error': str(e)}), 400
+
+
 # from flask_asgi import FlaskASGI
 # asgi_app = FlaskASGI(app)
 
@@ -274,7 +545,168 @@ def update_server_config():
 # def start_uvicorn():
 #     uvicorn.run("main:app", host='0.0.0.0', port=5000,
 #                 reload=False, log_level="debug", workers=3, use_colors=True, no_signal=True)
-# flask_run = _thread.start_new_thread(app.run, ("0.0.0.0", 5000, False))
+# --- V2 Economy Admin Endpoints ---
+
+@app.route('/v2/economy/tickets', methods=['POST'])
+@check_admin
+def admin_manage_tickets_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        amount = data.get("amount")
+        action = data.get("action")
+
+        if not account_id or amount is None or not action:
+            return jsonify({"message": "Missing required fields: account_id, amount, action"}), 400
+
+        try:
+            amount = int(amount)
+        except ValueError:
+            return jsonify({"message": "amount must be an integer"}), 400
+
+        import shop
+        if action == "add":
+            new_bal = shop.add_tickets(account_id, amount)
+        elif action == "remove":
+            new_bal = shop.add_tickets(account_id, -amount)
+        elif action == "set":
+            new_bal = shop.set_tickets(account_id, amount)
+        else:
+            return jsonify({"message": "Invalid action. Supported: add, remove, set"}), 400
+
+        return jsonify({"account_id": account_id, "new_balance": new_bal}), 200
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/transactions', methods=['GET'])
+@check_admin
+def admin_get_transactions_v2():
+    try:
+        account_id = request.args.get("account_id")
+        page = request.args.get("page", 1)
+        per_page = request.args.get("per_page", 50)
+
+        import shop
+        res = shop.get_transactions(
+            account_id=account_id, page=page, per_page=per_page)
+        return jsonify(res), 200
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/purchases/<account_id>', methods=['GET'])
+@check_admin
+def admin_get_purchases_v2(account_id):
+    try:
+        import shop
+        purchases = shop.get_player_purchases(account_id)
+        tickets = shop.get_tickets(account_id)
+        return jsonify({"account_id": account_id, "tickets": tickets, "purchases": purchases}), 200
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/purchases', methods=['POST'])
+@check_admin
+def admin_grant_purchase_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        item_type = data.get("item_type")
+        item_id = data.get("item_id")
+        usages_left = data.get("usages_left")
+
+        if not account_id or not item_type or not item_id:
+            return jsonify({"message": "Missing required fields: account_id, item_type, item_id"}), 400
+
+        if usages_left is not None:
+            try:
+                usages_left = int(usages_left)
+            except ValueError:
+                return jsonify({"message": "usages_left must be an integer"}), 400
+
+        import shop
+        success = shop.add_purchase_admin(
+            account_id, item_type, item_id, usages_left)
+        if success:
+            return jsonify({"message": "Successfully granted item to player"}), 200
+        return jsonify({"message": "Failed to grant item"}), 400
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/purchases', methods=['DELETE'])
+@check_admin
+def admin_revoke_purchase_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        item_type = data.get("item_type")
+        item_id = data.get("item_id")
+
+        if not account_id or not item_type or not item_id:
+            return jsonify({"message": "Missing required fields: account_id, item_type, item_id"}), 400
+
+        import shop
+        success = shop.remove_purchase_admin(account_id, item_type, item_id)
+        if success:
+            return jsonify({"message": "Successfully revoked item from player"}), 200
+        return jsonify({"message": "Failed to revoke item"}), 400
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/purchases', methods=['PUT'])
+@check_admin
+def admin_update_usages_v2():
+    try:
+        data = request.get_json() or {}
+        account_id = data.get("account_id")
+        item_id = data.get("item_id")
+        usages_left = data.get("usages_left")
+
+        if not account_id or not item_id or usages_left is None:
+            return jsonify({"message": "Missing required fields: account_id, item_id, usages_left"}), 400
+
+        try:
+            usages_left = int(usages_left)
+        except ValueError:
+            return jsonify({"message": "usages_left must be an integer"}), 400
+
+        import shop
+        success = shop.update_purchase_usages(account_id, item_id, usages_left)
+        if success:
+            return jsonify({"message": "Successfully updated remaining usages"}), 200
+        return jsonify({"message": "Failed to update usages (verify purchase exists)"}), 404
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/leaderboard', methods=['GET'])
+@check_admin
+def admin_get_leaderboard_v2():
+    try:
+        limit = request.args.get("limit", 10)
+        import shop
+        res = shop.get_economy_leaderboard(limit=limit)
+        return jsonify(res), 200
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
+
+@app.route('/v2/economy/purchasers', methods=['GET'])
+@check_admin
+def admin_get_purchasers_v2():
+    try:
+        page = request.args.get("page", 1)
+        per_page = request.args.get("per_page", 50)
+        import shop
+        res = shop.get_purchasers_paginated(page=page, per_page=per_page)
+        return jsonify(res), 200
+    except Exception as e:
+        return jsonify({"message": f"Server error: {e}"}), 500
+
 
 def run_server():
     from waitress import serve

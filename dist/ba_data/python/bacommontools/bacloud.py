@@ -1,0 +1,1373 @@
+# Released under the MIT License. See LICENSE for details.
+#
+# pylint: disable=too-many-lines
+"""A tool for interacting with ballistica's cloud services.
+This facilitates workflows such as creating asset-packages, etc.
+"""
+
+import os
+import sys
+import zlib
+import time
+import signal
+import datetime
+from pathlib import Path
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+import urllib3
+import urllib3.util
+import urllib3.response
+import urllib3.exceptions
+
+from efro.terminal import Clr
+from efro.error import (
+    CleanError,
+    raise_for_urllib3_status,
+    is_urllib3_communication_error,
+)
+from efro.dataclassio import (
+    dataclass_from_dict,
+    dataclass_from_json,
+    dataclass_to_dict,
+    dataclass_to_json,
+    ioprepped,
+)
+from bacommon.bacloud import (
+    StandardRequestData,
+    BACLOUD_VERSION,
+)
+
+if TYPE_CHECKING:
+    from bacommon.bacloud import ResponseData, StandardResponseData
+
+    from bacommontools.bacloudsession import BacloudSession
+
+TOOL_NAME = 'bacloud'
+
+TIMEOUT_SECONDS = 60 * 5
+
+VERBOSE = os.environ.get('BACLOUD_VERBOSE') == '1'
+
+
+def _download_workers() -> int:
+    """Concurrency for the parallel download thread pool.
+
+    Also sizes the connection pool's per-host cap (see _make_pool) so a
+    full set of workers can each hold a reused connection without the
+    pool discarding+reopening (and re-handshaking TLS) past its cap.
+    Env-overridable for tuning; the default is kept modest so a herd of
+    build hosts each downloading at once doesn't hammer the master.
+    """
+    return max(1, int(os.environ.get('BA_BACLOUD_DOWNLOAD_WORKERS', '16')))
+
+
+def _make_pool() -> urllib3.PoolManager:
+    """Build the shared urllib3 connection pool.
+
+    A single PoolManager covers every host bacloud talks to (the master
+    server + ``storage.googleapis.com``); urllib3 keeps a separate
+    connection pool per host internally, so one manager transparently
+    reuses connections to each — eliminating the repeat TLS handshakes a
+    many-blob download would otherwise pay. ``maxsize`` is sized to the
+    worker count so a saturated pool doesn't churn connections, and the
+    default ``Timeout`` mirrors the old per-request value (a per-read
+    timeout, so large streamed bodies aren't cut off mid-flight).
+
+    Created eagerly at import (below) rather than lazily: bacloud always
+    talks to the cloud, and an eager singleton sidesteps a first-call
+    race where the download thread pool could otherwise build several
+    pools at once and lose all connection sharing between them.
+    """
+    import ssl
+    import urllib.request
+
+    ssl_context = ssl.create_default_context()
+    maxsize = _download_workers()
+    timeout = urllib3.util.Timeout(
+        connect=TIMEOUT_SECONDS, read=TIMEOUT_SECONDS
+    )
+
+    # Honor the standard proxy env vars (HTTPS_PROXY / HTTP_PROXY) the way
+    # the old ``requests`` calls did for free. urllib3's bare PoolManager
+    # ignores them, which would break users behind a corporate proxy (and
+    # Claude Code's sandbox, which routes all traffic through one).
+    # bacloud only ever talks to public hosts (ballistica.net /
+    # googleapis.com), so NO_PROXY bypass doesn't apply.
+    proxies = urllib.request.getproxies()
+    proxy_url = proxies.get('https') or proxies.get('http')
+    if proxy_url:
+        # urllib3 doesn't pull credentials out of the proxy URL's
+        # userinfo, so an authenticating proxy (corporate proxies,
+        # Claude Code's sandbox) needs them passed explicitly as a
+        # Proxy-Authorization header; otherwise the CONNECT tunnel for
+        # an https target comes back '407 Proxy Authentication Required'.
+        proxy_auth = urllib3.util.parse_url(proxy_url).auth
+        proxy_headers = (
+            urllib3.make_headers(proxy_basic_auth=proxy_auth)
+            if proxy_auth
+            else None
+        )
+        return urllib3.ProxyManager(
+            proxy_url,
+            ssl_context=ssl_context,
+            maxsize=maxsize,
+            timeout=timeout,
+            proxy_headers=proxy_headers,
+        )
+    return urllib3.PoolManager(
+        ssl_context=ssl_context,
+        maxsize=maxsize,
+        timeout=timeout,
+    )
+
+
+# Process-wide shared connection pool (thread-safe; see _make_pool).
+_g_pool = _make_pool()
+
+
+def _err_body(response: urllib3.response.BaseHTTPResponse) -> str:
+    """Best-effort decode of a (small) error-response body for messages."""
+    return response.data.decode('utf-8', 'replace')
+
+
+# Server selection precedence:
+#   1. BACLOUD_SERVER — explicit host override (e.g. a specific basn
+#      node). Wins if set; otherwise we derive from BA_FLEET.
+#   2. BA_FLEET — matches the env var the client uses. 'prod'
+#      (default) routes to regional.ballistica.net directly. 'test'
+#      and 'dev' query their fleet's master server for a healthy
+#      basn node hostname (since those fleets have no regional.*
+#      equivalent).
+BACLOUD_SERVER_OVERRIDE = os.getenv('BACLOUD_SERVER')
+BA_FLEET = os.getenv('BA_FLEET', 'prod').lower()
+
+_FLEET_MASTER_HOSTS = {
+    'prod': 'regional.ballistica.net',
+    'test': 'test.ballistica.net',
+    'dev': 'dev.ballistica.net',
+}
+
+
+def _caller_build_number() -> int:
+    """The engine build number to report to bacloud (0 if unset).
+
+    Master gates asset-package resolves/assembles on this (see
+    ``MIN_SUPPORTED_ASSET_BUILD``). Only asset build/assemble commands
+    care, and the tooling that drives them (e.g. ``asset_bundle_build``)
+    sets ``BA_BUILD_NUMBER`` to the target build; every other bacloud
+    caller reports 0, which is irrelevant for non-asset commands. (The
+    game's runtime asset resolves don't go through bacloud at all -- they
+    ride the basn message protocol -- so there's no engine path here.)
+    """
+    env = os.environ.get('BA_BUILD_NUMBER')
+    if env is not None:
+        try:
+            return int(env)
+        except ValueError:
+            pass
+    return 0
+
+
+def _hash_file(path: str) -> tuple[int, str]:
+    """Return (size, sha256_hex) for a local file."""
+    import hashlib
+
+    size = os.path.getsize(path)
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        while True:
+            chunk = f.read(1024 * 1024)
+            if not chunk:
+                break
+            h.update(chunk)
+    return size, h.hexdigest()
+
+
+def _upload_plan_sibling(finalize_command: str, sibling: str) -> str:
+    """Derive a sibling command path from a finalize command.
+
+    The prepare/finalize endpoints live as siblings of the finalize
+    command's parent. For example, if the finalize command is
+    ``admin.archive._archive_publish_finalize``, the resulting
+    prepare sibling is ``admin._upload_plan_prepare`` (one level
+    above, since the upload infrastructure lives at the admin level).
+    """
+    parts = finalize_command.split('.')
+    # Walk up until we find the 'admin' segment and place the
+    # sibling directly under it.
+    for i, part in enumerate(parts):
+        if part == 'admin':
+            return '.'.join(parts[: i + 1] + [sibling])
+    raise RuntimeError(
+        f'Could not locate admin segment in command path'
+        f' {finalize_command!r}.'
+    )
+
+
+@ioprepped
+@dataclass
+class StateData:
+    """Persistent state data stored to disk."""
+
+    login_token: str | None = None
+
+
+def _resolve_api_key(project_root: Path) -> str | None:
+    """Return an API key from env or localconfig.json, or None.
+
+    Precedence:
+
+    1. ``BALLISTICA_API_KEY`` env var.
+    2. ``ballistica_api_key`` in the localconfig.json pointed to by
+       ``EFRO_LOCALCONFIG_PATH`` (absolute or relative to
+       ``project_root``). This matches the override used by
+       ``efrotools.project.getlocalconfig`` and is how CI runs on
+       build hosts (fromini/etc.) see credentials bound via
+       Jenkins ``withCredentials``.
+    3. ``ballistica_api_key`` in
+       ``<project_root>/pconfig/localconfig.json``.
+    """
+    import json
+
+    key = os.environ.get('BALLISTICA_API_KEY')
+    if key:
+        return key
+
+    cfgpaths: list[Path] = []
+    override = os.environ.get('EFRO_LOCALCONFIG_PATH')
+    if override:
+        opath = Path(override)
+        cfgpaths.append(opath if opath.is_absolute() else project_root / opath)
+    cfgpaths.append(project_root / 'pconfig' / 'localconfig.json')
+
+    for cfgpath in cfgpaths:
+        if not cfgpath.exists():
+            continue
+        try:
+            with cfgpath.open(encoding='utf-8') as infile:
+                cfg = json.load(infile)
+        except Exception:
+            continue
+        val = cfg.get('ballistica_api_key')
+        if isinstance(val, str) and val:
+            return val
+    return None
+
+
+def get_tz_offset_seconds() -> float:
+    """Return the offset between utc and local time in seconds."""
+    tval = time.time()
+
+    # Compare naive current and utc times to get our offset from utc.
+    utc_offset = (
+        datetime.datetime.fromtimestamp(tval)
+        - datetime.datetime.fromtimestamp(tval, datetime.UTC).replace(
+            tzinfo=None
+        )
+    ).total_seconds()
+
+    return utc_offset
+
+
+class _TransientDownloadError(Exception):
+    """A CAS blob download failed in a retryable way.
+
+    Raised for a truncated stream (byte-count or sha256 mismatch) or a
+    transient 5xx from the blob store -- conditions a re-download can
+    plausibly fix. See :func:`_is_retryable_download_error`.
+    """
+
+
+def _is_retryable_download_error(exc: BaseException) -> bool:
+    """Whether a CAS blob-download failure is worth retrying.
+
+    Unlike a command, which the session delivers exactly once or
+    not at all, a blob download is
+    content-idempotent: the signed URL targets one specific content hash
+    and the streamed result is size- AND sha256-verified before use. So
+    *any* transient fetch failure is safe to retry here -- crucially
+    including a ``ReadTimeout`` (bytes were mid-stream), which the server
+    path must NOT retry for mutating commands. Covers connection drops,
+    connect/read timeouts, chunked-encoding interruptions, and
+    truncated/transient-5xx streams (surfaced as
+    :class:`_TransientDownloadError`).
+    """
+    if isinstance(exc, _TransientDownloadError):
+        return True
+    # Any urllib3 communication-level error (connect/read timeouts,
+    # connection drops, DNS, SSL, aborted streams) is safe to retry for
+    # a content-idempotent download -- including read timeouts, unlike
+    # the mutating-server path above.
+    return is_urllib3_communication_error(exc, None)
+
+
+# Per-workspace-checkout control file (a dotfile, so the workspace sync
+# auto-ignores it) recording the snapshot id we last synced to, for the
+# put optimistic-concurrency / mid-air-collision check (bacloud v24+).
+_BACLOUD_STATE_FILENAME = '.bacloudstate.json'
+
+
+# argv prefixes for CLI commands that are safe to retry even when a
+# failure is *post-send* (the request may have reached the server).
+# These are read-only or content-idempotent — re-running can't
+# double-apply a mutation. The client stamps StandardRequestData.idempotent
+# from this list; basn reads it to decide whether a post-send upstream
+# timeout becomes a retryable 503 or a terminal error. Everything not
+# listed defaults to non-idempotent (fail-closed) — notably publish,
+# workspace put/get, login/logout, and admin/archive mutations.
+_IDEMPOTENT_COMMAND_PREFIXES: tuple[tuple[str, ...], ...] = (
+    ('assetpackage', '_assemble'),
+    ('assetpackage', 'version'),
+    ('assetpackage', '_listing'),
+    ('assetpackage', 'wrapper'),
+    ('account', 'info'),
+    # Read-only server-side: a listing returns what exists, and a get
+    # reads a snapshot and streams it down (the only writes are to the
+    # caller's own disk). Both were missing here, so an upstream
+    # timeout on either surfaced as a hard error instead of being
+    # retried -- which is what made them the two commands that
+    # intermittently failed the live suite under load.
+    ('workspace', 'list'),
+    ('workspace', 'get'),
+)
+
+
+def _command_is_idempotent(args: list[str]) -> bool:
+    """Whether a bacloud CLI invocation is safe to retry post-send.
+
+    Conservative: matches a known read-only / content-idempotent argv
+    prefix (see :data:`_IDEMPOTENT_COMMAND_PREFIXES`); otherwise False.
+    """
+    return any(
+        tuple(args[: len(prefix)]) == prefix
+        for prefix in _IDEMPOTENT_COMMAND_PREFIXES
+    )
+
+
+def _install_termination_handler() -> None:
+    """Make SIGTERM unwind the way Ctrl-C does.
+
+    Default SIGTERM kills the process outright, which is exactly the
+    'client fell down a hole' case a live session should never
+    present. Routing it through the same KeyboardInterrupt unwinding
+    means one teardown path instead of two, and the user still sees
+    nothing printed.
+    """
+
+    def _on_term(signum: int, frame: object) -> None:
+        del signum, frame  # Unused.
+        raise KeyboardInterrupt
+
+    try:
+        signal.signal(signal.SIGTERM, _on_term)
+    except ValueError, OSError:
+        # Not the main thread, or a platform without it. The default
+        # disposition still exits; we just don't get to say goodbye.
+        pass
+
+
+def _session_failure_detail() -> str:
+    """A line of 'why' for a failed session, when we have one."""
+    if not VERBOSE:
+        return 'Re-run with BACLOUD_VERBOSE=1 for details.\n'
+    return ''
+
+
+def run_bacloud_main() -> None:
+    """Do the thing."""
+    # pylint: disable=try-except-raise, raise-missing-from
+
+    # We return 0 on success, 1 for a no/fail result, and 2+ for errors.
+    try:
+        raise SystemExit(App().run())
+    except CleanError as clean_exc:
+        # Errors go to stderr, same as every other diagnostic here.
+        # stdout is the command's *result* (callers parse it -- e.g.
+        # assetpins reads a resolved apverid from it), and wrapper
+        # tooling needs to be able to capture the reason a run failed
+        # without also swallowing its live progress output.
+        clean_exc.pretty_print(file=sys.stderr)
+        raise SystemExit(2)
+    except SystemExit:
+        # Never handle this here.
+        raise
+    except KeyboardInterrupt:
+        # Print nothing on keyboard interrupts.
+        raise SystemExit(2)
+    except Exception:
+        sys.excepthook(*sys.exc_info())  # standard color traceback
+        raise SystemExit(2)
+
+
+class App:
+    """Context for a run of the tool."""
+
+    def __init__(self) -> None:
+        self._state = StateData()
+        self._project_root: Path | None = None
+        self._end_command_args: dict = {}
+        self._return_code = 0
+        self._api_key: str | None = None
+        self._server: str | None = None
+        self._session: BacloudSession | None = None
+        self._idempotent = False
+        # Workspace get/put optimistic-concurrency (v24+): the local dir
+        # whose .bacloudstate.json to (re)write, and the snapshot id the
+        # server handed back this run.
+        self._ws_state_dir: str | None = None
+        self._ws_name: str | None = None
+        self._ws_snapshotid_received: str | None = None
+
+    def run(self) -> int:
+        """Run the tool."""
+
+        # Make sure we can locate the project bacloud is being run from.
+        self._project_root = Path(sys.argv[0]).parents[1]
+        # Look for a few things we expect to have in a project. The
+        # bacommontools check covers every repo that receives this
+        # module via efrosync — historically this was tools/batools
+        # when bacloud lived exclusively in ballistica-internal.
+        if not all(
+            Path(self._project_root, name).exists()
+            for name in ['pconfig/projectconfig.json', 'tools/bacommontools']
+        ):
+            raise CleanError('Unable to locate project directory.')
+
+        self._api_key = _resolve_api_key(self._project_root)
+
+        # In API-key mode we're stateless: skip load/save of
+        # .cache/bacloud/state. This keeps CI runs from stomping
+        # on a developer's cached login token and lets multiple
+        # parallel CI jobs coexist without corrupting each other.
+        if self._api_key is None:
+            self._load_state()
+
+        if self._api_key is not None and VERBOSE:
+            # Diagnostics go to stderr so they never pollute captured
+            # stdout (callers parse stdout as the command result -- e.g.
+            # `assetpins` reads a resolved apverid from it).
+            print(
+                f'{Clr.BLU}bacloud: authenticating with API key'
+                f' ({self._api_key[:8]}\u2026){Clr.RST}',
+                file=sys.stderr,
+            )
+
+        self._server = self._resolve_server()
+
+        # Classify the whole invocation's retry-safety once (it's a
+        # property of the user's CLI command, shared by the kickoff and
+        # every chained call). basn uses this to decide whether a
+        # post-send upstream timeout is safe to surface as a retryable
+        # 503.
+        self._idempotent = _command_is_idempotent(sys.argv[1:])
+
+        # For a `workspace get`/`put`, set up optimistic-concurrency
+        # handling: a put injects its last-synced snapshot id (from the
+        # dir's .bacloudstate.json) so the server can reject a mid-air
+        # collision. May mutate args (strip the client-only --force, add
+        # --expected-snapshotid).
+        cwd = os.getcwd()
+        args = self._prep_workspace_command(list(sys.argv[1:]), cwd)
+
+        # A CLI gets interrupted constantly, and a client that just
+        # vanishes leaves the node holding a session (and its task)
+        # until linger expires. Make every exit path -- Ctrl-C,
+        # SIGTERM, a clean finish -- run through the same teardown.
+        _install_termination_handler()
+        try:
+            self._open_session()
+
+            # Simply pass all args to the server and let it do the thing.
+            self.run_interactive_command(cwd=cwd, args=args)
+
+            # On a completed get/put the server hands back the workspace's
+            # current snapshot id; stash it for the next put's check.
+            self._finish_workspace_command()
+        finally:
+            self._end_session()
+
+        if self._api_key is None:
+            self._save_state()
+
+        return self._return_code
+
+    def _prep_workspace_command(self, args: list[str], cwd: str) -> list[str]:
+        """Set up optimistic-concurrency for a ``workspace get``/``put``.
+
+        Returns the (possibly modified) args to actually send. For a put,
+        strips the client-only ``--force`` flag and -- unless forced --
+        adds ``--expected-snapshotid`` from the dir's
+        ``.bacloudstate.json`` so the server can reject a mid-air
+        collision (the workspace having changed since our last get).
+
+        That guard is the ONLY thing standing between a routine put and
+        data loss, because ``workspace.json`` is co-owned: the client
+        authors parts of it while the server maintains others
+        (translation up-to-date stamps, wrap params, term-dep and
+        conventions caches). A put always overwrites the server's copy
+        with the local one -- normally harmless because the guard
+        proves the local one is current. ``--force`` removes that proof
+        while keeping the overwrite, which is why it warns loudly.
+        """
+        if (
+            len(args) < 2
+            or args[0] != 'workspace'
+            or args[1] not in ('get', 'put')
+        ):
+            return args
+
+        # The target dir is the lone positional after the subcommand
+        # (default '.'); --workspace takes a value, other --flags don't.
+        positionals: list[str] = []
+        rest = args[2:]
+        i = 0
+        while i < len(rest):
+            tok = rest[i]
+            if tok == '--workspace':
+                self._ws_name = rest[i + 1] if i + 1 < len(rest) else None
+                i += 2
+                continue
+            if tok.startswith('--'):
+                i += 1
+                continue
+            positionals.append(tok)
+            i += 1
+        self._ws_state_dir = os.path.abspath(
+            os.path.join(cwd, positionals[0] if positionals else '.')
+        )
+
+        if args[1] == 'put':
+            force = '--force' in args
+            args = [a for a in args if a != '--force']
+            if force:
+                # Loud and unmissable: forcing is not "push harder", it
+                # is "discard whatever the cloud has". Most costly is
+                # the stale workspace.json going over server-maintained
+                # state (translation stamps etc.), which restales the
+                # package silently -- no error, just a token bill next
+                # time someone runs updates. Warn every single time.
+                print(
+                    f'{Clr.RED}{Clr.BLD}WARNING: --force skips the'
+                    f' changed-since-last-get check.{Clr.RST}\n'
+                    f'{Clr.RED}Your local copy wins outright; nothing is'
+                    f' merged. A stale local workspace.json will overwrite'
+                    f' server-maintained state in it (translation'
+                    f' up-to-date stamps, wrap params, caches), which can'
+                    f' silently restale every string in the package.'
+                    f'{Clr.RST}',
+                    file=sys.stderr,
+                )
+            else:
+                snapshotid = self._read_ws_state_snapshotid(self._ws_state_dir)
+                if snapshotid is not None:
+                    args = args + ['--expected-snapshotid', snapshotid]
+        return args
+
+    def _finish_workspace_command(self) -> None:
+        """Persist the snapshot id the server returned (get/put), if any."""
+        import json
+
+        if self._ws_state_dir is None or self._ws_snapshotid_received is None:
+            return
+        path = os.path.join(self._ws_state_dir, _BACLOUD_STATE_FILENAME)
+        try:
+            data: dict[str, str] = {'snapshotid': self._ws_snapshotid_received}
+            if self._ws_name is not None:
+                data['name'] = self._ws_name
+            with open(path, 'w', encoding='utf-8') as outfile:
+                json.dump(data, outfile)
+        except Exception:
+            # Non-fatal: the sync itself succeeded; we just couldn't stash
+            # the token (a later put simply skips the check).
+            if VERBOSE:
+                import traceback
+
+                traceback.print_exc()
+
+    @staticmethod
+    def _read_ws_state_snapshotid(ws_dir: str) -> str | None:
+        """Read the last-synced snapshot id from a dir's state file."""
+        import json
+
+        path = os.path.join(ws_dir, _BACLOUD_STATE_FILENAME)
+        if not os.path.exists(path):
+            return None
+        try:
+            with open(path, encoding='utf-8') as infile:
+                val = json.load(infile).get('snapshotid')
+                return val if isinstance(val, str) else None
+        except Exception:
+            return None
+
+    @property
+    def _state_dir(self) -> Path:
+        """The full path to the state dir."""
+        assert self._project_root is not None
+        return Path(self._project_root, '.cache/bacloud')
+
+    @property
+    def _state_data_path(self) -> Path:
+        """The full path to the state data file."""
+        return Path(self._state_dir, 'state')
+
+    def _load_state(self) -> None:
+        if not os.path.exists(self._state_data_path):
+            return
+        try:
+            with open(self._state_data_path, 'r', encoding='utf-8') as infile:
+                self._state = dataclass_from_json(StateData, infile.read())
+        except Exception:
+            print(
+                f'{Clr.RED}Error loading {TOOL_NAME} data;'
+                f' resetting to defaults.{Clr.RST}',
+                file=sys.stderr,
+            )
+
+    def _save_state(self) -> None:
+        if not self._state_dir.exists():
+            self._state_dir.mkdir(parents=True, exist_ok=True)
+        with open(self._state_data_path, 'w', encoding='utf-8') as outfile:
+            outfile.write(dataclass_to_json(self._state))
+
+    def _resolve_server(self) -> str:
+        """Return the bacloud server host to talk to.
+
+        Honors ``BACLOUD_SERVER`` as an explicit override; otherwise
+        derives the host from ``BA_FLEET``. For non-prod fleets, asks
+        that fleet's master server for a healthy basn node.
+        """
+        if BACLOUD_SERVER_OVERRIDE:
+            return BACLOUD_SERVER_OVERRIDE
+
+        if BA_FLEET not in _FLEET_MASTER_HOSTS:
+            raise CleanError(
+                f'Invalid BA_FLEET value {BA_FLEET!r};'
+                f' expected one of {sorted(_FLEET_MASTER_HOSTS)}.'
+            )
+
+        if BA_FLEET == 'prod':
+            return _FLEET_MASTER_HOSTS['prod']
+
+        master = _FLEET_MASTER_HOSTS[BA_FLEET]
+        try:
+            import json
+
+            resp = _g_pool.request(
+                'GET',
+                f'https://{master}/bacloud_node',
+                retries=False,
+            )
+            raise_for_urllib3_status(resp)
+            data = json.loads(resp.data.decode())
+        except Exception as exc:
+            if VERBOSE:
+                import traceback
+
+                traceback.print_exc()
+            raise CleanError(
+                f'Unable to look up a basn node via {master}.'
+                f' Set env-var BACLOUD_VERBOSE=1 for details.'
+            ) from exc
+
+        err = data.get('error')
+        if err is not None:
+            raise CleanError(f'bacloud_node ({BA_FLEET}): {err}')
+        host = data.get('hostname')
+        if not isinstance(host, str) or not host:
+            raise CleanError(
+                f'bacloud_node ({BA_FLEET}): missing hostname in response.'
+            )
+        if VERBOSE:
+            print(
+                f'{Clr.BLU}bacloud: fleet {BA_FLEET!r} -> {host}{Clr.RST}',
+                file=sys.stderr,
+            )
+        return host
+
+    def _open_session(self) -> None:
+        """Open the session this run will use, or fail saying why.
+
+        Required, not best-effort. A working WebSocket is already a
+        prerequisite for the game itself, so bacloud treats one as a
+        prerequisite too rather than carrying a second transport for
+        environments where the first does not work -- an environment
+        that cannot open a WebSocket cannot run the thing these tools
+        exist to build for.
+
+        Establishment is retried a few times: in prod we dial a
+        regional load-balancer, so a fresh dial re-rolls which node we
+        land on. This papers over transient per-node refusals (a node
+        mid-retirement, a just-terminated instance still in the
+        balancer for a few seconds). Safe because nothing has executed
+        yet at establishment time.
+        """
+        from bacommontools.bacloudsession import BacloudSession
+
+        assert self._server is not None
+        bearer = self._api_key or self._state.login_token
+        attempts = 4
+        for attempt in range(1, attempts + 1):
+            session = BacloudSession.open(self._server, bearer)
+            if session is not None:
+                self._session = session
+                return
+            if attempt < attempts:
+                if VERBOSE:
+                    print(
+                        f'bacloud: session attempt {attempt} of'
+                        f' {attempts} failed; retrying...',
+                        file=sys.stderr,
+                    )
+                time.sleep(1.5)
+        raise CleanError(
+            f'Unable to open a connection to {self._server}'
+            f' ({attempts} attempts).\n'
+            f'{_session_failure_detail()}'
+            f'bacloud needs a working WebSocket connection, the same'
+            f' as the game itself. Check for a proxy or firewall'
+            f' blocking WebSocket traffic.'
+        )
+
+    def _end_session(self) -> None:
+        """Tell the far end we're going, if we have one."""
+        session = self._session
+        if session is None:
+            return
+        # Clear first: nothing after this point should try to use it,
+        # including anything that runs while we're saying goodbye.
+        self._session = None
+        session.end()
+
+    def _servercmd(self, cmd: str, payload: dict) -> StandardResponseData:
+        """Issue a command to the server and get a response."""
+        request = StandardRequestData(
+            command=cmd,
+            payload=payload,
+            tzoffset=get_tz_offset_seconds(),
+            isatty=sys.stdout.isatty(),
+            idempotent=self._idempotent,
+            build_number=_caller_build_number(),
+        )
+
+        session = self._session
+        if session is None or not session.alive:
+            raise CleanError(
+                'Connection to the bacloud server was lost.'
+                ' Please re-run the command.'
+            )
+
+        return self._process_response_inline(session.request(request))
+
+    def _process_response_inline(
+        self, response: StandardResponseData
+    ) -> StandardResponseData:
+        """Apply the handling every response gets, whatever carried it.
+
+        Transport-agnostic on purpose: a command must behave the same
+        whether it rode a session or its own connection.
+        """
+        # Handle a few things inline (so this functionality is available
+        # even to recursive commands, etc.)
+        if response.message is not None:
+            print(response.message, end=response.message_end, flush=True)
+
+        if response.message_stderr is not None:
+            print(
+                response.message_stderr,
+                end=response.message_stderr_end,
+                flush=True,
+                file=sys.stderr,
+            )
+
+        if response.error is not None:
+            raise CleanError(response.error)
+
+        if response.delay_seconds > 0.0:
+            time.sleep(response.delay_seconds)
+
+        return response
+
+    def _handle_cas_delivery(
+        self, cas: StandardResponseData.CasDelivery
+    ) -> None:
+        """Download a CAS-delivery assemble's data blobs from a basn node.
+
+        The build/mod-time analogue of the game client's Tier-2 download:
+        each data blob is fetched from the serving node's ``/casblob`` warm
+        cache (using the capability token the node minted and injected) via
+        the shared :mod:`bacommon.assetcas` primitive -- the exact same
+        fetch path the client uses -- and written into ``.cache/assetdata``
+        at the same CAS shard paths the assemble's inline bundle manifest
+        references. Fetches run in parallel; already-present blobs skip.
+        """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        from efro.util import data_size_str
+        from bacommon import assetcas
+
+        if cas.token is None:
+            raise CleanError(
+                'CAS-delivery assemble received no /casblob token; the'
+                ' serving node may be too old to warm and serve it. Retry,'
+                ' or update the server fleet.'
+            )
+
+        base_url = f'https://{self._server}'
+        token_header = assetcas.encode_asset_token(cas.token)
+        dest_root = os.path.join(str(self._project_root), '.cache/assetdata')
+
+        to_fetch = [
+            (h, s)
+            for h, s in cas.blobs.items()
+            if not assetcas.blob_present([dest_root], h, s)
+        ]
+        if not to_fetch:
+            return
+
+        starttime = time.monotonic()
+
+        def _fetch(item: tuple[str, int]) -> int:
+            fhash, size = item
+            assetcas.download_cas_blob(
+                _g_pool,
+                base_url,
+                fhash,
+                size,
+                token_header=token_header,
+                dest_root=dest_root,
+                timeout_seconds=TIMEOUT_SECONDS,
+            )
+            return size
+
+        total_bytes = 0
+        try:
+            with ThreadPoolExecutor(
+                max_workers=_download_workers()
+            ) as executor:
+                futures = [executor.submit(_fetch, item) for item in to_fetch]
+                for future in as_completed(futures):
+                    total_bytes += future.result()
+        except assetcas.CasDownloadError as exc:
+            raise CleanError(f'CAS blob download failed: {exc}') from exc
+
+        duration = time.monotonic() - starttime
+        print(
+            f'{Clr.BLU}Downloaded {len(to_fetch)} blob(s)'
+            f' ({data_size_str(total_bytes)} total) from node CAS in'
+            f' {duration:.2f}s.{Clr.RST}'
+        )
+
+    def _handle_dir_manifest_response(self, dirmanifest: str) -> None:
+        from bacommon.transfer import DirectoryManifest
+
+        self._end_command_args['manifest'] = dataclass_to_dict(
+            DirectoryManifest.create_from_disk(Path(dirmanifest))
+        )
+
+    def _handle_deletes(self, deletes: list[str]) -> None:
+        """Handle file deletes."""
+        for fname in deletes:
+            # Server shouldn't be sending us dir paths here.
+            assert not os.path.isdir(fname)
+            os.unlink(fname)
+
+    def _handle_downloads_inline(
+        self,
+        downloads_inline: dict[str, bytes],
+    ) -> None:
+        """Handle inline file data to be saved to the client."""
+
+        for fname, fdata in downloads_inline.items():
+            # If there's a directory where we want our file to go, clear
+            # it out first. File deletes should have run before this so
+            # everything under it should be empty and thus killable via
+            # rmdir.
+            if os.path.isdir(fname):
+                for basename, dirnames, _fn in os.walk(fname, topdown=False):
+                    for dirname in dirnames:
+                        os.rmdir(os.path.join(basename, dirname))
+                os.rmdir(fname)
+
+            dirname = os.path.dirname(fname)
+            if dirname:
+                os.makedirs(dirname, exist_ok=True)
+            data_zipped = fdata
+            data = zlib.decompress(data_zipped)
+
+            # Write to tmp files first and then move into place. This
+            # way crashes are less likely to lead to corrupt data.
+            fnametmp = f'{fname}.tmp'
+            with open(fnametmp, 'wb') as outfile:
+                outfile.write(data)
+            os.rename(fnametmp, fname)
+
+    def _handle_dir_prune_empty(self, prunedir: str) -> None:
+        """Handle pruning empty directories."""
+        # Walk the tree bottom-up so we can properly kill recursive
+        # empty dirs.
+        for basename, dirnames, filenames in os.walk(prunedir, topdown=False):
+            # It seems that child dirs we kill during the walk are still
+            # listed when the parent dir is visited, so lets make sure
+            # to only acknowledge still-existing ones.
+            dirnames = [
+                d for d in dirnames if os.path.exists(os.path.join(basename, d))
+            ]
+            if not dirnames and not filenames and basename != prunedir:
+                os.rmdir(basename)
+
+    def _handle_uploads_signed(
+        self, uploads_signed: list[StandardResponseData.SignedUploadEntry]
+    ) -> None:
+        """Handle direct-to-GCS streaming uploads via signed URLs.
+
+        For each entry, stream the local file body straight to the
+        signed PUT URL via urllib3 (which sends a chunked-free PUT when
+        ``Content-Length`` is set, so GCS sees the bytes as a single
+        body that satisfies the URL's ``Content-MD5`` signature). Memory
+        use is bounded regardless of file size — urllib3 reads the file
+        object in fixed-size chunks rather than slurping it.
+
+        Stashes ``{path: session_id}`` into ``end_command`` args under
+        ``uploads_signed`` so the server can finalize each session in
+        the next call.
+        """
+        sessions: dict[str, str] = {}
+        for entry in uploads_signed:
+            if not os.path.exists(entry.path):
+                raise CleanError(f'File not found: {entry.path}')
+            file_size = os.path.getsize(entry.path)
+            # Setting Content-Length explicitly forces a non-chunked PUT,
+            # which is required for the signed URL's Content-MD5 binding
+            # to validate against a single body on the GCS side. urllib3
+            # streams the file object in fixed-size chunks (no slurp), so
+            # memory stays bounded regardless of file size.
+            put_headers = dict(entry.upload_headers)
+            put_headers['Content-Length'] = str(file_size)
+            with open(entry.path, 'rb') as infile:
+                response = _g_pool.request(
+                    'PUT',
+                    entry.upload_url,
+                    body=infile,
+                    headers=put_headers,
+                    retries=False,
+                )
+            if not 200 <= response.status < 300:
+                raise CleanError(
+                    f'GCS upload of {entry.path} failed:'
+                    f' status={response.status}'
+                    f' body={_err_body(response)!r}'
+                )
+            sessions[entry.path] = entry.session_id
+        self._end_command_args['uploads_signed'] = sessions
+
+    def _handle_uploads_oneshot(
+        self, uploads_oneshot: list[StandardResponseData.OneshotUploadEntry]
+    ) -> None:
+        """Handle small-file uploads via the basn one-shot relay.
+
+        For each entry, POST the local file body to the basn node's
+        one-shot relay endpoint (``/bacloud_oneshot_upload``), which
+        forwards it to the master server's one-shot cloud-file endpoint
+        and has the master verify the content-addressed id. The bytes
+        go to the node we're already talking to (never to the master
+        directly), and there's no signed-URL round-trip or server-side
+        read-back.
+
+        Stashes ``{path: cloud_file_id}`` into ``end_command`` args
+        under ``uploads_oneshot`` so the server can wire each resulting
+        cloud-file into place in the next call.
+        """
+        import json
+
+        assert self._server is not None
+        bearer = self._api_key or self._state.login_token
+        results: dict[str, str] = {}
+        for entry in uploads_oneshot:
+            if not os.path.exists(entry.path):
+                raise CleanError(f'File not found: {entry.path}')
+            file_size = os.path.getsize(entry.path)
+            headers = {
+                'User-Agent': f'bacloud/{BACLOUD_VERSION}',
+                'Content-Type': 'application/octet-stream',
+                'Content-Length': str(file_size),
+            }
+            if bearer is not None:
+                headers['Authorization'] = f'Bearer {bearer}'
+            url = (
+                f'https://{self._server}/bacloud_oneshot_upload'
+                f'?f={entry.cloud_file_id}'
+            )
+            with open(entry.path, 'rb') as infile:
+                response = _g_pool.request(
+                    'POST',
+                    url,
+                    body=infile,
+                    headers=headers,
+                    retries=False,
+                )
+            if not 200 <= response.status < 300:
+                raise CleanError(
+                    f'One-shot upload of {entry.path} failed:'
+                    f' status={response.status}'
+                    f' body={_err_body(response)!r}'
+                )
+            # The relay echoes back the verified cloud_file_id; fall back
+            # to the declared one if parsing fails for any reason.
+            cfid: str | None = None
+            try:
+                cfid = json.loads(response.data).get('cloud_file_id')
+            except Exception:
+                cfid = None
+            results[entry.path] = cfid or entry.cloud_file_id
+        self._end_command_args['uploads_oneshot'] = results
+
+    def _handle_upload_plan(  # pylint: disable=too-many-locals
+        self, plan: StandardResponseData.UploadPlan
+    ) -> tuple[str, dict]:
+        """Execute an upload plan end-to-end.
+
+        Walks ``plan.source_dir``, computes sha256+size for every
+        file, asks the server which need uploading (dedup check),
+        streams the missing ones direct-to-GCS, finalizes the
+        upload sessions, and returns the next call tuple for the
+        command's ``finalize_command``.
+        """
+        from bacommon.bacloud import (
+            UploadPlanFileInfo,
+            UploadPlanPrepareRequest,
+            UploadPlanPrepareResponse,
+            UploadPlanFinalizeRequest,
+            UploadPlanFinalizeResponse,
+            UploadPlanCommit,
+        )
+
+        source_dir = plan.source_dir
+        if not os.path.isdir(source_dir):
+            raise CleanError(f'upload_plan source dir not found: {source_dir}')
+
+        # Phase 1: enumerate files and compute hashes.
+        files: list[UploadPlanFileInfo] = []
+        local_paths: dict[str, str] = {}  # name -> absolute path
+        for basepath, _dirs, filenames in os.walk(source_dir):
+            for fn in filenames:
+                full = os.path.join(basepath, fn)
+                rel = os.path.relpath(full, source_dir)
+                size, sha256 = _hash_file(full)
+                files.append(
+                    UploadPlanFileInfo(name=rel, sha256=sha256, size=size)
+                )
+                local_paths[rel] = full
+
+        if not files:
+            raise CleanError(f'upload_plan source dir {source_dir} is empty.')
+
+        # Phase 2: prepare (dedup + allocate uploads).
+        prepare_req = UploadPlanPrepareRequest(
+            files=files,
+            cloud_file_category=plan.cloud_file_category,
+        )
+        prepare_cmd = _upload_plan_sibling(
+            plan.finalize_command, '_upload_plan_prepare'
+        )
+        prepare_resp_raw = self._servercmd(
+            prepare_cmd, dataclass_to_dict(prepare_req)
+        )
+        if prepare_resp_raw.raw_result is None:
+            raise CleanError('Prepare response missing raw_result.')
+        prepare_resp = dataclass_from_dict(
+            UploadPlanPrepareResponse, prepare_resp_raw.raw_result
+        )
+
+        # Phase 3: stream any needs-upload files to GCS.
+        sessions: dict[str, str] = {}
+        resolved: dict[str, str] = {}  # name -> cloud_file_id
+        for item in prepare_resp.items:
+            if item.cloud_file_id is not None:
+                resolved[item.name] = item.cloud_file_id
+                continue
+            assert item.upload_url is not None
+            assert item.session_id is not None
+            local = local_paths[item.name]
+            file_size = os.path.getsize(local)
+            put_headers = dict(item.upload_headers)
+            put_headers['Content-Length'] = str(file_size)
+            with open(local, 'rb') as infile:
+                resp = _g_pool.request(
+                    'PUT',
+                    item.upload_url,
+                    body=infile,
+                    headers=put_headers,
+                    retries=False,
+                )
+            if not 200 <= resp.status < 300:
+                raise CleanError(
+                    f'GCS upload of {item.name} failed:'
+                    f' status={resp.status}'
+                    f' body={_err_body(resp)!r}'
+                )
+            sessions[item.name] = item.session_id
+
+        # Phase 4: finalize uploaded files (if any).
+        if sessions:
+            finalize_cmd = _upload_plan_sibling(
+                plan.finalize_command, '_upload_plan_finalize'
+            )
+            finalize_req = UploadPlanFinalizeRequest(sessions=sessions)
+            finalize_resp_raw = self._servercmd(
+                finalize_cmd, dataclass_to_dict(finalize_req)
+            )
+            if finalize_resp_raw.raw_result is None:
+                raise CleanError('Finalize response missing raw_result.')
+            finalize_resp = dataclass_from_dict(
+                UploadPlanFinalizeResponse, finalize_resp_raw.raw_result
+            )
+            for name, cfid in finalize_resp.cloud_file_ids.items():
+                resolved[name] = cfid
+
+        # Phase 5: hand off to the plan's finalize command.
+        commit = UploadPlanCommit(files=resolved, state=plan.finalize_state)
+        return (plan.finalize_command, dataclass_to_dict(commit))
+
+    def _handle_downloads_signed(
+        self, downloads_signed: list[StandardResponseData.SignedDownloadEntry]
+    ) -> None:
+        """Handle direct-from-GCS streaming downloads via signed URLs.
+
+        For each entry, stream the GCS body straight to ``<path>.tmp``
+        while feeding bytes through ``hashlib.sha256``. On a successful
+        digest + size match we atomic-rename into place; on mismatch
+        we delete the tmp file and raise. Memory use is bounded by the
+        stream chunk size regardless of file size, so this bypasses
+        the Cloud Run 32 MB response cap entirely.
+
+        Downloads run through a thread pool so large workspaces fan
+        out over the network instead of serializing through one TCP
+        connection.
+        """
+        import hashlib
+        from concurrent.futures import ThreadPoolExecutor
+
+        # 1 MiB read chunk — large enough to keep per-chunk overhead
+        # negligible, small enough that peak memory stays bounded even
+        # when running several fetches concurrently.
+        chunk_size = 1024 * 1024
+
+        def _fetch(entry: StandardResponseData.SignedDownloadEntry) -> None:
+            # Clear out any existing dir where we want the file to go
+            # (mirrors the _handle_downloads_inline contract — file
+            # deletes should have run before this, so anything still
+            # here should be empty and killable via rmdir).
+            if os.path.isdir(entry.path):
+                for basename, dirnames, _fn in os.walk(
+                    entry.path, topdown=False
+                ):
+                    for dirname in dirnames:
+                        os.rmdir(os.path.join(basename, dirname))
+                os.rmdir(entry.path)
+
+            # Ensure the parent dir exists. For the workspace-get path
+            # the server supplies absolute paths the client chose, and
+            # the intermediate dirs may not exist yet.
+            parent = os.path.dirname(entry.path)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+
+            tmp = f'{entry.path}.tmp'
+            hasher = hashlib.sha256()
+            total = 0
+            with _g_pool.request(
+                'GET',
+                entry.download_url,
+                preload_content=False,
+                retries=False,
+            ) as resp:
+                if not 200 <= resp.status < 300:
+                    raise CleanError(
+                        f'GCS download of {entry.path} failed:'
+                        f' status={resp.status}'
+                        f' body={_err_body(resp)!r}'
+                    )
+                with open(tmp, 'wb') as outfile:
+                    for chunk in resp.stream(chunk_size):
+                        if not chunk:
+                            continue
+                        outfile.write(chunk)
+                        hasher.update(chunk)
+                        total += len(chunk)
+
+            if total != entry.size:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+                raise CleanError(
+                    f'GCS download of {entry.path} returned'
+                    f' {total} bytes; expected {entry.size}.'
+                )
+            digest = hasher.hexdigest()
+            if digest != entry.sha256:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+                raise CleanError(
+                    f'GCS download of {entry.path} sha256'
+                    f' mismatch: got {digest}, expected {entry.sha256}.'
+                )
+            os.rename(tmp, entry.path)
+
+        if not downloads_signed:
+            return
+        # Cap parallelism at 4: enough to saturate a typical client
+        # uplink without piling pressure on GCS or running the client
+        # out of fds.
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            list(executor.map(_fetch, downloads_signed))
+
+    def _handle_open_url(self, url: str) -> None:
+        import webbrowser
+
+        print(f'{Clr.CYN}(url: {url}){Clr.RST}', file=sys.stderr)
+        webbrowser.open(url)
+
+    def _handle_input_prompt(self, prompt: str, as_password: bool) -> None:
+        if as_password:
+            from getpass import getpass
+
+            self._end_command_args['input'] = getpass(prompt=prompt)
+        else:
+            if prompt:
+                print(prompt, end='', flush=True)
+            self._end_command_args['input'] = input()
+
+    def _servercmd_chained(
+        self, call: tuple[str, dict], retry_window: float
+    ) -> StandardResponseData:
+        """Run a chained server command, retrying transient failures.
+
+        ``retry_window`` comes from the previous response's
+        ``retry_window_seconds``: when > 0 the server has declared this
+        chained step idempotent/safe to repeat, so any failure
+        (transport or server-reported) is retried with backoff until
+        the window elapses, then surfaced normally. A zero window
+        behaves exactly like a direct ``_servercmd`` call.
+        """
+        deadline = time.monotonic() + retry_window
+        while True:
+            try:
+                return self._servercmd(*call)
+            except CleanError:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0.0:
+                    raise
+                print(
+                    f'{Clr.YLW}Server hiccup; retrying...{Clr.RST}',
+                    file=sys.stderr,
+                    flush=True,
+                )
+                time.sleep(min(3.0, remaining))
+
+    def _apply_response_file_ops(self, response: StandardResponseData) -> None:
+        """Apply a response's file deletes + downloads.
+
+        The non-chaining side-effect ops, factored out of the response
+        loop to keep it under control.
+        """
+        # Note: we handle file deletes *before* downloads. This way our
+        # file-download code only has to worry about creating or removing
+        # directories and not files, and corner cases such as a file
+        # getting replaced with a directory should just work.
+        #
+        # UPDATE: that actually only applies to commands where the client
+        # uploads a manifest first and then the server responds with
+        # specific deletes and inline downloads. The newer 'downloads'
+        # command is used differently; in that case the server is just
+        # pushing a big list of hashes to the client and the client is
+        # asking for the stuff it doesn't have. So in that case the client
+        # needs to fully handle things like replacing dirs with files.
+        if response.deletes:
+            self._handle_deletes(response.deletes)
+        if response.cas_delivery is not None:
+            self._handle_cas_delivery(response.cas_delivery)
+        if response.downloads_inline:
+            self._handle_downloads_inline(response.downloads_inline)
+        if response.downloads_signed:
+            self._handle_downloads_signed(response.downloads_signed)
+        if response.dir_prune_empty:
+            self._handle_dir_prune_empty(response.dir_prune_empty)
+        if response.workspace_snapshotid is not None:
+            # A get/put completed; remember the workspace's current
+            # snapshot id so _finish_workspace_command can stash it.
+            self._ws_snapshotid_received = response.workspace_snapshotid
+
+    def run_interactive_command(self, cwd: str, args: list[str]) -> None:
+        """Run a single user command to completion."""
+        assert self._project_root is not None
+        nextcall: tuple[str, dict] | None = (
+            '_interactive',
+            {'c': cwd, 'p': str(self._project_root), 'a': args},
+        )
+
+        # Now talk to the server in a loop until there's nothing left to
+        # do.
+        retry_window = 0.0
+        while nextcall is not None:
+            self._end_command_args = {}
+            response = self._servercmd_chained(nextcall, retry_window)
+            nextcall = None
+            retry_window = 0.0
+
+            if response.login is not None:
+                self._state.login_token = response.login
+            if response.logout:
+                self._state.login_token = None
+            if response.dir_manifest is not None:
+                self._handle_dir_manifest_response(response.dir_manifest)
+            if response.uploads_signed is not None:
+                self._handle_uploads_signed(response.uploads_signed)
+            if response.uploads_oneshot is not None:
+                self._handle_uploads_oneshot(response.uploads_oneshot)
+            if response.upload_plan is not None:
+                nextcall = self._handle_upload_plan(response.upload_plan)
+                # Upload plan overrides end_command; skip the rest of
+                # response processing for this round.
+                if response.end_command is not None:
+                    raise CleanError(
+                        'Response has both upload_plan and end_command;'
+                        ' these are mutually exclusive.'
+                    )
+                continue
+
+            self._apply_response_file_ops(response)
+
+            if response.open_url is not None:
+                self._handle_open_url(response.open_url)
+            if response.input_prompt is not None:
+                self._handle_input_prompt(
+                    prompt=response.input_prompt[0],
+                    as_password=response.input_prompt[1],
+                )
+            if response.end_message is not None:
+                print(
+                    response.end_message,
+                    end=response.end_message_end,
+                    flush=True,
+                )
+            if response.end_message_stderr is not None:
+                print(
+                    response.end_message_stderr,
+                    end=response.end_message_stderr_end,
+                    flush=True,
+                    file=sys.stderr,
+                )
+            if response.end_command is not None:
+                nextcall = response.end_command
+                retry_window = response.retry_window_seconds
+                for key, val in self._end_command_args.items():
+                    nextcall[1][key] = val
+
+            if response.return_code is not None:
+                # Should only get these if we're actually gonna exit.
+                assert nextcall is None
+                self._return_code = response.return_code

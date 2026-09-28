@@ -2,8 +2,6 @@
 #
 """Basic cloud-dialog."""
 
-from __future__ import annotations
-
 import datetime
 from enum import Enum
 from dataclasses import dataclass, field
@@ -11,7 +9,7 @@ from typing import Annotated, override, assert_never
 
 from efro.dataclassio import ioprepped, IOAttrs, IOMultiType
 
-import bacommon.displayitem as ditm
+import bacommon.legacydisplayitem as lditm
 from bacommon.clouddialog._clouddialog import CloudDialog, CloudDialogTypeID
 
 
@@ -36,6 +34,12 @@ class Component(IOMultiType[ComponentTypeID]):
         # full type registry/lookup here it would require us to import
         # everything and would prevent lazy loading.
         raise NotImplementedError()
+
+    @override
+    @classmethod
+    def get_type_id_storage_name(cls) -> str:
+        # Pin to the original default for back-compat with stored data.
+        return '_dciotype'
 
     @override
     @classmethod
@@ -135,7 +139,7 @@ class ClassicTourneyResult(Component):
     players: Annotated[int, IOAttrs('p')]
     rank: Annotated[int, IOAttrs('r')]
     trophy: Annotated[str | None, IOAttrs('tr')]
-    prizes: Annotated[list[ditm.Wrapper], IOAttrs('pr')]
+    prizes: Annotated[list[lditm.Wrapper], IOAttrs('pr')]
 
     @override
     @classmethod
@@ -148,7 +152,7 @@ class ClassicTourneyResult(Component):
 class DisplayItems(Component):
     """Show some display-items."""
 
-    items: Annotated[list[ditm.Wrapper], IOAttrs('d')]
+    items: Annotated[list[lditm.Wrapper], IOAttrs('d')]
     width: Annotated[float, IOAttrs('w')] = 100.0
     spacing_top: Annotated[float, IOAttrs('st', store_default=False)] = 0.0
     spacing_bottom: Annotated[float, IOAttrs('sb', store_default=False)] = 0.0

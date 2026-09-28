@@ -1,9 +1,8 @@
-# Porting to api 8 made easier by baport.(https://github.com/bombsquad-community/baport)
 # Released under the MIT License. See LICENSE for details.
 # BY Stary_Agent
-"""Hockey game and support classes."""
+"""Air soccer game."""
 
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
@@ -40,7 +39,7 @@ def create_slope(self):
 
 
 class Puck(bs.Actor):
-    """A lovely giant hockey puck."""
+    """A lovely ball."""
 
     def __init__(self, position: Sequence[float] = (0.0, 13.0, 0.0)):
         super().__init__()
@@ -52,7 +51,6 @@ class Puck(bs.Actor):
         self.last_players_to_touch: Dict[int, Player] = {}
         self.scored = False
         assert activity is not None
-        assert isinstance(activity, HockeyGame)
         pmats = [shared.object_material, activity.puck_material]
         self.node = bs.newnode('prop',
                                delegate=self,
@@ -117,7 +115,7 @@ class Team(bs.Team[Player]):
 
 # ba_meta export bascenev1.GameActivity
 class AirSoccerGame(bs.TeamGameActivity[Player, Team]):
-    """Ice hockey game."""
+    """Air soccer game."""
 
     name = 'Epic Air Soccer'
     description = 'Score some goals.'
@@ -656,6 +654,6 @@ class CreativeThoughts(bs.Map):
 
 
 try:
-    bs._map.register_map(CreativeThoughts)
+    bs.register_map(CreativeThoughts)
 except:
     pass

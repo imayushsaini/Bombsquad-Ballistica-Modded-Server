@@ -1,10 +1,9 @@
-# Ported to api 8 by brostos using baport.(https://github.com/bombsquad-community/baport)
 # BetterDeathMatch
 # Made by your friend: @[Just] Freak#4999
 
 """Defines a very-customisable DeathMatch mini-game"""
 
-# ba_meta require api 8
+# ba_meta require api 9
 
 from __future__ import annotations
 
@@ -17,7 +16,7 @@ from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
-    from typing import Any, Type, List, Dict, Tuple, Union, Sequence, Optional
+    from typing import Any, Type, List, Union, Sequence, Optional
 
 
 class Player(bs.Player['Team']):
@@ -43,7 +42,7 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+            cls, sessiontype: Type[bs.Session]) -> List[bs.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -138,19 +137,16 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
                               bs.MusicType.TO_THE_DEATH)
 
     def get_instance_description(self) -> Union[str, Sequence]:
-        return 'Crush ${ARG1} of your enemies. byFREAK', self._score_to_win
+        return 'Crush ${ARG1} of your enemies.', self._score_to_win
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
-        return 'kill ${ARG1} enemies. byFREAK', self._score_to_win
+        return 'kill ${ARG1} enemies.', self._score_to_win
 
     def on_team_join(self, team: Team) -> None:
         if self.has_begun():
             self._update_scoreboard()
 
-
 ## Run settings related: IcyFloor ##
-
-
     def on_transition_in(self) -> None:
         super().on_transition_in()
         activity = bs.getactivity()
@@ -163,7 +159,6 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self.setup_standard_time_limit(self._time_limit)
-
 
 ## Run settings related: NightMode,Powerups ##
         if self._night_mode:

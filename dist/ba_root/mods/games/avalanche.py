@@ -1,7 +1,6 @@
-# Porting to api 8 made easier by baport.(https://github.com/bombsquad-community/baport)
 """Avalancha mini-game."""
 
-# ba_meta require api 8
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
@@ -26,12 +25,12 @@ randomPic = ["lakeFrigidPreview", "hockeyStadiumPreview"]
 
 
 def ba_get_api_version():
-    return 8
+    return 9
 
 
 def ba_get_levels():
     return [
-        bs._level.Level(
+        bs.Level(
             "Icy Emits",
             gametype=IcyEmitsGame,
             settings={},
@@ -127,7 +126,7 @@ class AvalanchaGame(MeteorShowerGame):
             pos = (pos[0], pos[1] + 0.4, pos[2])
             dropdir = -1.0 if pos[0] > 0 else 1.0
             vel = (random.randrange(-4, 4), 7.0, random.randrange(0, 4))
-            bs.timer(delay, babase.Call(self._drop_bomb, pos, vel))
+            bs.timer(delay, babase.CallPartial(self._drop_bomb, pos, vel))
             delay += 0.1
         self._set_meteor_timer()
 

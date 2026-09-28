@@ -1,0 +1,35 @@
+name: Generate Chat Commands Documentation
+
+on:
+  push:
+    paths:
+      - "dist/ba_root/mods/chathandle/chatcommands/**"
+      - ".github/generate_docs.py"
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Documentation Extractor Script
+        run: python .github/generate_docs.py
+
+      - name: Commit and Push Updated Documentation
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update chat commands documentation [skip ci]"
+          file_pattern: "docs/commands.json docs/COMMANDS.md"

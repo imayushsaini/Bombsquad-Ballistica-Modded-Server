@@ -16,6 +16,8 @@
   },
   "ShowKickVoteStarterName": true,
   "StumbledScoreScreen": true,
+  "victory_score_screen": "stumbled",
+  "round_score_screen": "replay",
   "WarnCooldownMinutes": 30,
   "afk_remover": {
     "enable": false,
@@ -121,6 +123,9 @@
   "enableTagAnimation": true,
   "enableTop5effects": true,
   "enableeffects": true,
+  "max_equipped_effects": 3,
+  "rank_effect_duration_days": 3,
+  "shop_effect_duration_days": 6,
   "enablehptag": true,
   "enablerank": true,
   "enablestats": true,
@@ -128,7 +133,8 @@
   "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
   "leaderboard": {
     "barsBehindName": true,
-    "enable": true
+    "enable": true,
+    "range": 3
   },
   "maxAccountPerIP": 3,
   "maxPlayersPerDevice": 2,

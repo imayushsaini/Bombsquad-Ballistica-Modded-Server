@@ -2,12 +2,12 @@
 #
 """Provides popup windows for choosing colors."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, override
 
 from bauiv1lib.popup import PopupWindow
 import bauiv1 as bui
+from bauiv1 import builtinassets
+from bauiv1 import _commonassets, classicassets
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -30,7 +30,6 @@ class ColorPicker(PopupWindow):
         offset: tuple[float, float] = (0.0, 0.0),
         tag: Any = '',
     ):
-        # pylint: disable=too-many-locals
         assert bui.app.classic is not None
 
         c_raw = bui.app.classic.get_player_colors()
@@ -92,16 +91,14 @@ class ColorPicker(PopupWindow):
                 )
                 row.append(btn)
         other_button = bui.buttonwidget(
+            id=f'{self._idprefix}|other',
             parent=self.root_widget,
             position=(105 - 60, 13),
             color=(0.7, 0.7, 0.7),
             text_scale=0.5,
             textcolor=(0.8, 0.8, 0.8),
             size=(120, 30),
-            label=bui.Lstr(
-                resource='otherText',
-                fallback_resource='coopSelectWindow.customText',
-            ),
+            label=_commonassets.strings.actions.other,
             autoselect=True,
             on_activate_call=bui.WeakCallStrict(self._select_other),
         )
@@ -153,7 +150,7 @@ class ColorPicker(PopupWindow):
     @override
     def on_popup_cancel(self) -> None:
         if not self._transitioning_out:
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
         self._transition_out()
 
 
@@ -172,7 +169,6 @@ class ColorPickerExact(PopupWindow):
         offset: tuple[float, float] = (0.0, 0.0),
         tag: Any = '',
     ):
-        # pylint: disable=too-many-locals
         del parent  # Unused var.
         assert bui.app.classic is not None
 
@@ -214,7 +210,7 @@ class ColorPickerExact(PopupWindow):
             parent=self.root_widget,
             position=(width * 0.5 - 65 + 5, height - 95),
             size=(130, 115),
-            texture=bui.gettexture('clayStroke'),
+            texture=classicassets.textures.clay_stroke.get(),
             color=(1, 0, 0),
         )
         self._hex_textbox = bui.textwidget(
@@ -269,13 +265,14 @@ class ColorPickerExact(PopupWindow):
             y -= 42
 
         btn = bui.buttonwidget(
+            id=f'{self._idprefix}|done',
             parent=self.root_widget,
             position=(width * 0.5 - 40, 10),
             size=(80, 30),
             text_scale=0.6,
             color=(0.6, 0.6, 0.6),
             textcolor=(0.7, 0.7, 0.7),
-            label=bui.Lstr(resource='doneText'),
+            label=_commonassets.strings.actions.done,
             on_activate_call=bui.WeakCallStrict(self._transition_out),
             autoselect=True,
         )
@@ -379,7 +376,7 @@ class ColorPickerExact(PopupWindow):
     @override
     def on_popup_cancel(self) -> None:
         if not self._transitioning_out:
-            bui.getsound('swish').play()
+            builtinassets.audio.swish.get().play()
         self._transition_out()
 
 

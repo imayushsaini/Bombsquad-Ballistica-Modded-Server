@@ -4,42 +4,42 @@ on:
   push:
     branches:
       - public-server
-      - api9
+      - beta/1.8.0
       - dev
 
 jobs:
   run_server_binary:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: Set execute permissions for wrapper
-      run: chmod +x ./bombsquad_server
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.14"
+      - name: Set execute permissions for wrapper
+        run: chmod +x ./bombsquad_server
 
-    - name: Set execute permissions for binary
-      run: chmod +x ./dist/bombsquad_headless
+      - name: Set execute permissions for binary
+        run: chmod +x ./dist/bombsquad_headless
 
-    - name: Run server binary and capture output
-      run: |
-        ./bombsquad_server > server-output.log 2>&1 &
-        SERVER_PID=$!
-        sleep 30  # let it run for 30 seconds
-        kill $SERVER_PID  # terminate the server
-    - name: Check server output for success message
-      run: |
-        if grep -E "Exception|RuntimeError" server-output.log; then 
-          echo "Error message found. Check server-output.log for details."
-          exit 1
-        elif ! grep -q "Server started" server-output.log; then
-          echo "Success message not found in server's output."
-          exit 1
-        fi
-    - name: Upload server output as artifact
-      if: always()  
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-output
-        path: ./server-output.log
+      - name: Run server binary and capture output
+        run: |
+          ./bombsquad_server > server-output.log 2>&1 &
+          SERVER_PID=$!
+          sleep 30  # let it run for 30 seconds
+          kill $SERVER_PID  # terminate the server
+      - name: Check server output for success message
+        run: |
+          if grep -E "Exception|RuntimeError" server-output.log; then 
+            echo "Error message found. Check server-output.log for details."
+            exit 1
+          elif ! grep -q "Server started" server-output.log; then
+            echo "Success message not found in server's output."
+            exit 1
+          fi
+      - name: Upload server output as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-output
+          path: ./server-output.log
