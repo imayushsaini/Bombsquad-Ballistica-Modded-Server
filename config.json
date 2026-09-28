@@ -1,44 +1,54 @@
 {
-   "party_name":"BombSquad Community Server",
-   "party_is_public":true,
-   "authenticate_clients":true,
-   "admins":[
-      "pb-yOuRAccOuNtIdHErE",
-      "pb-aNdMayBeAnotherHeRE"
-   ],
-   "enable_default_kick_voting":true,
-   "port":43210,
-   "max_party_size":6,
-   "session_max_players_override":8,
-   "session_type":"ffa",
-   "playlist_code":12345,
-   "playlist_shuffle":true,
-   "auto_balance_teams":true,
-   "enable_telnet":false,
-   "teams_series_length":7,
-   "ffa_series_length":24,
-   "stats_url":"https://discord.gg/ucyaesh",
-   "clean_exit_minutes":60,
-   "unclean_exit_minutes":90,
-   "idle_exit_minutes":20,
-   "show_tutorial":false,
-   "team_names":[
-      "ladoo",
-      "barfi"
-   ],
-   "team_colors":[
-      [
-         0.8,
-         0.0,
-         0.6
-      ],
-      [
-         0,
-         1,
-         0.8
-      ]
-   ],
-   "enable_queue":true,
-   "protocol_version":35,
-   "player_rejoin_cooldown":10.0
+    "admins": [
+        "a-YOUR-ID-HERE",
+        "a-ANOTHER-ID-HERE"
+    ],
+    "allow_punch_grab": false,
+    "authenticate_clients": true,
+    "auto_balance_teams": true,
+    "clean_exit_minutes": 60,
+    "coop_campaign": "Easy",
+    "coop_level": "Onslaught Training",
+    "dont_write_bytecode": false,
+    "enable_default_kick_voting": true,
+    "enable_queue": true,
+    "enable_telnet": false,
+    "ffa_series_length": 24,
+    "idle_exit_minutes": 20,
+    "log_levels": null,
+    "max_party_size": 6,
+    "party_is_public": true,
+    "party_name": "BombSquad Community Server 1.8",
+    "password": null,
+    "player_rejoin_cooldown": 10,
+    "playlist_code": 622903,
+    "playlist_inline": [],
+    "playlist_shuffle": true,
+    "port": 43211,
+    "protocol_version": 38,
+    "public_ipv4_address": "123.123.123.123",
+    "public_ipv6_address": "123A::A123:23A1:A312:12A3:A213:2A13",
+    "session_max_players_override": 8,
+    "session_type": "teams",
+    "show_tutorial": false,
+    "stats_url": "https://discord.gg/ucyaesh",
+    "stress_test_players": null,
+    "team_colors": [
+        [
+            0.1,
+            0.25,
+            1
+        ],
+        [
+            1,
+            0.25,
+            0.2
+        ]
+    ],
+    "team_names": [
+        "Red",
+        "Blue"
+    ],
+    "teams_series_length": 7,
+    "unclean_exit_minutes": 90
 }
