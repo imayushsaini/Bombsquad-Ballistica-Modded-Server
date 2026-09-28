@@ -1,19 +1,19 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modded server scripts to host ballistica (BombSquad) server. Running on BS1.7.53 (API 9)
+Modded server scripts to host ballistica (BombSquad) server. Running on BS1.8.0 (API 9)
 
 ``
-Migrated from API 7 TO API 9 , this might be unstable and missing some features. Use API 7 from this tag
+Migrated from 1.7 to  1.8.0 alpha , this might be unstable and missing some features. Use 1.7 from this tag
 ``
-[API7 ](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/releases/tag/1.7.26)
+[1.7.61 ](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/releases/tag/v1.7.61)
 
 # Prerequisites
 - Basic knowledge of Linux
 - A VPS (e.g. [Amazon Web Services](https://aws.amazon.com/), [Microsoft Azure](https://portal.azure.com/))
 - Any Linux distribution.
-  - It is recommended to use Ubuntu (minimum Ubuntu 22).
-- Python 3.13
-- 1 GB free Memory (Recommended 2 GB)
+  - It is recommended to use Ubuntu (minimum Ubuntu 26).
+- Python 3.14
+- 1.5 GB free Memory (Recommended 2 GB)
 
 ## Getting Started
 This assumes you are on Ubuntu or an Ubuntu based distribution.
@@ -26,9 +26,9 @@ Add python Deadsnakes PPA
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
 ```
-Install Python 3.13
+Install Python 3.14
 ```
-sudo apt install python3.13 python3.13-dev python3.13-venv python3-pip -y
+sudo apt install python3.14 python3.14-dev python3.14-venv python3-pip -y
 ```
 Update installed and existing packages
 ```
@@ -120,4 +120,8 @@ Here you can ban players, mute them, or disable their kick votes.
 - set 2d plane with _ba.set_2d_plane(z) - beta , not works with spaz.fly = true. 
 - New Splitted Team in game score screen.
 - New final score screen , StumbledScoreScreen.
-- other small small feature improvement here there find yourself.
+- Instant replay on score screen
+- 24/7 Smart Motion based game recording in .brp, with auto clenaup in 3 days
+- Game HUD preference, client can choose if they want to see rank, leaderboard and other text or images.
+- All players data will be saved in server managed sqlite db
+- New shop system to buy chat commands or effects.
