@@ -1,0 +1,1088 @@
+[
+  {
+    "name": "/kill",
+    "aliases": [
+      "/die"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/kill [all | <player_index>]",
+    "description": "Kill target player(s) immediately in game.",
+    "examples": [
+      "/kill",
+      "/kill all",
+      "/kill 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/heal",
+    "aliases": [
+      "/heath"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/heal [all | <player_index>]",
+    "description": "Heal target player(s) to full health.",
+    "examples": [
+      "/heal",
+      "/heal all",
+      "/heal 1"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/curse",
+    "aliases": [
+      "/cur"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/curse [all | <player_index>]",
+    "description": "Curse target player(s) causing them to explode after a short delay.",
+    "examples": [
+      "/curse",
+      "/curse all",
+      "/curse 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/sleep",
+    "aliases": [],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/sleep [all | <player_index>]",
+    "description": "Knockout target player(s) for 8 seconds.",
+    "examples": [
+      "/sleep",
+      "/sleep all",
+      "/sleep 2"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/superpunch",
+    "aliases": [
+      "/sp"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/superpunch [all | <player_index>]",
+    "description": "Toggle super punch (15x damage and 0 cooldown) for target player(s).",
+    "examples": [
+      "/superpunch",
+      "/superpunch all",
+      "/sp 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/gloves",
+    "aliases": [
+      "/punch"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/gloves [all | <player_index>]",
+    "description": "Give boxing gloves powerup to target player(s).",
+    "examples": [
+      "/gloves",
+      "/gloves all",
+      "/punch 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/shield",
+    "aliases": [
+      "/protect"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/shield [all | <player_index>]",
+    "description": "Give energy shield powerup to target player(s).",
+    "examples": [
+      "/shield",
+      "/shield all",
+      "/protect 1"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/freeze",
+    "aliases": [
+      "/ice"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/freeze [all | <player_index>]",
+    "description": "Freeze target player(s) in ice.",
+    "examples": [
+      "/freeze",
+      "/freeze all",
+      "/ice 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/unfreeze",
+    "aliases": [
+      "/thaw"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/unfreeze [all | <player_index>]",
+    "description": "Unfreeze target player(s) from ice.",
+    "examples": [
+      "/unfreeze",
+      "/unfreeze all",
+      "/thaw 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/godmode",
+    "aliases": [
+      "/gm"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/godmode [all | <player_index>]",
+    "description": "Toggle invincibility and god mode for target player(s).",
+    "examples": [
+      "/godmode",
+      "/godmode all",
+      "/gm 0"
+    ],
+    "file": "cheats.py"
+  },
+  {
+    "name": "/speed",
+    "aliases": [],
+    "category": "Fun",
+    "shopCost": 200,
+    "usage": "/speed <multiplier>",
+    "description": "Set the game simulation speed multiplier.",
+    "examples": [
+      "/speed 1.0",
+      "/speed 2.0",
+      "/speed 0.5"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/fly",
+    "aliases": [],
+    "category": "Fun",
+    "shopCost": 300,
+    "usage": "/fly [all | <player_index>]",
+    "description": "Toggle flight mode allowing target player(s) to float in the air.",
+    "examples": [
+      "/fly",
+      "/fly all",
+      "/fly 0"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/invisible",
+    "aliases": [
+      "/inv"
+    ],
+    "category": "Fun",
+    "shopCost": 250,
+    "usage": "/invisible [all | <player_index>]",
+    "description": "Make target player(s) character meshes invisible.",
+    "examples": [
+      "/invisible",
+      "/invisible all",
+      "/inv 1"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/headless",
+    "aliases": [
+      "/hl"
+    ],
+    "category": "Fun",
+    "shopCost": 150,
+    "usage": "/headless [all | <player_index>]",
+    "description": "Remove head mesh from target player(s).",
+    "examples": [
+      "/headless",
+      "/headless all",
+      "/hl 0"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/creepy",
+    "aliases": [
+      "/creep"
+    ],
+    "category": "Fun",
+    "shopCost": 150,
+    "usage": "/creepy [all | <player_index>]",
+    "description": "Make target player(s) creepy (remove head, add punch and shield powerups).",
+    "examples": [
+      "/creepy",
+      "/creepy all",
+      "/creep 0"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/celebrate",
+    "aliases": [
+      "/celeb"
+    ],
+    "category": "Fun",
+    "shopCost": 100,
+    "usage": "/celebrate [all | <player_index>]",
+    "description": "Make target player(s) perform a victory dance animation.",
+    "examples": [
+      "/celebrate",
+      "/celebrate all",
+      "/celeb 0"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/spaz",
+    "aliases": [],
+    "category": "Fun",
+    "shopCost": 0,
+    "usage": "/spaz",
+    "description": "Spaz command placeholder.",
+    "examples": [
+      "/spaz"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/floater",
+    "aliases": [
+      "/flo"
+    ],
+    "category": "Fun",
+    "shopCost": 200,
+    "usage": "/floater [<client_id>]",
+    "description": "Assign floater controls to yourself or a specific client ID.",
+    "examples": [
+      "/floater",
+      "/flo 113"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/tnt",
+    "aliases": [
+      "/spawntnt",
+      "/spawn"
+    ],
+    "category": "Fun",
+    "shopCost": 200,
+    "usage": "/tnt [all | <player_index>]",
+    "description": "Spawn a TNT crate at target player position or arena center.",
+    "examples": [
+      "/tnt",
+      "/tnt all",
+      "/spawn 0"
+    ],
+    "file": "fun.py"
+  },
+  {
+    "name": "/unban",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/unban <client_id>",
+    "description": "Unban a player by client ID from recent connections log.",
+    "examples": [
+      "/unban 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/recents",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/recents",
+    "description": "List recent connected players with client ID, device ID, and account ID (pbid).",
+    "examples": [
+      "/recents"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/info",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/info <client_id>",
+    "description": "Get detailed account information for a connected or recent player by client ID.",
+    "examples": [
+      "/info 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/maxplayers",
+    "aliases": [
+      "/max"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/maxplayers <number>",
+    "description": "Change the maximum public party player slots.",
+    "examples": [
+      "/maxplayers 8",
+      "/max 12"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/createteam",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/createteam <team_name>",
+    "description": "Create a new custom team in the current session.",
+    "examples": [
+      "/createteam Warriors"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/playlist",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/playlist <playlist_name|coop>",
+    "description": "Switch the server playlist by name or code, or switch to coop mode.",
+    "examples": [
+      "/playlist coop",
+      "/playlist Teams"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/kick",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/kick <client_id>",
+    "description": "Kick a player immediately by client ID.",
+    "examples": [
+      "/kick 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/ban",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/ban <client_id> [duration_in_days]",
+    "description": "Ban a player by client ID for a duration (in days) and disconnect them.",
+    "examples": [
+      "/ban 113",
+      "/ban 113 7.0"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/end",
+    "aliases": [
+      "/next"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/end",
+    "description": "End the current match or activity immediately and proceed to next.",
+    "examples": [
+      "/end",
+      "/next"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/kickvote",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/kickvote <enable|disable|immune|unimmune|list> [target] [duration]",
+    "description": "Manage kick voting settings, player restrictions, and immunities.",
+    "examples": [
+      "/kickvote list",
+      "/kickvote enable all",
+      "/kickvote disable 113 3",
+      "/kickvote immune pb-12345"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/kickimmune",
+    "aliases": [
+      "/immune"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/kickimmune <client_id | pb-id>",
+    "description": "Grant kick vote immunity to a player by client ID or account ID (pb-id).",
+    "examples": [
+      "/kickimmune 113",
+      "/immune pb-123456"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/kickunimmune",
+    "aliases": [
+      "/unimmune"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/kickunimmune <client_id | pb-id>",
+    "description": "Remove kick vote immunity from a player.",
+    "examples": [
+      "/kickunimmune 113",
+      "/unimmune pb-123456"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/disablekickvote",
+    "aliases": [
+      "/dkv"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/disablekickvote <client_id | pb-id> [duration_days]",
+    "description": "Restrict a player from starting kick votes for specified days.",
+    "examples": [
+      "/disablekickvote 113",
+      "/dkv pb-123456 7"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/enablekickvote",
+    "aliases": [
+      "/ekv"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/enablekickvote <client_id | pb-id>",
+    "description": "Allow a player to start kick votes again by removing restriction.",
+    "examples": [
+      "/enablekickvote 113",
+      "/ekv pb-123456"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/hideid",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/hideid",
+    "description": "Hide player device IDs from the party list.",
+    "examples": [
+      "/hideid"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/showid",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/showid",
+    "description": "Show player device IDs in the party list.",
+    "examples": [
+      "/showid"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/lm",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/lm",
+    "description": "Send last chat messages to your client console/chat.",
+    "examples": [
+      "/lm"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/gp",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/gp <player_index>",
+    "description": "Get player profiles by player ID index.",
+    "examples": [
+      "/gp 0"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/party",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/party <public | private>",
+    "description": "Set server party visibility to public or private.",
+    "examples": [
+      "/party public",
+      "/party private"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/quit",
+    "aliases": [
+      "/restart"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/quit",
+    "description": "Quit or restart the server host application.",
+    "examples": [
+      "/quit",
+      "/restart"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/mute",
+    "aliases": [
+      "/mutechat"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/mute [<client_id>] [duration_days]",
+    "description": "Mute global server chat or a specific client ID for a duration in days.",
+    "examples": [
+      "/mute",
+      "/mute 113",
+      "/mute 113 1.0"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/unmute",
+    "aliases": [
+      "/unmutechat"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/unmute [<client_id>]",
+    "description": "Unmute global chat or a specific client ID.",
+    "examples": [
+      "/unmute",
+      "/unmute 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/remove",
+    "aliases": [
+      "/rm"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/remove <client_id | all>",
+    "description": "Remove a player from the active game session.",
+    "examples": [
+      "/remove 113",
+      "/remove all"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/sm",
+    "aliases": [
+      "/slow",
+      "/slowmo"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/slowmo",
+    "description": "Toggle game global slow motion speed mode.",
+    "examples": [
+      "/sm",
+      "/slowmo"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/nv",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/nv",
+    "description": "Toggle blue night vision ambient color filter for the host map.",
+    "examples": [
+      "/nv"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/dv",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/dv",
+    "description": "Set map ambient tint to standard daylight tint (1, 1, 1).",
+    "examples": [
+      "/dv"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/tint",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/tint <r> <g> <b>",
+    "description": "Set custom RGB tint multiplier for map globals node.",
+    "examples": [
+      "/tint 1.0 0.5 0.5",
+      "/tint 0.8 1.0 0.8"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/pause",
+    "aliases": [
+      "/pausegame"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/pause",
+    "description": "Toggle match pause state.",
+    "examples": [
+      "/pause"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/cameraMode",
+    "aliases": [
+      "/camera_mode",
+      "/rotate_camera"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/cameramode",
+    "description": "Toggle map camera mode between rotate and normal.",
+    "examples": [
+      "/cameraMode"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/createrole",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/createrole <role_name>",
+    "description": "Create a new role rank in player database.",
+    "examples": [
+      "/createrole VIP"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/addrole",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/addrole <role_name> <client_id>",
+    "description": "Assign a role to a player by client ID.",
+    "examples": [
+      "/addrole VIP 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/removerole",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/removerole <role_name> <client_id>",
+    "description": "Remove a role from a player by client ID.",
+    "examples": [
+      "/removerole VIP 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/getroles",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/getroles <client_id>",
+    "description": "Get list of assigned roles for a player by client ID.",
+    "examples": [
+      "/getroles 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/changetag",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/changetag <role_name> <tag_text>",
+    "description": "Change role display tag.",
+    "examples": [
+      "/changetag VIP [VIP]"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/customtag",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/customtag <tag_text> <client_id>",
+    "description": "Set custom overhead tag for a player by client ID.",
+    "examples": [
+      "/customtag [Pro] 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/customeffect",
+    "aliases": [
+      "/addeffect",
+      "/gifteffect"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/customeffect <effect_name> <client_id>",
+    "description": "Gift a custom spaz particle effect permanently to a player.",
+    "examples": [
+      "/customeffect spark 113",
+      "/addeffect ice 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/removetag",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/removetag <client_id>",
+    "description": "Remove custom overhead tag from a player by client ID.",
+    "examples": [
+      "/removetag 113"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/removeeffect",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/removeeffect <client_id> [effect_name]",
+    "description": "Remove custom effect(s) from a player by client ID.",
+    "examples": [
+      "/removeeffect 113",
+      "/removeeffect 113 spark"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/addcommand",
+    "aliases": [
+      "/addcmd"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/addcommand <command_name> <role_name>",
+    "description": "Grant access to a command for a role.",
+    "examples": [
+      "/addcommand fly VIP"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/removecommand",
+    "aliases": [
+      "/removecmd"
+    ],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/removecommand <command_name> <role_name>",
+    "description": "Revoke access to a command from a role.",
+    "examples": [
+      "/removecommand fly VIP"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/spectators",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/spectators <on | off>",
+    "description": "Enable or disable whitelist spectator permissions.",
+    "examples": [
+      "/spectators on",
+      "/spectators off"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/lobbytime",
+    "aliases": [],
+    "category": "Manage",
+    "shopCost": 0,
+    "usage": "/lobbytime <seconds>",
+    "description": "Change lobby timeout check duration in seconds.",
+    "examples": [
+      "/lobbytime 30"
+    ],
+    "file": "management.py"
+  },
+  {
+    "name": "/me",
+    "aliases": [
+      "/stats",
+      "/score",
+      "/rank",
+      "/myself"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/me",
+    "description": "Fetch and send personal stats including scores, games, kills, deaths, and average.",
+    "examples": [
+      "/me"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/list",
+    "aliases": [
+      "/l"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/list",
+    "description": "Returns the list of online players with their client ID and player index.",
+    "examples": [
+      "/list"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/uniqeid",
+    "aliases": [
+      "/id",
+      "/pb-id",
+      "/pb",
+      "/accountid"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/id [player_index]",
+    "description": "Returns your account ID or the account ID of a specified player index.",
+    "examples": [
+      "/id 0"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/ping",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/ping [all | <client_id>]",
+    "description": "Get ping for yourself, all players, or a specific client ID.",
+    "examples": [
+      "/ping all",
+      "/ping 113"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/tickets",
+    "aliases": [
+      "/balance"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/balance",
+    "description": "Check your total tickets balance.",
+    "examples": [
+      "/balance"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/transfer",
+    "aliases": [
+      "/pay"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/transfer <client_id|player_index|name> <amount>",
+    "description": "Transfer tickets to another player by client ID, player index, or name substring.",
+    "examples": [
+      "/transfer 113 100"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/shop",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/shop [commands | effects]",
+    "description": "View items, commands, and effects available for purchase in the server shop.",
+    "examples": [
+      "/shop",
+      "/shop commands",
+      "/shop effects"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/buy",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/buy <item_name>",
+    "description": "Purchase a chat command or spaz effect from the shop using your tickets balance.",
+    "examples": [
+      "/buy fly",
+      "/buy spark"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/effect",
+    "aliases": [
+      "/effects"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/effect [list | enable <effect_name> | disable <effect_name> | none]",
+    "description": "Manage your active character particle effects inventory and equip/unequip effects.",
+    "examples": [
+      "/effect list",
+      "/effect enable spark",
+      "/effect disable spark",
+      "/effect none"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/equip",
+    "aliases": [
+      "/use"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/equip <effect_name | none>",
+    "description": "Equip a specific character particle effect from your inventory.",
+    "examples": [
+      "/equip spark",
+      "/equip none"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/unequip",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/unequip <effect_name | all>",
+    "description": "Unequip a character particle effect or remove all active effects.",
+    "examples": [
+      "/unequip spark",
+      "/unequip all"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/claim",
+    "aliases": [
+      "/daily"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/claim",
+    "description": "Claim your free daily login ticket reward.",
+    "examples": [
+      "/claim",
+      "/daily"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/givetickets",
+    "aliases": [
+      "/addtickets"
+    ],
+    "category": "Cheats",
+    "shopCost": 0,
+    "usage": "/givetickets <client_id|player_index|name> <amount>",
+    "description": "Grant tickets balance to a player by client ID, player index, or name substring (admin only).",
+    "examples": [
+      "/givetickets 113 500"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/hud",
+    "aliases": [
+      "/ui"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/hud [all | clean | leaderboard | next | notags | onlytags | <element> <on|off>]",
+    "description": "Configure custom private HUD element visibility preferences and UI preset modes.",
+    "examples": [
+      "/hud clean",
+      "/hud leaderboard",
+      "/hud ping off",
+      "/hud tag on"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/night",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/night",
+    "description": "Enable night mode lighting tint (0.5, 0.7, 1.0) for your client view.",
+    "examples": [
+      "/night"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/day",
+    "aliases": [],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/day",
+    "description": "Enable standard daylight lighting tint (1.0, 1.0, 1.0) for your client view.",
+    "examples": [
+      "/day"
+    ],
+    "file": "normal_commands.py"
+  }
+]
