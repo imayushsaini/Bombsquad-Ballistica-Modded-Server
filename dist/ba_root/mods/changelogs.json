@@ -66,6 +66,34 @@
        "82": {
               "log": "api 9 , latest changes for 1.7.41 from master, prevent server crash attack by invalid cjson",
               "time": "26 May 2025"
+       },
+       "83": {
+              "log": "Account MFA with IP address for server owners",
+              "time": "21 Oct 2025"
+       },
+       "84": {
+              "log": "migrated to sqlite db, rewriting management code and, and chat command handling",
+              "time": "08 July 2026"
+       },
+       "85": {
+              "log": "Shop system, new effects, powerups",
+              "time": "22 July 2026"
+       },
+       "86": {
+              "log": "1.8.0, custom client scene/node state/hud preferences, welcome screen",
+              "time": "02 Aug 2026"
+       },
+       "87": {
+              "log": "All new server management web tool/api, Auto replay recording 24/7",
+              "time": "25 Aug 2026"
+       },
+       "88": {
+              "log": "New Kick vote system, instant replay on score screen ",
+              "time": "07 Sep 2026"
+       },
+       "89": {
+              "log": "Stumbled score screen is back after 2 years",
+              "time": "12 Sep 2026"
        }
 
 }

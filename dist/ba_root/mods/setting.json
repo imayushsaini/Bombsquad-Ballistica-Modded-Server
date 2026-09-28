@@ -3,7 +3,6 @@
   "ChatCommands": {
     "BrodcastCommand": true
   },
-  "HostDeviceName": "v1.4",
   "HostName": "\uE047 BCSv2 \uE047",
   "KickVoteMsgType": "chat",
   "ScoreScreenAnnouncement": {
@@ -193,7 +192,6 @@
     "enforce_for_all_players": false,
     "enforce_for_accounts": [ "HeySmoothy", "test" ]
   },
-  "accountApiToken": "get you own api token from ballistica.net",
   "useSqlite": true,
   "instant_replay": {
     "enable": true,

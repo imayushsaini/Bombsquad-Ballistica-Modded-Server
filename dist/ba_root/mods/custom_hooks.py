@@ -27,6 +27,7 @@ from bascenev1._session import Session
 from bascenev1._map import Map
 from bascenev1._activitytypes import ScoreScreenActivity
 from baclassic._servermode import ServerController
+from baclassic._appsubsystem import ClassicAppSubsystem
 from efro.terminal import Clr
 import setting
 import bauiv1 as bui
@@ -39,11 +40,13 @@ import _babase
 
 import _thread
 import importlib
+import ipaddress
 import logging
 import os
 import sys
 import subprocess
 import time
+import urllib.request
 from datetime import datetime
 
 # --- Auto dependency installer ---
@@ -446,7 +449,7 @@ def bootstraping():
 
     # check for auto update stats
     _thread.start_new_thread(mystats.refreshStats, ())
-    _thread.start_new_thread(verify_account_token, ())
+    # _thread.start_new_thread(verify_account_token, ())
     pdata.load_cache()
     _thread.start_new_thread(pdata.dump_cache, ())
     _thread.start_new_thread(notification_manager.dump_cache, ())
@@ -705,7 +708,7 @@ def on_player_join(self, player) -> None:
         if sessionplayer is not None:
             account_id = None
             if hasattr(sessionplayer, 'get_v1_account_id'):
-                account_id = sessionplayer.get_v1_account_id()
+                account_id = sessionplayer.get_account_id()
             if not account_id and hasattr(sessionplayer, 'get_account_id'):
                 account_id = sessionplayer.get_account_id()
 
@@ -716,7 +719,7 @@ def on_player_join(self, player) -> None:
             if account_id and client_id is not None and client_id != -1:
                 import private_hud
                 # Delay applying preferences on player join so client has finished loading the scene
-                babase.apptimer(2.0, babase.Call(
+                babase.apptimer(2.0, babase.CallStrict(
                     private_hud.apply_preferences_for_client, client_id, account_id))
     except Exception as e:
         print(f"Error applying private HUD on player join: {e}")
@@ -840,13 +843,6 @@ Session.on_player_request = on_player_request(Session.on_player_request)
 
 
 def on_access_check_response(self, data):
-    if data is not None:
-        addr = data['address']
-        port = data['port']
-        if settings["ballistica_web"]["enable"]:
-            bs.set_public_party_stats_url(
-                f'https://bombsquad-community.web.app/server-manager/?host={addr}&port={port}')
-
     servercontroller._access_check_response(self, data)
 
 
@@ -905,6 +901,8 @@ def on_classic_app_mode_active():
     _bascenev1.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
     _bascenev1.set_kickvote_msg_type(settings["KickVoteMsgType"])
     _bascenev1.hide_player_device_id(settings["Anti-IdRevealer"])
+    if getattr(babase.app, 'classic', None) is not None:
+        babase.app.classic.v2_auth_handler = v2_auth_handler
 
 
 def bcs_verify_client_account_ip(account_id: str, ip: str, client_id: int) -> str | None:
@@ -934,3 +932,29 @@ def player_entered_server(
         print(f"Error in player_entered_server welcome hook: {e}")
 
     return True
+
+
+async def v2_auth_handler(
+    request: ClassicAppSubsystem.V2AuthRequest,
+) -> ClassicAppSubsystem.V2AuthResponse:
+    """Custom V2 auth handler executed when a player joins the server."""
+    allow, error_message = servercheck.handle_v2_auth(request)
+    return ClassicAppSubsystem.V2AuthResponse(
+        allow=allow,
+        error_message=error_message,
+    )
+
+
+# Monkey patch ClassicAppSubsystem to use custom v2_auth_handler
+_orig_classic_app_subsystem_init = ClassicAppSubsystem.__init__
+
+
+def _new_classic_app_subsystem_init(self, *args, **kwargs):
+    _orig_classic_app_subsystem_init(self, *args, **kwargs)
+    self.v2_auth_handler = v2_auth_handler
+
+
+ClassicAppSubsystem.__init__ = _new_classic_app_subsystem_init
+
+if getattr(babase.app, 'classic', None) is not None:
+    babase.app.classic.v2_auth_handler = v2_auth_handler

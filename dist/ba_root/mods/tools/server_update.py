@@ -5,13 +5,13 @@ import json
 import time
 import urllib.request
 from urllib.parse import urlparse
-
+import _babase
 import babase
 import bascenev1
 from efro.terminal import Clr
 from playersdata import pdata
 
-VERSION = 81
+VERSION = 89
 
 
 def check():
@@ -21,8 +21,9 @@ def check():
 
 
 def postStatus():
-    link = 'https://bcsservers.ballistica.workers.dev/ping'
+    link = 'https://bcsserver.69420555.xyz/ping'
     data = {'name': babase.app.classic.server._config.party_name,
+            'ip': _babase.our_ip,
             'port': str(bascenev1.get_game_port()),
             'build': babase.app.env.engine_build_number,
             'bcsversion': VERSION}
@@ -42,27 +43,6 @@ def postRequest(link, data):
         response_data = response.read()
     except:
         pass
-
-
-def checkSpammer(data):
-    def checkMaster(data):
-        try:
-            url = urlparse(
-                'https://bcsservers.ballistica.workers.dev/checkspammer')
-            conn = http.client.HTTPSConnection(url.netloc)
-            json_payload = json.dumps(data)
-            headers = {
-                "Content-Type": "application/json"
-            }
-            conn.request("POST", url.path, body=json_payload, headers=headers)
-            response = conn.getresponse()
-            response_data = response.read()
-        except:
-            pass
-        # TODO handle response and kick player based on status
-
-    _thread.start_new_thread(checkMaster, (data,))
-    return
 
 
 def fetchChangelogs():

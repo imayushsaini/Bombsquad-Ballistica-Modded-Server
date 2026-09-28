@@ -5,6 +5,12 @@
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 from __future__ import annotations
+from repository import profiles as db_profiles
+from serverdata import serverdata
+import setting
+import bascenev1 as bs
+import babase
+import _bascenev1
 
 import _thread
 import copy
@@ -13,15 +19,26 @@ import os
 import shutil
 import time
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, List, Dict, Any, Optional
+from typing import TYPE_CHECKING, List, Dict, Any, Optional, TypedDict
 
-import _bascenev1
-import babase
-import bascenev1 as bs
-import setting
-from serverdata import serverdata
-from tools.server_update import checkSpammer
-from repository import profiles as db_profiles
+
+class BanItem(TypedDict, total=False):
+    reason: str
+    till: str
+
+
+class BanCategory(TypedDict, total=False):
+    ids: Dict[str, BanItem]
+    ips: Dict[str, BanItem]
+    deviceids: Dict[str, BanItem]
+
+
+BlacklistData = TypedDict('BlacklistData', {
+    'ban': BanCategory,
+    'muted-ids': Dict[str, BanItem],
+    'kick-vote-disabled': Dict[str, BanItem],
+}, total=False)
+
 
 if TYPE_CHECKING:
     pass
@@ -48,7 +65,7 @@ class CacheData:
     custom: Dict[str, Any] = {}
     profiles: Any = None
     whitelist: List[str] = []
-    blacklist: Dict[str, Any] = {}
+    blacklist: BlacklistData = {}
 
 
 def use_sqlite() -> bool:
@@ -123,7 +140,7 @@ def get_old_profiles(filename: str) -> Dict[str, Any]:
     return _load_json_file(os.path.join(PLAYERS_DATA_PATH, filename))
 
 
-def get_blacklist() -> Dict[str, Any]:
+def get_blacklist() -> BlacklistData:
     """Returns the blacklist."""
     if not CacheData.blacklist:
         if use_sqlite():

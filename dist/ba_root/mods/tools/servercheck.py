@@ -132,7 +132,8 @@ class ServerCheck:
         """
         Disconnects a player with a given message and logs the disconnection.
         """
-        kick_client(client_id, message, log_message, use_chat=True, chat_func=bs.chatmessage)
+        kick_client(client_id, message, log_message,
+                    use_chat=True, chat_func=bs.chatmessage)
 
     def _handle_new_player(self, ros: Dict[str, Any], ip: str, device_id: str) -> None:
         """
@@ -149,17 +150,8 @@ class ServerCheck:
                 "Profanity in ID, change your ID and join back",
                 f'{display_string} || {account_id} || kicked by profanity check',
             )
-            return
-
-        if settings["whitelist"] and account_id not in pdata.CacheData.whitelist:
-            self._disconnect_player(
-                client_id,
-                "Not in whitelist, contact admin",
-                f'{display_string} || {account_id} | kicked > not in whitelist',
-            )
-            return
-
-        logger.log(f'{display_string}  || {account_id} || joined server', "playerjoin")
+        logger.log(
+            f'{display_string}  || {account_id} || joined server', "playerjoin")
         logger.log(f'{account_id} {ip} {device_id}')
 
         on_player_join_server(account_id, ip, device_id)
@@ -188,7 +180,8 @@ def kick_client(
         fn(message, clients=[client_id])
     else:
         if color is not None:
-            bs.broadcastmessage(message, color=color, transient=True, clients=[client_id])
+            bs.broadcastmessage(message, color=color,
+                                transient=True, clients=[client_id])
         else:
             bs.broadcastmessage(message, transient=True, clients=[client_id])
 
@@ -250,12 +243,13 @@ def _setup_client_data_structures(pbid: str, player_data: Dict[str, Any], ip: st
         serverdata.clients[pbid]["verified"] = False
         serverdata.clients[pbid]["rejoincount"] = 1
         serverdata.clients[pbid]["lastJoin"] = time.time()
-        
+
         # Check kick-vote disabled from blacklist
         kv_blacklist = blacklist.get("kick-vote-disabled", {})
         if pbid in kv_blacklist:
             try:
-                till_time = datetime.strptime(kv_blacklist[pbid]["till"], "%Y-%m-%d %H:%M:%S")
+                till_time = datetime.strptime(
+                    kv_blacklist[pbid]["till"], "%Y-%m-%d %H:%M:%S")
                 if current_time < till_time:
                     _bascenev1.disable_kickvote(pbid)
             except (ValueError, TypeError):
@@ -321,7 +315,8 @@ def on_player_join_server(pbid: str, ip: str, device_id: str) -> None:
     # 3. Transition to database loading or verification
     if pbid in serverdata.clients:
         # Fast path: Already cached in memory, proceed directly to Stage 3
-        _setup_and_verify_player(pbid, serverdata.clients[pbid], ip, device_id, client_id, display_string, is_new=False)
+        _setup_and_verify_player(
+            pbid, serverdata.clients[pbid], ip, device_id, client_id, display_string, is_new=False)
     else:
         # Slow path: Not cached, load profile from database in background
         LoadProfile(pbid, ip, device_id, client_id, display_string).start()
@@ -338,10 +333,12 @@ def _on_profile_loaded(pbid: str, player_data: Optional[Dict[str, Any]], ip: str
 
     if player_data is not None:
         # Profile exists in database, proceed directly to Stage 3
-        _setup_and_verify_player(pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
+        _setup_and_verify_player(
+            pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
     else:
         # Profile doesn't exist, proceed to Stage 2b (Account creation date fetch)
-        _fetch_and_register_new_player(pbid, ip, device_id, client_id, display_string)
+        _fetch_and_register_new_player(
+            pbid, ip, device_id, client_id, display_string)
 
 
 def _fetch_and_register_new_player(pbid: str, ip: str, device_id: str, client_id: int, display_string: str) -> None:
@@ -361,15 +358,16 @@ def _fetch_and_register_new_player(pbid: str, ip: str, device_id: str, client_id
     def api_callback(account_creation_date: Optional[str], pb_id: str, display_name: str) -> None:
         if not account_creation_date:
             return
-        
+
         # Register new profile in database
         register_new_profile(pb_id, display_name, account_creation_date)
-        
+
         # Load the newly created profile data
         new_player_data = pdata.get_info(pb_id)
         if new_player_data is not None:
             # Profile successfully registered, proceed to Stage 3
-            _setup_and_verify_player(pb_id, new_player_data, ip, device_id, client_id, display_name, is_new=True)
+            _setup_and_verify_player(
+                pb_id, new_player_data, ip, device_id, client_id, display_name, is_new=True)
 
     thread = FetchThread(
         target=get_account_creation_date,
@@ -417,7 +415,8 @@ def _setup_and_verify_player(pbid: str, player_data: Dict[str, Any], ip: str, de
 
 # Keep compatibility aliases for legacy external calls (if any exist)
 def handle_existing_player(pbid: str, player_data: Dict[str, Any], ip: str, device_id: str, client_id: int, display_string: str) -> None:
-    _setup_and_verify_player(pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
+    _setup_and_verify_player(
+        pbid, player_data, ip, device_id, client_id, display_string, is_new=False)
 
 
 def handle_new_player_data(pbid: str, display_string: str, client_id: int) -> None:
@@ -425,8 +424,10 @@ def handle_new_player_data(pbid: str, display_string: str, client_id: int) -> No
     ros = get_roster_by_pb_id(pbid)
     if ros is not None:
         ip = _bascenev1.get_client_ip(client_id)
-        device_id = _bascenev1.get_client_public_device_uuid(client_id) or _bascenev1.get_client_device_uuid(client_id)
-        _fetch_and_register_new_player(pbid, ip, device_id, client_id, display_string)
+        device_id = _bascenev1.get_client_public_device_uuid(
+            client_id) or _bascenev1.get_client_device_uuid(client_id)
+        _fetch_and_register_new_player(
+            pbid, ip, device_id, client_id, display_string)
 
 
 def check_ban(ip: str, device_id: str, pbid: str, log: bool = True) -> bool | str:
@@ -438,7 +439,8 @@ def check_ban(ip: str, device_id: str, pbid: str, log: bool = True) -> bool | st
     def check_ban_list(ban_list: Dict[str, Any], key: str, ban_type: str) -> Optional[str]:
         if key in ban_list:
             try:
-                till_time = datetime.strptime(ban_list[key]["till"], "%Y-%m-%d %H:%M:%S")
+                till_time = datetime.strptime(
+                    ban_list[key]["till"], "%Y-%m-%d %H:%M:%S")
                 if current_time < till_time:
                     return f'reason: matched {ban_type} | {ban_list[key]["reason"]}, Till: {ban_list[key]["till"]}'
             except (ValueError, TypeError):
@@ -495,44 +497,114 @@ def _make_request_safe(request: Callable, retries: int = 2, raise_err: bool = Tr
             raise
 
 
+# Cache of V2 auth requests: account_id -> (timestamp, V2AuthRequest data)
+v2_auth_cache: Dict[str, tuple[float, Any]] = {}
+
+
+def cache_v2_auth_request(request: Any) -> None:
+    """Caches V2AuthRequest data for short-term access (20 seconds)."""
+    now = time.time()
+    account_id = getattr(request, 'account_id', None)
+    if account_id:
+        v2_auth_cache[account_id] = (now, request)
+
+    # Clean up entries older than 20 seconds
+    expired_keys = [k for k, (ts, _) in list(
+        v2_auth_cache.items()) if now - ts > 20]
+    for k in expired_keys:
+        v2_auth_cache.pop(k, None)
+
+
+def get_cached_v2_auth(account_id: str) -> Optional[Any]:
+    """Retrieves cached V2AuthRequest if received within the last 20 seconds."""
+    now = time.time()
+    if account_id in v2_auth_cache:
+        ts, request = v2_auth_cache[account_id]
+        if now - ts <= 20:
+            return request
+        v2_auth_cache.pop(account_id, None)
+    return None
+
+
+def check_whitelist(account_id: str) -> tuple[bool, Optional[str]]:
+    """Checks whitelist configuration for the connecting account."""
+    if settings.get("whitelist") and account_id not in pdata.CacheData.whitelist:
+        logger.log(
+            f"V2 Auth rejected {account_id}: Not in whitelist", "playerjoin")
+        return False, "Not in whitelist, contact admin"
+    return True, None
+
+
+def check_blacklist_ban(account_id: str, ip: str = "", device_id: str = "") -> tuple[bool, Optional[str]]:
+    """Checks blacklist ban status for the connecting account."""
+    try:
+        blacklist_data = pdata.get_blacklist()
+        ban_ids = blacklist_data.get("ban", {}).get("ids", {})
+        if account_id in ban_ids:
+            ban_info = ban_ids[account_id]
+            till_str = ban_info.get("till", "")
+            is_banned = True
+            if till_str:
+                try:
+                    till_time = datetime.strptime(
+                        till_str, "%Y-%m-%d %H:%M:%S")
+                    if datetime.now() >= till_time:
+                        is_banned = False
+                except (ValueError, TypeError):
+                    pass
+            if is_banned:
+                reason = ban_info.get("reason", "Banned")
+                logger.log(
+                    f"V2 Auth rejected {account_id}: Banned ({reason})", "playerjoin")
+                return False, f"You are banned from this server ({reason})."
+
+    except Exception as e:
+        logger.log(
+            f"Error checking blacklist ban for {account_id}: {e}", "error")
+
+    return True, None
+
+
+def handle_v2_auth(request: Any) -> tuple[bool, Optional[str]]:
+    """
+    Main V2 authentication handler called by custom_hooks.v2_auth_handler.
+    Caches request data and verifies whitelist and blacklist status.
+    """
+    cache_v2_auth_request(request)
+
+    account_id = getattr(request, 'account_id', '')
+
+    # 1. Whitelist check
+    allowed, err_msg = check_whitelist(account_id)
+    if not allowed:
+        return False, err_msg
+
+    # 2. Blacklist check
+    address_sig = getattr(request, 'address_signature', '')
+    device_sig = getattr(request, 'device_signature', '')
+    allowed, err_msg = check_blacklist_ban(account_id, address_sig, device_sig)
+    if not allowed:
+        return False, err_msg
+
+    return True, None
+
+
 def get_account_creation_date(pb_id: str) -> Optional[str]:
     """
-    Gets the account creation date for a given player ID.
+    Gets the account creation date for a given player ID using cached V2AuthRequest data.
     """
-    if _bascenev1.protocol_version() > 35:
-        try:
-            req = urllib.request.Request(
-                f"https://www.ballistica.net/api/v1/accounts/{pb_id}",
-                headers={
-                    "Authorization": f"Bearer {settings['accountApiToken']}"
-                },
-            )
-            with urllib.request.urlopen(req) as response:
-                response_json_str = response.read().decode('utf-8')
-                account = json.loads(response_json_str)
+    cached_req = get_cached_v2_auth(pb_id)
+    if cached_req is not None and hasattr(cached_req, 'account_create_time'):
+        create_time = cached_req.account_create_time
+        if isinstance(create_time, datetime):
+            return create_time.strftime("%Y-%m-%d %H:%M:%S")
+        return str(create_time)
 
-                if account:
-                    account = dataclass_from_json(
-                        AccountResponse, response_json_str)
-                    return str(account.create_time)
-        except (urllib.error.URLError, ValueError) as e:
-            logger.log(
-                f"Error getting account creation date for {pb_id}: {e}", "error")
-            return None
-    else:
-        account_creation_url = f"http://bombsquadgame.com/accountquery?id={pb_id}"
-        try:
-            with urllib.request.urlopen(account_creation_url) as response:
-                account_creation = json.loads(response.read())
-                creation_time = datetime.strptime(
-                    "/".join(map(str, account_creation["created"])), "%Y/%m/%d/%H/%M/%S")
-                # Convert to IST
-                creation_time += timedelta(hours=5, minutes=30)
-                return str(creation_time)
-        except (urllib.error.URLError, ValueError) as e:
-            logger.log(
-                f"Error getting account creation date for {pb_id}: {e}", "error")
-            return None
+    # Fallback to stored profile if available
+    profile = pdata.get_info(pb_id)
+    if profile and "creationDate" in profile:
+        return profile.get("creationDate")
+
     return None
 
 
@@ -565,7 +637,8 @@ class LoadProfile(threading.Thread):
     def run(self) -> None:
         player_data = pdata.get_info(self.pbid)
         _babase.pushcall(
-            babase.CallPartial(_on_profile_loaded, self.pbid, player_data, self.ip, self.device_id, self.client_id, self.display_string),
+            babase.CallPartial(_on_profile_loaded, self.pbid, player_data,
+                               self.ip, self.device_id, self.client_id, self.display_string),
             from_other_thread=True,
         )
 
@@ -613,27 +686,30 @@ def on_account_creation_date_fetched(account_creation_date: Optional[str], pb_id
     ros = get_roster_by_pb_id(pb_id)
     if ros is not None:
         ip = _bascenev1.get_client_ip(ros["client_id"])
-        device_id = _bascenev1.get_client_public_device_uuid(ros["client_id"]) or _bascenev1.get_client_device_uuid(ros["client_id"])
-        
+        device_id = _bascenev1.get_client_public_device_uuid(
+            ros["client_id"]) or _bascenev1.get_client_device_uuid(ros["client_id"])
+
         register_new_profile(pb_id, display_string, account_creation_date)
         new_player_data = pdata.get_info(pb_id)
         if new_player_data is not None:
-            _setup_and_verify_player(pb_id, new_player_data, ip, device_id, ros["client_id"], display_string, is_new=True)
+            _setup_and_verify_player(
+                pb_id, new_player_data, ip, device_id, ros["client_id"], display_string, is_new=True)
 
 
 def save_age(account_creation_date: Optional[str], pb_id: str, display_string: str) -> None:
     """Compatibility alias for on_account_creation_date_fetched."""
-    on_account_creation_date_fetched(account_creation_date, pb_id, display_string)
+    on_account_creation_date_fetched(
+        account_creation_date, pb_id, display_string)
 
 
 def save_ids(ids: List[str], pb_id: str, display_string: str) -> None:
     pdata.update_display_string(pb_id, ids)
-    
+
     is_spoofed = display_string not in ids
-    
+
     if pb_id in serverdata.clients:
         serverdata.clients[pb_id]["verified"] = not is_spoofed
-        
+
     if is_spoofed:
         msg = "Spoofed Id detected, Goodbye"
         kick_by_pb_id(pb_id, msg)
@@ -698,7 +774,7 @@ def account_check(account_id: str, ip: str, client_id: int) -> None:
             except urllib.error.URLError:
                 _babase.pushcall(
                     babase.CallPartial(bs.chatmessage, "Click stats button and login your V2 account, to verify your identity", [
-                         client_id]),
+                        client_id]),
                     from_other_thread=True,
                 )
                 _babase.pushcall(

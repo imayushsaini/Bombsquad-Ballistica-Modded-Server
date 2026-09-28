@@ -1,5 +1,9 @@
 import _babase
 from typing import TYPE_CHECKING
+import ipaddress
+import logging
+import urllib.request
+import setting
 
 import bascenev1 as bs
 from efro.terminal import Clr
@@ -8,14 +12,45 @@ import babase
 if TYPE_CHECKING:
     pass
 
+settings = setting.get_settings_data()
+
+
+def _get_ipv4_from_ipify() -> str | None:
+    try:
+        req = urllib.request.Request('https://api.ipify.org/')
+        with urllib.request.urlopen(req, timeout=5) as response:
+            if response.getcode() == 200:
+                ip_str = response.read().decode('utf-8').strip()
+                if ip_str:
+                    return ip_str
+    except Exception as e:
+        logging.warning(f'Failed to fetch IPv4 address from ipify: {e}')
+    return None
+
 
 def _access_check_response(self, data) -> None:
     if data is None:
         print('error on UDP port access check (internet down?)')
     else:
-        addr = data['address']
+        addr = data.get('address')
+        if addr:
+            try:
+                is_ipv6 = ipaddress.ip_address(addr.strip("[]")).version == 6
+            except ValueError:
+                is_ipv6 = ":" in str(addr)
+
+            if is_ipv6:
+                ipv4_addr = _get_ipv4_from_ipify()
+                if ipv4_addr:
+                    addr = ipv4_addr
+                    data['address'] = ipv4_addr
+
         port = data['port']
 
+        if settings["ballistica_web"]["enable"]:
+            bs.set_public_party_stats_url(
+                f'https://bombsquad-community.web.app/server-manager/?host={addr}&port={port}')
+        bs.set_public_party_public_address_ipv4(addr)
         addrstr = f' {addr}'
         poststr = ''
         _babase.our_ip = addr
