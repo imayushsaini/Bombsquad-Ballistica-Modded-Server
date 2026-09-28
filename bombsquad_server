@@ -29,7 +29,7 @@ sys.path += [
 def _check_and_install_dependencies() -> None:
     """Checks and installs ecdsa, flask, and waitress to python-site-packages if missing."""
     import importlib
-    needed = ["ecdsa", "flask", "waitress"]
+    needed = ["ecdsa", "flask", "waitress","websockets"]
     missing = []
 
     target_dir = str(Path(Path(__file__).parent, 'dist', 'ba_data', 'python-site-packages').resolve())
