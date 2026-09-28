@@ -16,7 +16,12 @@ from .registry import registry
 
 @registry.register(['unban'], category='Manage')
 def unban(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Unban a player by client ID."""
+    """Unban a player by client ID from recent connections log.
+
+    Usage: /unban <client_id>
+    Examples:
+      /unban 113
+    """
     if not arguments or arguments == ['']:
         return
     try:
@@ -32,7 +37,12 @@ def unban(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['recents'], category='Manage')
 def recents(arguments: list[str], clientid: int, accountid: str) -> None:
-    """List recent players."""
+    """List recent connected players with client ID, device ID, and account ID (pbid).
+
+    Usage: /recents
+    Examples:
+      /recents
+    """
     for players in serverdata.recents:
         send(
             f"{players['client_id']} {players['deviceId']} {players['pbid']}", clientid)
@@ -40,7 +50,12 @@ def recents(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['info'], category='Manage')
 def info(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Get info about a player by client ID."""
+    """Get detailed account information for a connected or recent player by client ID.
+
+    Usage: /info <client_id>
+    Examples:
+      /info 113
+    """
     if not arguments or arguments == ['']:
         send("invalid client id", clientid)
         return
@@ -55,7 +70,13 @@ def info(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['maxplayers', 'max'], category='Manage')
 def maxplayers(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Change the public party max size."""
+    """Change the maximum public party player slots.
+
+    Usage: /maxplayers <number>
+    Examples:
+      /maxplayers 8
+      /max 12
+    """
     if not arguments or arguments == ['']:
         bs.chatmessage("enter number")
     else:
@@ -67,7 +88,12 @@ def maxplayers(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['createteam'], category='Manage')
 def createteam(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Create a new team in the session."""
+    """Create a new custom team in the current session.
+
+    Usage: /createteam <team_name>
+    Examples:
+      /createteam Warriors
+    """
     if not arguments or arguments == ['']:
         bs.chatmessage("enter team name")
     else:
@@ -86,7 +112,13 @@ def createteam(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['playlist'], category='Manage')
 def playlist_cmd(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Change the current playlist."""
+    """Switch the server playlist by name or code, or switch to coop mode.
+
+    Usage: /playlist <playlist_name|coop>
+    Examples:
+      /playlist coop
+      /playlist Teams
+    """
     if not arguments or arguments == ['']:
         bs.chatmessage("enter list code or name")
     else:
@@ -107,7 +139,12 @@ def kick_player(cl_id: int) -> None:
 
 @registry.register(['kick'], category='Manage')
 def kick(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Kick a player by client ID."""
+    """Kick a player immediately by client ID.
+
+    Usage: /kick <client_id>
+    Examples:
+      /kick 113
+    """
     if not arguments or arguments == ['']:
         return
     try:
@@ -118,7 +155,13 @@ def kick(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['ban'], category='Manage')
 def ban(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Ban a player by client ID and duration."""
+    """Ban a player by client ID for a duration (in days) and disconnect them.
+
+    Usage: /ban <client_id> [duration_in_days]
+    Examples:
+      /ban 113
+      /ban 113 7.0
+    """
     if not arguments or arguments == ['']:
         return
     try:
@@ -144,7 +187,13 @@ def ban(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['end', 'next'], category='Manage')
 def end(arguments: list[str], clientid: int, accountid: str) -> None:
-    """End the current game/activity."""
+    """End the current match or activity immediately and proceed to next.
+
+    Usage: /end
+    Examples:
+      /end
+      /next
+    """
     if not arguments or arguments == ['']:
         try:
             game = bs.get_foreground_host_activity()
@@ -175,7 +224,15 @@ def _resolve_target_account(target: str) -> tuple[str | None, str]:
 
 @registry.register(['kickvote'], category='Manage')
 def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Manage kick voting: enable, disable, immune, unimmune, list."""
+    """Manage kick voting settings, player restrictions, and immunities.
+
+    Usage: /kickvote <enable|disable|immune|unimmune|list> [target] [duration]
+    Examples:
+      /kickvote list
+      /kickvote enable all
+      /kickvote disable 113 3
+      /kickvote immune pb-12345
+    """
     if not arguments:
         send("Usage: /kickvote <enable|disable|immune|unimmune|list> [target] [duration]", clientid)
         return
@@ -250,7 +307,13 @@ def kickvote(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['kickimmune', 'immune'], category='Manage')
 def kickimmune(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Grant kick vote immunity (VIP perk) to a player."""
+    """Grant kick vote immunity to a player by client ID or account ID (pb-id).
+
+    Usage: /kickimmune <client_id | pb-id>
+    Examples:
+      /kickimmune 113
+      /immune pb-123456
+    """
     if not arguments or arguments == ['']:
         send("Usage: /kickimmune <client_id or pb-id>", clientid)
         return
@@ -266,7 +329,13 @@ def kickimmune(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['kickunimmune', 'unimmune'], category='Manage')
 def kickunimmune(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove kick vote immunity from a player."""
+    """Remove kick vote immunity from a player.
+
+    Usage: /kickunimmune <client_id | pb-id>
+    Examples:
+      /kickunimmune 113
+      /unimmune pb-123456
+    """
     if not arguments or arguments == ['']:
         send("Usage: /kickunimmune <client_id or pb-id>", clientid)
         return
@@ -282,7 +351,13 @@ def kickunimmune(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['disablekickvote', 'dkv'], category='Manage')
 def disablekickvote(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Restrict a player from starting kick votes."""
+    """Restrict a player from starting kick votes for specified days.
+
+    Usage: /disablekickvote <client_id | pb-id> [duration_days]
+    Examples:
+      /disablekickvote 113
+      /dkv pb-123456 7
+    """
     if not arguments or arguments == ['']:
         send("Usage: /disablekickvote <client_id or pb-id> [duration_days]", clientid)
         return
@@ -304,7 +379,13 @@ def disablekickvote(arguments: list[str], clientid: int, accountid: str) -> None
 
 @registry.register(['enablekickvote', 'ekv'], category='Manage')
 def enablekickvote(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Allow a player to start kick votes again."""
+    """Allow a player to start kick votes again by removing restriction.
+
+    Usage: /enablekickvote <client_id | pb-id>
+    Examples:
+      /enablekickvote 113
+      /ekv pb-123456
+    """
     if not arguments or arguments == ['']:
         send("Usage: /enablekickvote <client_id or pb-id>", clientid)
         return
@@ -320,26 +401,46 @@ def enablekickvote(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['hideid'], category='Manage')
 def hideid(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Hide player device ID."""
+    """Hide player device IDs from the party list.
+
+    Usage: /hideid
+    Examples:
+      /hideid
+    """
     _bascenev1.hide_player_device_id(True)
 
 
 @registry.register(['showid'], category='Manage')
 def showid(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Show player device ID."""
+    """Show player device IDs in the party list.
+
+    Usage: /showid
+    Examples:
+      /showid
+    """
     _bascenev1.hide_player_device_id(False)
 
 
 @registry.register(['lm'], category='Manage')
 def lm(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Send last chat messages to client."""
+    """Send last chat messages to your client console/chat.
+
+    Usage: /lm
+    Examples:
+      /lm
+    """
     for msg in bs.get_chat_messages():
         send(msg, clientid)
 
 
 @registry.register(['gp'], category='Manage')
 def gp(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Get player profiles by player ID."""
+    """Get player profiles by player ID index.
+
+    Usage: /gp <player_index>
+    Examples:
+      /gp 0
+    """
     try:
         player_id = int(arguments[0])
         session = bs.get_foreground_host_session()
@@ -354,7 +455,13 @@ def gp(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['party'], category='Manage')
 def party(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle party public/private status."""
+    """Set server party visibility to public or private.
+
+    Usage: /party <public | private>
+    Examples:
+      /party public
+      /party private
+    """
     if not arguments or arguments == ['']:
         return
     if arguments[0] == 'public':
@@ -367,14 +474,27 @@ def party(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['quit', 'restart'], category='Manage')
 def quit_cmd(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Quit the game/server."""
+    """Quit or restart the server host application.
+
+    Usage: /quit
+    Examples:
+      /quit
+      /restart
+    """
     if not arguments or arguments == ['']:
         babase.quit()
 
 
 @registry.register(['mute', 'mutechat'], category='Manage')
 def mute(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Mute a client or global chat."""
+    """Mute global server chat or a specific client ID for a duration in days.
+
+    Usage: /mute [<client_id>] [duration_days]
+    Examples:
+      /mute
+      /mute 113
+      /mute 113 1.0
+    """
     if not arguments or arguments == ['']:
         serverdata.muted = True
         return
@@ -397,7 +517,13 @@ def mute(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['unmute', 'unmutechat'], category='Manage')
 def unmute(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Unmute a client or global chat."""
+    """Unmute global chat or a specific client ID.
+
+    Usage: /unmute [<client_id>]
+    Examples:
+      /unmute
+      /unmute 113
+    """
     if not arguments or arguments == ['']:
         serverdata.muted = False
         return
@@ -419,7 +545,13 @@ def unmute(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['remove', 'rm'], category='Manage')
 def remove(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove a player from the game."""
+    """Remove a player from the active game session.
+
+    Usage: /remove <client_id | all>
+    Examples:
+      /remove 113
+      /remove all
+    """
     if not arguments or arguments == ['']:
         return
     session = bs.get_foreground_host_session()
@@ -440,7 +572,13 @@ def remove(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['sm', 'slow', 'slowmo'], category='Manage')
 def slow_motion(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle slow motion."""
+    """Toggle game global slow motion speed mode.
+
+    Usage: /slowmo
+    Examples:
+      /sm
+      /slowmo
+    """
     activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         activity.globalsnode.slow_motion = not activity.globalsnode.slow_motion
@@ -448,7 +586,12 @@ def slow_motion(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['nv'], category='Manage')
 def nv(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle night vision mode tint."""
+    """Toggle blue night vision ambient color filter for the host map.
+
+    Usage: /nv
+    Examples:
+      /nv
+    """
     def is_close(a, b, tol=1e-5):
         return all(abs(x - y) < tol for x, y in zip(a, b))
     try:
@@ -469,7 +612,12 @@ def nv(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['dv'], category='Manage')
 def dv(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set daylight mode tint."""
+    """Set map ambient tint to standard daylight tint (1, 1, 1).
+
+    Usage: /dv
+    Examples:
+      /dv
+    """
     try:
         activity = bs.get_foreground_host_activity()
         if activity and activity.globalsnode:
@@ -481,7 +629,13 @@ def dv(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['tint'], category='Manage')
 def tint(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set custom tint color."""
+    """Set custom RGB tint multiplier for map globals node.
+
+    Usage: /tint <r> <g> <b>
+    Examples:
+      /tint 1.0 0.5 0.5
+      /tint 0.8 1.0 0.8
+    """
     if len(arguments) == 3:
         try:
             r = float(arguments[0])
@@ -496,7 +650,12 @@ def tint(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['pause', 'pausegame'], category='Manage')
 def pause(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle pause state."""
+    """Toggle match pause state.
+
+    Usage: /pause
+    Examples:
+      /pause
+    """
     activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         activity.globalsnode.paused = not activity.globalsnode.paused
@@ -504,7 +663,12 @@ def pause(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['cameraMode', 'camera_mode', 'rotate_camera'], category='Manage')
 def camera_mode(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle camera mode."""
+    """Toggle map camera mode between rotate and normal.
+
+    Usage: /cameramode
+    Examples:
+      /cameraMode
+    """
     activity = bs.get_foreground_host_activity()
     if activity and activity.globalsnode:
         if activity.globalsnode.camera_mode != 'rotate':
@@ -515,7 +679,12 @@ def camera_mode(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['createrole'], category='Manage')
 def createrole(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Create a new role."""
+    """Create a new role rank in player database.
+
+    Usage: /createrole <role_name>
+    Examples:
+      /createrole VIP
+    """
     if arguments and arguments[0] != '':
         try:
             pdata.create_role(arguments[0])
@@ -525,7 +694,12 @@ def createrole(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['addrole'], category='Manage')
 def addrole(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Add a role to a player."""
+    """Assign a role to a player by client ID.
+
+    Usage: /addrole <role_name> <client_id>
+    Examples:
+      /addrole VIP 113
+    """
     if len(arguments) >= 2:
         try:
             role = arguments[0]
@@ -541,7 +715,12 @@ def addrole(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['removerole'], category='Manage')
 def removerole(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove a role from a player."""
+    """Remove a role from a player by client ID.
+
+    Usage: /removerole <role_name> <client_id>
+    Examples:
+      /removerole VIP 113
+    """
     if len(arguments) >= 2:
         try:
             role = arguments[0]
@@ -558,7 +737,12 @@ def removerole(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['getroles'], category='Manage')
 def getroles(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Get roles of a player."""
+    """Get list of assigned roles for a player by client ID.
+
+    Usage: /getroles <client_id>
+    Examples:
+      /getroles 113
+    """
     if arguments:
         try:
             target_cl_id = int(arguments[0])
@@ -577,7 +761,12 @@ def getroles(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['changetag'], category='Manage')
 def changetag(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Change role tag."""
+    """Change role display tag.
+
+    Usage: /changetag <role_name> <tag_text>
+    Examples:
+      /changetag VIP [VIP]
+    """
     if len(arguments) >= 2:
         try:
             pdata.change_role_tag(arguments[0], arguments[1])
@@ -587,7 +776,12 @@ def changetag(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['customtag'], category='Manage')
 def customtag(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set custom tag for a player."""
+    """Set custom overhead tag for a player by client ID.
+
+    Usage: /customtag <tag_text> <client_id>
+    Examples:
+      /customtag [Pro] 113
+    """
     if len(arguments) >= 2:
         try:
             tag = arguments[0]
@@ -603,7 +797,13 @@ def customtag(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['customeffect', 'addeffect', 'gifteffect'], category='Manage')
 def customeffect(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Gift a custom effect permanently to a player."""
+    """Gift a custom spaz particle effect permanently to a player.
+
+    Usage: /customeffect <effect_name> <client_id>
+    Examples:
+      /customeffect spark 113
+      /addeffect ice 113
+    """
     if len(arguments) >= 2:
         try:
             effect = arguments[0].lower()
@@ -624,7 +824,12 @@ def customeffect(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['removetag'], category='Manage')
 def removetag(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove custom tag from a player."""
+    """Remove custom overhead tag from a player by client ID.
+
+    Usage: /removetag <client_id>
+    Examples:
+      /removetag 113
+    """
     if arguments:
         try:
             target_cl_id = int(arguments[0])
@@ -639,7 +844,13 @@ def removetag(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['removeeffect'], category='Manage')
 def removeeffect(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove custom effect from a player."""
+    """Remove custom effect(s) from a player by client ID.
+
+    Usage: /removeeffect <client_id> [effect_name]
+    Examples:
+      /removeeffect 113
+      /removeeffect 113 spark
+    """
     if arguments:
         try:
             target_cl_id = int(arguments[0])
@@ -660,7 +871,12 @@ def removeeffect(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['addcommand', 'addcmd'], category='Manage')
 def addcommand(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Add a command to a role."""
+    """Grant access to a command for a role.
+
+    Usage: /addcommand <command_name> <role_name>
+    Examples:
+      /addcommand fly VIP
+    """
     if len(arguments) == 2:
         try:
             pdata.add_command_role(arguments[0], arguments[1])
@@ -672,7 +888,12 @@ def addcommand(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['removecommand', 'removecmd'], category='Manage')
 def removecommand(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove a command from a role."""
+    """Revoke access to a command from a role.
+
+    Usage: /removecommand <command_name> <role_name>
+    Examples:
+      /removecommand fly VIP
+    """
     if len(arguments) == 2:
         try:
             pdata.remove_command_role(arguments[0], arguments[1])
@@ -682,7 +903,13 @@ def removecommand(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['spectators'], category='Manage')
 def spectators(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle spectators option."""
+    """Enable or disable whitelist spectator permissions.
+
+    Usage: /spectators <on | off>
+    Examples:
+      /spectators on
+      /spectators off
+    """
     if arguments and arguments[0] in ['on', 'off']:
         settings_data = setting.get_settings_data()
         settings_data["white_list"]["spectators"] = (arguments[0] == 'on')
@@ -692,7 +919,12 @@ def spectators(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['lobbytime'], category='Manage')
 def lobbytime(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Change lobby check time."""
+    """Change lobby timeout check duration in seconds.
+
+    Usage: /lobbytime <seconds>
+    Examples:
+      /lobbytime 30
+    """
     if not arguments:
         return
     try:

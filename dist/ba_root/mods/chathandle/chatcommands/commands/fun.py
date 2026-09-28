@@ -10,7 +10,14 @@ from .registry import registry
 
 @registry.register(['speed'], category='Fun', shop_cost=200)
 def speed(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set the game speed."""
+    """Set the game simulation speed multiplier.
+
+    Usage: /speed <multiplier>
+    Examples:
+      /speed 1.0
+      /speed 2.0
+      /speed 0.5
+    """
     if not arguments or arguments == ['']:
         return
     try:
@@ -21,7 +28,14 @@ def speed(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['fly'], category='Fun', shop_cost=300)
 def fly(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Toggle fly mode for target players."""
+    """Toggle flight mode allowing target player(s) to float in the air.
+
+    Usage: /fly [all | <player_index>]
+    Examples:
+      /fly
+      /fly all
+      /fly 0
+    """
     for actor in get_target_actors(arguments, clientid):
         node = actor.node
         if node:
@@ -30,7 +44,14 @@ def fly(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['invisible', 'inv'], category='Fun', shop_cost=250)
 def invisible(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Make target players invisible."""
+    """Make target player(s) character meshes invisible.
+
+    Usage: /invisible [all | <player_index>]
+    Examples:
+      /invisible
+      /invisible all
+      /inv 1
+    """
     for actor in get_target_actors(arguments, clientid):
         node = actor.node
         if node:
@@ -48,7 +69,14 @@ def invisible(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['headless', 'hl'], category='Fun', shop_cost=150)
 def headless(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Remove head mesh from target players."""
+    """Remove head mesh from target player(s).
+
+    Usage: /headless [all | <player_index>]
+    Examples:
+      /headless
+      /headless all
+      /hl 0
+    """
     for actor in get_target_actors(arguments, clientid):
         node = actor.node
         if node and node.head_mesh is not None:
@@ -58,7 +86,14 @@ def headless(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['creepy', 'creep'], category='Fun', shop_cost=150)
 def creepy(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Make target players creepy (remove head, add punch and shield)."""
+    """Make target player(s) creepy (remove head, add punch and shield powerups).
+
+    Usage: /creepy [all | <player_index>]
+    Examples:
+      /creepy
+      /creepy all
+      /creep 0
+    """
     for actor in get_target_actors(arguments, clientid):
         node = actor.node
         if node and node.head_mesh is not None:
@@ -69,20 +104,38 @@ def creepy(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['celebrate', 'celeb'], category='Fun', shop_cost=100)
 def celebrate(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Force target players to celebrate."""
+    """Make target player(s) perform a victory dance animation.
+
+    Usage: /celebrate [all | <player_index>]
+    Examples:
+      /celebrate
+      /celebrate all
+      /celeb 0
+    """
     for actor in get_target_actors(arguments, clientid):
         actor.handlemessage(bs.CelebrateMessage())
 
 
 @registry.register(['spaz'], category='Fun')
 def spaz(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Dummy spaz command, does nothing."""
+    """Spaz command placeholder.
+
+    Usage: /spaz
+    Examples:
+      /spaz
+    """
     return
 
 
 @registry.register(['floater', 'flo'], category='Fun', shop_cost=200)
 def floater(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Assign floater controls to a client."""
+    """Assign floater controls to yourself or a specific client ID.
+
+    Usage: /floater [<client_id>]
+    Examples:
+      /floater
+      /flo 113
+    """
     try:
         from .. import floater as floater_mod
         if not arguments or arguments == ['']:
@@ -100,28 +153,29 @@ def floater(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['tnt', 'spawntnt', 'spawn'], category='Fun', shop_cost=200)
 def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
-    print("chat command execute")
-    """Spawn a TNT node at target player position."""
+    """Spawn a TNT crate at target player position or arena center.
+
+    Usage: /tnt [all | <player_index>]
+    Examples:
+      /tnt
+      /tnt all
+      /spawn 0
+    """
     from bascenev1lib.actor.bomb import BombFactory
     from bascenev1lib.gameutils import SharedObjects
     try:
         activity = bs.get_foreground_host_activity()
         if activity is not None:
             with activity.context:
-                print("befor asset import")
                 from assetpackage import testasset
-                print("after asset immport")
                 shared = SharedObjects.get()
-                print("shared imported")
                 factory = BombFactory.get()
-                print("factory imported")
                 materials = (
                     factory.bomb_material,
                     shared.footing_material,
                     shared.object_material,
                     factory.normal_sound_material,
                 )
-                print("outside target actors")
                 bs.NodeActor(bs.newnode(
                     'prop',
                     attrs={
@@ -141,7 +195,6 @@ def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
                 target_args = [arg for arg in arguments if arg.lower()
                                not in ('tnt', 'spawn')]
                 for actor in get_target_actors(target_args, clientid):
-                    print(":inside actor")
                     if actor.node:
                         pos = actor.node.position
                         bs.NodeActor(bs.newnode(
@@ -161,7 +214,6 @@ def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
                             },
                         )).autoretain()
                     else:
-                        print('actor not found')
                         bs.NodeActor(bs.newnode(
                             'prop',
                             attrs={

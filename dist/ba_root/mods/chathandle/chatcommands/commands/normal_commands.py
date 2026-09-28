@@ -30,13 +30,21 @@ def stats_thread(ac_id: str, clientid: int) -> None:
 
 @registry.register(['me', 'stats', 'score', 'rank', 'myself'], category='Normal')
 def fetch_send_stats(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Fetch and send stats command."""
+    """Fetch and send personal stats including scores, games, kills, deaths, and average.
+
+    Usage: /me
+    Example: /me
+    """
     _thread.start_new_thread(stats_thread, (accountid, clientid))
 
 
 @registry.register(['list', 'l'], category='Normal')
 def list_players(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Returns the list of players clientid and index."""
+    """Returns the list of online players with their client ID and player index.
+
+    Usage: /list
+    Example: /list
+    """
     p = '{0:^16}{1:^15}{2:^10}'
     separator = '\n______________________________\n'
 
@@ -55,7 +63,11 @@ def list_players(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['uniqeid', 'id', 'pb-id', 'pb', 'accountid'], category='Normal')
 def accountid_request(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Returns the account ID of players."""
+    """Returns your account ID or the account ID of a specified player index.
+
+    Usage: /id [player_index]
+    Example: /id 0
+    """
     if not arguments or arguments == [] or arguments == ['']:
         send(f"Your account id is {accountid} ", clientid)
     else:
@@ -90,7 +102,13 @@ def ping_all(clientid: int) -> None:
 
 @registry.register(['ping'], category='Normal')
 def get_ping(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Get ping for self, all, or specific player."""
+    """Get ping for yourself, all players, or a specific client ID.
+
+    Usage: /ping [all | <client_id>]
+    Examples:
+      /ping all
+      /ping 113
+    """
     if not arguments or arguments == [] or arguments == ['']:
         send(f"Your ping {_bascenev1.get_client_ping(clientid)}ms ", clientid)
     elif arguments[0] == 'all':
@@ -122,7 +140,11 @@ def balance_thread(clientid: int, accountid: str) -> None:
 
 @registry.register(['tickets', 'balance'], category='Normal')
 def check_tickets_balance(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Check your tickets balance."""
+    """Check your total tickets balance.
+
+    Usage: /balance
+    Example: /balance
+    """
     _thread.start_new_thread(balance_thread, (clientid, accountid))
 
 
@@ -141,7 +163,12 @@ def transfer_thread(clientid: int, accountid: str, target_accountid: str, target
 
 @registry.register(['transfer', 'pay'], category='Normal')
 def transfer_tickets_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Transfer tickets to another player."""
+    """Transfer tickets to another player by client ID, player index, or name substring.
+
+    Usage: /transfer <client_id|player_index|name> <amount>
+    Examples:
+      /transfer 113 100
+    """
     if len(arguments) < 2:
         send("Usage: /transfer <client_id/player_id/name> <amount>", clientid)
         return
@@ -246,7 +273,14 @@ def shop_thread(clientid: int, accountid: str, subcategory: str | None) -> None:
 
 @registry.register(['shop'], category='Normal')
 def shop_list_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """List available items in the shop."""
+    """View items, commands, and effects available for purchase in the server shop.
+
+    Usage: /shop [commands | effects]
+    Examples:
+      /shop
+      /shop commands
+      /shop effects
+    """
     subcategory = arguments[0].lower() if arguments and arguments != [''] else None
     _thread.start_new_thread(shop_thread, (clientid, accountid, subcategory))
 
@@ -259,7 +293,13 @@ def buy_thread(clientid: int, accountid: str, item_name: str) -> None:
 
 @registry.register(['buy'], category='Normal')
 def buy_item_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Buy an item from the shop."""
+    """Purchase a chat command or spaz effect from the shop using your tickets balance.
+
+    Usage: /buy <item_name>
+    Examples:
+      /buy fly
+      /buy spark
+    """
     if not arguments or arguments == ['']:
         send("Usage: /buy <item_name>", clientid)
         return
@@ -283,7 +323,15 @@ def effect_thread(clientid: int, accountid: str, action: str, target: str | None
 
 @registry.register(['effect', 'effects'], category='Normal')
 def effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Manage player effects inventory and equipped effects."""
+    """Manage your active character particle effects inventory and equip/unequip effects.
+
+    Usage: /effect [list | enable <effect_name> | disable <effect_name> | none]
+    Examples:
+      /effect list
+      /effect enable spark
+      /effect disable spark
+      /effect none
+    """
     if not arguments or arguments == [''] or arguments[0].lower() in ('list', 'inv', 'inventory', 'show'):
         _thread.start_new_thread(effect_thread, (clientid, accountid, "list", None))
         return
@@ -340,7 +388,13 @@ def effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
 
 @registry.register(['equip', 'use'], category='Normal')
 def equip_effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Equip an effect from inventory."""
+    """Equip a specific character particle effect from your inventory.
+
+    Usage: /equip <effect_name | none>
+    Examples:
+      /equip spark
+      /equip none
+    """
     if not arguments or arguments == ['']:
         send("Usage: /equip <effect_name> or /equip none", clientid)
         return
@@ -353,7 +407,13 @@ def equip_effect_command(arguments: list[str], clientid: int, accountid: str) ->
 
 @registry.register(['unequip'], category='Normal')
 def unequip_effect_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Unequip an effect from inventory."""
+    """Unequip a character particle effect or remove all active effects.
+
+    Usage: /unequip <effect_name | all>
+    Examples:
+      /unequip spark
+      /unequip all
+    """
     if not arguments or arguments == ['']:
         send("Usage: /unequip <effect_name> or /unequip all", clientid)
         return
@@ -372,7 +432,13 @@ def claim_thread(clientid: int, accountid: str) -> None:
 
 @registry.register(['claim', 'daily'], category='Normal')
 def claim_daily_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Claim daily free tickets."""
+    """Claim your free daily login ticket reward.
+
+    Usage: /claim
+    Examples:
+      /claim
+      /daily
+    """
     _thread.start_new_thread(claim_thread, (clientid, accountid))
 
 
@@ -388,7 +454,12 @@ def give_tickets_thread(clientid: int, target_accountid: str, target_name: str, 
 
 @registry.register(['givetickets', 'addtickets'], category='Cheats')
 def give_tickets_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Give tickets to a player (admin/cheats only)."""
+    """Grant tickets balance to a player by client ID, player index, or name substring (admin only).
+
+    Usage: /givetickets <client_id|player_index|name> <amount>
+    Examples:
+      /givetickets 113 500
+    """
     if len(arguments) < 2:
         send("Usage: /givetickets <client_id/player_id/name> <amount>", clientid)
         return
@@ -455,21 +526,40 @@ def give_tickets_command(arguments: list[str], clientid: int, accountid: str) ->
 
 @registry.register(['hud', 'ui'], category='Normal')
 def hud_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set player custom HUD preference."""
+    """Configure custom private HUD element visibility preferences and UI preset modes.
+
+    Usage: /hud [all | clean | leaderboard | next | notags | onlytags | <element> <on|off>]
+    Examples:
+      /hud clean
+      /hud leaderboard
+      /hud ping off
+      /hud tag on
+    """
     import private_hud
     private_hud.hud_command(arguments, clientid, accountid)
 
 
 @registry.register(['night'], category='Normal')
 def night_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set night mode tint for player."""
+    """Enable night mode lighting tint (0.5, 0.7, 1.0) for your client view.
+
+    Usage: /night
+    Examples:
+      /night
+    """
     import private_hud
     private_hud.night_command(arguments, clientid, accountid)
 
 
 @registry.register(['day'], category='Normal')
 def day_command(arguments: list[str], clientid: int, accountid: str) -> None:
-    """Set day mode tint for player."""
+    """Enable standard daylight lighting tint (1.0, 1.0, 1.0) for your client view.
+
+    Usage: /day
+    Examples:
+      /day
+    """
     import private_hud
     private_hud.day_command(arguments, clientid, accountid)
+
 
