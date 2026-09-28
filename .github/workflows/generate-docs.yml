@@ -5,9 +5,13 @@ on:
     paths:
       - "dist/ba_root/mods/chathandle/chatcommands/**"
       - ".github/generate_docs.py"
+      - ".github/workflows/generate-docs.yml"
     branches:
+      - public-server
+      - beta/1.8.0
       - main
       - master
+  workflow_dispatch:
 
 permissions:
   contents: write
