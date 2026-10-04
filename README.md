@@ -62,7 +62,7 @@ Open `dist/ba_root/mods/setting.json` in your prefered editor and change values 
 
 [How to edit settings.json](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Server-Settings)
 
-[Available chat commands](https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/wiki/Chat-commands)
+[Available chat commands](https://bombsquad-community.web.app/commands)
 
 ___
 ### Adding yourself as owner
