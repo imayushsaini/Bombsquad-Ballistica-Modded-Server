@@ -191,3 +191,4 @@ class SpecialChar(Enum):
     POTATO = 99
     PALM_TREE = 100
     BOXING_GLOVE = 101
+    POPUP_ICON = 102
