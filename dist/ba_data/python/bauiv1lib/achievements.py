@@ -2,7 +2,7 @@
 #
 """Provides a popup window to view achievements."""
 
-from typing import override
+from typing import TypedDict, override
 
 from bauiv1lib.utils import (
     get_screen_margins,
@@ -10,7 +10,35 @@ from bauiv1lib.utils import (
     scroll_fade_top,
 )
 import bauiv1 as bui
-from bauiv1 import _commonassets, classicassets
+from bauiv1 import _commonassets, _classicassets
+
+
+class _BackButtonGeometry(TypedDict):
+    position: tuple[float, float]
+    size: tuple[float, float]
+    scale: float
+
+
+def _back_button_geometry(
+    uiscale: bui.UIScale, close_style: bool, yoffs: float
+) -> _BackButtonGeometry:
+    """The window's back/close button's position/size/scale kwargs.
+
+    Sized to match doc-ui windows' back/close buttons on screen (as of
+    2026-09-30): 50x50 close / 60x55 back at 0.66 (medium) / 0.6
+    (large), centered at (68, yoffs - 30), where the old 60x60-at-0.6
+    sat.
+    """
+    size = (50.0, 50.0) if close_style else (60.0, 55.0)
+    scale = 0.66 if uiscale is bui.UIScale.MEDIUM else 0.6
+    return {
+        'position': (
+            68.0 - 0.5 * size[0] * scale,
+            yoffs - 30.0 - 0.5 * size[1] * scale,
+        ),
+        'size': size,
+        'scale': scale,
+    }
 
 
 class AchievementsWindow(bui.MainWindow):
@@ -38,7 +66,7 @@ class AchievementsWindow(bui.MainWindow):
         self._height = (
             450
             if uiscale is bui.UIScale.SMALL
-            else 370 if uiscale is bui.UIScale.MEDIUM else 450
+            else 488 if uiscale is bui.UIScale.MEDIUM else 594
         )
 
         # Do some fancy math to fill all available screen area up to the
@@ -48,7 +76,7 @@ class AchievementsWindow(bui.MainWindow):
         scale = (
             2.4
             if uiscale is bui.UIScale.SMALL
-            else 1.5 if uiscale is bui.UIScale.MEDIUM else 1.2
+            else 1.2 if uiscale is bui.UIScale.MEDIUM else 0.96
         )
         # Calc screen size in our local container space and clamp to a
         # bit smaller than our container size.
@@ -112,9 +140,7 @@ class AchievementsWindow(bui.MainWindow):
                 parent=self._root_widget,
                 id=f'{self.main_window_id_prefix}|back',
                 autoselect=True,
-                position=(50, yoffs - 48),
-                size=(60, 60),
-                scale=0.6,
+                **_back_button_geometry(uiscale, auxiliary_style, yoffs),
                 label=bui.charstr(
                     bui.SpecialChar.CLOSE
                     if auxiliary_style
@@ -184,7 +210,7 @@ class AchievementsWindow(bui.MainWindow):
                 scale=0.6,
                 text=_commonassets.strings.compose.spaced_pair(
                     first=_commonassets.strings.compose.heading_suffix(
-                        main=classicassets.strings.ui.achievements
+                        main=_classicassets.strings.ui.achievements
                     ),
                     second=f'{num_complete}/{len(achievements)}',
                 ),
@@ -202,7 +228,7 @@ class AchievementsWindow(bui.MainWindow):
                 h_align='center',
                 v_align='center',
                 scale=0.6,
-                text=classicassets.strings.account.achievement_progress(
+                text=_classicassets.strings.account.achievement_progress(
                     complete=str(num_complete),
                     total=str(len(achievements)),
                 ),
@@ -288,7 +314,7 @@ class AchievementsWindow(bui.MainWindow):
                     ),
                     size=(28, 28),
                     color=(2, 1.4, 0),
-                    texture=classicassets.textures.achievement_outline.get(),
+                    texture=_classicassets.textures.achievement_outline.get(),
                 )
             bui.textwidget(
                 parent=self._subcontainer,
@@ -341,10 +367,11 @@ class AchievementsWindow(bui.MainWindow):
                 ),
                 size=(chestsize, chestsize),
                 color=chestdisplayinfo.color,
-                texture=bui.aptextureget(chestdisplayinfo.texclosed),
-                tint_texture=bui.aptextureget(chestdisplayinfo.texclosedtint),
+                texture=chestdisplayinfo.texclosed.ui().get(),
+                tint_texture=chestdisplayinfo.texclosedtint.ui().get(),
                 tint_color=chestdisplayinfo.tint,
                 tint2_color=chestdisplayinfo.tint2,
+                tint3_color=chestdisplayinfo.tint3,
             )
 
             pts = ach.power_ranking_value
@@ -359,7 +386,7 @@ class AchievementsWindow(bui.MainWindow):
                 flatness=1.0,
                 shadow=0.0,
                 scale=0.6,
-                text=classicassets.strings.coop.power_ranking_points(
+                text=_classicassets.strings.coop.power_ranking_points(
                     number=str(pts)
                 ),
                 size=(0, 0),
@@ -383,7 +410,7 @@ class AchievementsWindow(bui.MainWindow):
             text=_commonassets.strings.compose.spaced_pair(
                 first=_commonassets.strings.values.total,
                 second=(
-                    classicassets.strings.league
+                    _classicassets.strings.league
                 ).power_ranking_points_equals(number=str(total_pts)),
             ),
             size=(0, 0),

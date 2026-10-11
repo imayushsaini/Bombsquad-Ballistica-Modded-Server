@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import bascenev1 as bs
 import _bascenev1
 import babase
-from bascenev1 import classicassets
+from bascenev1 import _classicassets
 
 if TYPE_CHECKING:
     from typing import Any
@@ -47,7 +47,7 @@ def ensure_nodes() -> bool:
                     'image',
                     attrs={
                         'fill_screen': False,
-                        'texture': classicassets.textures.bg.get(),
+                        'texture': _classicassets.textures.bg.get(),
                         'tilt_translate': -0.3,
                         'has_alpha_channel': False,
                         'color': (1, 1, 1),
