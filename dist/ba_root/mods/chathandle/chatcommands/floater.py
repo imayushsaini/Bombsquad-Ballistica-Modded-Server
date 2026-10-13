@@ -210,8 +210,10 @@ class Floater(bs.Actor):
 
 
 def assignFloInputs(clientID: int):
-    with bs.get_foreground_host_activity().context():
-        activity = bs.getactivity()
+    activity = bs.get_foreground_host_activity()
+    if activity is None:
+        return
+    with activity.context:
         if not hasattr(activity, 'flo') or not activity.flo.node.exists():
             try:
                 activity.flo = Floater(

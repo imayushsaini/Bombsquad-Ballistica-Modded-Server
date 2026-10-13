@@ -277,6 +277,21 @@
     "file": "fun.py"
   },
   {
+    "name": "/car",
+    "aliases": [
+      "/ferrari"
+    ],
+    "category": "Fun",
+    "shopCost": 200,
+    "usage": "/car [<client_id>]",
+    "description": "Assign car controls to yourself or a specific client ID.",
+    "examples": [
+      "/car",
+      "/car 113"
+    ],
+    "file": "fun.py"
+  },
+  {
     "name": "/tnt",
     "aliases": [
       "/spawntnt",
@@ -1082,6 +1097,22 @@
     "description": "Enable standard daylight lighting tint (1.0, 1.0, 1.0) for your client view.",
     "examples": [
       "/day"
+    ],
+    "file": "normal_commands.py"
+  },
+  {
+    "name": "/zoom",
+    "aliases": [
+      "/cam"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/zoom [on | off]",
+    "description": "Toggle personal camera zoom locked onto your character.",
+    "examples": [
+      "/zoom",
+      "/zoom on",
+      "/zoom off"
     ],
     "file": "normal_commands.py"
   }

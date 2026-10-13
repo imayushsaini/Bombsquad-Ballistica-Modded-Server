@@ -726,6 +726,17 @@ class Role(Enum):
     #: formats as color, so it needs nothing from the client.
     DATA = 'data'
 
+    #: Data whose channels a shader scales by the texture's own alpha
+    #: (frame masks: a cutout's coverage plus the tint and highlight
+    #: drawn around it). Built exactly like ``DATA`` except that the
+    #: pipeline first multiplies the other channels by alpha and sets
+    #: the ``ALPHA_PREMULTIPLIED`` DFD flag, so the client uses them as
+    #: stored. Doing that multiply before filtering is the point: left
+    #: to the shader it happens after the sampler has blended each
+    #: channel on its own, which at an edge where a channel rises as
+    #: alpha falls gives a bright fringe.
+    PREMULTIPLIED_DATA = 'premultiplied_data'
+
 
 class AstcBlockSize(Enum):
     """ASTC square block size — the mobile bitrate lever.
@@ -1354,13 +1365,65 @@ class AudioQuality(Enum):
     HIGH = 'high'
 
 
+class AudioPlayGroupMode(Enum):
+    """Which play group a sound's plays count toward.
+
+    The game plays only so many sounds at once, and only a few of any
+    one play group; past that, a new play of a group cuts off the
+    group's oldest. Groups are named, and names are shared across all
+    asset packages.
+
+    - ``AUTO`` — named for the sound's file, less any trailing number:
+      ``explosion01`` and ``explosion02`` (in any package) are both in
+      ``explosion``. Numbered variations of a sound thus limit each
+      other as one sound would.
+    - ``UNIQUE`` — a group of the sound's own. For a numbered sound
+      that is not a variation of its neighbors.
+    - ``CUSTOM`` — the group named by
+      :attr:`AssetsV1PathValsAudioV1.custom_play_group`.
+    """
+
+    AUTO = 'auto'
+    UNIQUE = 'unique'
+    CUSTOM = 'custom'
+
+
+class AudioPriority(Enum):
+    """How much a sound matters when more want to play than can.
+
+    With everything busy, a new sound cuts off the oldest playing sound
+    of the lowest priority at or below its own (looping sounds are never
+    cut off).
+    """
+
+    LOWER = 'lower'
+    LOW = 'low'
+    DEFAULT = 'default'
+    HIGH = 'high'
+    HIGHER = 'higher'
+
+
+#: Longest play group name (matches the engine's limit).
+AUDIO_PLAY_GROUP_NAME_MAX_LENGTH = 64
+
+
+def normalize_audio_play_group_name(name: str) -> str:
+    """Return a play group name as the engine will see it.
+
+    Trimmed and lowercased (so names differing only that way are one
+    group) and held to :data:`AUDIO_PLAY_GROUP_NAME_MAX_LENGTH`.
+    """
+    return name.strip()[:AUDIO_PLAY_GROUP_NAME_MAX_LENGTH].lower()
+
+
 @ioprepped
 @dataclass
 class AssetsV1PathValsAudioV1(AssetsV1PathVals):
     """Path-specific values for an audio source in an assets_v1 workspace.
 
     The per-sound authoring knobs (:class:`AudioRole`,
-    :class:`AudioQuality`) are module-level types in this module.
+    :class:`AudioQuality`, :class:`AudioPlayGroupMode`,
+    :class:`AudioPriority`) are module-level types in this module.
     """
 
     audio_role: Annotated[
@@ -1371,6 +1434,20 @@ class AssetsV1PathValsAudioV1(AssetsV1PathVals):
         AudioQuality, IOAttrs('audio_quality', store_default=False)
     ] = AudioQuality.DEFAULT
 
+    play_group: Annotated[
+        AudioPlayGroupMode, IOAttrs('play_group', store_default=False)
+    ] = AudioPlayGroupMode.AUTO
+
+    #: The group name for :attr:`AudioPlayGroupMode.CUSTOM` (ignored
+    #: otherwise).
+    custom_play_group: Annotated[
+        str, IOAttrs('custom_play_group', store_default=False)
+    ] = ''
+
+    priority: Annotated[
+        AudioPriority, IOAttrs('priority', store_default=False)
+    ] = AudioPriority.DEFAULT
+
     #: Optional free-form documentation for this asset, surfaced as a
     #: comment above the asset in generated wrapper modules (and in the
     #: Sphinx docs). Empty string means no docs.
@@ -1380,6 +1457,34 @@ class AssetsV1PathValsAudioV1(AssetsV1PathVals):
     @classmethod
     def get_type_id(cls) -> AssetsV1PathValsTypeID:
         return AssetsV1PathValsTypeID.AUDIO_V1
+
+    def play_group_tag(self) -> str:
+        """Our play group setting as the engine reads it from a sound.
+
+        Empty for :attr:`AudioPlayGroupMode.AUTO` (the engine's default,
+        so nothing needs saying), ``unique``, or ``custom:<name>``. A
+        custom group with no usable name counts as auto.
+        """
+        match self.play_group:
+            case AudioPlayGroupMode.AUTO:
+                return ''
+            case AudioPlayGroupMode.UNIQUE:
+                return 'unique'
+            case AudioPlayGroupMode.CUSTOM:
+                name = normalize_audio_play_group_name(self.custom_play_group)
+                return f'custom:{name}' if name else ''
+        assert_never(self.play_group)
+
+    def priority_tag(self) -> str:
+        """Our priority as the engine reads it from a sound.
+
+        Empty for the default (nothing needs saying).
+        """
+        return (
+            ''
+            if self.priority is AudioPriority.DEFAULT
+            else self.priority.value
+        )
 
 
 class MeshRole(Enum):
@@ -1453,17 +1558,15 @@ class AssetsV1PathValsGroupV1(AssetsV1PathVals):
 class AssetsV1PathValsCubeMapV1(AssetsV1PathVals):
     """Path-specific values for a cube map (``.cubemap`` dir) in a workspace.
 
-    Cube maps are reflection textures with no Python API (decision #24),
-    so they aren't wrapper-visible. This currently carries only optional
-    ``docs`` -- stored for completeness/consistency with other asset
-    kinds, but not yet consumed by anything (it'll have a home if/when
-    cube maps gain a Python surface). Keyed in ``workspace.json``'s
-    ``path`` dict by the ``.cubemap`` directory path.
+    Cube maps have no build-time settings (decision #24), so this
+    currently carries only optional ``docs``. Keyed in
+    ``workspace.json``'s ``path`` dict by the ``.cubemap`` directory
+    path.
     """
 
-    #: Optional free-form documentation for this cube map. Stored but not
-    #: yet surfaced anywhere (cube maps have no wrapper entry). Empty
-    #: string means no docs.
+    #: Optional free-form documentation for this asset, surfaced as a
+    #: comment above the asset in generated wrapper modules (and in the
+    #: Sphinx docs). Empty string means no docs.
     docs: Annotated[str, IOAttrs('docs', store_default=False)] = ''
 
     @override

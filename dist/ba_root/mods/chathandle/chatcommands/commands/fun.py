@@ -151,6 +151,30 @@ def floater(arguments: list[str], clientid: int, accountid: str) -> None:
         pass
 
 
+@registry.register(['car', 'ferrari'], category='Fun', shop_cost=200)
+def car(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Assign car controls to yourself or a specific client ID.
+
+    Usage: /car [<client_id>]
+    Examples:
+      /car
+      /car 113
+    """
+    try:
+        from .. import car as car_mod
+        if not arguments or arguments == ['']:
+            car_mod.assignCarInputs(clientid)
+        else:
+            val = arguments[0]
+            try:
+                val = int(val)
+            except ValueError:
+                pass
+            car_mod.assignCarInputs(val)
+    except Exception as e:
+        print(f"Error in car command: {e}")
+
+
 @registry.register(['tnt', 'spawntnt', 'spawn'], category='Fun', shop_cost=200)
 def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
     """Spawn a TNT crate at target player position or arena center.
@@ -176,59 +200,46 @@ def spawn_tnt(arguments: list[str], clientid: int, accountid: str) -> None:
                     shared.object_material,
                     factory.normal_sound_material,
                 )
-                bs.NodeActor(bs.newnode(
-                    'prop',
-                    attrs={
-                        'position': (0, 2, 0),
-                        'velocity': (0.0, 0.0, 0.0),
-                        'mesh': factory.tnt_mesh,
-                        'light_mesh': factory.tnt_mesh,
-                        'body': 'crate',
-                        'body_scale': 1.0,
-                        'shadow_size': 0.5,
-                        'color_texture': testasset.texture.bnt,
-                        'reflection': 'soft',
-                        'reflection_scale': [0.23],
-                        'materials': materials,
-                    },
-                )).autoretain()
                 target_args = [arg for arg in arguments if arg.lower()
                                not in ('tnt', 'spawn')]
-                for actor in get_target_actors(target_args, clientid):
-                    if actor.node:
-                        pos = actor.node.position
-                        bs.NodeActor(bs.newnode(
-                            'prop',
-                            attrs={
-                                'position': pos,
-                                'velocity': (0.0, 0.0, 0.0),
-                                'mesh': factory.tnt_mesh,
-                                'light_mesh': factory.tnt_mesh,
-                                'body': 'crate',
-                                'body_scale': 1.0,
-                                'shadow_size': 0.5,
-                                'color_texture': testasset.texture.bnt,
-                                'reflection': 'soft',
-                                'reflection_scale': [0.23],
-                                'materials': materials,
-                            },
-                        )).autoretain()
-                    else:
-                        bs.NodeActor(bs.newnode(
-                            'prop',
-                            attrs={
-                                'position': (0, 2, 0),
-                                'velocity': (0.0, 0.0, 0.0),
-                                'mesh': factory.tnt_mesh,
-                                'light_mesh': factory.tnt_mesh,
-                                'body': 'crate',
-                                'body_scale': 1.0,
-                                'shadow_size': 0.5,
-                                'color_texture': testasset.texture.bnt,
-                                'reflection': 'soft',
-                                'reflection_scale': [0.23],
-                                'materials': materials,
-                            },
-                        )).autoretain()
+                target_actors = get_target_actors(target_args, clientid)
+                if target_actors:
+                    for actor in target_actors:
+                        if actor.node:
+                            pos = actor.node.position
+                            bs.NodeActor(bs.newnode(
+                                'prop',
+                                attrs={
+                                    'position': pos,
+                                    'velocity': (0.0, 0.0, 0.0),
+                                    'mesh': factory.tnt_mesh,
+                                    'light_mesh': factory.tnt_mesh,
+                                    'body': 'crate',
+                                    'body_scale': 1.0,
+                                    'shadow_size': 0.5,
+                                    'color_texture': testasset.texture.bnt,
+                                    'reflection': 'soft',
+                                    'reflection_scale': [0.23],
+                                    'materials': materials,
+                                },
+                            )).autoretain()
+                else:
+                    bs.NodeActor(bs.newnode(
+                        'prop',
+                        attrs={
+                            'position': (0, 2, 0),
+                            'velocity': (0.0, 0.0, 0.0),
+                            'mesh': factory.tnt_mesh,
+                            'light_mesh': factory.tnt_mesh,
+                            'body': 'crate',
+                            'body_scale': 1.0,
+                            'shadow_size': 0.5,
+                            'color_texture': testasset.texture.bnt,
+                            'reflection': 'soft',
+                            'reflection_scale': [0.23],
+                            'materials': materials,
+                        },
+                    )).autoretain()
     except Exception as e:
         print(f"Error spawning TNT: {e}")
+

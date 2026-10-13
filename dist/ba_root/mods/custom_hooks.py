@@ -112,30 +112,168 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
     return handlechat.filter_chat_message(msg, client_id)
 
 
+def get_v2_account_name() -> str:
+    """Returns the current V2 account name or display tag."""
+    plus = _babase.app.plus
+    if plus is None:
+        return 'Unknown'
+    if plus.accounts is not None and plus.accounts.primary is not None:
+        tag = getattr(plus.accounts.primary, 'tag', None)
+        if tag:
+            return tag
+    try:
+        if plus.get_v1_account_state() == 'signed_in':
+            name = plus.get_v1_account_display_string()
+            if name:
+                return name
+    except Exception:
+        pass
+    try:
+        name = plus.get_v1_account_name()
+        if name:
+            return name
+    except Exception:
+        pass
+    return 'Unknown'
+
+
+def get_v1_account_name() -> str:
+    """Returns the current V1 account name."""
+    plus = _babase.app.plus
+    if plus is None:
+        return 'Unknown'
+    try:
+        if plus.get_v1_account_state() == 'signed_in':
+            name = plus.get_v1_account_display_string() or plus.get_v1_account_name()
+            if name:
+                return name
+    except Exception:
+        pass
+    return 'Unknown'
+
+
+def _verify_v1_login() -> None:
+    """Verifies that V1 sign-in succeeded and prints the account name."""
+    plus = _babase.app.plus
+    if plus is None:
+        return
+    try:
+        state = plus.get_v1_account_state()
+        if state == 'signed_in' and plus.get_v1_account_type() != 'V2':
+            v1_name = get_v1_account_name()
+            print(f'{Clr.SGRN} Logged in to V1 account: {v1_name} {Clr.RST}')
+        elif state == 'signing_in':
+            bs.apptimer(1.0, _verify_v1_login)
+        else:
+            # Retry sign-in once if still not signed in
+            plus.sign_in_v1('Local')
+            def _final_check() -> None:
+                try:
+                    if plus.get_v1_account_state() == 'signed_in' and plus.get_v1_account_type() != 'V2':
+                        v1_name = get_v1_account_name()
+                        print(f'{Clr.SGRN} Logged in to V1 account: {v1_name} {Clr.RST}')
+                    else:
+                        print(f'{Clr.SYLW} V1 account state: {plus.get_v1_account_state()} {Clr.RST}')
+                except Exception as exc:
+                    logging.exception(f'Error verifying V1 login: {exc}')
+            bs.apptimer(1.0, _final_check)
+    except Exception as exc:
+        logging.exception(f'Error checking V1 account: {exc}')
+
+
+def handle_account_setup() -> None:
+    """Handles V1/V2 account login/logout based on setting.json."""
+    plus = _babase.app.plus
+    if plus is None:
+        return
+
+    setting.refresh_cache()
+    current_settings = setting.get_settings_data()
+    use_v2 = current_settings.get("useV2Account", False)
+
+    # Manage .bsac2 token file path for backup/restore
+    mods_dir = os.path.dirname(__file__)
+    ba_root = os.path.abspath(os.path.join(mods_dir, ".."))
+    bsac2_path = os.path.join(ba_root, ".bsac2")
+    bsac2_bak_path = os.path.join(ba_root, ".bsac2.bak")
+
+    if use_v2:
+        # Restore backup .bsac2 if active .bsac2 doesn't exist
+        try:
+            if not os.path.exists(bsac2_path) and os.path.exists(bsac2_bak_path):
+                os.rename(bsac2_bak_path, bsac2_path)
+        except Exception:
+            pass
+
+        is_v2_logged_in = (
+            (plus.get_v1_account_state() == 'signed_in' and plus.get_v1_account_type() == 'V2')
+            or (plus.accounts is not None and plus.accounts.primary is not None)
+        )
+        if is_v2_logged_in:
+            account_name = get_v2_account_name()
+            print(f'{Clr.SGRN} Already logged in to V2 account: {account_name} {Clr.RST}')
+        else:
+            if plus.get_v1_account_state() == 'signed_in':
+                print(f'{Clr.SYLW} Logging out of V1 account to switch to V2... {Clr.RST}')
+                plus.sign_out_v1()
+            print("Account V2 login require ....stay tuned.")
+            bs.apptimer(3, lambda: logging.debug("Starting Account V2 login process...."))
+            bs.apptimer(6, account.AccountUtil)
+    else:
+        # User wants legacy V1 account
+        is_v2_active = (
+            (plus.get_v1_account_state() == 'signed_in' and plus.get_v1_account_type() == 'V2')
+            or (plus.accounts is not None and plus.accounts.primary is not None)
+            or (plus.accounts is not None and plus.accounts.have_primary_credentials())
+            or (plus.get_v1_account_state() == 'signing_in')
+        )
+        if is_v2_active:
+            print(f'{Clr.SYLW} V2 account is logged in. Logging out of V2 to switch to legacy V1 account... {Clr.RST}')
+            # Backup .bsac2 so it doesn't auto-login V2 on subsequent restarts
+            try:
+                if os.path.exists(bsac2_path):
+                    if os.path.exists(bsac2_bak_path):
+                        os.remove(bsac2_bak_path)
+                    os.rename(bsac2_path, bsac2_bak_path)
+            except Exception:
+                pass
+
+            if plus.accounts is not None:
+                plus.accounts.set_primary_credentials(None)
+            plus.sign_out_v1()
+
+            cfg = _babase.app.config
+            cfg['Auto Account State'] = 'Server' if _babase.app.env.headless else 'Local'
+            cfg.commit()
+
+            def _sign_in_v1_after_logout() -> None:
+                print(f'{Clr.SYLW} Logging in with V1 account... {Clr.RST}')
+                plus.sign_in_v1('Local')
+                bs.apptimer(1.0, _verify_v1_login)
+
+            bs.apptimer(1.0, _sign_in_v1_after_logout)
+        elif plus.get_v1_account_state() == 'signed_in' and plus.get_v1_account_type() != 'V2':
+            v1_name = get_v1_account_name()
+            print(f'{Clr.SGRN} Already logged in to V1 account: {v1_name} {Clr.RST}')
+        else:
+            if plus.accounts is not None:
+                plus.accounts.set_primary_credentials(None)
+            print(f'{Clr.SYLW} Logging in with V1 account... {Clr.RST}')
+            plus.sign_in_v1('Local')
+            bs.apptimer(1.0, _verify_v1_login)
+
+
 # ba_meta export babase.Plugin
 class modSetup(babase.Plugin):
     def on_app_running(self):
         """Runs when app is launched."""
-        plus = bui.app.plus
         bootstraping()
         servercheck.ServerCheck()
         server_update.check()
         # bs.apptimer(5, account.updateOwnerIps)
         if settings["afk_remover"]['enable']:
             afk_check.checkIdle().start()
-        if (settings["useV2Account"]):
-
-            if (plus.get_v1_account_state() ==
-                    'signed_in' and plus.get_v1_account_type() == 'V2'):
-                logging.debug("Account V2 is active")
-            else:
-                logging.warning("Account V2 login require ....stay tuned.")
-                bs.apptimer(3, babase.Call(logging.debug,
-                                           "Starting Account V2 login process...."))
-                bs.apptimer(6, account.AccountUtil)
-        else:
-            plus.accounts.set_primary_credentials(None)
-            plus.sign_in_v1('Local')
+        handle_account_setup()
         bs.apptimer(60, playlist.flush_playlists)
         try:
             from actor import welcome
@@ -400,6 +538,20 @@ Map.__init__ = on_map_init(Map.__init__)
 def playerspaz_init(playerspaz: bs.Player, node: bs.Node, player: bs.Player):
     """Runs when player is spawned on map."""
     modifyspaz.main(playerspaz, node, player)
+    try:
+        import private_hud
+        private_hud.handle_player_spawn(player, node)
+    except Exception as e:
+        print(f"Error handling player spawn in private_hud: {e}")
+
+    if node and node.exists():
+        def _on_node_death():
+            try:
+                import private_hud
+                private_hud.handle_player_death(player)
+            except Exception:
+                pass
+        node.add_death_action(_on_node_death)
 
 
 def verify_account_token() -> None:
@@ -873,6 +1025,15 @@ def wrap_player_spaz_init(original_class):
             # Call the original __init__
             super().__init__(*args, **kwargs)
             playerspaz_init(self, self.node, self._player)
+
+        def handlemessage(self, msg):
+            if isinstance(msg, bs.DieMessage):
+                try:
+                    import private_hud
+                    private_hud.handle_player_death(self._player)
+                except Exception as e:
+                    print(f"Error handling player death in private_hud: {e}")
+            return super().handlemessage(msg)
 
     # Return the modified class
     return WrappedClass
