@@ -11,7 +11,7 @@ import bascenev1
 from efro.terminal import Clr
 from playersdata import pdata
 
-VERSION = 89
+VERSION = 90
 
 
 def check():

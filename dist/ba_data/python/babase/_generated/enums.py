@@ -54,6 +54,22 @@ class QuitType(Enum):
     HARD = 2
 
 
+class SoundPriority(Enum):
+    """How much a sound matters when more sounds want to play than can at
+    once. When everything is busy, a new sound takes the place of the
+    oldest playing sound of the lowest priority at or below its own
+    (sounds that loop are never cut off this way).
+
+    Sounds are 'default' unless their asset says otherwise.
+    """
+
+    LOWER = 0
+    LOW = 1
+    DEFAULT = 2
+    HIGH = 3
+    HIGHER = 4
+
+
 class UIScale(Enum):
     """The overall scale the UI is being rendered for. Note that this is
     independent of pixel resolution. For example, a phone and a desktop PC

@@ -563,3 +563,18 @@ def day_command(arguments: list[str], clientid: int, accountid: str) -> None:
     private_hud.day_command(arguments, clientid, accountid)
 
 
+@registry.register(['zoom', 'cam'], category='Normal')
+def zoom_command(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Toggle personal camera zoom locked onto your character.
+
+    Usage: /zoom [on | off]
+    Examples:
+      /zoom
+      /zoom on
+      /zoom off
+    """
+    import private_hud
+    private_hud.zoom_command(arguments, clientid, accountid)
+
+
+

@@ -1,88 +1,121 @@
 # ba_meta require api 8
 from __future__ import annotations
 
-import logging
+import asyncio
 
-import _bascenev1
-from playersdata import pdata
 import _babase
-import babase
+import _bascenev1
 import bacommon.cloud
+import babase
 import bascenev1 as bs
-import bauiv1 as bui
+from efro.terminal import Clr
+from efro.error import CommunicationError
+from efro.util import strip_exception_tracebacks
+from playersdata import pdata
 
 STATUS_CHECK_INTERVAL_SECONDS = 2.0
+_BROWSER_SIGN_IN_WAIT_SECONDS = 290.0
 
 
 class AccountUtil:
-    def __init__(self):
-        self._proxyid: str | None = None
-        self._proxykey: str | None = None
-        plus = _babase.app.plus
-        plus.sign_out_v1()
-        plus.cloud.send_message_cb(
-            bacommon.cloud.LoginProxyRequestMessage(),
-            on_response=babase.Call(self._on_proxy_request_response))
-
-    def _on_proxy_request_response(self,
-                                   response: bacommon.cloud.LoginProxyRequestResponse | Exception) -> None:
-        plus = _babase.app.plus
-        if isinstance(response, Exception):
-            logging.error("error occured")
-            logging.critical("Falling back to V1 account")
-            plus.sign_in_v1('Local')
-            return
-        address = plus.get_master_server_address() + response.url
-        logging.debug("Copy this URL to your browser : " + address)
-        self._proxyid = response.proxyid
-        self._proxykey = response.proxykey
-        bui.apptimer(
-            STATUS_CHECK_INTERVAL_SECONDS,
-            bui.WeakCallStrict(self._ask_for_status),
+    def __init__(self) -> None:
+        print("account util init")
+        _babase.app.create_async_task(
+            self._run(), name='account-util-v2-proxy-sign-in'
         )
 
-    def _ask_for_status(self) -> None:
-        print("ask for status")
-        assert self._proxyid is not None
-        assert self._proxykey is not None
-
-        _babase.app.plus.cloud.send_message_cb(
-            bacommon.cloud.LoginProxyStateQueryMessage(
-                proxyid=self._proxyid, proxykey=self._proxykey),
-            on_response=bs.Call(self._got_status))
-
-    def _got_status(
-        self, response: bacommon.cloud.LoginProxyStateQueryResponse | Exception
-    ) -> None:
-        # For now, if anything goes wrong on the server-side, just abort
-        # with a vague error message. Can be more verbose later if need be.
+    async def _run(self) -> None:
+        print("account util run")
         plus = _babase.app.plus
-        if (isinstance(response, bacommon.cloud.LoginProxyStateQueryResponse)
-                and response.state is response.State.FAIL):
-            logging.error("error occured ..terminating login request")
-            logging.critical("Falling back to V1 account")
-            plus.sign_in_v1('Local')
-
-        # If we got a token, set ourself as signed in. Hooray!
-        if (isinstance(response, bacommon.cloud.LoginProxyStateQueryResponse)
-                and response.state is response.State.SUCCESS):
-            assert response.credentials is not None
-            plus.accounts.set_primary_credentials(response.credentials)
-
-            bs.timer(3, self._logged_in)
-
+        if plus is None:
+            print("Error: plus module not available")
             return
 
-        # If we're still waiting, ask again soon.
-        if (isinstance(response, Exception)
-                or response.state is response.State.WAITING):
-            bs.timer(STATUS_CHECK_INTERVAL_SECONDS,
-                     babase.Call(self._ask_for_status))
+        if (plus.get_v1_account_state() == 'signed_in' and plus.get_v1_account_type() == 'V2') or (
+            plus.accounts is not None and plus.accounts.primary is not None
+        ):
+            v2_name = (
+                plus.accounts.primary.tag
+                if (plus.accounts and plus.accounts.primary)
+                else plus.get_v1_account_display_string()
+            )
+            print(f"{Clr.SGRN} Already logged in to V2 account: {v2_name} {Clr.RST}")
+            return
 
-    def _logged_in(self):
-        plus = _babase.app.plus
-        logging.info("Logged in as: " +
-                     plus.get_v1_account_display_string())
+        try:
+            proxy = await plus.cloud.send_message_async(
+                bacommon.cloud.LoginProxyRequestMessage()
+            )
+        except Exception as exc:
+            print("error occured:", exc)
+            print("Falling back to V1 account")
+            if plus.accounts is not None:
+                plus.accounts.set_primary_credentials(None)
+            plus.sign_out_v1()
+            bs.apptimer(1.0, babase.CallStrict(plus.sign_in_v1, 'Local'))
+            strip_exception_tracebacks(exc)
+            return
+
+        address = plus.get_master_server_address() + proxy.url
+        print("Copy this URL to your browser : " + address)
+
+        deadline = _babase.apptime() + _BROWSER_SIGN_IN_WAIT_SECONDS
+        while True:
+            await asyncio.sleep(STATUS_CHECK_INTERVAL_SECONDS)
+            if _babase.apptime() >= deadline:
+                print("error occured ..terminating login request")
+                print("Falling back to V1 account")
+                if plus.accounts is not None:
+                    plus.accounts.set_primary_credentials(None)
+                plus.sign_out_v1()
+                bs.apptimer(1.0, babase.CallStrict(plus.sign_in_v1, 'Local'))
+                return
+
+            try:
+                status = await plus.cloud.send_message_async(
+                    bacommon.cloud.LoginProxyStateQueryMessage(
+                        proxyid=proxy.proxyid, proxykey=proxy.proxykey
+                    )
+                )
+            except CommunicationError as exc:
+                strip_exception_tracebacks(exc)
+                continue
+            except Exception as exc:
+                print("Login proxy status check failed:", exc)
+                strip_exception_tracebacks(exc)
+                continue
+
+            if status.state is status.State.FAIL:
+                print("error occured ..terminating login request")
+                print("Falling back to V1 account")
+                if plus.accounts is not None:
+                    plus.accounts.set_primary_credentials(None)
+                plus.sign_out_v1()
+                bs.apptimer(1.0, babase.CallStrict(plus.sign_in_v1, 'Local'))
+                return
+
+            if status.state is status.State.SUCCESS:
+                break
+
+        assert status.credentials is not None
+        plus.accounts.set_primary_credentials(status.credentials)
+
+        # Courtesy: tell the server we're done with the proxy
+        try:
+            await plus.cloud.send_message_async(
+                bacommon.cloud.LoginProxyCompleteMessage(proxyid=proxy.proxyid)
+            )
+        except Exception as exc:
+            strip_exception_tracebacks(exc)
+
+        # Wait briefly for primary account credentials to take effect
+        await asyncio.sleep(1.0)
+        v2_name = (
+            plus.accounts.primary.tag
+            if (plus.accounts and plus.accounts.primary)
+            else plus.get_v1_account_display_string()
+        )
+        print(f"{Clr.SGRN} Logged in as: {v2_name} {Clr.RST}")
 
 
 def updateOwnerIps():
