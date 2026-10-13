@@ -31,6 +31,7 @@
 | `/celebrate` | `/celebrate [all | <player_index>]` | `/celeb` | 🎟️ 100 | Make target player(s) perform a victory dance animation. |
 | `/spaz` | `/spaz` | - | Free | Spaz command placeholder. |
 | `/floater` | `/floater [<client_id>]` | `/flo` | 🎟️ 200 | Assign floater controls to yourself or a specific client ID. |
+| `/car` | `/car [<client_id>]` | `/ferrari` | 🎟️ 200 | Assign car controls to yourself or a specific client ID. |
 | `/tnt` | `/tnt [all | <player_index>]` | `/spawntnt`, `/spawn` | 🎟️ 200 | Spawn a TNT crate at target player position or arena center. |
 
 
@@ -101,4 +102,5 @@
 | `/hud` | `/hud [all | clean | leaderboard | next | notags | onlytags | <element> <on|off>]` | `/ui` | Free | Configure custom private HUD element visibility preferences and UI preset modes. |
 | `/night` | `/night` | - | Free | Enable night mode lighting tint (0.5, 0.7, 1.0) for your client view. |
 | `/day` | `/day` | - | Free | Enable standard daylight lighting tint (1.0, 1.0, 1.0) for your client view. |
+| `/zoom` | `/zoom [on | off]` | `/cam` | Free | Toggle personal camera zoom locked onto your character. |
 
