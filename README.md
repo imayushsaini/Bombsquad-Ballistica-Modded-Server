@@ -20,13 +20,15 @@ Migrated from 1.7 to  1.8.0 alpha , this might be unstable and missing some feat
 Set up your BombSquad Modded Server with a single command! This automated interactive script validates system requirements (Ubuntu 26+, 64-bit CPU, RAM), installs Python 3.14 & system packages, clones the `public-server` branch, sets executable permissions, guides you through interactive server configuration, and launches the server inside a background `tmux` session:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh | sudo bash
 ```
 
 > **Alternative command:**
 > ```bash
-> bash -c "$(curl -fsSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh)"
+> sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh)"
 > ```
+>
+> *(The script automatically detects your non-root SSH user, preserves file ownership, and runs `tmux` under your user account instead of root).*
 
 <details>
 <summary><b>What this script does automatically:</b></summary>
@@ -36,7 +38,7 @@ curl -sSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Mo
 - **Dependency Installation:** Automatically installs Python 3.14, `python3.14-dev`, `python3-pip`, `tmux`, `git`, and Python dependencies (`ecdsa`, `flask`, `waitress`, `websockets`).
 - **Repo Cloning:** Clones only the `public-server` branch with `--depth 1`.
 - **Permissions:** Sets `chmod 777` on `bombsquad_server` and `dist/bombsquad_headless*` binaries.
-- **Interactive Server Configuration:** Prompts for server name, UDP port, max players, game mode (teams/ffa/coop), and owner PB-ID.
+- **Interactive Server Configuration:** Prompts for server name, UDP port, max players, game mode (teams/ffa/coop), owner PB-ID, and Server Manager web password.
 - **Tmux Integration:** Launches the server inside a persistent `tmux` session so it continues running in the background after you disconnect.
 </details>
 

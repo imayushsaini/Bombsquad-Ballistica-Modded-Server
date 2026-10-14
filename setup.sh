@@ -6,16 +6,13 @@
 # Branch: public-server
 # ==============================================================================
 
-# Ensure standard input is attached to a terminal when invoked via pipe (e.g. curl ... | bash)
+# Interactivity detection
 INTERACTIVE=true
 AUTO_YES=false
-if [ ! -t 0 ]; then
-    if [ -c /dev/tty ] && exec < /dev/tty 2>/dev/null; then
-        INTERACTIVE=true
-    else
-        INTERACTIVE=false
-        AUTO_YES=true
-    fi
+# If stdin is not a terminal and /dev/tty is not accessible, fallback to non-interactive mode
+if [ ! -t 0 ] && [ ! -c /dev/tty ]; then
+    INTERACTIVE=false
+    AUTO_YES=true
 fi
 
 # Exit on critical unhandled errors
@@ -128,7 +125,11 @@ ask_prompt() {
     fi
     echo -ne "${BOLD}${prompt_text}${RESET} "
     local user_val=""
-    read -r user_val
+    if [ -c /dev/tty ] && [ -r /dev/tty ]; then
+        read -r user_val < /dev/tty
+    else
+        read -r user_val
+    fi
     if [ -z "$user_val" ]; then
         eval "$var_name=\"$default_val\""
     else
@@ -148,7 +149,11 @@ ask_yes_no() {
     while true; do
         echo -ne "${BOLD}${prompt_text}${RESET} ${DIM}${suffix}${RESET}: "
         local answer=""
-        read -r answer
+        if [ -c /dev/tty ] && [ -r /dev/tty ]; then
+            read -r answer < /dev/tty
+        else
+            read -r answer
+        fi
         answer=$(echo "$answer" | tr '[:upper:]' '[:lower:]' | xargs)
         if [ -z "$answer" ]; then
             answer="$default_val"
@@ -168,22 +173,17 @@ print_banner
 
 # Step 1: Privilege Verification
 log_step "Checking user privileges..."
-if [ "$EUID" -eq 0 ]; then
-    SUDO=""
-    log_info "Running as root user."
+if [ "$EUID" -ne 0 ]; then
+    log_error "Root privileges are required to run this installer."
+    echo -e "\n${YELLOW}${BOLD}Please re-run the installation command with sudo:${RESET}"
+    echo -e "  ${CYAN}curl -sSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh | sudo bash${RESET}"
+    echo -e "  Or: ${CYAN}sudo bash setup.sh${RESET}\n"
+    exit 1
+fi
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    log_info "Running via sudo on behalf of user: $SUDO_USER"
 else
-    if command -v sudo >/dev/null 2>&1; then
-        SUDO="sudo"
-        log_info "Standard user detected. Requesting/testing sudo access..."
-        if ! sudo -v; then
-            log_error "Failed to authenticate sudo credentials. Sudo privileges are required to install packages."
-            exit 1
-        fi
-    else
-        log_error "'sudo' is not installed and you are not root."
-        log_error "Please run this script as root or install sudo."
-        exit 1
-    fi
+    log_info "Running as root user."
 fi
 log_success "Privilege check passed."
 
@@ -262,12 +262,12 @@ if [ -f /proc/meminfo ]; then
         log_warn "BombSquad recommends at least 1.5 GB - 2 GB of memory to prevent Out-Of-Memory (OOM) crashes."
         if ask_yes_no "Would you like to automatically create and activate a 2 GB swap file (/swapfile)?" "y"; then
             log_info "Creating 2 GB swap file at /swapfile..."
-            if $SUDO fallocate -l 2G /swapfile 2>/dev/null || $SUDO dd if=/dev/zero of=/swapfile bs=1M count=2048 2>/dev/null; then
-                $SUDO chmod 600 /swapfile
-                $SUDO mkswap /swapfile >/dev/null 2>&1
-                $SUDO swapon /swapfile >/dev/null 2>&1
+            if fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048 2>/dev/null; then
+                chmod 600 /swapfile
+                mkswap /swapfile >/dev/null 2>&1
+                swapon /swapfile >/dev/null 2>&1
                 if ! grep -q "/swapfile" /etc/fstab 2>/dev/null; then
-                    echo "/swapfile none swap sw 0 0" | $SUDO tee -a /etc/fstab >/dev/null
+                    echo "/swapfile none swap sw 0 0" | tee -a /etc/fstab >/dev/null
                 fi
                 log_success "2 GB swap file activated successfully!"
             else
@@ -282,20 +282,19 @@ fi
 # Step 5: Install System Prerequisites
 log_step "Updating package repositories & installing dependencies..."
 export DEBIAN_FRONTEND=noninteractive
-$SUDO apt-get update -y
-$SUDO apt-get install -y software-properties-common curl git tmux ca-certificates procps lsof net-tools
+apt-get update -y
+apt-get install -y software-properties-common curl git tmux ca-certificates procps lsof net-tools
 
 # Step 6: Install Python 3.14
 log_step "Checking Python 3.14..."
 if ! command -v python3.14 >/dev/null 2>&1; then
     log_info "Python 3.14 not found. Installing Python 3.14 and development headers..."
-    # If python3.14 is not in the default repos, add deadsnakes PPA
     if ! apt-cache show python3.14 >/dev/null 2>&1; then
         log_info "Adding deadsnakes PPA..."
-        $SUDO add-apt-repository -y ppa:deadsnakes/ppa
-        $SUDO apt-get update -y
+        add-apt-repository -y ppa:deadsnakes/ppa
+        apt-get update -y
     fi
-    $SUDO apt-get install -y python3.14 python3.14-dev python3.14-venv python3-pip
+    apt-get install -y python3.14 python3.14-dev python3.14-venv python3-pip
 fi
 
 if ! command -v python3.14 >/dev/null 2>&1; then
@@ -367,12 +366,16 @@ if [ -f "dist/bombsquad_headless_aarch64" ]; then
 fi
 log_success "Executable permissions applied to server binaries."
 
+# If executed via sudo from a non-root SSH user, ensure that user owns the directory
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ] && [ "$EUID" -eq 0 ]; then
+    chown -R "$SUDO_USER:$SUDO_USER" "$INSTALL_DIR" 2>/dev/null || true
+fi
+
 # Step 9: Pre-install Python Dependencies
 log_step "Checking Python site-packages dependencies..."
 TARGET_SITE="$INSTALL_DIR/dist/ba_data/python-site-packages"
 mkdir -p "$TARGET_SITE"
 python3.14 -m pip install --target "$TARGET_SITE" --break-system-packages ecdsa flask waitress websockets >/dev/null 2>&1 || {
-    # If pip fails, try bootstrapping pip with ensurepip
     python3.14 -m ensurepip --default-pip >/dev/null 2>&1 || true
     python3.14 -m pip install --target "$TARGET_SITE" --break-system-packages ecdsa flask waitress websockets >/dev/null 2>&1 || true
 }
@@ -416,9 +419,9 @@ if ask_yes_no "Would you like to configure server settings interactively now?" "
 
     # Game Session Type
     echo -e "Select Game Mode:"
-    echo -e "  1) Teams (default)"
-    echo -e "  2) Free-for-all (ffa)"
-    echo -e "  3) Co-op (coop)"
+    echo -e "  1) Teams (default: 2 Teams, Red vs Blue)"
+    echo -e "  2) Free-for-all (ffa: everyone against everyone)"
+    echo -e "  3) Co-op (coop: cooperative campaign missions)"
     ask_prompt "Choice [1/2/3, default: 1]:" "1" MODE_CHOICE
     case "$MODE_CHOICE" in
         2) CFG_MODE="ffa" ;;
@@ -430,8 +433,12 @@ if ask_yes_no "Would you like to configure server settings interactively now?" "
     echo -e "${CYAN}Note: Find your PB-ID in BombSquad -> Settings -> Advanced -> Account Details (e.g. pb-IF48VWkBFQ)${RESET}"
     ask_prompt "Enter your Owner PB-ID [Press Enter to skip]:" "" CFG_OWNER_ID
 
+    # Server Manager Web Password
+    echo -e "${CYAN}Note: Server Manager password for Ballistica Web Stats console (https://bombsquad-community.web.app)${RESET}"
+    ask_prompt "Enter Server Manager Web Password [Press Enter to keep default]:" "" CFG_WEB_PASSWORD
+
     # Safely update config.json, roles.json, and setting.json with Python
-    python3.14 - "$CFG_FILE" "$ROLES_FILE" "$SETTING_FILE" "$CFG_NAME" "$CFG_PORT" "$CFG_MAX_PLAYERS" "$CFG_MODE" "$CFG_OWNER_ID" << 'PYEOF'
+    python3.14 - "$CFG_FILE" "$ROLES_FILE" "$SETTING_FILE" "$CFG_NAME" "$CFG_PORT" "$CFG_MAX_PLAYERS" "$CFG_MODE" "$CFG_OWNER_ID" "$CFG_WEB_PASSWORD" << 'PYEOF'
 import sys, json, os
 
 cfg_path = sys.argv[1]
@@ -442,6 +449,7 @@ port = int(sys.argv[5])
 max_players = int(sys.argv[6])
 session_type = sys.argv[7]
 owner_id = sys.argv[8].strip()
+web_password = sys.argv[9].strip()
 
 # Update config.json
 if os.path.exists(cfg_path):
@@ -458,8 +466,13 @@ if os.path.exists(cfg_path):
         cfg["max_party_size"] = max_players
     if session_type:
         cfg["session_type"] = session_type
+        # If user explicitly chooses FFA or Co-op, reset playlist_code to null
+        # so it doesn't force-load the default shared Teams playlist (622903)
+        if session_type != "teams":
+            cfg["playlist_code"] = None
+        elif cfg.get("playlist_code") is None:
+            cfg["playlist_code"] = 622903
     if owner_id:
-        # Filter out placeholder IDs if present
         admins = [a for a in cfg.get("admins", []) if not a.startswith("a-YOUR-ID") and not a.startswith("a-ANOTHER-ID")]
         if owner_id not in admins:
             admins.append(owner_id)
@@ -480,12 +493,15 @@ if owner_id and os.path.exists(roles_path):
     except Exception as e:
         print(f"Warning: could not update roles.json: {e}", file=sys.stderr)
 
-# Update setting.json HostName
-if party_name and os.path.exists(setting_path):
+# Update setting.json ballistica_web password if provided (keep HostName untouched)
+if web_password and os.path.exists(setting_path):
     try:
         with open(setting_path, "r", encoding="utf-8") as f:
             setting = json.load(f)
-        setting["HostName"] = f"\ue047 {party_name} \ue047"
+        if "ballistica_web" not in setting:
+            setting["ballistica_web"] = {}
+        setting["ballistica_web"]["server_password"] = web_password
+        setting["ballistica_web"]["secret"] = web_password
         with open(setting_path, "w", encoding="utf-8") as f:
             json.dump(setting, f, indent=2)
     except Exception as e:
@@ -523,9 +539,15 @@ print_summary() {
 # Step 11: Tmux Session & Server Execution
 log_step "Server Execution & Tmux Setup"
 
+# If invoked via sudo from a non-root user, run tmux as that user
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ] && [ "$EUID" -eq 0 ]; then
+    run_user() { sudo -u "$SUDO_USER" "$@"; }
+else
+    run_user() { "$@"; }
+fi
+
 if [ "$START_SERVER" = true ]; then
-    # Check if a session already exists
-    if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    if run_user tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
         log_warn "A tmux session named '$TMUX_SESSION' is already active."
         echo -e "Choose an option:"
         echo -e "  1) Attach to existing tmux session"
@@ -537,12 +559,12 @@ if [ "$START_SERVER" = true ]; then
             1)
                 print_summary
                 log_info "Attaching to tmux session '$TMUX_SESSION'..."
-                tmux attach-session -t "$TMUX_SESSION"
+                run_user tmux attach-session -t "$TMUX_SESSION"
                 exit 0
                 ;;
             2)
                 log_info "Killing existing tmux session '$TMUX_SESSION'..."
-                tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
+                run_user tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
                 ;;
             3)
                 ask_prompt "Enter new session name:" "${TMUX_SESSION}_2" TMUX_SESSION
@@ -556,14 +578,14 @@ if [ "$START_SERVER" = true ]; then
     if [ "$START_SERVER" = true ]; then
         if ask_yes_no "Start the BombSquad server now inside tmux session '$TMUX_SESSION'?" "y"; then
             log_info "Launching server inside tmux session '$TMUX_SESSION'..."
-            tmux new-session -d -s "$TMUX_SESSION" -c "$INSTALL_DIR" "./bombsquad_server"
+            run_user tmux new-session -d -s "$TMUX_SESSION" -c "$INSTALL_DIR" "./bombsquad_server"
             sleep 2
 
-            if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+            if run_user tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
                 log_success "Server successfully started in tmux session '$TMUX_SESSION'!"
                 print_summary
                 if ask_yes_no "Would you like to attach to the server console right now?" "y"; then
-                    tmux attach-session -t "$TMUX_SESSION"
+                    run_user tmux attach-session -t "$TMUX_SESSION"
                     exit 0
                 fi
             else
