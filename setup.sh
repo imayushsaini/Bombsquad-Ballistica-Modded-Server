@@ -501,7 +501,6 @@ if web_password and os.path.exists(setting_path):
         if "ballistica_web" not in setting:
             setting["ballistica_web"] = {}
         setting["ballistica_web"]["server_password"] = web_password
-        setting["ballistica_web"]["secret"] = web_password
         with open(setting_path, "w", encoding="utf-8") as f:
             json.dump(setting, f, indent=2)
     except Exception as e:
