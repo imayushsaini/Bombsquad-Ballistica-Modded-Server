@@ -15,43 +15,71 @@ Migrated from 1.7 to  1.8.0 alpha , this might be unstable and missing some feat
 - Python 3.14
 - 1.5 GB free Memory (Recommended 2 GB)
 
-## Getting Started
+## ⚡ Quick Setup (Automated One-Liner)
+
+Set up your BombSquad Modded Server with a single command! This automated interactive script validates system requirements (Ubuntu 26+, 64-bit CPU, RAM), installs Python 3.14 & system packages, clones the `public-server` branch, sets executable permissions, guides you through interactive server configuration, and launches the server inside a background `tmux` session:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh | bash
+```
+
+> **Alternative command:**
+> ```bash
+> bash -c "$(curl -fsSL https://raw.githubusercontent.com/imayushsaini/Bombsquad-Ballistica-Modded-Server/public-server/setup.sh)"
+> ```
+
+<details>
+<summary><b>What this script does automatically:</b></summary>
+
+- **OS & Environment Check:** Verifies Ubuntu 26+ and supported 64-bit architecture (`x86_64` / `aarch64`).
+- **Memory Check & Swap:** Verifies memory (1.5 GB - 2 GB) and offers to automatically create a 2 GB swap file if memory is low.
+- **Dependency Installation:** Automatically installs Python 3.14, `python3.14-dev`, `python3-pip`, `tmux`, `git`, and Python dependencies (`ecdsa`, `flask`, `waitress`, `websockets`).
+- **Repo Cloning:** Clones only the `public-server` branch with `--depth 1`.
+- **Permissions:** Sets `chmod 777` on `bombsquad_server` and `dist/bombsquad_headless*` binaries.
+- **Interactive Server Configuration:** Prompts for server name, UDP port, max players, game mode (teams/ffa/coop), and owner PB-ID.
+- **Tmux Integration:** Launches the server inside a persistent `tmux` session so it continues running in the background after you disconnect.
+</details>
+
+---
+
+## Manual Installation
 This assumes you are on Ubuntu or an Ubuntu based distribution.
 
 Install `software-properties-common`
-```
+```bash
 sudo apt install software-properties-common -y
 ```
 Add python Deadsnakes PPA
-```
+```bash
 sudo add-apt-repository ppa:deadsnakes/ppa
 ```
 Install Python 3.14
-```
+```bash
 sudo apt install python3.14 python3.14-dev python3.14-venv python3-pip -y
 ```
 Update installed and existing packages
-```
+```bash
 sudo apt update && sudo apt upgrade
 ```
 Create a tmux session.
-```
+```bash
 tmux new -s 43210
 ```
-Download server files.
-```
-git clone --depth=1 https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server
+Download server files (`public-server` branch).
+```bash
+git clone --depth=1 --branch public-server https://github.com/imayushsaini/Bombsquad-Ballistica-Modded-Server.git
 cd Bombsquad-Ballistica-Modded-Server
 ```
-Now edit config.yaml in root dir change server name, port, admins, playlist, team name etc..
+Now edit `config.json` in root dir to change server name, port, admins, playlist, team name etc.
+
 Making the server files executable.
-```
+```bash
 chmod 777 bombsquad_server
 chmod 777 dist/bombsquad_headless
 chmod 777 dist/bombsquad_headless_aarch64
 ```
 Starting the server
-```
+```bash
 ./bombsquad_server
 ```
 If ports are open, you can connect to your server now.
