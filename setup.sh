@@ -557,9 +557,15 @@ if [ "$START_SERVER" = true ]; then
         case "$TMUX_CHOICE" in
             1)
                 print_summary
-                log_info "Attaching to tmux session '$TMUX_SESSION'..."
-                run_user tmux attach-session -t "$TMUX_SESSION"
-                exit 0
+                if [ -t 0 ]; then
+                    log_info "Attaching to tmux session '$TMUX_SESSION'..."
+                    run_user tmux attach-session -t "$TMUX_SESSION"
+                    exit 0
+                else
+                    echo -e "\n${BOLD}${CYAN}To attach to the running server console, run:${RESET}"
+                    echo -e "  ${BOLD}${GREEN}tmux attach -t $TMUX_SESSION${RESET}\n"
+                    exit 0
+                fi
                 ;;
             2)
                 log_info "Killing existing tmux session '$TMUX_SESSION'..."
@@ -583,9 +589,14 @@ if [ "$START_SERVER" = true ]; then
             if run_user tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
                 log_success "Server successfully started in tmux session '$TMUX_SESSION'!"
                 print_summary
-                if ask_yes_no "Would you like to attach to the server console right now?" "y"; then
-                    run_user tmux attach-session -t "$TMUX_SESSION"
-                    exit 0
+                if [ -t 0 ]; then
+                    if ask_yes_no "Would you like to attach to the server console right now?" "y"; then
+                        run_user tmux attach-session -t "$TMUX_SESSION"
+                        exit 0
+                    fi
+                else
+                    echo -e "${BOLD}${CYAN}To view the live server console right now, run:${RESET}"
+                    echo -e "  ${BOLD}${GREEN}tmux attach -t $TMUX_SESSION${RESET}\n"
                 fi
             else
                 log_error "Server process exited prematurely. Run './bombsquad_server' manually to inspect logs."
