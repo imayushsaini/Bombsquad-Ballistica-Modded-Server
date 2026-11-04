@@ -22,9 +22,9 @@
   "WarnCooldownMinutes": 30,
   "afk_remover": {
     "enable": true,
-    "ingame_idle_time_in_secs": 260,
+    "ingame_idle_time_in_secs": 60,
     "kick_idle_from_lobby": true,
-    "lobby_idle_time_in_secs": 140
+    "lobby_idle_time_in_secs": 30
   },
   "afterWarnKickMsg": "Enough warnings, Goodbye have a nice day :)",
   "allowInGameChat": true,

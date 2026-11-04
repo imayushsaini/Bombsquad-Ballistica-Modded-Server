@@ -11,6 +11,8 @@ muted = False
 coopmode = False
 ips = {}
 recents = []
+local_muted_map = {}
+local_muted_pairs = set()
 
 SERVER_DATA_PATH = os.path.join(
     _babase.env()["python_directory_user"], "serverdata" + os.sep

@@ -80,7 +80,19 @@ def filter_chat_message(msg, client_id):
                 return command_executor.QuickAccess(msg, client_id)
             if msg.startswith(".") and settings["allowInGameChat"]:
                 return command_executor.QuickAccess(msg, client_id)
-            return msg
+            try:
+                from tools.local_mute import check_personal_mute_and_send
+                sender_name = (
+                    currentname
+                    if currentname and currentname != "<in-lobby>"
+                    else displaystring
+                ) or f"Client {client_id}"
+                return check_personal_mute_and_send(
+                    msg, client_id, acid, sender_name
+                )
+            except Exception as e:
+                print(f"Error checking personal mute: {e}")
+                return msg
 
     else:
         bs.broadcastmessage("Fetching your account info , Wait a minute",

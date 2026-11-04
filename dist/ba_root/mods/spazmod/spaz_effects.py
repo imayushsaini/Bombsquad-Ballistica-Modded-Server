@@ -1,3 +1,4 @@
+from spazmod.effects_inventory import RANK_EFFECT_MAP
 import functools
 import random
 
@@ -12,9 +13,6 @@ import bascenev1lib
 from bascenev1lib.actor.playerspaz import *
 
 _settings = setting.get_settings_data()
-
-from spazmod.effects_inventory import RANK_EFFECT_MAP
-
 
 
 def effect(repeat_interval=0):
@@ -127,7 +125,7 @@ class NewPlayerSpaz(PlayerSpaz):
         for effect in self.effects:
             trigger = self._effect_mappings[
                 effect] if effect in self._effect_mappings else lambda: None
-            activity = self._activity()
+            activity = self.getactivity(doraise=False)
             if activity:
                 with activity.context:
                     trigger()
@@ -160,7 +158,7 @@ class NewPlayerSpaz(PlayerSpaz):
         velocity = 4.0
         calculate_position = lambda \
             torso_position: torso_position - 0.25 + random.uniform(0, 0.5)
-        calculate_velocity = lambda node_velocity, multiplier: random.uniform(
+        def calculate_velocity(node_velocity, multiplier): return random.uniform(
             -velocity, velocity) + node_velocity * multiplier
         position = tuple(calculate_position(coordinate)
                          for coordinate in self.node.torso_position)
@@ -183,7 +181,7 @@ class NewPlayerSpaz(PlayerSpaz):
         velocity = 1.2
         calculate_position = lambda \
             torso_position: torso_position - 0.25 + random.uniform(0, 0.5)
-        calculate_velocity = lambda node_velocity, multiplier: random.uniform(
+        def calculate_velocity(node_velocity, multiplier): return random.uniform(
             -velocity, velocity) + node_velocity * multiplier
         position = tuple(calculate_position(coordinate)
                          for coordinate in self.node.torso_position)
@@ -223,7 +221,8 @@ class NewPlayerSpaz(PlayerSpaz):
         dim_factor = 0.90
 
         default_color = self.node.color
-        shiny_color = tuple(channel * shine_factor for channel in default_color)
+        shiny_color = tuple(
+            channel * shine_factor for channel in default_color)
         dimmy_color = tuple(channel * dim_factor for channel in default_color)
         animation = {
             0: default_color,
@@ -359,7 +358,7 @@ class NewPlayerSpaz(PlayerSpaz):
         velocity = 2
         calculate_position = lambda \
             torso_position: torso_position - 0.25 + random.uniform(0, 0.5)
-        calculate_velocity = lambda node_velocity, multiplier: random.uniform(
+        def calculate_velocity(node_velocity, multiplier): return random.uniform(
             -velocity, velocity) + node_velocity * multiplier
         position = tuple(calculate_position(coordinate)
                          for coordinate in self.node.torso_position)
@@ -375,13 +374,13 @@ class NewPlayerSpaz(PlayerSpaz):
             spread=0.1,
             emit_type="fairydust",
         )
-        
+
     @effect(repeat_interval=0.01)
     def _add_firespark(self):
         bs.emitfx(
-            position=self.node.position, 
-            velocity=(0, 0, 0), 
-            count=900, spread=0.7, 
+            position=self.node.position,
+            velocity=(0, 0, 0),
+            count=900, spread=0.7,
             chunk_type='spark'
         )
 
@@ -390,7 +389,8 @@ class NewPlayerSpaz(PlayerSpaz):
         # A trail of thin smoke puffing out behind the player
         bs.emitfx(
             position=self.node.position,
-            velocity=(self.node.velocity[0] * 0.4, 0.5, self.node.velocity[2] * 0.4),
+            velocity=(self.node.velocity[0] * 0.4,
+                      0.5, self.node.velocity[2] * 0.4),
             count=2,
             scale=0.8,
             spread=0.1,
@@ -526,6 +526,7 @@ class NewPlayerSpaz(PlayerSpaz):
                 emit_type="tendrils",
                 tendril_type="smoke",
             )
+
 
 def apply() -> None:
     bascenev1lib.actor.playerspaz.PlayerSpaz = NewPlayerSpaz

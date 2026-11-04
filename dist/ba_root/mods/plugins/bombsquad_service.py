@@ -69,16 +69,30 @@ class BsDataThread(object):
                 liveplayers[i['account_id']] = {
                     'name': "<in-lobby>", 'client_id': i['client_id'],
                     'device_id': i['display_string']}
+        session = bs.get_foreground_host_session()
         try:
-            nextMap = bs.get_foreground_host_session(
-            ).get_next_game_description().evaluate()
+            if hasattr(session, 'get_next_game_description'):
+                nextMap = session.get_next_game_description().evaluate()
 
-            current_game_spec = bs.get_foreground_host_session()._current_game_spec
-            gametype: Type[bascenev1.GameActivity] = current_game_spec['resolved_type']
-
-            currentMap = gametype.get_settings_display_string(
-                current_game_spec).evaluate()
-        except:
+                current_game_spec = getattr(session, '_current_game_spec', None)
+                if current_game_spec:
+                    gametype: Type[bascenev1.GameActivity] = current_game_spec['resolved_type']
+                    currentMap = gametype.get_settings_display_string(
+                        current_game_spec).evaluate()
+            elif hasattr(session, 'campaign_level_name'):
+                currentMap = (
+                    session.campaign_level_name
+                    if isinstance(session.campaign_level_name, str)
+                    else session.campaign_level_name.evaluate()
+                )
+                next_lvl = getattr(session, '_next_game_level_name', None)
+                if next_lvl:
+                    nextMap = (
+                        next_lvl
+                        if isinstance(next_lvl, str)
+                        else next_lvl.evaluate()
+                    )
+        except Exception:
             pass
         current_games = {'current': currentMap, 'next': nextMap}
         # system={'cpu':"p.cpu_percent()",'ram':p.virtual_memory().percent}
@@ -88,8 +102,7 @@ class BsDataThread(object):
         stats['chats'] = bs.get_chat_messages()
         stats['playlist'] = current_games
         stats['teamInfo'] = self.getTeamInfo()
-        stats["sessionType"] = type(
-            bs.get_foreground_host_session()).__name__
+        stats["sessionType"] = type(session).__name__ if session else ""
 
         # print(self.getTeamInfo());
 
@@ -99,16 +112,28 @@ class BsDataThread(object):
         if session:
             teams = session.sessionteams
             for team in teams:
+                score = (
+                    team.customdata.get('score', 0)
+                    if hasattr(team, 'customdata') and isinstance(team.customdata, dict)
+                    else 0
+                )
                 data[str(team.id)] = {'name': team.name if isinstance(team.name,
                                                                       str) else team.name.evaluate(),
                                       'color': list(team.color),
-                                      'score': team.customdata['score'],
+                                      'score': score,
                                       'players': []
                                       }
                 for player in team.players:
+                    try:
+                        device_id = (
+                            player.inputdevice.get_v1_account_name(True)
+                            if player.inputdevice
+                            else ''
+                        )
+                    except Exception:
+                        device_id = ''
                     teamplayer = {'name': player.getname(),
-                                  'device_id': player.inputdevice.get_v1_account_name(
-                                      True),
+                                  'device_id': device_id,
                                   'inGame': player.in_game,
                                   'character': player.character,
                                   'account_id': player.get_account_id()

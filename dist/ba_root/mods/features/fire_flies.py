@@ -104,18 +104,20 @@ class FireFly(bs.Actor):
 
     def off(self):
         death_secs = random.uniform(0.5, 3)
-        with self._activity().context():
-            bs.animate(
-                self.node,
-                'mesh_scale',
-                {0: self.node.mesh_scale, death_secs: 0}
-            )
-            bs.animate(
-                self.light,
-                'radius',
-                {0: self.light.radius, death_secs: 0}
-            )
-            bs.timer(death_secs, self.node.delete)
+        activity = self._activity()
+        if activity is not None:
+            with activity.context:
+                bs.animate(
+                    self.node,
+                    'mesh_scale',
+                    {0: self.node.mesh_scale, death_secs: 0}
+                )
+                bs.animate(
+                    self.light,
+                    'radius',
+                    {0: self.light.radius, death_secs: 0}
+                )
+                bs.timer(death_secs, self.node.delete)
 
     def handlemessage(self, msg):
         if isinstance(msg, bs.DieMessage):

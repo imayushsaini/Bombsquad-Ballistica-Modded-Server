@@ -8,7 +8,10 @@ import logging
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
-from bascenev1 import classicassets
+try:
+    from bascenev1 import _classicassets as classicassets
+except ImportError:
+    from bascenev1 import classicassets
 
 if TYPE_CHECKING:
     from typing import Any

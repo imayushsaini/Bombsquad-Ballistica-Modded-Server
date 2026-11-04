@@ -21,3 +21,9 @@ from .shop_system import (
     get_economy_leaderboard,
     get_purchasers_paginated
 )
+from .shop_docui import (
+    setup_shop_host_ui,
+    ShopPlugin,
+    ShopHostUIHandler,
+    ShopRoute,
+)

@@ -577,4 +577,38 @@ def zoom_command(arguments: list[str], clientid: int, accountid: str) -> None:
     private_hud.zoom_command(arguments, clientid, accountid)
 
 
+@registry.register(['mutep', 'muteplayer', 'ignore'], category='Normal')
+def mute_player_cmd(arguments: list[str], clientid: int, accountid: str) -> None:
+    """Mute or unmute chat messages locally from a specific player by client ID.
+
+    Usage: /mutep <client_id>
+    Examples:
+      /mutep 113
+    """
+    if not arguments or arguments == ['']:
+        send("Usage: /mutep <client_id>", clientid)
+        return
+    try:
+        target_cl_id = int(arguments[0])
+        target_acc = None
+        target_name = f"Client {target_cl_id}"
+        for entry in bs.get_game_roster():
+            if entry.get("client_id") == target_cl_id:
+                target_acc = entry.get("account_id")
+                target_name = entry.get("display_string", target_name)
+                break
+        from tools.local_mute import LocalMuteManager
+        is_muted = LocalMuteManager.get().toggle_mute(
+            viewer=clientid,
+            target=target_cl_id,
+            viewer_acc=accountid,
+            target_acc=target_acc,
+        )
+        status = "muted" if is_muted else "unmuted"
+        send(f"{target_name} is now {status} for you.", clientid)
+    except (ValueError, TypeError):
+        send("Invalid client ID", clientid)
+
+
+
 

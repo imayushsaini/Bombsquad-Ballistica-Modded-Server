@@ -652,6 +652,16 @@ def bootstraping():
     except Exception as e:
         logging.exception("Failed to enable kickvote_manager:")
     try:
+        from shop.shop_docui import setup_shop_host_ui
+        setup_shop_host_ui()
+    except Exception as e:
+        logging.exception("Failed to enable shop host UI:")
+    try:
+        from customize_server_docui import setup_customize_server_host_ui
+        setup_customize_server_host_ui()
+    except Exception as e:
+        logging.exception("Failed to enable customize server host UI:")
+    try:
         pass
         # from tools import healthcheck
         # healthcheck.main()
@@ -1059,10 +1069,13 @@ ClassicAppMode.on_activate = new_classic_app_mode_activate
 
 def on_classic_app_mode_active():
     _bascenev1.set_server_name(settings["HostName"])
-    _bascenev1.set_transparent_kickvote(settings["ShowKickVoteStarterName"])
-    _bascenev1.set_kickvote_msg_type(settings["KickVoteMsgType"])
     _bascenev1.hide_player_device_id(settings["Anti-IdRevealer"])
     if getattr(babase.app, 'classic', None) is not None:
+        try:
+            from plugins.kickvote_manager import apply_custom_kick_votes
+            apply_custom_kick_votes()
+        except Exception as e:
+            logging.exception(f"Failed to apply custom kick votes: {e}")
         babase.app.classic.v2_auth_handler = v2_auth_handler
 
 

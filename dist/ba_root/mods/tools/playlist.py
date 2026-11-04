@@ -79,7 +79,7 @@ def updatePlaylist(playlist):
 
 def set_next_map(session, game_map):
     session._next_game_spec = game_map
-    with session.context():
+    with session.context:
         session._instantiate_next_game()
 
 
