@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 #
 # Auto-generated; do not edit by hand.
-"""Asset-package wrapper for ``a-0.baclassicassets.261013a`` (bauiv1).
+"""Asset-package wrapper for ``a-0.baclassicassets.261031`` (bauiv1).
 
 All assets for classic bombsquad that have no narrower home. Character bodies
 live in BaClassicCharacterAssets, map geometry in BaClassicMapAssets, and the
@@ -9,7 +9,7 @@ names/icons/previews menus and the store present in BaClassicCatalogAssets.
 """
 
 # ba_meta require api 9
-# ba_meta require asset-package 663
+# ba_meta require asset-package 1000
 
 # pylint: disable=useless-suppression
 # pylint: disable=too-many-lines
@@ -23,10 +23,11 @@ from bauiv1._assetref import AssetGroup
 
 from babase import LangStrDir
 
-# a-0.baclassicassets.261013a
-_ASSET_PACKAGE = ApverNum(663)
+# a-0.baclassicassets.261031
+_ASSET_PACKAGE = ApverNum(1000)
 
 if TYPE_CHECKING:
+    import datetime
     from bauiv1._assetref import MeshHandle, SoundHandle, TextureHandle
     from babase import LangStr
 
@@ -228,7 +229,6 @@ if TYPE_CHECKING:
         toolbar_backing_top2: MeshHandle
         toolbar_backing_transparent: MeshHandle
         trees: MeshHandle
-        window_bgblotch: MeshHandle
 
     class StringsAccountGroup:
         """
@@ -4438,6 +4438,43 @@ if TYPE_CHECKING:
 
         #: ::
         #:
+        #:     One-line warning at the bottom of the gather window's Nearby and
+        #:     Manual tabs while the app lacks the local-network permission; a
+        #:     Request Permission button sits beside it.
+        #:
+        #:     English: "Local network play requires permission."
+        local_network_permission_needed: LangStr
+
+        #: ::
+        #:
+        #:     Dialog text shown (on Android) when the player opens the gather
+        #:     window without the OS permission for local network access; the
+        #:     dialog's buttons offer to request the permission or continue
+        #:     without it.
+        #:
+        #:     English: "Local network play (finding and hosting nearby games)
+        #:     requires permission to access your local network."
+        local_network_permission_prompt: LangStr
+
+        def local_network_settings_instructions(
+            self, *, app_name: str | LangStr
+        ) -> LangStr:
+            """
+            ::
+
+                Shown (on Android) in a dialog and as a warning in the gather
+                window once the player has denied the local-network permission
+                for good, so the app can no longer ask; tells them how to turn
+                it on in the device's Settings app. {app_name} is the app's
+                display name.
+
+                English: "Local network access is off. To find or host nearby
+                games, allow "Nearby devices" for this app in Settings (Apps >
+                {app_name} > Permissions)."
+            """
+
+        #: ::
+        #:
         #:     Button to make the party private.
         #:
         #:     English: "Make My Party Private"
@@ -4650,6 +4687,15 @@ if TYPE_CHECKING:
         #:     English: "This may require configuring port-forwarding on your
         #:     router. For an easier option, host a private party."
         public_host_router_config: LangStr
+
+        #: ::
+        #:
+        #:     Button label that asks the operating system for the local-network
+        #:     permission (brings up the system permission prompt). Shown in a
+        #:     dialog and beside a warning in the gather window.
+        #:
+        #:     English: "Request Permission"
+        request_local_network_permission: LangStr
 
         def router_forwarding(self, *, port: str | LangStr) -> LangStr:
             """
@@ -5219,6 +5265,249 @@ if TYPE_CHECKING:
 
                 English: "Welcome to {app_name}!"
             """
+
+    class StringsHostUiGroup:
+        """
+        ::
+
+            Pages and notices a game host serves its connected clients: the
+            party stats page and the kick-vote page.
+
+            See source for the full asset list.
+        """
+
+        #: ::
+        #:
+        #:     Column heading in the party stats table showing the verified
+        #:     online account each player is signed in with.
+        #:
+        #:     English: "Account"
+        account_column: LangStr
+
+        #: ::
+        #:
+        #:     Shown under a disabled Kick button on the page of a party member
+        #:     who is an admin.
+        #:
+        #:     English: "Admins can't be kicked."
+        cant_kick_admin: LangStr
+
+        #: ::
+        #:
+        #:     Shown under a disabled Kick button on your own page in the party
+        #:     window.
+        #:
+        #:     English: "You can't kick yourself."
+        cant_kick_self: LangStr
+
+        def client_title(self, *, id: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Title of a party member's page in the party window (for anyone
+                but the host); the placeholder is that connection's numeric
+                client id.
+
+                English: "Client {id}"
+            """
+
+        #: ::
+        #:
+        #:     Column heading on a player's page above the button showing which
+        #:     party member that player plays from.
+        #:
+        #:     English: "Connection"
+        connection_column: LangStr
+
+        def kick_also_removes(self, *, names: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Shown on the page for kicking a player whose device has other
+                players in the game; the placeholder is a comma-separated list
+                of those players' names.
+
+                English: "Also removes {names} (on the same device)."
+            """
+
+        def kick_removes_all(self, *, names: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Shown on the page for kicking a party member; the placeholder is
+                a comma-separated list of the names of all their players in the
+                game.
+
+                English: "Removes {names} (all on this device)."
+            """
+
+        def kick_vote_ends(
+            self,
+            *,
+            t: datetime.timedelta | datetime.datetime,
+            now: datetime.datetime | None = None,
+        ) -> LangStr:
+            """
+            ::
+
+                Small line under the Yes/No buttons of a vote to kick a player
+                from the game; {t} counts down live to when the vote closes.
+
+                English: "Ends in {t}"
+            """
+
+        #: ::
+        #:
+        #:     Shown under a disabled Kick button when the game host has turned
+        #:     off voting to kick players.
+        #:
+        #:     English: "Kick voting is disabled."
+        kick_voting_disabled: LangStr
+
+        #: ::
+        #:
+        #:     Shown under a disabled Kick button when the game host has turned
+        #:     off kicking players entirely.
+        #:
+        #:     English: "Kicking is disabled."
+        kicking_disabled: LangStr
+
+        #: ::
+        #:
+        #:     Shown on the kick-vote page when no vote to kick a player is
+        #:     currently running.
+        #:
+        #:     English: "No kick vote is in progress."
+        no_kick_vote: LangStr
+
+        #: ::
+        #:
+        #:     Note shown under the Players heading on a party member's page
+        #:     when they have no players in the game.
+        #:
+        #:     English: "Has no players in the game currently."
+        no_players: LangStr
+
+        #: ::
+        #:
+        #:     Shown in the party stats table when there are no players to list.
+        #:
+        #:     English: "Nobody is here."
+        nobody_here: LangStr
+
+        #: ::
+        #:
+        #:     Value of the Account line on a party member's page when their
+        #:     account could not be verified.
+        #:
+        #:     English: "Not verified"
+        not_verified: LangStr
+
+        #: ::
+        #:
+        #:     Column heading in the party stats table for each player's network
+        #:     latency in milliseconds.
+        #:
+        #:     English: "Ping (ms)"
+        ping_column: LangStr
+
+        #: ::
+        #:
+        #:     Ping value on the host's own member and player pages (latency to
+        #:     yourself does not apply).
+        #:
+        #:     English: "n/a"
+        ping_host: LangStr
+
+        #: ::
+        #:
+        #:     Label of the line or column showing a party member's network
+        #:     latency on their member and player pages; the value beside it is
+        #:     in milliseconds.
+        #:
+        #:     English: "Ping"
+        ping_label: LangStr
+
+        def ping_value(self, *, ms: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Network latency shown on party member and player pages; the
+                placeholder is a whole number of milliseconds.
+
+                English: "{ms} ms"
+            """
+
+        #: ::
+        #:
+        #:     Shown on the kick-vote page when the player someone chose to kick
+        #:     has already left the game.
+        #:
+        #:     English: "That player is no longer here."
+        player_gone: LangStr
+
+        #: ::
+        #:
+        #:     Heading above a party member's player buttons on their page in
+        #:     the party window.
+        #:
+        #:     English: "Players"
+        players_title: LangStr
+
+        #: ::
+        #:
+        #:     Value of the Role line on an admin's member page.
+        #:
+        #:     English: "Admin"
+        role_admin: LangStr
+
+        #: ::
+        #:
+        #:     Value of the Role line on the host's own member page.
+        #:
+        #:     English: "Host"
+        role_host: LangStr
+
+        #: ::
+        #:
+        #:     Label of the Role line on a party member's page; the value beside
+        #:     it is their role.
+        #:
+        #:     English: "Role"
+        role_label: LangStr
+
+        #: ::
+        #:
+        #:     Value of the Role line on a regular party member's page.
+        #:
+        #:     English: "Member"
+        role_member: LangStr
+
+        #: ::
+        #:
+        #:     Button on the kick-vote page that starts a vote among the other
+        #:     players on whether to kick (remove) the chosen player from the
+        #:     game.
+        #:
+        #:     English: "Start a Kick Vote"
+        start_kick_vote: LangStr
+
+        #: ::
+        #:
+        #:     Title of the page a game host serves listing everyone in the
+        #:     party with their game stats and connection info; also the in-game
+        #:     menu button that opens it.
+        #:
+        #:     English: "Stats"
+        stats_title: LangStr
+
+        #: ::
+        #:
+        #:     Column heading on a player's page above the name of the team that
+        #:     player is on (team games only).
+        #:
+        #:     English: "Team"
+        team_column: LangStr
 
     class StringsInGameMenuGroup:
         """
@@ -5807,6 +6096,15 @@ if TYPE_CHECKING:
 
         #: ::
         #:
+        #:     Label for the main-menu button on iPad that closes the game's
+        #:     window, the same action as the close button in the iPad's window
+        #:     controls (other platforms use the 'Quit' or 'Exit Game' strings).
+        #:
+        #:     English: "Close Game"
+        close_game: LangStr
+
+        #: ::
+        #:
         #:     Label for the main-menu button showing the game's credits.
         #:
         #:     English: "Credits"
@@ -6111,13 +6409,6 @@ if TYPE_CHECKING:
 
         #: ::
         #:
-        #:     Parenthetical marker for the party host.
-        #:
-        #:     English: "(host)"
-        host: LangStr
-
-        #: ::
-        #:
         #:     Button to start a vote to kick a player.
         #:
         #:     English: "Vote to Kick"
@@ -6143,6 +6434,16 @@ if TYPE_CHECKING:
         #:
         #:     English: "Unmute Chat"
         unmute_chat: LangStr
+
+        def view_member(self, *, name: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Menu item shown when pressing a chat message in the party
+                window; the placeholder is the sender's name.
+
+                English: "View {name}"
+            """
 
     class StringsPartyQueueGroup:
         """
@@ -6860,6 +7161,24 @@ if TYPE_CHECKING:
 
         #: ::
         #:
+        #:     Checkbox label in Advanced settings that makes games the player
+        #:     hosts use the older, pre-1.8 physics for the playable characters
+        #:     (the little fighters), which some long-time players prefer
+        #:     because certain old tricks depend on it.
+        #:
+        #:     English: "Legacy Character Physics"
+        legacy_character_physics: LangStr
+
+        #: ::
+        #:
+        #:     Small note under the Legacy Character Physics checkbox in
+        #:     Advanced settings.
+        #:
+        #:     English: "Note that servers or tournaments may override this."
+        legacy_character_physics_description: LangStr
+
+        #: ::
+        #:
         #:     Button linking to the online modding guide.
         #:
         #:     English: "Modding Guide"
@@ -6911,58 +7230,11 @@ if TYPE_CHECKING:
 
         #: ::
         #:
-        #:     Status line while the translation status loads.
-        #:
-        #:     English: "checking translation status..."
-        translation_checking: LangStr
-
-        def translation_editor(self, *, app_name: str | LangStr) -> LangStr:
-            """
-            ::
-
-                Button linking to the web translation editor.
-
-                English: "{app_name} Translation Editor"
-            """
-
-        #: ::
-        #:
         #:     Button on the help-improve-translations row; opens the feedback
         #:     page.
         #:
         #:     English: "Feedback"
         translation_feedback: LangStr
-
-        #: ::
-        #:
-        #:     Status line when the translation-status query fails.
-        #:
-        #:     English: "translation status unavailable"
-        translation_fetch_error: LangStr
-
-        #: ::
-        #:
-        #:     Checkbox subscribing to translation-update notifications for the
-        #:     user's language.
-        #:
-        #:     English: "Inform me when my language needs updates"
-        translation_inform_me: LangStr
-
-        #: ::
-        #:
-        #:     Status line when the current language has missing/outdated
-        #:     translations.
-        #:
-        #:     English: "** The current language needs updates!! **"
-        translation_needs_updates: LangStr
-
-        #: ::
-        #:
-        #:     Status line when the current language needs no translation
-        #:     updates.
-        #:
-        #:     English: "The current language is up to date; woohoo!"
-        translation_up_to_date: LangStr
 
     class StringsSettingsAudioGroup:
         """
@@ -7886,6 +8158,14 @@ if TYPE_CHECKING:
         #:
         #:     English: "Max FPS"
         max_fps: LangStr
+
+        #: ::
+        #:
+        #:     Label of the multisample anti-aliasing setting in the graphics
+        #:     settings.
+        #:
+        #:     English: "MSAA"
+        msaa: LangStr
 
         #: ::
         #:
@@ -9208,6 +9488,17 @@ if TYPE_CHECKING:
         #:     English: "Boost"
         boost: LangStr
 
+        def close_app_confirm(self, *, app_name: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Confirmation question for closing the app's window (iPad
+                wording; Mac uses the 'Quit' variant and everything else the
+                'Exit' variant).
+
+                English: "Close {app_name}?"
+            """
+
         #: ::
         #:
         #:     Generic "Demo" label.
@@ -9544,6 +9835,7 @@ if TYPE_CHECKING:
         get_remote: StringsGetRemoteGroup
         get_tokens: StringsGetTokensGroup
         help: StringsHelpGroup
+        host_ui: StringsHostUiGroup
         in_game_menu: StringsInGameMenuGroup
         inbox: StringsInboxGroup
         inventory: StringsInventoryGroup
@@ -9636,6 +9928,7 @@ if TYPE_CHECKING:
         chest_icon_multi: TextureHandle
         circle_zig_zag: TextureHandle
         clay_stroke: TextureHandle
+        connection_down: TextureHandle
         controller_icon: TextureHandle
         cross_out: TextureHandle
         cross_out_mask: TextureHandle
@@ -9746,20 +10039,20 @@ if TYPE_CHECKING:
     #: list in source.
     audio: AudioGroup
 
-    #: The ``meshes`` group - 55 assets (``achievement_outline``,
+    #: The ``meshes`` group - 54 assets (``achievement_outline``,
     #: ``action_button_bottom``, ``action_button_left``,
-    #: ``action_button_right``, ``action_button_top``, and 50 more). Full list
+    #: ``action_button_right``, ``action_button_top``, and 49 more). Full list
     #: in source.
     meshes: MeshesGroup
 
-    #: The ``strings`` group - 1011 strings (``account``, ``achievements``,
-    #: ``app_invite``, ``controls``, ``coop``, and 1006 more). Full list in
+    #: The ``strings`` group - 1041 strings (``account``, ``achievements``,
+    #: ``app_invite``, ``controls``, ``coop``, and 1036 more). Full list in
     #: source.
     strings: StringsGroup
 
-    #: The ``textures`` group - 154 assets (``achievement_boxer``,
+    #: The ``textures`` group - 155 assets (``achievement_boxer``,
     #: ``achievement_cross_hair``, ``achievement_dual_wielding``,
-    #: ``achievement_empty``, ``achievement_flawless_victory``, and 149 more).
+    #: ``achievement_empty``, ``achievement_flawless_victory``, and 150 more).
     #: Full list in source.
     textures: TexturesGroup
 
@@ -9946,7 +10239,6 @@ _TREE = {
         'toolbar_backing_top2': 'm',
         'toolbar_backing_transparent': 'm',
         'trees': 'm',
-        'window_bgblotch': 'm',
     },
     'strings': {
         'account': {
@@ -10489,6 +10781,9 @@ _TREE = {
             'joinable_no': (),
             'joinable_yes': (),
             'local_network_description': (),
+            'local_network_permission_needed': (),
+            'local_network_permission_prompt': (),
+            'local_network_settings_instructions': ('app_name',),
             'make_party_private': (),
             'make_party_public': (),
             'manual': (),
@@ -10519,6 +10814,7 @@ _TREE = {
             'private_party_join': (),
             'public': (),
             'public_host_router_config': (),
+            'request_local_network_permission': (),
             'router_forwarding': ('port',),
             'show_my_address': (),
             'start_hosting': (),
@@ -10586,6 +10882,35 @@ _TREE = {
             'title': ('app_name',),
             'to_get_the_most': (),
             'welcome': ('app_name',),
+        },
+        'host_ui': {
+            'account_column': (),
+            'cant_kick_admin': (),
+            'cant_kick_self': (),
+            'client_title': ('id',),
+            'connection_column': (),
+            'kick_also_removes': ('names',),
+            'kick_removes_all': ('names',),
+            'kick_vote_ends': ('t',),
+            'kick_voting_disabled': (),
+            'kicking_disabled': (),
+            'no_kick_vote': (),
+            'no_players': (),
+            'nobody_here': (),
+            'not_verified': (),
+            'ping_column': (),
+            'ping_host': (),
+            'ping_label': (),
+            'ping_value': ('ms',),
+            'player_gone': (),
+            'players_title': (),
+            'role_admin': (),
+            'role_host': (),
+            'role_label': (),
+            'role_member': (),
+            'start_kick_vote': (),
+            'stats_title': (),
+            'team_column': (),
         },
         'in_game_menu': {
             'end_game': (),
@@ -10661,6 +10986,7 @@ _TREE = {
             'ready': (),
         },
         'main_menu': {
+            'close_game': (),
             'credits': (),
             'exit_game': (),
             'host_navigating_menus': ('host',),
@@ -10700,11 +11026,11 @@ _TREE = {
             'chat_message': (),
             'chat_muted': (),
             'empty': (),
-            'host': (),
             'kick_vote': (),
             'mute_chat': (),
             'title': (),
             'unmute_chat': (),
+            'view_member': ('name',),
         },
         'party_queue': {'waiting_in_line': ()},
         'play': {'one_to_four_players': (), 'two_to_eight_players': ()},
@@ -10797,6 +11123,8 @@ _TREE = {
                 'insecure_connections_description': (),
                 'kick_idle_players': (),
                 'language': (),
+                'legacy_character_physics': (),
+                'legacy_character_physics_description': (),
                 'modding_guide': (),
                 'send_info': (),
                 'show_demos_when_idle': (),
@@ -10804,13 +11132,7 @@ _TREE = {
                 'show_in_game_ping': (),
                 'show_mods_folder': (),
                 'title': (),
-                'translation_checking': (),
-                'translation_editor': ('app_name',),
                 'translation_feedback': (),
-                'translation_fetch_error': (),
-                'translation_inform_me': (),
-                'translation_needs_updates': (),
-                'translation_up_to_date': (),
             },
             'audio': {
                 'music_volume': (),
@@ -10935,6 +11257,7 @@ _TREE = {
                 'fullscreen': (),
                 'fullscreen_shortcut_format': ('name', 'shortcut'),
                 'max_fps': (),
+                'msaa': (),
                 'native': (),
                 'resolution': (),
                 'screen_insets': (),
@@ -11095,6 +11418,7 @@ _TREE = {
             'activity': (),
             'app_name': (),
             'boost': (),
+            'close_app_confirm': ('app_name',),
             'demo': (),
             'easy': (),
             'epic_mode': (),
@@ -11189,6 +11513,7 @@ _TREE = {
         'chest_icon_multi': 't',
         'circle_zig_zag': 't',
         'clay_stroke': 't',
+        'connection_down': 't',
         'controller_icon': 't',
         'cross_out': 't',
         'cross_out_mask': 't',
@@ -11295,10 +11620,16 @@ _TREE = {
         'window_bottom_cap': 't',
     },
 }
+_DISPLAY_KINDS = {'strings/host_ui/kick_vote_ends': {'t': 'millis(dir=future)'}}
 
 
 if not TYPE_CHECKING:
     audio = AssetGroup(_ASSET_PACKAGE, _TREE['audio'], 'audio')
     meshes = AssetGroup(_ASSET_PACKAGE, _TREE['meshes'], 'meshes')
-    strings = LangStrDir(_ASSET_PACKAGE, _TREE['strings'], 'strings')
+    strings = LangStrDir(
+        _ASSET_PACKAGE,
+        _TREE['strings'],
+        'strings',
+        display_kinds=_DISPLAY_KINDS,
+    )
     textures = AssetGroup(_ASSET_PACKAGE, _TREE['textures'], 'textures')

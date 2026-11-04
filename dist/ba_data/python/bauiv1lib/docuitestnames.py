@@ -20,6 +20,7 @@ from bacommon.langstr import LangStrSpecValue
 from bacommon.text import SpecialChar
 import bacommon.depiction as bdep
 import bacommon.docui.v2 as dui2
+from bauiv1 import _builtinassets, _commonassets, _docuiv2testassets
 
 if TYPE_CHECKING:
     # Any: the name payloads here are hand-built json dicts with mixed
@@ -59,8 +60,6 @@ def test_page_names(
     route: bacommon.docui.routes.docuitest.Names,
 ) -> bacommon.docui.v2.Response:
     """Testing name depictions."""
-    from bauiv1 import _builtinassets, _docuiv2testassets
-
     strs = _docuiv2testassets.strings
     debug = route.debug
     tex = _builtinassets.textures
@@ -113,15 +112,14 @@ def test_page_names(
             ],
         )
 
-    def _row(
+    def _rows(
         title: str, subtitle: str, buttons: list[dui2.Button]
-    ) -> dui2.ButtonRow:
-        return dui2.ButtonRow(
-            debug=debug,
-            title=LangStrSpecValue.literal(title),
-            subtitle=LangStrSpecValue.literal(subtitle),
-            buttons=buttons,
-        )
+    ) -> list[dui2.Row]:
+        return [
+            dui2.TitleRow(LangStrSpecValue.literal(title)),
+            dui2.SubtitleRow(LangStrSpecValue.literal(subtitle)),
+            dui2.ButtonRow(debug=debug, buttons=buttons),
+        ]
 
     # The account look: a glowing capsule with a badge at its left end.
     def _account(text: str) -> bdep.NameDepiction:
@@ -142,8 +140,8 @@ def test_page_names(
     # capsule (a white 9-patch tinted green) and the V2 badge. Sizes
     # from the CSS: a 54px capsule around 32px text, a 40px badge with
     # a 4px gap, 20px of right padding.
-    glow_capsule = _spec(tex.glow_circle)
-    v2_badge = _spec(tex.account_v2_icon)
+    glow_capsule = _spec(_commonassets.textures.glow_circle)
+    v2_badge = _spec(_commonassets.textures.account_v2_icon)
 
     def _web_account(
         text: str,
@@ -230,7 +228,7 @@ def test_page_names(
         page=dui2.Page(
             title=LangStrSpecValue.literal('Names'),
             rows=[
-                _row(
+                *_rows(
                     'Striped capsules',
                     'Greyscale 9-patch art whose middle tiles at the'
                     ' ends\' scale (tile-fit), tinted three colors by an'
@@ -256,7 +254,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Text glow',
                     'A neon look by amount (text_glow): white-hot'
                     ' interiors and a soft glow in the text\'s own color,'
@@ -272,7 +270,7 @@ def test_page_names(
                         for amount in (0.0, 0.5, 1.0, 2.0)
                     ],
                 ),
-                _row(
+                *_rows(
                     'Text shadow and flatness',
                     'The text\'s drop shadow by strength (text_shadow; 1'
                     ' is the standard) and how flat it draws'
@@ -297,7 +295,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Web account look',
                     'The website\'s account name (dark theme), drawn'
                     ' natively: tinted glow capsule art, the V2 badge, and'
@@ -323,7 +321,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Basic',
                     'Colored text, as large as fits its box.',
                     [
@@ -359,7 +357,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Glyph',
                     'A global profile: an icon glyph before the text.',
                     [
@@ -391,7 +389,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Suffix',
                     'Trailing text fitted into the box with the name (and'
                     ' drawn in its color override, if any).',
@@ -417,7 +415,60 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
+                    'In-game shortening and numbering',
+                    'A name shown as in game (max_chars, number): long'
+                    ' text cut to its first 10 characters plus \'...\','
+                    ' and colliding names numbered. Only the text'
+                    ' changes; capsules and glyphs keep their look.',
+                    [
+                        _button(
+                            'long, shortened',
+                            replace(
+                                _name('A Rather Long Name'),
+                                max_chars=bdep.IN_GAME_NAME_MAX_CHARS,
+                            ),
+                            wide,
+                        ),
+                        _button(
+                            'numbered',
+                            replace(_name('efro'), number=2),
+                            wide,
+                        ),
+                        _button(
+                            'long, shortened + numbered',
+                            replace(
+                                _name('A Rather Long Name'),
+                                max_chars=bdep.IN_GAME_NAME_MAX_CHARS,
+                                number=3,
+                            ),
+                            wide,
+                        ),
+                        _button(
+                            'account capsule',
+                            replace(
+                                _web_account('A Rather Long Name'),
+                                max_chars=bdep.IN_GAME_NAME_MAX_CHARS,
+                                number=2,
+                            ),
+                            wide,
+                            color=_WEB_BG,
+                        ),
+                        _button(
+                            'glyph (not counted)',
+                            replace(
+                                _name(
+                                    'A Rather Long Name',
+                                    (1.0, 0.6, 0.2),
+                                    glyph=SpecialChar.LOGO,
+                                ),
+                                max_chars=bdep.IN_GAME_NAME_MAX_CHARS,
+                            ),
+                            wide,
+                        ),
+                    ],
+                ),
+                *_rows(
                     'Color override',
                     'A host color imposed on a name: its text by default;'
                     ' a capsule routes it to any of text, capsule, tint'
@@ -486,7 +537,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Capsule',
                     'Radius 1.0 = the cap height (hugs the capitals); 2.3 is'
                     ' the default. With an icon, the icon sits at the left'
@@ -562,7 +613,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Text inset and icon edge',
                     'Unset inset = automatic: text reaches into the ends as'
                     ' far as the capitals stay inside the curve (0 ='
@@ -659,7 +710,7 @@ def test_page_names(
                         ),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Capsule art with glow',
                     'Soft capsule art whose edge sits inside it'
                     ' (capsule_edge): the glow spills past the box; sizing'
@@ -710,7 +761,7 @@ def test_page_names(
                         _button('account look', _account('efro'), wide),
                     ],
                 ),
-                _row(
+                *_rows(
                     'Capsule fit and alignment',
                     'The whole capsule is the shape fitted to the box.',
                     [

@@ -222,6 +222,29 @@ class CloudSubsystem(babase.AppSubsystem):
         """
         return None
 
+    def get_connected_node_address(self) -> str | None:
+        """Return the IP our connected basn node's host resolved to.
+
+        The address our transport session is actually connected to (see
+        :meth:`get_connected_node_base_url`), so asset downloads from the
+        node can connect there without a fresh DNS lookup. ``None`` when
+        not connected, when unknown, or in implementations without a
+        node-based transport.
+
+        :meta private:
+        """
+        return None
+
+    def on_app_instance_info_changed(self) -> None:
+        """Called when something reported in our app-instance-info changes.
+
+        Notably the current locale. Lets the cloud keep its view of us
+        current (it renders some text server-side in our language)
+        without waiting for a reconnect.
+
+        :meta private:
+        """
+
     def on_connectivity_changed(self, connected: bool) -> None:
         """Called when cloud connectivity state changes.
 
@@ -346,7 +369,7 @@ class CloudSubsystem(babase.AppSubsystem):
 
         self._update_available_notice_pending = False
 
-        from babase import _builtinassets
+        from babase import _builtinassets, _commonassets
 
         notice = _builtinassets.strings.ui.update_available
 
@@ -363,7 +386,7 @@ class CloudSubsystem(babase.AppSubsystem):
             )
             return
 
-        _builtinassets.audio.ding.get().play()
+        _commonassets.audio.ding.get().play()
 
         babase.screenmessage(notice, color=(0.4, 1.0, 0.4))
 

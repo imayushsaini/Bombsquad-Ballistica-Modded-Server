@@ -485,7 +485,14 @@ class LanguageSubsystem(AppSubsystem):
         # language asset-package buckets. English is the bundled fallback
         # flavor, so this currently always yields English (strings
         # migration Step A); switching to other locales lands in Step B.
-        from babase._asset_packages import loaded_asset_package_apvernums
+        from babase._asset_packages import (
+            load_bundled_language,
+            loaded_asset_package_apvernums,
+        )
+
+        # At boot, bring the builtin strings up now rather than when
+        # the graphics-gated bundled load gets to them (a no-op after).
+        load_bundled_language()
 
         curlocale = _babase.app.locale.current_locale.resolved
         _babase.reload_language(
@@ -585,6 +592,14 @@ class LanguageSubsystem(AppSubsystem):
         if len(char) != 1:
             raise ValueError('Invalid Input; must be length 1')
         return 0xE000 <= ord(char) <= 0xF8FF
+
+    def remove_custom_unicode_chars(self, text: str) -> str:
+        """Return text without any chars in our custom unicode range.
+
+        For names nobody has verified: an icon glyph in one could pass
+        for an account or global profile it doesn't own.
+        """
+        return ''.join(c for c in text if not 0xE000 <= ord(c) <= 0xF8FF)
 
 
 class Lstr:

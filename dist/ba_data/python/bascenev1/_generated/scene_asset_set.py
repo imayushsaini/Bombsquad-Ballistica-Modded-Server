@@ -12,8 +12,9 @@ import _bascenev1
 
 from bascenev1 import _scenev1assets
 from bascenev1 import _classiccharacterassets
-from bascenev1 import _builtinassets
+from bascenev1 import _commonassets
 from bascenev1 import _classiccatalogassets
+from bascenev1 import _classicassets
 
 if TYPE_CHECKING:
     from bascenev1._assetref import (
@@ -120,7 +121,7 @@ class SceneV1AssetSet:
     #: Frantic bomb-ticking loop.
     ticking_crazy: SoundHandle
 
-    # -- Utility art from the builtin asset package that the node layer
+    # -- Utility art from the common asset package that the node layer
     # leans on directly.
     #: Solid black (data role); an identity colorize mask.
     black: TextureHandle
@@ -192,6 +193,11 @@ class SceneV1AssetSet:
     #: Standin character fall sound 1.
     standin_fall01: SoundHandle
 
+    # -- Status art for our connection to a game host, drawn over
+    # everything while joined to one.
+    #: Shown mid-screen while the host has stopped responding.
+    connection_down: TextureHandle
+
     def __init__(self) -> None:
         # All slots start at scene_v1's own art (handles only;
         # nothing is loaded here).
@@ -237,7 +243,7 @@ class SceneV1AssetSet:
         self.sparkle02 = _scenev1assets.audio.sparkle02
         self.sparkle03 = _scenev1assets.audio.sparkle03
         self.ticking_crazy = _scenev1assets.audio.ticking_crazy
-        self.black = _builtinassets.textures.black_data
+        self.black = _commonassets.textures.black_data
         self.character_icon_mask = (
             _classiccatalogassets.textures.character_icon_mask
         )
@@ -279,6 +285,7 @@ class SceneV1AssetSet:
         self.standin_death01 = _classiccharacterassets.audio.spaz_death01
         self.standin_pickup01 = _classiccharacterassets.audio.spaz_pickup01
         self.standin_fall01 = _classiccharacterassets.audio.spaz_fall01
+        self.connection_down = _classicassets.textures.connection_down
 
 
 def set_scene_asset_set(assets: SceneV1AssetSet) -> None:
@@ -365,4 +372,5 @@ def set_scene_asset_set(assets: SceneV1AssetSet) -> None:
         assets.standin_death01,
         assets.standin_pickup01,
         assets.standin_fall01,
+        assets.connection_down,
     )

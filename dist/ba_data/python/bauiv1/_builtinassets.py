@@ -1,7 +1,7 @@
 # Released under the MIT License. See LICENSE for details.
 #
 # Auto-generated; do not edit by hand.
-"""Asset-package wrapper for ``a-0.babuiltinassets.261014`` (bauiv1).
+"""Asset-package wrapper for ``a-0.babuiltinassets.261102a`` (bauiv1).
 
 Bare minimum assets always bundled with the engine.
 
@@ -9,7 +9,7 @@ These are loaded at launch and always available in the C++ layer.
 """
 
 # ba_meta require api 9
-# ba_meta require asset-package 671
+# ba_meta require asset-package 1008
 
 # pylint: disable=useless-suppression
 # pylint: disable=too-many-lines
@@ -23,8 +23,8 @@ from bauiv1._assetref import AssetGroup
 
 from babase import LangStrDir
 
-# a-0.babuiltinassets.261014
-_ASSET_PACKAGE = ApverNum(671)
+# a-0.babuiltinassets.261102a
+_ASSET_PACKAGE = ApverNum(1008)
 
 if TYPE_CHECKING:
     import datetime
@@ -35,34 +35,27 @@ if TYPE_CHECKING:
         """
         ::
 
-            Sounds needed during engine bootstrap and early UI (clicks, errors,
-            and other always-available effects).
+            Sounds the engine plays before construct-mode hands off (dev console
+            and dialog feedback), plus the silent stand-in for missing sounds.
 
             See source for the full asset list.
         """
 
         blank: SoundHandle
         blip: SoundHandle
-        cash_register: SoundHandle
         click01: SoundHandle
-        ding: SoundHandle
         error: SoundHandle
-        gun_cocking: SoundHandle
-        powerdown01: SoundHandle
-        tap: SoundHandle
 
     class MeshesGroup:
         """
         ::
 
-            Meshes needed during engine bootstrap and early UI.
+            Meshes the engine draws before construct-mode hands off.
 
             See source for the full asset list.
         """
 
-        box: MeshHandle
         image1x1: MeshHandle
-        overlay_guide: MeshHandle
         vr_fade: MeshHandle
         vr_overlay: MeshHandle
 
@@ -314,6 +307,15 @@ if TYPE_CHECKING:
 
                 English: "Error playing music: {music}"
             """
+
+        #: ::
+        #:
+        #:     Error screen-message shown shortly after launch when the device's
+        #:     audio couldn't be started at all; the game keeps running,
+        #:     silently.
+        #:
+        #:     English: "Unable to start audio; the game will have no sound."
+        unavailable: LangStr
 
     class StringsDeviceGroup:
         """
@@ -734,6 +736,23 @@ if TYPE_CHECKING:
                 English: "Left {name}'s party."
             """
 
+        def no_server_contact(
+            self,
+            *,
+            t: datetime.timedelta | datetime.datetime,
+            now: datetime.datetime | None = None,
+        ) -> LangStr:
+            """
+            ::
+
+                Caption shown in the middle of the screen, under a 'connection
+                down' graphic, while connected to a game host (server) that has
+                stopped responding; {t} counts up live from when the host was
+                last heard from (e.g. '5s', '1m 5s').
+
+                English: "No server contact for {t}"
+            """
+
         def player_joined_party(self, *, name: str | LangStr) -> LangStr:
             """
             ::
@@ -781,6 +800,42 @@ if TYPE_CHECKING:
         #:     English: "This is currently unavailable (no internet
         #:     connection?)"
         unavailable_no_connection: LangStr
+
+    class StringsOsGroup:
+        """
+        ::
+
+            Strings the operating system shows from the app's native resource
+            files (app name, native dialog text, permission prompts); generated
+            into Android strings.xml and Apple string catalogs at pin time.
+
+            See source for the full asset list.
+        """
+
+        def fatal_error(self, *, email: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Message in the native Android dialog shown when the app hits an
+                unrecoverable error and must close; technical error details are
+                appended below it. The placeholder is the support email address.
+                Generated into native OS resource files.
+
+                English: "Uh oh; something is missing or broken. Please try
+                reinstalling the app or contact {email} for help."
+            """
+
+        #: ::
+        #:
+        #:     Body text of the operating system's local-network permission
+        #:     prompt on Apple platforms (Info.plist
+        #:     NSLocalNetworkUsageDescription). The OS shows the app's name in
+        #:     the prompt's title, above this text. Generated into native OS
+        #:     resource files.
+        #:
+        #:     English: "Used to find and join games on your local network and
+        #:     to connect controllers."
+        local_network_usage: LangStr
 
     class StringsPluginsGroup:
         """
@@ -1035,6 +1090,18 @@ if TYPE_CHECKING:
                 player; the placeholder is their display name.
 
                 English: "A kick vote has been started for {name}."
+            """
+
+        def kick_votes_need_update(self, *, version: str | LangStr) -> LangStr:
+            """
+            ::
+
+                Screen-message a game host sends a player whose game is too old
+                for kick votes when they try to kick someone; the placeholder is
+                the minimum game version number (such as 1.8.4).
+
+                English: "Kick votes need version {version} or newer; please
+                update."
             """
 
         def kick_votes_needed(self, *, count: int) -> LangStr:
@@ -1321,6 +1388,15 @@ if TYPE_CHECKING:
 
         #: ::
         #:
+        #:     Generic label for a button that confirms and finishes an edit
+        #:     (used by e.g. the native Android text-edit dialog's confirm
+        #:     button).
+        #:
+        #:     English: "Done"
+        done: LangStr
+
+        #: ::
+        #:
         #:     Generic Error title used on error dialogs (e.g. the boot-time
         #:     asset-update dialog when a load fails).
         #:
@@ -1521,6 +1597,7 @@ if TYPE_CHECKING:
         device: StringsDeviceGroup
         input: StringsInputGroup
         net: StringsNetGroup
+        os: StringsOsGroup
         plugins: StringsPluginsGroup
         replay: StringsReplayGroup
         scripts: StringsScriptsGroup
@@ -1534,20 +1611,12 @@ if TYPE_CHECKING:
         """
         ::
 
-            Textures needed during engine bootstrap and early UI, including the
-            reflection cube-maps.
+            Textures the engine draws before construct-mode hands off: fonts,
+            text backings, the cursor, and dev-console/dialog chrome.
 
             See source for the full asset list.
         """
 
-        account_v2_icon: TextureHandle
-        black: TextureHandle
-
-        #: ::
-        #:
-        #:     Data-role twin of black.png for shader slots that read channels
-        #:     as values (tint and mask slots); the original stays a picture.
-        black_data: TextureHandle
         circle: TextureHandle
         circle_shadow: TextureHandle
         cursor: TextureHandle
@@ -1565,12 +1634,9 @@ if TYPE_CHECKING:
         font_small5: TextureHandle
         font_small6: TextureHandle
         font_small7: TextureHandle
-        glow_circle: TextureHandle
         howdy: TextureHandle
         shadow: TextureHandle
         shadow_sharp: TextureHandle
-        soft_rect: TextureHandle
-        soft_rect2: TextureHandle
 
         #: ::
         #:
@@ -1586,50 +1652,27 @@ if TYPE_CHECKING:
         #:     picture.
         soft_rect_mask: TextureHandle
         soft_rect_vertical: TextureHandle
-        white: TextureHandle
 
-        #: ::
-        #:
-        #:     Data-role twin of white.png for shader slots that read channels
-        #:     as values (tint and mask slots); the original stays a picture.
-        white_data: TextureHandle
-
-    #: The ``audio`` group - 9 assets (``blank``, ``blip``, ``cash_register``,
-    #: ``click01``, ``ding``, and 4 more). Full list in source.
+    #: The ``audio`` group - 4 assets (``blank``, ``blip``, ``click01``,
+    #: ``error``). Full list in source.
     audio: AudioGroup
 
-    #: The ``meshes`` group - 5 assets (``box``, ``image1x1``,
-    #: ``overlay_guide``, ``vr_fade``, ``vr_overlay``). Full list in source.
+    #: The ``meshes`` group - 3 assets (``image1x1``, ``vr_fade``,
+    #: ``vr_overlay``). Full list in source.
     meshes: MeshesGroup
 
-    #: The ``strings`` group - 135 strings (``account``, ``assets``, ``audio``,
-    #: ``device``, ``input``, and 130 more). Full list in source.
+    #: The ``strings`` group - 141 strings (``account``, ``assets``, ``audio``,
+    #: ``device``, ``input``, and 136 more). Full list in source.
     strings: StringsGroup
 
-    #: The ``textures`` group - 31 assets (``account_v2_icon``, ``black``,
-    #: ``black_data``, ``circle``, ``circle_shadow``, and 26 more). Full list in
+    #: The ``textures`` group - 23 assets (``circle``, ``circle_shadow``,
+    #: ``cursor``, ``font_big``, ``font_extras``, and 18 more). Full list in
     #: source.
     textures: TexturesGroup
 
 _TREE = {
-    'audio': {
-        'blank': 's',
-        'blip': 's',
-        'cash_register': 's',
-        'click01': 's',
-        'ding': 's',
-        'error': 's',
-        'gun_cocking': 's',
-        'powerdown01': 's',
-        'tap': 's',
-    },
-    'meshes': {
-        'box': 'm',
-        'image1x1': 'm',
-        'overlay_guide': 'm',
-        'vr_fade': 'm',
-        'vr_overlay': 'm',
-    },
+    'audio': {'blank': 's', 'blip': 's', 'click01': 's', 'error': 's'},
+    'meshes': {'image1x1': 'm', 'vr_fade': 'm', 'vr_overlay': 'm'},
     'strings': {
         'account': {
             'must_sign_in': (),
@@ -1656,7 +1699,7 @@ _TREE = {
             'sign_in_needed_other_device': ('address',),
             'signing_in': (),
         },
-        'audio': {'music_play_error': ('music',)},
+        'audio': {'music_play_error': ('music',), 'unavailable': ()},
         'device': {'thermal_frame_rate_cap': ()},
         'input': {
             'axis': ('number',),
@@ -1698,12 +1741,14 @@ _TREE = {
             'invalid_address': (),
             'left_game': ('name',),
             'left_party': ('name',),
+            'no_server_contact': ('t',),
             'player_joined_party': ('name',),
             'player_left_party': ('name',),
             'secure_connection_failed': (),
             'server_unsupported': (),
             'unavailable_no_connection': (),
         },
+        'os': {'fatal_error': ('email',), 'local_network_usage': ()},
         'plugins': {
             'class_load_error': ('plugin', 'error'),
             'detected': (),
@@ -1730,6 +1775,7 @@ _TREE = {
             'kick_vote_failed': (),
             'kick_vote_not_enough_players': (),
             'kick_vote_started': ('name',),
+            'kick_votes_need_update': ('version',),
             'kick_votes_needed': ('count',),
             'kick_voting_disabled': (),
             'kick_with_chat': ('yes', 'no'),
@@ -1764,6 +1810,7 @@ _TREE = {
             'cancel': (),
             'clipboard_not_supported': (),
             'copied_to_clipboard': (),
+            'done': (),
             'error': (),
             'game_center': (),
             'google_play': (),
@@ -1789,9 +1836,6 @@ _TREE = {
         },
     },
     'textures': {
-        'account_v2_icon': 't',
-        'black': 't',
-        'black_data': 't',
         'circle': 't',
         'circle_shadow': 't',
         'cursor': 't',
@@ -1809,20 +1853,18 @@ _TREE = {
         'font_small5': 't',
         'font_small6': 't',
         'font_small7': 't',
-        'glow_circle': 't',
         'howdy': 't',
         'shadow': 't',
         'shadow_sharp': 't',
-        'soft_rect': 't',
-        'soft_rect2': 't',
         'soft_rect2_mask': 't',
         'soft_rect_mask': 't',
         'soft_rect_vertical': 't',
-        'white': 't',
-        'white_data': 't',
     },
 }
-_DISPLAY_KINDS = {'strings/time/duration_value': {'t': 'millis'}}
+_DISPLAY_KINDS = {
+    'strings/net/no_server_contact': {'t': 'millis(dir=past)'},
+    'strings/time/duration_value': {'t': 'millis'},
+}
 
 
 if not TYPE_CHECKING:

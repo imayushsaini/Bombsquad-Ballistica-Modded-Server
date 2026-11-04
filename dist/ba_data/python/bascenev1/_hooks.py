@@ -99,6 +99,20 @@ def kick_vote_started(by: str, to: str) -> bool:
     return True
 
 
+def host_ui_message_from_host(msg: str) -> None:
+    """Handle a host-ui message from the host we're connected to."""
+    classic = babase.app.classic
+    if classic is not None:
+        classic.host_ui.on_message_from_host(msg)
+
+
+def host_ui_message_from_client(msg: str, client_id: int) -> None:
+    """Handle a host-ui message from one of our clients."""
+    classic = babase.app.classic
+    if classic is not None:
+        classic.host_ui.on_message_from_client(msg, client_id)
+
+
 def local_chat_message(msg: str) -> None:
     classic = babase.app.classic
     assert classic is not None

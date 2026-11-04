@@ -13,6 +13,7 @@ import _bauiv1
 from bauiv1 import _classiccatalogassets
 from bauiv1 import _classiccharacterassets
 from bauiv1 import _uiv1assets
+from bauiv1 import _commonassets
 
 if TYPE_CHECKING:
     import bauiv1
@@ -193,6 +194,14 @@ class UIAssetSet:
     swish3: bauiv1.SoundHandle
     #: Ticker for animated count-ups (currency, rank).
     score_increase: bauiv1.SoundHandle
+    #: Light tap for selection moves and text-entry keys.
+    tap: bauiv1.SoundHandle
+    #: Ding for a toolbar inbox flash.
+    ding: bauiv1.SoundHandle
+    #: Toolbar league rank finishing an improving count.
+    cash_register: bauiv1.SoundHandle
+    #: Toolbar league rank finishing a worsening count.
+    powerdown01: bauiv1.SoundHandle
 
     # -- Art for the persistent root toolbar -- the account, currency and
     # menu affordances that sit above every window.
@@ -389,6 +398,10 @@ class UIAssetSet:
         self.swish2 = _uiv1assets.audio.swish2
         self.swish3 = _uiv1assets.audio.swish3
         self.score_increase = _uiv1assets.audio.score_increase
+        self.tap = _commonassets.audio.tap
+        self.ding = _commonassets.audio.ding
+        self.cash_register = _commonassets.audio.cash_register
+        self.powerdown01 = _commonassets.audio.powerdown01
 
 
 def set_ui_asset_set(assets: UIAssetSet) -> None:
@@ -504,6 +517,10 @@ def set_ui_asset_set(assets: UIAssetSet) -> None:
         ('swish2', assets.swish2),
         ('swish3', assets.swish3),
         ('score_increase', assets.score_increase),
+        ('tap', assets.tap),
+        ('ding', assets.ding),
+        ('cash_register', assets.cash_register),
+        ('powerdown01', assets.powerdown01),
         ('level_icon', assets.level_icon),
         ('trophy', assets.trophy),
         ('chest_icon_empty', assets.chest_icon_empty),

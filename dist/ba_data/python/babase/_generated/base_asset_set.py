@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING
 
 import _babase
 
-from babase import _builtinassets
-
 if TYPE_CHECKING:
     from bacommon.assetspec import (
         CubeMapTextureSpec,
@@ -33,12 +31,13 @@ class BaseAssetSet:
     that art.
 
     Slots hold asset *references* (any wrapper flavor works);
-    nothing loads until the set is
-    applied. Every slot defaults to a neutral builtin
-    placeholder (white texture, black cube map, box mesh), so a
-    bare ``BaseAssetSet()`` is complete and renders a plain but
-    coherent world: white debris, no reflections (a black cube
-    map contributes nothing, since reflections are additive).
+    nothing loads until the set is applied. A slot left at
+    ``None`` gets a neutral placeholder the engine provides
+    itself (white texture, black cube map, flat quad mesh,
+    silent sound), so a bare ``BaseAssetSet()`` renders a plain
+    but coherent world: white debris, no reflections (a black
+    cube map contributes nothing, since reflections are
+    additive).
     """
 
     # One attr per slot is the whole point of this class; the
@@ -50,128 +49,125 @@ class BaseAssetSet:
     # placeholder makes an unsupplied reflection a no-op (reflections are
     # additive).
     #: Reflection map for characters.
-    reflection_char: CubeMapTextureSpec
+    reflection_char: CubeMapTextureSpec | None
     #: Reflection map for powerup boxes.
-    reflection_powerup: CubeMapTextureSpec
+    reflection_powerup: CubeMapTextureSpec | None
     #: Soft reflection map.
-    reflection_soft: CubeMapTextureSpec
+    reflection_soft: CubeMapTextureSpec | None
     #: Sharp reflection map.
-    reflection_sharp: CubeMapTextureSpec
+    reflection_sharp: CubeMapTextureSpec | None
     #: Sharper reflection map.
-    reflection_sharper: CubeMapTextureSpec
+    reflection_sharper: CubeMapTextureSpec | None
     #: Sharpest reflection map.
-    reflection_sharpest: CubeMapTextureSpec
+    reflection_sharpest: CubeMapTextureSpec | None
 
     # -- Art for the engine-side effect systems -- bg_dynamics debris and
     # the smoke component.
     #: Smoke puff sheet.
-    smoke: TextureSpec
+    smoke: TextureSpec | None
     #: Spark streak.
-    sparks: TextureSpec
+    sparks: TextureSpec | None
     #: Bomb fuse.
-    fuse: TextureSpec
+    fuse: TextureSpec | None
     #: Rock shrapnel chunk color map.
-    shrapnel_rock_color: TextureSpec
+    shrapnel_rock_color: TextureSpec | None
     #: Rock shrapnel chunk.
-    shrapnel_rock: MeshSpec
+    shrapnel_rock: MeshSpec | None
     #: Wooden-board shrapnel chunk.
-    shrapnel_board: MeshSpec
+    shrapnel_board: MeshSpec | None
     #: Slime glob shrapnel chunk.
-    shrapnel_slime: MeshSpec
+    shrapnel_slime: MeshSpec | None
     #: Light/shadow blotch (sharp).
-    light: TextureSpec
+    light: TextureSpec | None
     #: Light/shadow blotch (soft).
-    light_soft: TextureSpec
+    light_soft: TextureSpec | None
 
     # -- Classic-look props base draws directly -- flag hardware and the
     # VR boxing-glove hands.
     #: Flag pole color map (bg_dynamics ropes).
-    flag_pole_color: TextureSpec
+    flag_pole_color: TextureSpec | None
     #: Flag base stand.
-    flag_stand: MeshSpec
+    flag_stand: MeshSpec | None
     #: Boxing glove (VR hands).
-    boxing_glove: MeshSpec
+    boxing_glove: MeshSpec | None
     #: Boxing glove color map.
-    boxing_gloves_color: TextureSpec
+    boxing_gloves_color: TextureSpec | None
     #: Round mask for character icons.
-    character_icon_mask: TextureSpec
+    character_icon_mask: TextureSpec | None
     #: Standin character icon (while real art loads).
-    standin_icon: TextureSpec
+    standin_icon: TextureSpec | None
     #: Colorize mask for the standin icon.
-    standin_icon_color_mask: TextureSpec
+    standin_icon_color_mask: TextureSpec | None
     #: Faded busy spinner shown while a depiction's art loads (spun in
     #: place).
-    depiction_spinner: TextureSpec
+    depiction_spinner: TextureSpec | None
 
     # -- Art for the on-screen touch controls -- the game-verb button
     # glyphs and movement arrows.
     #: Bomb/punch/jump/pickup button glyph sheet.
-    action_buttons: TextureSpec
+    action_buttons: TextureSpec | None
     #: Movement arrows sheet.
-    touch_arrows: TextureSpec
+    touch_arrows: TextureSpec | None
     #: Movement arrows sheet (action variant).
-    touch_arrows_actions: TextureSpec
+    touch_arrows_actions: TextureSpec | None
     #: Single directional arrow.
-    arrow: TextureSpec
+    arrow: TextureSpec | None
     #: Bottom action-button backing.
-    action_button_bottom: MeshSpec
+    action_button_bottom: MeshSpec | None
     #: Left action-button backing.
-    action_button_left: MeshSpec
+    action_button_left: MeshSpec | None
     #: Right action-button backing.
-    action_button_right: MeshSpec
+    action_button_right: MeshSpec | None
     #: Top action-button backing.
-    action_button_top: MeshSpec
+    action_button_top: MeshSpec | None
     #: Back-arrow mesh.
-    arrow_back: MeshSpec
+    arrow_back: MeshSpec | None
     #: Front-arrow mesh.
-    arrow_front: MeshSpec
+    arrow_front: MeshSpec | None
 
-    # -- Input-device connect/disconnect sounds. cork_pop defaults silent
-    # (its art moved to classicassets); gun_cocking's wav is babase-
-    # python-pinned so it stays builtin and defaults to the real thing.
-    #: Device-connect jingle.
-    cork_pop: SoundSpec
-    #: Device-disconnect jingle.
-    gun_cocking: SoundSpec
+    # -- Connect/disconnect sounds for input devices and party members.
+    #: Device-disconnect / player-left jingle.
+    cork_pop: SoundSpec | None
+    #: Device-connect / player-joined jingle.
+    gun_cocking: SoundSpec | None
 
     def __init__(self) -> None:
-        # All slots start at neutral builtin placeholders
-        # (handles only; nothing is loaded here).
-        self.reflection_char = _builtinassets.textures.black_cube
-        self.reflection_powerup = _builtinassets.textures.black_cube
-        self.reflection_soft = _builtinassets.textures.black_cube
-        self.reflection_sharp = _builtinassets.textures.black_cube
-        self.reflection_sharper = _builtinassets.textures.black_cube
-        self.reflection_sharpest = _builtinassets.textures.black_cube
-        self.smoke = _builtinassets.textures.white
-        self.sparks = _builtinassets.textures.white
-        self.fuse = _builtinassets.textures.white
-        self.shrapnel_rock_color = _builtinassets.textures.white
-        self.shrapnel_rock = _builtinassets.meshes.box
-        self.shrapnel_board = _builtinassets.meshes.box
-        self.shrapnel_slime = _builtinassets.meshes.box
-        self.light = _builtinassets.textures.white
-        self.light_soft = _builtinassets.textures.white
-        self.flag_pole_color = _builtinassets.textures.white
-        self.flag_stand = _builtinassets.meshes.box
-        self.boxing_glove = _builtinassets.meshes.box
-        self.boxing_gloves_color = _builtinassets.textures.white
-        self.character_icon_mask = _builtinassets.textures.white_data
-        self.standin_icon = _builtinassets.textures.white
-        self.standin_icon_color_mask = _builtinassets.textures.white_data
-        self.depiction_spinner = _builtinassets.textures.soft_rect
-        self.action_buttons = _builtinassets.textures.white
-        self.touch_arrows = _builtinassets.textures.white
-        self.touch_arrows_actions = _builtinassets.textures.white
-        self.arrow = _builtinassets.textures.white
-        self.action_button_bottom = _builtinassets.meshes.box
-        self.action_button_left = _builtinassets.meshes.box
-        self.action_button_right = _builtinassets.meshes.box
-        self.action_button_top = _builtinassets.meshes.box
-        self.arrow_back = _builtinassets.meshes.box
-        self.arrow_front = _builtinassets.meshes.box
-        self.cork_pop = _builtinassets.audio.blank
-        self.gun_cocking = _builtinassets.audio.gun_cocking
+        # All slots start unsupplied (engine placeholders).
+        self.reflection_char = None
+        self.reflection_powerup = None
+        self.reflection_soft = None
+        self.reflection_sharp = None
+        self.reflection_sharper = None
+        self.reflection_sharpest = None
+        self.smoke = None
+        self.sparks = None
+        self.fuse = None
+        self.shrapnel_rock_color = None
+        self.shrapnel_rock = None
+        self.shrapnel_board = None
+        self.shrapnel_slime = None
+        self.light = None
+        self.light_soft = None
+        self.flag_pole_color = None
+        self.flag_stand = None
+        self.boxing_glove = None
+        self.boxing_gloves_color = None
+        self.character_icon_mask = None
+        self.standin_icon = None
+        self.standin_icon_color_mask = None
+        self.depiction_spinner = None
+        self.action_buttons = None
+        self.touch_arrows = None
+        self.touch_arrows_actions = None
+        self.arrow = None
+        self.action_button_bottom = None
+        self.action_button_left = None
+        self.action_button_right = None
+        self.action_button_top = None
+        self.arrow_back = None
+        self.arrow_front = None
+        self.cork_pop = None
+        self.gun_cocking = None
 
 
 def set_base_asset_set(assets: BaseAssetSet) -> None:
@@ -181,8 +177,8 @@ def set_base_asset_set(assets: BaseAssetSet) -> None:
     :meth:`~babase.AppMode.on_activate`, with the
     :class:`BaseAssetSet` carried by its app-mode config).
 
-    Loading happens native-side as the set is applied, so
-    replaced placeholders are never loaded. At every app-mode
+    Loading happens native-side as the set is applied. Slots
+    left at ``None`` get engine placeholders. At every app-mode
     switch the native set is *restored to placeholders* (not
     cleared -- base draws between modes too), so a mode can
     never inherit a previous mode's art.

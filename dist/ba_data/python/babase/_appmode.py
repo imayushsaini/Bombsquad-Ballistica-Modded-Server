@@ -145,8 +145,8 @@ class AppMode:
         """Called when the mode is becoming the active one for the app.
 
         ``config`` is the object created by
-        :meth:`new_app_mode_config` for this activation, possibly
-        amended by plugins. Modes that define their own config type
+        :meth:`~babase.AppMode.new_app_mode_config` for this activation,
+        possibly amended by plugins. Modes that define their own config type
         should begin with ``assert isinstance(config, TheirConfig)``
         to recover the concrete type, then set themselves (and any
         app-subsystems they use) up from it.
@@ -160,8 +160,17 @@ class AppMode:
 
         To best cover both mobile and desktop style platforms, actions
         such as saving state should generally happen in response to both
-        :meth:`on_deactivate()` and :meth:`on_app_active_changed()`
+        :meth:`~babase.AppMode.on_deactivate()` and
+        :meth:`~babase.AppMode.on_app_active_changed()`
         (when active is False).
+        """
+
+    def on_main_ui_dismissed(self) -> None:
+        """Called when the main-window goes away, leaving none.
+
+        However that happens: backing out of a top-level window, a
+        menu press, a resume button and so on. (Navigating between main
+        windows doesn't count.) The default does nothing.
         """
 
     def on_app_active_changed(self) -> None:
@@ -179,7 +188,8 @@ class AppMode:
 
         To best cover both mobile and desktop style platforms, actions
         such as saving state should generally happen in response to both
-        :meth:`on_deactivate()` and :meth:`on_app_active_changed()`
+        :meth:`~babase.AppMode.on_deactivate()` and
+        :meth:`~babase.AppMode.on_app_active_changed()`
         (when active is False).
         """
 
@@ -241,14 +251,15 @@ class AppMode:
 
         # By default just announce the item id we got. Real app-modes
         # probably want to do something more specific based on item-id.
-        from babase import _builtinassets
+        from babase import _builtinassets, _commonassets
+        from babase._asset_packages import construct_assets_complete
 
         babase.screenmessage(
             _builtinassets.strings.account.you_got_item(item=item_id),
             color=(0, 1, 0),
         )
-        if babase.asset_loads_allowed():
-            _builtinassets.audio.cash_register.get().play()
+        if construct_assets_complete():
+            _commonassets.audio.cash_register.get().play()
 
     def get_dev_console_ui_tab_buttons(self) -> list[DevConsoleButtonDef]:
         """Define buttons to show up in the UI dev console.

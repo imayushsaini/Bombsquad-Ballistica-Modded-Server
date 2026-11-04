@@ -6,6 +6,8 @@
 import random
 from typing import cast, override, TYPE_CHECKING
 
+from bacommon.text import has_visible_chars
+
 from bauiv1lib.colorpicker import ColorPicker
 from bauiv1lib.characterpicker import CharacterPickerDelegate
 from bauiv1lib.iconpicker import IconPickerDelegate
@@ -1011,6 +1013,16 @@ class EditProfileWindow(
             _builtinassets.audio.error.get().play()
             return False
 
+        # A name with nothing that draws (say, only zero-width or
+        # direction-mark chars) would show up blank everywhere.
+        if not has_visible_chars(new_name):
+            bui.screenmessage(
+                _classicassets.strings.gather.invalid_name_error,
+                color=(1, 0, 0),
+            )
+            _builtinassets.audio.error.get().play()
+            return False
+
         # Make sure we're not renaming to another existing profile.
         profiles: dict = bui.app.config.get('Player Profiles', {})
         if self._existing_profile != new_name and new_name in profiles.keys():
@@ -1027,7 +1039,7 @@ class EditProfileWindow(
                 bui.balog.exception('Error in _on_profile_save cb.')
 
         if transition_out:
-            _builtinassets.audio.gun_cocking.get().play()
+            _commonassets.audio.gun_cocking.get().play()
 
         # Delete old in case we're renaming.
         if self._existing_profile and self._existing_profile != new_name:
