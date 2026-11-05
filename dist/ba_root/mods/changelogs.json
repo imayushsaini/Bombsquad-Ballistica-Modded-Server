@@ -98,6 +98,10 @@
        "90": {
               "log": "Synced with ballistica b24 build, added new /zoom command to focus on our player",
               "time": "13 Oct 2026"
+       },
+       "91": {
+              "log": "Updated to 1.8.6, added new docui for shop, server customization, member docui with admin tools, host docui wither server info",
+              "time": "05 Nov 2026"
        }
 
 }
