@@ -183,5 +183,12 @@
   },
   "useV2Account": false,
   "warnMsg": "WARNING !!!",
-  "whitelist": false
+  "whitelist": false,
+  "server_info": {
+    "owner": "BCS Owner",
+    "admins": "Admin Team",
+    "credits": "BombSquad Community Server (BCSv2)",
+    "custom_text": "Welcome to our BombSquad server! Type 'end' to vote to skip maps, or use /hud to customize your view.",
+    "discord_link": "https://discord.gg/ucyaesh"
+  }
 }

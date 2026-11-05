@@ -533,6 +533,16 @@ class CustomHostUIKickVotes(HostUIKickVotes):
 class CustomHostUIClientPage(HostUIClientPage):
     """Host UI member page showing custom server roles and action buttons."""
 
+    def get_title(self, client_id: int) -> str | babase.LangStr:
+        """The page's title: Server Host for client_id -1, else default."""
+        if client_id == -1:
+            try:
+                import server_host_docui
+                return server_host_docui.get_server_title()
+            except Exception:
+                return "Server Host"
+        return super().get_title(client_id)
+
     def get_role_text(self, client_id: int) -> str | babase.LangStr | None:
         """The member's role row: custom server roles, host, admin or member."""
         if client_id == -1:
@@ -555,6 +565,13 @@ class CustomHostUIClientPage(HostUIClientPage):
         self, route: DocUIRoute, client_id: int, viewer: int
     ) -> dui2.Response:
         """Build the member page for client_id viewed by viewer."""
+        if client_id == -1:
+            try:
+                import server_host_docui
+                return server_host_docui.build_server_host_page(route, viewer)
+            except Exception as exc:
+                print(f"Error building server host page: {exc}")
+
         response = super().build(route, client_id, viewer)
         if response.page is None or not response.page.rows:
             return response
@@ -717,6 +734,20 @@ class CustomHostUIHandler(HostUIHandler):
 
         viewer_acc = clientid_to_accountid(viewer) or ""
         target_acc = clientid_to_accountid(target_cl_id) or ""
+
+        # Server host actions (target_cl_id == -1)
+        if target_cl_id == -1:
+            try:
+                import server_host_docui
+                return server_host_docui.handle_server_action(
+                    action=action,
+                    viewer=viewer,
+                    viewer_acc=viewer_acc,
+                    target_name=target_name,
+                )
+            except Exception as exc:
+                print(f"Error handling server host action: {exc}")
+                return status_response(dui2.ResponseStatus.UNKNOWN_ERROR)
 
         # 1. Public Mute action
         if action == "mute":

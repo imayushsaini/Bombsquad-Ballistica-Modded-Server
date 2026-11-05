@@ -1,3 +1,12 @@
+# Released under the MIT License. See LICENSE for details.
+"""Instant Replay feature for Ballistica servers.
+
+Option 2: Dynamic Rolling BRP Replay Broadcaster.
+Records the final seconds of gameplay into rolling BRP buffers and broadcasts
+them onto client screens during the score screen transition with exact ODE
+physics, authentic walking animations, and true ragdoll dynamics.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -191,7 +200,7 @@ def _fade_in_full_background(
     activity: bs.ScoreScreenActivity, fade_time: float = 0.8
 ) -> None:
     """Transitions the score screen background to full opacity with logo."""
-    from bascenev1 import classicassets
+    from bascenev1 import _classicassets as classicassets
     from bascenev1lib.actor.background import Background
     import random
 
