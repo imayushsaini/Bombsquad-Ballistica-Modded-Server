@@ -1115,5 +1115,20 @@
       "/zoom off"
     ],
     "file": "normal_commands.py"
+  },
+  {
+    "name": "/mutep",
+    "aliases": [
+      "/muteplayer",
+      "/ignore"
+    ],
+    "category": "Normal",
+    "shopCost": 0,
+    "usage": "/mutep <client_id>",
+    "description": "Mute or unmute chat messages locally from a specific player by client ID.",
+    "examples": [
+      "/mutep 113"
+    ],
+    "file": "normal_commands.py"
   }
 ]

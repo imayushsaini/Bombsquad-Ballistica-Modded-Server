@@ -103,4 +103,5 @@
 | `/night` | `/night` | - | Free | Enable night mode lighting tint (0.5, 0.7, 1.0) for your client view. |
 | `/day` | `/day` | - | Free | Enable standard daylight lighting tint (1.0, 1.0, 1.0) for your client view. |
 | `/zoom` | `/zoom [on | off]` | `/cam` | Free | Toggle personal camera zoom locked onto your character. |
+| `/mutep` | `/mutep <client_id>` | `/muteplayer`, `/ignore` | Free | Mute or unmute chat messages locally from a specific player by client ID. |
 
