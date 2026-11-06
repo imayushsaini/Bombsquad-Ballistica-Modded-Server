@@ -1,6 +1,6 @@
 # Bombsquad-Ballistica-Modded-Server
 
-Modded server scripts to host ballistica (BombSquad) server. Running on BS1.8.0 (API 9)
+Modded server scripts to host ballistica (BombSquad) server. Running on BS1.8.7 (API 9)
 
 ``
 Migrated from 1.7 to  1.8.0 alpha , this might be unstable and missing some features. Use 1.7 from this tag
@@ -152,6 +152,7 @@ Here you can ban players, mute them, or disable their kick votes.
 - New final score screen , StumbledScoreScreen.
 - Instant replay on score screen
 - 24/7 Smart Motion based game recording in .brp, with auto clenaup in 3 days
-- Game HUD preference, client can choose if they want to see rank, leaderboard and other text or images.
+- Game HUD preference, client can choose if they want to see rank, leaderboard and other text or images with docUI in game menu.
 - All players data will be saved in server managed sqlite db
-- New shop system to buy chat commands or effects.
+- New shop system to buy chat commands or effects with docUI in game menu.
+- Added party member admin action with docUI.
